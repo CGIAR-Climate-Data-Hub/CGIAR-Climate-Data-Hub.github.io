@@ -13,42 +13,42 @@ const site = process.env.SITE_URL;
 
 // https://astro.build/config
 export default defineConfig({
-	site,
-	base,
-	integrations: [mdx(), sitemap(), pagefind()],
-	prefetch: true,
-	output: "static",
-	trailingSlash: "never",
+  site,
+  base,
+  integrations: [mdx(), sitemap(), pagefind()],
+  prefetch: true,
+  output: "static",
+  trailingSlash: "never",
 
-	markdown: {
-		processor: satteri({
-			features: { directive: true },
-		}),
-		shikiConfig: {
-			themes: {
-				light: "github-light",
-				dark: "github-dark",
-			},
-		},
-	},
+  markdown: {
+    processor: satteri({
+      features: { directive: true },
+    }),
+    shikiConfig: {
+      themes: {
+        light: "github-light",
+        dark: "github-dark",
+      },
+    },
+  },
 
-	fonts: [
-		{
-			name: "Noto Sans",
-			cssVariable: "--font-noto-sans",
-			provider: fontProviders.fontsource(),
-			weights: [300, 400, 700],
-			styles: ["normal", "italic"],
-			subsets: ["latin"],
-		},
-		{
-			name: "Noto Serif",
-			cssVariable: "--font-noto-serif",
-			provider: fontProviders.fontsource(),
-			weights: [400, 700],
-			styles: ["normal", "italic"],
-			subsets: ["latin"],
-			fallbacks: ["serif"],
-		},
-	],
+  fonts: [
+    {
+      name: "Noto Sans",
+      cssVariable: "--font-noto-sans",
+      provider: fontProviders.fontsource(),
+      weights: [300, 400, 700],
+      styles: ["normal", "italic"],
+      subsets: ["latin"],
+    },
+    {
+      name: "Noto Serif",
+      cssVariable: "--font-noto-serif",
+      provider: fontProviders.fontsource(),
+      weights: [400, 700],
+      styles: ["normal", "italic"],
+      subsets: ["latin"],
+      fallbacks: ["serif"],
+    },
+  ],
 });
