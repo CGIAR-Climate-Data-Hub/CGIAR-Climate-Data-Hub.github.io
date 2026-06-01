@@ -29,7 +29,6 @@
 			"source": {
 				"organizeImports": "on",
 				"useSortedAttributes": "on",
-				"useSortedKeys": "on",
 				"useSortedProperties": "on"
 			}
 		}
@@ -42,7 +41,11 @@
 	},
 	"overrides": [
 		{
-			"includes": ["**/*.svelte", "**/*.astro", "**/*.vue"],
+			"includes": [
+				"**/*.svelte",
+				"**/*.astro",
+				"**/*.vue"
+			],
 			"linter": {
 				"rules": {
 					"style": {
