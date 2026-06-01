@@ -1,0 +1,32 @@
+:root {
+  --white: #FFFFFF;
+  --primary-dark: #010D09;
+  --primary-light: #E2E0DF;
+
+  --grey-1: #E2E0DF;
+  --grey-2: #C6C4C3;
+  --grey-3: #AAA8A7;
+  --grey-4: #8E8C8C;
+  --grey-5: #727070;
+  --grey-6: #555554;
+  --grey-7: #393939;
+  --grey-8: #1D1D1D;
+
+  // Climate Action Colors
+  --ca-primary: #63A9FE;
+  --ca-accent: #1955A6;
+
+  // CGIAR colors
+  --cg-primary: #033529;
+  --cg-accent: #17F1BD;
+  --cg-dark-green: #02211A;
+  --cg-light-green: #065F4A;
+  --cg-highlight-green: #57FAD3
+
+  // Additional Site Colors
+  // ... Placeholder for now
+
+  // Fonts - uses astro font api, see astro.config.mjs
+  --font-sans:  var(--font-noto-sans);
+  --font-serif: var(--font-noto-serif);
+}

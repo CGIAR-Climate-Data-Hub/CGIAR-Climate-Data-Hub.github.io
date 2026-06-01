@@ -48,6 +48,7 @@ export default defineConfig({
 			weights: [400, 700],
 			styles: ["normal", "italic"],
 			subsets: ["latin"],
+			fallbacks: ["serif"],
 		},
 	],
 });
