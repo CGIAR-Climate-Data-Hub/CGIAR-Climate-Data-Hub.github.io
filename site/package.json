@@ -16,9 +16,11 @@
 	},
 	"dependencies": {
 		"@astrojs/check": "0.9.9",
+		"@astrojs/markdown-satteri": "^0.2.1",
 		"@astrojs/mdx": "^6.0.1",
 		"@astrojs/sitemap": "^3.7.3",
 		"astro": "^6.4.2",
+		"astro-pagefind": "^2.0.0",
 		"typescript": "6.0.3"
 	},
 	"devDependencies": {
