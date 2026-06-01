@@ -1,32 +1,32 @@
 :root {
-  --white: #FFFFFF;
-  --primary-dark: #010D09;
-  --primary-light: #E2E0DF;
+	--white: #ffffff;
+	--primary-dark: #010d09;
+	--primary-light: #e2e0df;
 
-  --grey-1: #E2E0DF;
-  --grey-2: #C6C4C3;
-  --grey-3: #AAA8A7;
-  --grey-4: #8E8C8C;
-  --grey-5: #727070;
-  --grey-6: #555554;
-  --grey-7: #393939;
-  --grey-8: #1D1D1D;
+	--grey-1: #e2e0df;
+	--grey-2: #c6c4c3;
+	--grey-3: #aaa8a7;
+	--grey-4: #8e8c8c;
+	--grey-5: #727070;
+	--grey-6: #555554;
+	--grey-7: #393939;
+	--grey-8: #1d1d1d;
 
-  // Climate Action Colors
-  --ca-primary: #63A9FE;
-  --ca-accent: #1955A6;
+	/* Climate Action Colors */
+	--ca-primary: #63a9fe;
+	--ca-accent: #1955a6;
 
-  // CGIAR colors
-  --cg-primary: #033529;
-  --cg-accent: #17F1BD;
-  --cg-dark-green: #02211A;
-  --cg-light-green: #065F4A;
-  --cg-highlight-green: #57FAD3
+	/* CGIAR colors */
+	--cg-primary: #033529;
+	--cg-accent: #17f1bd;
+	--cg-dark-green: #02211a;
+	--cg-light-green: #065f4a;
+	--cg-highlight-green: #57fad3;
 
-  // Additional Site Colors
-  // ... Placeholder for now
+	/* Additional Site Colors */
+	/* ... Placeholder for now */
 
-  // Fonts - uses astro font api, see astro.config.mjs
-  --font-sans:  var(--font-noto-sans);
-  --font-serif: var(--font-noto-serif);
+	/* Fonts - uses astro font api, see astro.config.mjs */
+	--font-sans: var(--font-noto-sans);
+	--font-serif: var(--font-noto-serif);
 }
