@@ -1,0 +1,13 @@
+@import "./tokens.css";
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  max-width: 75rem;
+  margin: 0 auto;
+  padding: 1rem;
+  font-family: var(--font-sans);
+}
