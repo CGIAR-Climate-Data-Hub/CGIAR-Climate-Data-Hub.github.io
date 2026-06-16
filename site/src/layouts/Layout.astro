@@ -1,6 +1,8 @@
 ---
 import { Font } from "astro:assets";
 import Navigation from "@/components/Navigation.astro";
+import Footer from "@/components/Footer.astro";
+
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 ---
 
@@ -19,6 +21,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
   <body>
     <Navigation />
     <slot />
+    <Footer />
   </body>
 </html>
 
