@@ -1,9 +1,11 @@
 ---
+import { SITE_NAME } from "@/site.config";
+
 const year = new Date().getFullYear();
 ---
 
 <footer>
-  <p>&copy; {year} Climate Data Hub</p>
+  <p>&copy; {year} {SITE_NAME}</p>
 </footer>
 
 <style>

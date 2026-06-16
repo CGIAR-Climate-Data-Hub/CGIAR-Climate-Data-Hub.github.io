@@ -1,5 +1,6 @@
 ---
 import PagefindConfig from "astro-pagefind/components/PagefindConfig.astro";
+import { SITE_NAME } from "@/site.config";
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 ---
@@ -7,7 +8,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 <PagefindConfig />
 
 <nav>
-  <a href={`${base}/`} class="hero">Climate Data Hub</a>
+  <a href={`${base}/`} class="hero">{SITE_NAME}</a>
 
   <div class="links">
     <!-- nav links go here once routes exist -->
