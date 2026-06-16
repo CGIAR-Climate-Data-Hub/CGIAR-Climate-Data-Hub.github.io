@@ -1,0 +1,31 @@
+---
+import PagefindConfig from "astro-pagefind/components/PagefindConfig.astro";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<PagefindConfig />
+
+<nav>
+  <a href={`${base}/`} class="hero">Climate Data Hub</a>
+
+  <div class="links">
+    <!-- nav links go here once routes exist -->
+  </div>
+
+  <pagefind-searchbox></pagefind-searchbox>
+</nav>
+
+<style>
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hero {
+  font-weight: 700;
+  text-decoration: none;
+  color: inherit;
+}
+</style>

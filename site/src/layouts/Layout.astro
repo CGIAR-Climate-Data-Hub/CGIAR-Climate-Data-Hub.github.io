@@ -1,5 +1,6 @@
 ---
 import { Font } from "astro:assets";
+import Navigation from "@/components/Navigation.astro";
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 ---
 
@@ -16,6 +17,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     <title>Astro Basics</title>
   </head>
   <body>
+    <Navigation />
     <slot />
   </body>
 </html>
