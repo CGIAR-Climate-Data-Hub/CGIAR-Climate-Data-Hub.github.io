@@ -1,0 +1,5 @@
+# Allow all crawlers.
+User-agent: *
+Allow: /
+
+Sitemap: https://cgiar-climate-data-hub.github.io/sitemap-index.xml
