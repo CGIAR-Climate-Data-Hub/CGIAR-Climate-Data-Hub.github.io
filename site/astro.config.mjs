@@ -35,7 +35,7 @@ export default defineConfig({
   fonts: [
     {
       name: "Noto Sans",
-      cssVariable: "--font-noto-sans",
+      cssVariable: "--font-sans",
       provider: fontProviders.fontsource(),
       weights: [300, 400, 700],
       styles: ["normal", "italic"],
@@ -43,7 +43,7 @@ export default defineConfig({
     },
     {
       name: "Noto Serif",
-      cssVariable: "--font-noto-serif",
+      cssVariable: "--font-serif",
       provider: fontProviders.fontsource(),
       weights: [400, 700],
       styles: ["normal", "italic"],

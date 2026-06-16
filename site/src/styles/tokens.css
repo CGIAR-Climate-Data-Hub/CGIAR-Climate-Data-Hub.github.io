@@ -25,8 +25,4 @@
 
   /* Additional Site Colors */
   /* ... Placeholder for now */
-
-  /* Fonts - uses astro font api, see astro.config.mjs */
-  --font-sans: var(--font-noto-sans);
-  --font-serif: var(--font-noto-serif);
 }
