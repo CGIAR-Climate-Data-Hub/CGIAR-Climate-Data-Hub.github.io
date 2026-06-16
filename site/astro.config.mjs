@@ -7,9 +7,13 @@ import { defineConfig, fontProviders } from "astro/config";
 
 import pagefind from "astro-pagefind";
 
-// Different deploy opts depending on the env (gh pages vs cloudflare)
+// Deploy target sets the subpath (GH Pages serves under /climate-data-hub).
 const base = process.env.BASE_PATH ?? "/";
-const site = process.env.SITE_URL;
+
+// Canonical production domain. Read from the deploy env, with a fixed fallback so canonical
+// URLs + the sitemap still resolve in local dev. To switch domains later: change SITE_URL in
+// the deploy workflow (and, for a custom domain, drop `base` + add public/CNAME).
+const site = process.env.SITE_URL ?? "https://cgiar-climate-data-hub.github.io";
 
 // https://astro.build/config
 export default defineConfig({

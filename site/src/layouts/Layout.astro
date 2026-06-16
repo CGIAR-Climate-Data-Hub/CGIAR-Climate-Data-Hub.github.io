@@ -3,8 +3,20 @@ import "@/styles/global.css";
 import { Font } from "astro:assets";
 import Navigation from "@/components/Navigation.astro";
 import Footer from "@/components/Footer.astro";
+import { SITE_NAME, SITE_DESCRIPTION } from "@/site.config";
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+// Default the description to the site-wide one so every page has SEO/OG copy.
+const { title, description = SITE_DESCRIPTION } = Astro.props;
+
+// Astro.site is always defined (config has a fallback), so no guard needed.
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
 ---
 
 <!doctype html>
@@ -15,9 +27,28 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`}>
     <link rel="icon" href={`${base}/favicon.ico`}>
     <meta name="generator" content={Astro.generator}>
+
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="canonical" href={canonical} />
+
+    {/* Open Graph */}
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:url" content={canonical} />
+
+    {/* Twitter */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+
     <Font cssVariable="--font-sans" preload />
     <Font cssVariable="--font-serif" />
-    <title>Astro Basics</title>
+
+    {/* Per-page extras: JSON-LD, page-specific OG image, etc. */}
+    <slot name="head" />
   </head>
   <body>
     <Navigation />
