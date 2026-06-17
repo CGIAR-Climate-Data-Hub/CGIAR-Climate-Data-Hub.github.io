@@ -1,0 +1,32 @@
+---
+import PagefindConfig from "astro-pagefind/components/PagefindConfig.astro";
+import { SITE_NAME } from "@/site.config";
+---
+
+<PagefindConfig />
+
+<nav>
+  <a href="/" class="hero">{SITE_NAME}</a>
+
+  <div class="links">
+    <a href="/catalog">Catalog</a>
+    <a href="/tutorials">Tutorials</a>
+    <a href="/wikis">Wikis</a>
+  </div>
+
+  <pagefind-searchbox></pagefind-searchbox>
+</nav>
+
+<style>
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hero {
+  font-weight: 700;
+  text-decoration: none;
+  color: inherit;
+}
+</style>

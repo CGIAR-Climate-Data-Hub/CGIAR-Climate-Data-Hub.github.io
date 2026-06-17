@@ -7,14 +7,14 @@ import { defineConfig, fontProviders } from "astro/config";
 
 import pagefind from "astro-pagefind";
 
-// Different deploy opts depending on the env (gh pages vs cloudflare)
-const base = process.env.BASE_PATH ?? "/";
-const site = process.env.SITE_URL;
+// Canonical production domain. Served at the root as the org's GitHub Pages site, so there
+// is no `base` (Astro defaults to "/"). To switch to a custom domain later: change this one
+// value + add public/CNAME — base stays "/" the whole time.
+const site = "https://cgiar-climate-data-hub.github.io";
 
 // https://astro.build/config
 export default defineConfig({
   site,
-  base,
   integrations: [mdx(), sitemap(), pagefind()],
   prefetch: true,
   output: "static",
@@ -35,7 +35,7 @@ export default defineConfig({
   fonts: [
     {
       name: "Noto Sans",
-      cssVariable: "--font-noto-sans",
+      cssVariable: "--font-sans",
       provider: fontProviders.fontsource(),
       weights: [300, 400, 700],
       styles: ["normal", "italic"],
@@ -43,7 +43,7 @@ export default defineConfig({
     },
     {
       name: "Noto Serif",
-      cssVariable: "--font-noto-serif",
+      cssVariable: "--font-serif",
       provider: fontProviders.fontsource(),
       weights: [400, 700],
       styles: ["normal", "italic"],

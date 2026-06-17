@@ -1,0 +1,55 @@
+---
+import "@/styles/global.css";
+import { Font } from "astro:assets";
+import Navigation from "@/components/Navigation.astro";
+import Footer from "@/components/Footer.astro";
+import { SITE_NAME, SITE_DESCRIPTION } from "@/site.config";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+// Default the description to the site-wide one so every page has SEO/OG copy.
+const { title, description = SITE_DESCRIPTION } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="generator" content={Astro.generator}>
+
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="canonical" href={canonical} />
+
+    {/* Open Graph */}
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:url" content={canonical} />
+
+    {/* Twitter */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+
+    <Font cssVariable="--font-sans" preload />
+    <Font cssVariable="--font-serif" />
+
+    {/* Per-page extras: JSON-LD from hub metadata, page-specific OG image, etc. */}
+    <slot name="head" />
+  </head>
+  <body>
+    <Navigation />
+    <slot />
+    <Footer />
+  </body>
+</html>
