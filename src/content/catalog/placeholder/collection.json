@@ -1,0 +1,9 @@
+{
+  "type": "Collection",
+  "stac_version": "1.0.0",
+  "id": "placeholder",
+  "title": "Placeholder Collection",
+  "description": "Placeholder STAC collection record.",
+  "license": "CC-BY-4.0",
+  "links": []
+}

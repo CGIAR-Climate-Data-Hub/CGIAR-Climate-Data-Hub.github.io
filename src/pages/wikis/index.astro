@@ -1,0 +1,19 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+
+const entries = await getCollection("wikis");
+---
+
+<Layout title="Wikis">
+  <h1>Wikis</h1>
+  <ul>
+    {
+      entries.map((entry) => (
+        <li>
+          <a href={`/wikis/${entry.id}`}>{entry.data.title}</a>
+        </li>
+      ))
+    }
+  </ul>
+</Layout>

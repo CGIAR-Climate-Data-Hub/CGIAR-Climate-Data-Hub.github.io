@@ -1,0 +1,19 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+
+const entries = await getCollection("catalog");
+---
+
+<Layout title="Catalog">
+  <h1>Catalog</h1>
+  <ul>
+    {
+      entries.map((entry) => (
+        <li>
+          <a href={`/catalog/${entry.id}`}>{entry.data.title ?? entry.id}</a>
+        </li>
+      ))
+    }
+  </ul>
+</Layout>
