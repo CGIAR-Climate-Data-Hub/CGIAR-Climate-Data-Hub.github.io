@@ -6,8 +6,8 @@ body {
 }
 
 body {
-  max-width: 75rem;
-  margin: 0 auto;
+  max-width: 90rem;
   padding: 1rem;
+  margin: 0 auto;
   font-family: var(--font-sans);
 }

@@ -1,12 +1,16 @@
 ---
 import PagefindConfig from "astro-pagefind/components/PagefindConfig.astro";
+import caspLogo from "@/assets/CASP_logo.svg";
 import { SITE_NAME } from "@/site.config";
 ---
 
 <PagefindConfig />
 
 <nav>
-  <a href="/" class="hero">{SITE_NAME}</a>
+  <a href="/" class="hero" aria-label={`CASP ${SITE_NAME}`}>
+    <img src={caspLogo.src} alt="CASP" class="hero-logo">
+    <span class="hero-title">{SITE_NAME}</span>
+  </a>
 
   <div class="links">
     <a href="/catalog">Catalog</a>
@@ -20,13 +24,32 @@ import { SITE_NAME } from "@/site.config";
 <style>
 nav {
   display: flex;
+  gap: 1rem;
   align-items: center;
   justify-content: space-between;
+  min-height: 4.5rem;
+  padding-block: 0.5rem;
 }
 
 .hero {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
   font-weight: 700;
-  text-decoration: none;
   color: inherit;
+  text-decoration: none;
+}
+
+.hero-logo {
+  display: block;
+  width: auto;
+  height: 3.5rem;
+}
+
+.hero-title {
+  padding-left: 0.9rem;
+  margin-left: 0.9rem;
+  white-space: nowrap;
+  border-left: 1px solid var(--grey-3);
 }
 </style>
