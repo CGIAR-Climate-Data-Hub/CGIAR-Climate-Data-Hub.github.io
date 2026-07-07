@@ -1,0 +1,48 @@
+// llms.txt — a compact, AI-readable map of the site, generated from the collections.
+
+import { getCollection } from "astro:content";
+import type { APIRoute } from "astro";
+import { SITE_DESCRIPTION, SITE_NAME } from "@/site.config";
+
+export const GET: APIRoute = async ({ site }) => {
+  const abs = (path: string) => new URL(path, site).href;
+  const catalog = await getCollection("catalog");
+  const wikis = await getCollection("wikis");
+  const tutorials = await getCollection("tutorials");
+  const useCases = await getCollection("useCases");
+
+  const line = (title: string, url: string, desc: string) =>
+    `- [${title}](${abs(url)}): ${desc.trim().replace(/\s+/g, " ")}`;
+
+  const md = `# ${SITE_NAME}
+
+> ${SITE_DESCRIPTION} Datasets are harmonised to the CDH metadata standard, openly licensed, and distributed in cloud-native formats (Zarr, COG). Every dataset page embeds schema.org/Dataset JSON-LD.
+
+## Datasets
+
+${catalog.map((c) => line(c.data.title, `/catalog/${c.data.id}`, c.data.description)).join("\n")}
+
+## Documentation
+
+${wikis.map((w) => line(w.data.title, `/wikis/${w.id}`, w.data.description)).join("\n")}
+
+## Tutorials
+
+${tutorials.map((t) => line(t.data.title, `/tutorials/${t.id}`, t.data.description)).join("\n")}
+
+## Use cases
+
+${useCases.map((u) => line(u.data.title, `/use-cases/${u.id}`, u.data.description)).join("\n")}
+
+## Reference
+
+- [Catalog](${abs("/catalog")}): Browse and filter all datasets
+- [FAQ](${abs("/faq")}): Access, licensing, formats, and contributing
+- [About](${abs("/about")}): What the Hub is and who runs it
+- [Contribute](${abs("/contribute")}): How to submit a dataset
+`;
+
+  return new Response(md, {
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  });
+};
