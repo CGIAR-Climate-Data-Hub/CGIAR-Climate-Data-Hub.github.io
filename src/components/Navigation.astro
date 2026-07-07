@@ -74,7 +74,7 @@ const learnActive = LEARN.some((l) => isActive(l.href));
       <pagefind-modal></pagefind-modal>
     </div>
 
-    <a class="btn btn-ghost cta" href="/contribute">Contribute</a>
+    <a class="btn btn-ghost btn-cta cta" href="/contribute">Contribute</a>
 
     <a
       aria-label="CGIAR Climate Data Hub on GitHub"
@@ -96,6 +96,14 @@ const learnActive = LEARN.some((l) => isActive(l.href));
   </div>
 </header>
 
+<script>
+const header = document.querySelector("header");
+const onScroll = () =>
+  header?.toggleAttribute("data-scrolled", window.scrollY > 8);
+addEventListener("scroll", onScroll, { passive: true });
+onScroll();
+</script>
+
 <style>
 header {
   position: sticky;
@@ -105,22 +113,18 @@ header {
   border-bottom: 1px solid var(--border);
 }
 
-/* Glassy nav once scrolled; browsers without scroll-driven animations keep the flat bar */
-@supports (animation-timeline: scroll()) {
-  header {
-    border-color: transparent;
-    animation: glass linear both;
-    animation-timeline: scroll();
-    animation-range: 0 64px;
-  }
+header {
+  border-color: transparent;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
 
-  @keyframes glass {
-    to {
-      background: rgb(252 250 245 / 86%);
-      border-color: var(--border);
-      backdrop-filter: blur(12px) saturate(160%);
-    }
-  }
+/* Glassy once scrolled */
+header[data-scrolled] {
+  background: rgb(252 250 245 / 86%);
+  border-color: var(--border);
+  backdrop-filter: blur(12px) saturate(160%);
 }
 
 .bar {
@@ -154,6 +158,25 @@ nav {
 .nav-item:hover {
   color: var(--cdh-blue-950);
   text-decoration: none;
+}
+
+/* Hover: muted blue underline grows from centre — distinct from the terracotta active rule */
+.nav-item:not(.is-active)::after {
+  position: absolute;
+  right: 10px;
+  bottom: -3px;
+  left: 10px;
+  height: 2px;
+  content: "";
+  background: var(--cdh-blue-300);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.16s ease;
+}
+
+.nav-item:not(.is-active):hover::after {
+  transform: scaleX(1);
 }
 
 .nav-item.is-active {
