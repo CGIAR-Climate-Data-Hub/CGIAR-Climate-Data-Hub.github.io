@@ -1,0 +1,190 @@
+---
+import PageHead from "@/components/PageHead.astro";
+import Layout from "@/layouts/Layout.astro";
+import { GITHUB_URL, SITE_NAME } from "@/site.config";
+
+const PATHS = [
+  {
+    title: "Contribute a dataset",
+    desc: "Publish climate-relevant data with harmonised metadata, a DOI, and cloud-native distribution.",
+    cue: "~2 days of preparation",
+    href: "#dataset",
+  },
+  {
+    title: "Improve the docs",
+    desc: "Fix a wiki page, add a tutorial, or clarify appropriate-use guidance. Every page is a file in a repo.",
+    cue: "Pull requests welcome",
+    href: GITHUB_URL,
+  },
+  {
+    title: "Report an issue",
+    desc: "Spotted wrong metadata, a broken link, or a data problem? Issues are triaged by the maintainers.",
+    cue: "GitHub issues",
+    href: `${GITHUB_URL}/issues`,
+  },
+];
+
+const STEPS = [
+  {
+    title: "Read the contributor docs",
+    body: "Review the metadata standard, STAC profile, and QA requirements before you start.",
+  },
+  {
+    title: "Harmonise the format",
+    body: "Convert to COG or Zarr per the data-type guide, with explicit nodata and an equal-area-safe layout.",
+  },
+  {
+    title: "Author the metadata record",
+    body: "Write the YAML record against the CDH schema — coverage, provenance, citation, and appropriate-use guidance.",
+  },
+  {
+    title: "Open a submission PR",
+    body: "Open a pull request against the metadata registry. CI validates the record and the data layout.",
+  },
+  {
+    title: "Review & publish",
+    body: "Hub maintainers and a domain reviewer approve; the dataset is indexed and a DOI is minted.",
+  },
+];
+---
+
+<Layout
+  description="How to contribute a dataset, improve the documentation, or report an issue on the Climate Data Hub."
+  title={`Contribute — ${SITE_NAME}`}
+>
+  <PageHead
+    breadcrumb={[{ label: "Hub", href: "/" }, { label: "Contribute" }]}
+    kicker="Contribute"
+    sub="The Hub grows because partners add to it. Three ways in, depending on what you hold."
+    title="Add to the Hub"
+  />
+
+  <div class="container cards">
+    {PATHS.map((p) => (
+        <a class="card" href={p.href}>
+          <span class="card-title">{p.title}</span>
+          <span class="card-desc">{p.desc}</span>
+          <span class="label card-cue">{p.cue}</span>
+        </a>
+      ))}
+  </div>
+
+  <div class="container narrow" id="dataset">
+    <h2>Submitting a dataset</h2>
+    <ol class="steps">
+      {STEPS.map((step, i) => (
+          <li>
+            <span class="mono step-n">{String(i + 1).padStart(2, "0")}</span>
+            <div>
+              <h3>{step.title}</h3>
+              <p>{step.body}</p>
+            </div>
+          </li>
+        ))}
+    </ol>
+    <div class="ctas">
+      <a class="btn btn-accent" href={GITHUB_URL}>Start on GitHub</a>
+      <a class="btn btn-ghost" href="/wikis/cdh-metadata-standard"
+        >Read the metadata standard</a
+      >
+    </div>
+  </div>
+</Layout>
+
+<style>
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 40px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition:
+    border-color 0.16s,
+    box-shadow 0.16s,
+    transform 0.16s;
+}
+
+.card:hover {
+  text-decoration: none;
+  border-color: var(--terra-300);
+  box-shadow: 0 10px 30px rgb(20 16 8 / 7%);
+  transform: translateY(-2px);
+}
+
+.card-title {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--cdh-blue-950);
+}
+
+.card-desc {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.card-cue {
+  padding-top: 12px;
+  margin-top: auto;
+  font-size: 10px;
+  color: var(--terra-700);
+}
+
+#dataset {
+  margin-top: 72px;
+  scroll-margin-top: 100px;
+}
+
+.steps {
+  padding: 0;
+  margin: 28px 0 0;
+  list-style: none;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 18px;
+  align-items: baseline;
+  padding: 18px 0;
+  border-top: 1px solid var(--border);
+}
+
+.step-n {
+  font-size: 11px;
+  color: var(--terra-700);
+}
+
+.steps h3 {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.steps p {
+  max-width: 620px;
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-soft);
+}
+
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 28px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+}
+</style>

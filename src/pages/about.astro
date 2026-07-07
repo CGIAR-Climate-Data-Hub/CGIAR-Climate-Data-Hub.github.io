@@ -1,0 +1,93 @@
+---
+import JsonLd from "@/components/JsonLd.astro";
+import PageHead from "@/components/PageHead.astro";
+import Layout from "@/layouts/Layout.astro";
+import { GITHUB_URL, SITE_NAME } from "@/site.config";
+
+const description =
+  "The Climate Data Hub is CGIAR Climate Action's shared home for quality-assured, openly licensed climate and agriculture data.";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  name: `About the ${SITE_NAME}`,
+  description,
+  url: new URL("/about", Astro.site).href,
+  about: { "@id": `${Astro.site}#organization` },
+};
+---
+
+<Layout description={description} title={`About — ${SITE_NAME}`}>
+  <JsonLd data={jsonLd} slot="head" />
+
+  <PageHead
+    breadcrumb={[{ label: "Hub", href: "/" }, { label: "About" }]}
+    kicker="About"
+    sub="Why the Hub exists, what it holds, and who keeps it running."
+    title="One home for climate evidence"
+  />
+
+  <div class="container narrow prose about">
+    <p class="lede">
+      Climate evidence across CGIAR used to live in scattered portals, formats,
+      and licences. The Climate Data Hub brings it into one place — consistently
+      described, quality-assured, and ready to build on.
+    </p>
+
+    <h2>What the Hub holds</h2>
+    <p>
+      A <a href="/catalog">catalog</a> of harmonised datasets distributed in
+      cloud-native formats (Zarr, COG), the
+      <a href="/wikis/cdh-metadata-standard">metadata standard</a>
+      that describes them, and the <a href="/tutorials">tutorials</a> and
+      <a href="/wikis">reference docs</a>
+      that make them usable. Every dataset carries provenance, licensing, a
+      citation, and honest guidance on what it should <em>not</em> be used for.
+    </p>
+
+    <h2>How quality works</h2>
+    <p>
+      Nothing lands in the catalog without review. Records are validated against
+      the CDH schema in CI, data is checked for format compliance, and a domain
+      reviewer confirms the appropriate-use guidance. Records are versioned, so
+      corrections are tracked rather than silently overwritten.
+    </p>
+
+    <h2>Who runs it</h2>
+    <p>
+      The Hub is maintained by the
+      <a href="https://alliancebioversityciat.org"
+        >Alliance of Bioversity International and CIAT</a
+      >
+      as part of the
+      <a href="https://www.cgiar.org">CGIAR</a>
+      Climate Action portfolio, with data contributed by Centers and partners
+      across the network.
+    </p>
+
+    <h2>Open by design</h2>
+    <p>
+      The metadata standard, data pipeline, and this site are developed in the
+      open on
+      <a href={GITHUB_URL}>GitHub</a>. Data is CC-BY-4.0 unless noted otherwise.
+      If something is wrong,
+      <a href={`${GITHUB_URL}/issues`}>open an issue</a>
+      — and if you have data worth sharing,
+      <a href="/contribute">there's a clear path in</a>.
+    </p>
+  </div>
+</Layout>
+
+<style>
+.about {
+  margin-top: 40px;
+}
+
+.lede {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--text);
+}
+</style>
