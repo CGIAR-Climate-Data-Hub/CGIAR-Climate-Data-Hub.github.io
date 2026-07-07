@@ -56,7 +56,7 @@ const siteGraph = {
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/svg+xml" href="/cdh-favicon-29yr.svg">
     <link rel="icon" href="/CDH_favicon_29yr.ico">
     <meta name="generator" content={Astro.generator}>
@@ -86,5 +86,37 @@ const siteGraph = {
       <slot />
     </main>
     <Footer />
+
+    <script>
+    // Dress every shiki block with a header: language label + copy button
+    for (const pre of document.querySelectorAll<HTMLPreElement>(
+      "pre.astro-code",
+    )) {
+      const wrap = document.createElement("div");
+      wrap.className = "code-block";
+      const head = document.createElement("div");
+      head.className = "code-head";
+      const lang = document.createElement("span");
+      lang.className = "mono code-lang";
+      lang.textContent =
+        pre.closest<HTMLElement>("[data-code-label]")?.dataset.codeLabel
+        ?? pre.dataset.language
+        ?? "code";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "code-copy";
+      btn.textContent = "Copy";
+      btn.addEventListener("click", async () => {
+        await navigator.clipboard.writeText(pre.innerText);
+        btn.textContent = "Copied";
+        setTimeout(() => {
+          btn.textContent = "Copy";
+        }, 1200);
+      });
+      head.append(lang, btn);
+      pre.replaceWith(wrap);
+      wrap.append(head, pre);
+    }
+    </script>
   </body>
 </html>
