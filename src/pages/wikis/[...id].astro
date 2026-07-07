@@ -76,6 +76,11 @@ const jsonLd = {
   padding-top: 34px;
 }
 
+/* The grid is start-aligned; the TOC wrapper must span the column for sticky to travel */
+.docs > aside {
+  align-self: stretch;
+}
+
 article {
   min-width: 0;
   max-width: 760px;

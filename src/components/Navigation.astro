@@ -69,7 +69,13 @@ const learnActive = LEARN.some((l) => isActive(l.href));
 
     <div class="search">
       <pagefind-modal-trigger
+        class="trigger-full"
         placeholder="Search the Hub"
+      ></pagefind-modal-trigger>
+      <pagefind-modal-trigger
+        class="trigger-compact"
+        compact
+        hide-shortcut
       ></pagefind-modal-trigger>
       <pagefind-modal></pagefind-modal>
     </div>
@@ -93,6 +99,41 @@ const learnActive = LEARN.some((l) => isActive(l.href));
         ></path>
       </svg>
     </a>
+
+    <button
+      aria-controls="mobile-menu"
+      aria-expanded="false"
+      aria-label="Menu"
+      class="menu-btn"
+      data-menu-btn
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        fill="none"
+        height="20"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="20"
+      >
+        <path class="i-open" d="M4 7h16M4 12h16M4 17h16"></path>
+        <path class="i-close" d="M6 6l12 12M18 6L6 18"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div class="mobile-menu" hidden id="mobile-menu">
+    <nav aria-label="Mobile">
+      {[...LINKS, ...LEARN, { href: "/about", label: "About" }].map((link) => (
+          <a href={link.href} class:list={[{ "is-active": isActive(link.href) }]}>
+            {link.label}
+          </a>
+        ))}
+      <a href="/contribute">Contribute</a>
+      <a href={GITHUB_URL}>GitHub ↗</a>
+    </nav>
   </div>
 </header>
 
@@ -102,6 +143,20 @@ const onScroll = () =>
   header?.toggleAttribute("data-scrolled", window.scrollY > 8);
 addEventListener("scroll", onScroll, { passive: true });
 onScroll();
+
+const btn = document.querySelector("[data-menu-btn]");
+const menu = document.querySelector("#mobile-menu");
+btn?.addEventListener("click", () => {
+  const open = !menu?.toggleAttribute("hidden");
+  btn.setAttribute("aria-expanded", String(open));
+});
+// Close after navigating (also covers same-page anchor taps)
+menu?.addEventListener("click", (e) => {
+  if ((e.target as HTMLElement).closest("a")) {
+    menu.setAttribute("hidden", "");
+    btn?.setAttribute("aria-expanded", "false");
+  }
+});
 </script>
 
 <style>
@@ -266,6 +321,16 @@ nav {
   margin-left: auto;
 }
 
+.search :global(.trigger-compact) {
+  display: none;
+}
+
+@media (width <= 960px) {
+  .search :global(.trigger-compact) {
+    display: block;
+  }
+}
+
 .cta {
   padding: 8px 16px;
   font-size: 13.5px;
@@ -281,22 +346,92 @@ nav {
   color: var(--cdh-blue-950);
 }
 
+.menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--cdh-blue-950);
+  background: transparent;
+  border: 0;
+}
+
+.menu-btn .i-close {
+  display: none;
+}
+
+.menu-btn[aria-expanded="true"] .i-open {
+  display: none;
+}
+
+.menu-btn[aria-expanded="true"] .i-close {
+  display: block;
+}
+
+.mobile-menu {
+  display: none;
+}
+
 @media (width <= 960px) {
   .bar {
-    flex-wrap: wrap;
-    gap: 12px;
-    height: auto;
-    padding-top: 12px;
-    padding-bottom: 12px;
+    gap: 14px;
+    height: 60px;
   }
 
-  .nav-item {
-    min-width: 0;
+  .bar > nav,
+  .cta,
+  .gh {
+    display: none;
+  }
+
+  .menu-btn {
+    display: inline-flex;
+    flex-shrink: 0;
+    margin-right: -8px;
   }
 
   .search {
-    flex-basis: 100%;
-    order: 10;
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
+  .search :global(.trigger-full) {
+    display: none;
+  }
+
+  .mobile-menu:not([hidden]) {
+    display: block;
+    border-top: 1px solid var(--border);
+  }
+
+  .mobile-menu nav {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px 20px 16px;
+  }
+
+  .mobile-menu a {
+    padding: 13px 4px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mobile-menu a:hover {
+    text-decoration: none;
+  }
+
+  .mobile-menu a.is-active {
+    padding-left: 12px;
+    color: var(--cdh-blue-950);
+    box-shadow: inset 3px 0 0 var(--terra-700);
+  }
+
+  .mobile-menu a:last-child {
+    border-bottom: 0;
   }
 }
 </style>

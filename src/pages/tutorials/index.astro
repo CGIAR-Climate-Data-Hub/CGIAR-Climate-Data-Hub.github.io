@@ -205,6 +205,13 @@ for (const b of buttons) {
     apply();
   });
 }
+// Filters start collapsed on small screens so results stay above the fold
+if (matchMedia("(max-width: 860px)").matches) {
+  for (const d of document.querySelectorAll("aside details[open]")) {
+    d.removeAttribute("open");
+  }
+}
+
 clear?.addEventListener("click", () => {
   for (const k of facetKeys) state[k] = "";
   apply();

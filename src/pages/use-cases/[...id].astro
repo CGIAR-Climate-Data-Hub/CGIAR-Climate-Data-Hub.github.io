@@ -118,6 +118,11 @@ article {
   max-width: 720px;
 }
 
+/* The grid is start-aligned; the TOC wrapper must span the column for sticky to travel */
+.narrow-grid > aside {
+  align-self: stretch;
+}
+
 .meta {
   display: flex;
   flex-wrap: wrap;

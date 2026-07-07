@@ -477,6 +477,13 @@ bboxClear?.addEventListener("click", () => {
 });
 
 // ---- Init from URL ----
+// Filters start collapsed on small screens so results stay above the fold
+if (matchMedia("(max-width: 860px)").matches) {
+  for (const d of document.querySelectorAll("aside details[open]")) {
+    d.removeAttribute("open");
+  }
+}
+
 const params = new URLSearchParams(location.search);
 state.q = (params.get("q") ?? "").trim().toLowerCase();
 if (search) search.value = params.get("q") ?? "";
