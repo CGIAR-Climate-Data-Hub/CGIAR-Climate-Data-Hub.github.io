@@ -7,10 +7,12 @@ import DataGlyph from "@/components/DataGlyph.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import Layout from "@/layouts/Layout.astro";
 import {
+  bibtex,
   citationText,
   datasetJsonLd,
   humanize,
   normalizeBbox,
+  ris,
 } from "@/lib/catalog";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
 
@@ -37,6 +39,8 @@ const producers = d.contact.filter(
 );
 const source = producers[0]?.organization;
 const citation = citationText(d);
+const bibtexStr = bibtex(d);
+const risStr = ris(d);
 
 // Build-time cross-links: stories that cite this dataset id in their frontmatter
 const seenIn = (
@@ -362,6 +366,16 @@ const jsonLd = datasetJsonLd(
           <section id="citation">
             <h3>Citation</h3>
             <blockquote class="cite">{citation}</blockquote>
+            {bibtexStr && (
+              <div data-code-label="BibTeX">
+                <Code code={bibtexStr} lang="bibtex" theme="github-light" />
+              </div>
+            )}
+            {risStr && (
+              <div data-code-label="RIS">
+                <Code code={risStr} lang="text" theme="github-light" />
+              </div>
+            )}
             {d.related_publications.length > 0 && (
               <div>
                 <h4>Related publications</h4>
@@ -466,6 +480,35 @@ const jsonLd = datasetJsonLd(
 </Layout>
 
 <script>
+// Hash-driven tabs: all panels stay in the DOM (crawlers see everything);
+// the hash picks the visible one, so /catalog/<id>#access deep-links work.
+const tabs = [
+  ...document.querySelectorAll<HTMLAnchorElement>(".section-nav a"),
+];
+const panels = tabs
+  .map((a) => document.getElementById(a.hash.slice(1)))
+  .filter((el): el is HTMLElement => el !== null);
+
+function showPanel(id: string) {
+  const target = panels.some((s) => s.id === id) ? id : panels[0]?.id;
+  for (const s of panels) s.hidden = s.id !== target;
+  for (const a of tabs)
+    a.setAttribute("aria-current", String(a.hash === `#${target}`));
+}
+if (tabs.length > 0) {
+  // replaceState instead of a real navigation — switching tabs must not scroll
+  for (const a of tabs) {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      history.replaceState(null, "", a.hash);
+      showPanel(a.hash.slice(1));
+    });
+  }
+  // In-content links (Access the data / Cite) and back-forward still work
+  addEventListener("hashchange", () => showPanel(location.hash.slice(1)));
+  showPanel(location.hash.slice(1));
+}
+
 // Copy-to-clipboard for asset endpoint URLs
 document.addEventListener("click", async (e) => {
   const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
@@ -603,14 +646,26 @@ h1 {
 
 .section-nav a {
   padding: 14px 16px;
+  margin-bottom: -1px;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-soft);
+  border-bottom: 2px solid transparent;
 }
 
 .section-nav a:hover {
   color: var(--cdh-blue-950);
   text-decoration: none;
+}
+
+.section-nav a[aria-current="true"] {
+  color: var(--cdh-blue-950);
+  border-bottom-color: var(--terra-700);
+}
+
+/* Tabbed panels (script-driven; without JS all sections stay stacked) */
+article section[hidden] {
+  display: none;
 }
 
 .body {
