@@ -50,11 +50,11 @@
   --radius-md: 7px;
   --radius-lg: 12px;
 
-  /* Shape language — pill by default (the shipped tweak choice) */
-  --btn-radius: 999px;
-  --pill-radius: 999px;
-  --chip-radius: 999px;
-  --input-radius: 999px;
+  /* Shape language — "editorial" (the shipped tweak choice): square 3px corners */
+  --btn-radius: 3px;
+  --pill-radius: 3px;
+  --chip-radius: 3px;
+  --input-radius: 3px;
 
   /* Font stacks: families come from the Astro Fonts API (--font-*) */
   --serif: var(--font-serif), georgia, "Times New Roman", serif;

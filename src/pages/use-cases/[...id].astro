@@ -4,7 +4,6 @@ import ArticleToc from "@/components/ArticleToc.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import DataGlyph from "@/components/DataGlyph.astro";
 import JsonLd from "@/components/JsonLd.astro";
-import ScrollProgress from "@/components/ScrollProgress.astro";
 import Takeaways from "@/components/Takeaways.astro";
 import Layout from "@/layouts/Layout.astro";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
@@ -49,7 +48,6 @@ const jsonLd = {
   title={`${entry.data.title} — ${SITE_NAME}`}
 >
   <JsonLd data={jsonLd} slot="head" />
-  <ScrollProgress />
 
   <div class="container head">
     <Breadcrumbs

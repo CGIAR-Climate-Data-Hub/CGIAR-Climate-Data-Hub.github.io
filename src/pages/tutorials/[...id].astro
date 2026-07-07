@@ -3,7 +3,6 @@ import { getCollection, render } from "astro:content";
 import ArticleToc from "@/components/ArticleToc.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import JsonLd from "@/components/JsonLd.astro";
-import ScrollProgress from "@/components/ScrollProgress.astro";
 import Layout from "@/layouts/Layout.astro";
 import { isoDuration } from "@/lib/collections";
 import { SITE_NAME } from "@/site.config";
@@ -40,7 +39,6 @@ const jsonLd = {
   title={`${entry.data.title} — ${SITE_NAME}`}
 >
   <JsonLd data={jsonLd} slot="head" />
-  <ScrollProgress />
 
   <div class="container narrow-grid">
     <article>
