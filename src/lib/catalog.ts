@@ -22,6 +22,7 @@ export function summarize(entry: CollectionEntry<"catalog">) {
     formats: d.data.map((a) => FORMAT_LABELS[a.name] ?? a.name),
     domains: d.cdh?.domain ?? [],
     geographies: d.spatial?.geography ?? [],
+    bbox: normalizeBbox(d.spatial?.bbox),
     updated: d.updated ?? d.created ?? "",
   };
 }
