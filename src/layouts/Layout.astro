@@ -1,9 +1,10 @@
 ---
 import "@/styles/global.css";
 import { Font } from "astro:assets";
-import Navigation from "@/components/Navigation.astro";
 import Footer from "@/components/Footer.astro";
-import { SITE_NAME, SITE_DESCRIPTION } from "@/site.config";
+import JsonLd from "@/components/JsonLd.astro";
+import Navigation from "@/components/Navigation.astro";
+import { SITE_DESCRIPTION, SITE_NAME } from "@/site.config";
 
 interface Props {
   title: string;
@@ -13,7 +14,41 @@ interface Props {
 // Default the description to the site-wide one so every page has SEO/OG copy.
 const { title, description = SITE_DESCRIPTION } = Astro.props;
 
+const site = String(Astro.site);
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
+
+const siteGraph = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${site}#website`,
+      url: site,
+      name: SITE_NAME,
+      description: SITE_DESCRIPTION,
+      publisher: { "@id": `${site}#organization` },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${site}search?q={search_term_string}`,
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "Organization",
+      "@id": `${site}#organization`,
+      name: `CGIAR ${SITE_NAME}`,
+      url: site,
+      parentOrganization: {
+        "@type": "Organization",
+        name: "CGIAR",
+        url: "https://www.cgiar.org",
+      },
+    },
+  ],
+};
 ---
 
 <!doctype html>
@@ -21,35 +56,33 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/cdh-favicon-29yr.svg">
+    <link rel="icon" href="/CDH_favicon_29yr.ico">
     <meta name="generator" content={Astro.generator}>
 
     <title>{title}</title>
-    {description && <meta name="description" content={description} />}
-    <link rel="canonical" href={canonical} />
-
-    {/* Open Graph */}
-    <meta property="og:title" content={title} />
-    {description && <meta property="og:description" content={description} />}
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content={SITE_NAME} />
-    <meta property="og:url" content={canonical} />
-
-    {/* Twitter */}
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    {description && <meta name="twitter:description" content={description} />}
+    {description && <meta content={description} name="description" />}
+    <link rel="canonical" href={canonical}>
+    <meta property="og:title" content={title}>
+    {description && <meta content={description} property="og:description" />}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content={SITE_NAME}>
+    <meta property="og:url" content={canonical}>
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content={title}>
+    {description && <meta content={description} name="twitter:description" />}
 
     <Font cssVariable="--font-sans" preload />
-    <Font cssVariable="--font-serif" />
+    <Font cssVariable="--font-serif" preload />
 
-    {/* Per-page extras: JSON-LD from hub metadata, page-specific OG image, etc. */}
+    <JsonLd data={siteGraph} />
     <slot name="head" />
   </head>
   <body>
     <Navigation />
-    <slot />
+    <main class="page">
+      <slot />
+    </main>
     <Footer />
   </body>
 </html>

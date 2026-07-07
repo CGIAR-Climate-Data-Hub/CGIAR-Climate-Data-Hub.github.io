@@ -1,0 +1,10 @@
+---
+// Serialized schema.org JSON-LD. is:inline keeps Astro from bundling it as JS.
+interface Props {
+  data: Record<string, unknown>;
+}
+
+const { data } = Astro.props;
+---
+
+<script is:inline set:html={JSON.stringify(data)} type="application/ld+json" />

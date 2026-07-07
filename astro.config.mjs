@@ -37,15 +37,16 @@ export default defineConfig({
       name: "Noto Sans",
       cssVariable: "--font-sans",
       provider: fontProviders.fontsource(),
-      weights: [300, 400, 700],
+      weights: [300, 400, 500, 600, 700],
       styles: ["normal", "italic"],
       subsets: ["latin"],
     },
     {
+      // Serif ledes use 300 for the editorial light feel; headings 500-600
       name: "Noto Serif",
       cssVariable: "--font-serif",
       provider: fontProviders.fontsource(),
-      weights: [400, 700],
+      weights: [300, 400, 500, 600, 700],
       styles: ["normal", "italic"],
       subsets: ["latin"],
       fallbacks: ["serif"],

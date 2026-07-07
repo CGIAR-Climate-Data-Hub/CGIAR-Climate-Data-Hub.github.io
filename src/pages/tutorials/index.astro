@@ -8,12 +8,10 @@ const entries = await getCollection("tutorials");
 <Layout title="Tutorials">
   <h1>Tutorials</h1>
   <ul>
-    {
-      entries.map((entry) => (
+    {entries.map((entry) => (
         <li>
           <a href={`/tutorials/${entry.id}`}>{entry.data.title}</a>
         </li>
-      ))
-    }
+      ))}
   </ul>
 </Layout>

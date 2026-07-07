@@ -19,11 +19,9 @@ const wikis = defineCollection({
   }),
 });
 
-// STAC collections / OGC records as JSON. glob() loads each .json as one entry.
-// ponytail: passthrough() accepts the full STAC/OGC shape without spelling it out —
-// tighten the schema when the catalog UI needs specific fields.
+// CDH metadata records as YAML. glob() loads each file as one entry.
 const catalog = defineCollection({
-  loader: glob({ pattern: "**/*.json", base: "./src/content/catalog" }),
+  loader: glob({ pattern: "**/*.{yaml,yml}", base: "./src/content/catalog" }),
   schema: z
     .object({
       id: z.string().optional(),
