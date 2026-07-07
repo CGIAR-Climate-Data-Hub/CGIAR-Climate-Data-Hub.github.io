@@ -1,0 +1,63 @@
+---
+// Uniform per-kind glyph chip — datasets get no thumbnails, ever.
+interface Props {
+  type: "spatial" | "tabular";
+  size?: number;
+}
+
+const { type, size = 19 } = Astro.props;
+---
+
+<span class:list={["glyph", type]}>
+  {type === "spatial" ? (
+      <svg
+        aria-hidden="true"
+        fill="none"
+        height={size}
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="1.6"
+        viewBox="0 0 24 24"
+        width={size}
+      >
+        <rect height="17" rx="1.5" width="17" x="3.5" y="3.5"></rect>
+        <path d="M3.5 9h17M3.5 15h17M9 3.5v17M15 3.5v17" opacity="0.6" stroke-width="0.9"></path>
+      </svg>
+    ) : (
+      <svg
+        aria-hidden="true"
+        fill="none"
+        height={size}
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-width="1.6"
+        viewBox="0 0 24 24"
+        width={size}
+      >
+        <path d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+    )}
+</span>
+
+<style>
+.glyph {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+}
+
+.spatial {
+  color: var(--cdh-blue-700);
+  background: var(--cdh-blue-50);
+}
+
+.tabular {
+  color: var(--grey-6);
+  background: var(--grey-1);
+}
+</style>

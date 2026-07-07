@@ -1,0 +1,139 @@
+---
+// Typographic dataset card: glyph chip, pills, serif title, keyword chips, mono meta row.
+import type { DatasetSummary } from "@/lib/catalog";
+import DataGlyph from "./DataGlyph.astro";
+
+interface Props {
+  dataset: DatasetSummary;
+}
+
+const { dataset: d } = Astro.props;
+---
+
+<article class="ds-card">
+  <div class="top">
+    <DataGlyph type={d.type} />
+    <div class="pills">
+      <span class:list={["pill", "dot", d.type]}
+        >{d.type === "spatial" ? "Spatial" : "Non-spatial"}</span
+      >
+      <span class="pill">{d.license}</span>
+    </div>
+  </div>
+  <h3><a href={`/catalog/${d.id}`}>{d.title}</a></h3>
+  <p class="summary">{d.description}</p>
+  {d.keywords.length > 0 && (
+      <div class="chips">
+        {d.keywords.slice(0, 4).map((k) => (
+          <span class="chip">{k}</span>
+        ))}
+        {d.keywords.length > 4 && <span class="more">+{d.keywords.length - 4}</span>}
+      </div>
+    )}
+  <div class="meta mono">
+    <span>{[d.coverage, d.resolution].filter(Boolean).join(" · ")}</span>
+    <span>{d.formats.join(" · ")}</span>
+  </div>
+</article>
+
+<style>
+.ds-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px 22px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition:
+    border-color 0.16s,
+    box-shadow 0.16s,
+    transform 0.16s;
+}
+
+.ds-card:hover {
+  border-color: var(--cdh-blue-300);
+  box-shadow: 0 10px 30px rgb(20 16 8 / 7%);
+  transform: translateY(-2px);
+}
+
+.top {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pills {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+
+h3 {
+  margin-top: 4px;
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 1.22;
+}
+
+/* Whole card is the click target for the title link */
+h3 a {
+  color: inherit;
+}
+
+h3 a::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+}
+
+h3 a:hover {
+  color: var(--cdh-blue-700);
+  text-decoration: none;
+}
+
+.summary {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 3;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  padding: 3px 9px;
+  font-size: 11px;
+  color: var(--text-soft);
+  white-space: nowrap;
+  background: var(--grey-1);
+  border-radius: var(--chip-radius);
+}
+
+.more {
+  padding: 3px 4px;
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+.meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  margin-top: auto;
+  font-size: 11.5px;
+  color: var(--text-mute);
+  border-top: 1px solid var(--border);
+}
+</style>

@@ -1,17 +1,385 @@
 ---
 import { getCollection } from "astro:content";
+import DatasetCard from "@/components/DatasetCard.astro";
+import JsonLd from "@/components/JsonLd.astro";
+import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
+import { humanize, summarize } from "@/lib/catalog";
+import { SITE_NAME } from "@/site.config";
 
 const entries = await getCollection("catalog");
+const datasets = entries
+  .map(summarize)
+  .sort((a, b) => b.updated.localeCompare(a.updated));
+
+// Facets are compiled from the metadata actually present in the records.
+function facetOf(
+  key: string,
+  title: string,
+  get: (d: (typeof datasets)[number]) => string[],
+) {
+  const counts = new Map<string, number>();
+  for (const d of datasets) {
+    for (const value of new Set(get(d))) {
+      counts.set(value, (counts.get(value) ?? 0) + 1);
+    }
+  }
+  const values = [...counts]
+    .map(([value, count]) => ({ value, label: humanize(value), count }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+  return { key, title, values };
+}
+
+const facets = [
+  facetOf("domain", "Domain", (d) => d.domains),
+  facetOf("geography", "Geography", (d) => d.geographies),
+  facetOf("format", "Format", (d) => d.formats),
+  facetOf("license", "License", (d) => [d.license]),
+];
+
+const description =
+  "Browse the Hub's harmonised climate and agriculture datasets — consistent metadata, licensing, and cloud-native access.";
+
+const catalogSchema = {
+  "@context": "https://schema.org",
+  "@type": "DataCatalog",
+  "@id": new URL("/catalog", Astro.site).href,
+  name: `${SITE_NAME} Catalog`,
+  description,
+  url: new URL("/catalog", Astro.site).href,
+  dataset: datasets.map((d) => ({
+    "@type": "Dataset",
+    name: d.title,
+    description: d.description,
+    url: new URL(`/catalog/${d.id}`, Astro.site).href,
+  })),
+};
 ---
 
-<Layout title="Catalog">
-  <h1>Catalog</h1>
-  <ul>
-    {entries.map((entry) => (
-        <li>
-          <a href={`/catalog/${entry.id}`}>{entry.data.title ?? entry.id}</a>
-        </li>
-      ))}
-  </ul>
+<Layout description={description} title={`Catalog — ${SITE_NAME}`}>
+  <JsonLd data={catalogSchema} slot="head" />
+
+  <PageHead
+    breadcrumb={[{ label: "Hub", href: "/" }, { label: "Catalog" }]}
+    kicker="The catalogue"
+    sub="Browse the Hub's harmonised datasets — all with consistent metadata, licensing, and cloud-native access."
+    title="Catalog"
+  >
+    <div class="head-actions" slot="right">
+      <a class="btn btn-ghost" href="/contribute">Contribute</a>
+      <a class="btn btn-primary" href="/wikis">Standards</a>
+    </div>
+  </PageHead>
+
+  <section class="toolbar">
+    <div class="container toolbar-row">
+      <div class="searchbox">
+        <svg
+          aria-hidden="true"
+          fill="none"
+          height="14"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="14"
+        >
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="m21 21-4.3-4.3"></path>
+        </svg>
+        <input
+          id="catalog-search"
+          placeholder="Search datasets — name, source, variable, keyword…"
+          type="search"
+        >
+      </div>
+    </div>
+  </section>
+
+  <section class="container body">
+    <aside aria-label="Filters">
+      {facets.map((facet) => (
+          <details open>
+            <summary>
+              <span class="label">{facet.title}</span>
+              <svg aria-hidden="true" class="chev" fill="none" height="11" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" width="11">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </summary>
+            <div class="options">
+              <button aria-pressed="true" class="facet-option" data-facet={facet.key} data-value="" type="button">
+                <span>All</span>
+                <span class="mono count">{datasets.length}</span>
+              </button>
+              {facet.values.map((v) => (
+                <button aria-pressed="false" class="facet-option" data-facet={facet.key} data-value={v.value} type="button">
+                  <span>{v.label}</span>
+                  <span class="mono count">{v.count}</span>
+                </button>
+              ))}
+            </div>
+          </details>
+        ))}
+      <button hidden id="clear-filters" type="button">Clear all filters</button>
+    </aside>
+
+    <div>
+      <div class="results-meta">
+        <span><b id="match-count">{datasets.length}</b> datasets matched</span>
+      </div>
+      <ul class="grid">
+        {datasets.map((d) => (
+            <li
+              data-dataset
+              data-domain={d.domains.join(" ")}
+              data-format={d.formats.join(" ")}
+              data-geography={d.geographies.join(" ")}
+              data-license={d.license}
+              data-search={[d.title, d.description, ...d.keywords, d.coverage].join(" ").toLowerCase()}
+            >
+              <DatasetCard dataset={d} />
+            </li>
+          ))}
+      </ul>
+      <div class="empty" hidden id="empty-state">
+        <h3>No matches.</h3>
+        <p>Try removing a filter, or broaden your search.</p>
+      </div>
+    </div>
+  </section>
 </Layout>
+
+<script>
+const cards = [...document.querySelectorAll<HTMLElement>("li[data-dataset]")];
+const buttons = [
+  ...document.querySelectorAll<HTMLButtonElement>(".facet-option"),
+];
+const search = document.querySelector<HTMLInputElement>("#catalog-search");
+const clear = document.querySelector<HTMLButtonElement>("#clear-filters");
+const count = document.querySelector("#match-count");
+const empty = document.querySelector<HTMLElement>("#empty-state");
+
+const facetKeys = ["domain", "geography", "format", "license"] as const;
+const state: Record<string, string> = { q: "" };
+
+function apply() {
+  let matched = 0;
+  for (const card of cards) {
+    const show =
+      facetKeys.every(
+        (k) =>
+          !state[k] || (card.dataset[k] ?? "").split(" ").includes(state[k]),
+      )
+      && (!state.q || (card.dataset.search ?? "").includes(state.q));
+    card.hidden = !show;
+    if (show) matched++;
+  }
+  if (count) count.textContent = String(matched);
+  if (empty) empty.hidden = matched > 0;
+  for (const b of buttons) {
+    b.setAttribute(
+      "aria-pressed",
+      String(state[b.dataset.facet ?? ""] === b.dataset.value),
+    );
+  }
+  if (clear) clear.hidden = !state.q && facetKeys.every((k) => !state[k]);
+
+  // Keep filters shareable
+  const params = new URLSearchParams();
+  if (state.q) params.set("q", state.q);
+  for (const k of facetKeys) if (state[k]) params.set(k, state[k]);
+  history.replaceState(
+    null,
+    "",
+    params.size ? `?${params}` : location.pathname,
+  );
+}
+
+for (const b of buttons) {
+  b.addEventListener("click", () => {
+    state[b.dataset.facet ?? ""] = b.dataset.value ?? "";
+    apply();
+  });
+}
+search?.addEventListener("input", () => {
+  state.q = search.value.trim().toLowerCase();
+  apply();
+});
+clear?.addEventListener("click", () => {
+  for (const k of facetKeys) state[k] = "";
+  state.q = "";
+  if (search) search.value = "";
+  apply();
+});
+
+const params = new URLSearchParams(location.search);
+state.q = (params.get("q") ?? "").trim().toLowerCase();
+if (search) search.value = params.get("q") ?? "";
+for (const k of facetKeys) state[k] = params.get(k) ?? "";
+apply();
+</script>
+
+<style>
+.head-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.toolbar {
+  margin-top: 28px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.searchbox {
+  display: flex;
+  flex: 1 1 360px;
+  gap: 8px;
+  align-items: center;
+  min-width: 280px;
+  max-width: 560px;
+  padding: 8px 12px;
+  color: var(--grey-6);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+
+.searchbox input {
+  flex: 1;
+  font-size: 14px;
+  outline: 0;
+  background: transparent;
+  border: 0;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 32px;
+  padding-top: 32px;
+}
+
+aside details {
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+aside summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  list-style: none;
+}
+
+aside summary::-webkit-details-marker {
+  display: none;
+}
+
+.chev {
+  color: var(--text-mute);
+  transition: transform 0.15s;
+}
+
+details:not([open]) .chev {
+  transform: rotate(-90deg);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.facet-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  font-size: 13px;
+  color: var(--text);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 6px;
+}
+
+.facet-option:hover {
+  background: var(--bg);
+}
+
+.facet-option[aria-pressed="true"] {
+  font-weight: 600;
+  color: var(--cdh-blue-950);
+  background: var(--grey-1);
+  border-left-color: var(--cdh-blue-700);
+}
+
+.count {
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+#clear-filters {
+  padding: 6px 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--cdh-blue-700);
+  background: transparent;
+  border: 0;
+}
+
+.results-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.results-meta b {
+  color: var(--text);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.empty {
+  padding: 48px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: 6px;
+}
+
+.empty p {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--text-soft);
+}
+
+@media (width <= 860px) {
+  .body {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
