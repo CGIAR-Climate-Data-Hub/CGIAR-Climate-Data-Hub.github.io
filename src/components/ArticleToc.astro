@@ -1,0 +1,86 @@
+---
+// Sticky on-this-page nav with a light scroll-spy (terracotta active rule).
+import type { MarkdownHeading } from "astro";
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const headings = Astro.props.headings.filter((h) => h.depth <= 3);
+---
+
+{headings.length > 1 && (
+    <nav aria-label="Table of contents" data-toc>
+      <div class="label">On this page</div>
+      {headings.map((h) => (
+        <a href={`#${h.slug}`} class:list={[`depth-${h.depth}`]}>
+          {h.text}
+        </a>
+      ))}
+    </nav>
+  )}
+
+<script>
+const toc = document.querySelector("[data-toc]");
+if (toc) {
+  const links = [...toc.querySelectorAll("a")];
+  const targets = links
+    .map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))))
+    .filter((el): el is HTMLElement => el !== null);
+  const spy = () => {
+    let current = targets[0];
+    for (const t of targets) {
+      if (t.getBoundingClientRect().top - 140 <= 0) current = t;
+    }
+    for (const a of links) {
+      a.setAttribute(
+        "aria-current",
+        a.hash === `#${current?.id}` ? "true" : "false",
+      );
+    }
+  };
+  addEventListener("scroll", spy, { passive: true });
+  spy();
+}
+</script>
+
+<style>
+nav {
+  position: sticky;
+  top: 96px;
+}
+
+.label {
+  margin-bottom: 14px;
+  font-size: 10px;
+  color: var(--text-mute);
+}
+
+a {
+  display: block;
+  padding: 8px 0 8px 16px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-soft);
+  border-left: 2px solid var(--border);
+  transition:
+    color 0.14s,
+    border-color 0.14s;
+}
+
+a.depth-3 {
+  padding-left: 28px;
+  font-size: 12.5px;
+}
+
+a:hover {
+  color: var(--cdh-blue-950);
+  text-decoration: none;
+}
+
+a[aria-current="true"] {
+  font-weight: 600;
+  color: var(--cdh-blue-950);
+  border-left-color: var(--terra-700);
+}
+</style>

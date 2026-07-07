@@ -1,6 +1,11 @@
 ---
 import { getCollection, render } from "astro:content";
+import ArticleToc from "@/components/ArticleToc.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import JsonLd from "@/components/JsonLd.astro";
 import Layout from "@/layouts/Layout.astro";
+import { groupWikis } from "@/lib/collections";
+import { GITHUB_URL, SITE_NAME } from "@/site.config";
 
 export async function getStaticPaths() {
   const entries = await getCollection("wikis");
@@ -11,10 +16,155 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
+const groups = groupWikis(await getCollection("wikis"));
+const updated = entry.data.updated.toISOString().slice(0, 10);
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  headline: entry.data.title,
+  description: entry.data.description,
+  dateModified: updated,
+  url: new URL(`/wikis/${entry.id}`, Astro.site).href,
+  author: { "@type": "Organization", name: `CGIAR ${SITE_NAME}` },
+  isPartOf: { "@type": "WebSite", "@id": `${Astro.site}#website` },
+};
 ---
 
-<Layout title={entry.data.title} description={entry.data.description}>
-  <h1>{entry.data.title}</h1>
-  <Content />
+<Layout
+  description={entry.data.description}
+  title={`${entry.data.title} — ${SITE_NAME}`}
+>
+  <JsonLd data={jsonLd} slot="head" />
+
+  <div class="container docs">
+    <aside class="side-nav" data-pagefind-ignore>
+      {groups.map((group) => (
+          <div class="group">
+            <div class="label">{group.section}</div>
+            {group.entries.map((wiki) => (
+              <a aria-current={wiki.id === entry.id ? "page" : undefined} href={`/wikis/${wiki.id}`}>
+                {wiki.data.title}
+              </a>
+            ))}
+          </div>
+        ))}
+    </aside>
+
+    <article>
+      <Breadcrumbs
+        items={[{ label: "Hub", href: "/" }, { label: "Wikis", href: "/wikis" }, { label: entry.data.title }]}
+      />
+      <div class="head">
+        <span class="pill">{entry.data.section}</span>
+        <span class="mono updated">updated {updated}</span>
+      </div>
+      <h1>{entry.data.title}</h1>
+      <p class="sub">{entry.data.description}</p>
+      <div class="prose">
+        <Content />
+      </div>
+      <a class="edit-link" href={GITHUB_URL}>Edit this page on GitHub</a>
+    </article>
+
+    <aside data-pagefind-ignore>
+      <ArticleToc headings={headings} />
+    </aside>
+  </div>
 </Layout>
+
+<style>
+.docs {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 200px;
+  gap: 48px;
+  padding-top: 36px;
+}
+
+.side-nav {
+  position: sticky;
+  top: 96px;
+  align-self: start;
+}
+
+.group {
+  margin-bottom: 24px;
+}
+
+.group .label {
+  margin-bottom: 8px;
+  font-size: 10px;
+  color: var(--text-mute);
+}
+
+.group a {
+  display: block;
+  padding: 6px 10px;
+  font-size: 13.5px;
+  color: var(--text-soft);
+  border-radius: 6px;
+}
+
+.group a:hover {
+  color: var(--cdh-blue-950);
+  text-decoration: none;
+  background: var(--surface);
+}
+
+.group a[aria-current="page"] {
+  font-weight: 600;
+  color: var(--cdh-blue-700);
+  background: var(--cdh-blue-50);
+}
+
+.head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 22px;
+}
+
+.updated {
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+h1 {
+  margin-top: 12px;
+  font-size: clamp(28px, 3vw, 38px);
+}
+
+.sub {
+  margin-top: 12px;
+  font-family: var(--serif);
+  font-size: 16.5px;
+  font-weight: 300;
+  color: var(--text-soft);
+}
+
+.prose {
+  margin-top: 28px;
+}
+
+.edit-link {
+  display: inline-block;
+  margin-top: 32px;
+  font-size: 12.5px;
+  color: var(--text-mute);
+}
+
+.edit-link:hover {
+  color: var(--cdh-blue-700);
+}
+
+@media (width <= 1080px) {
+  .docs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .docs aside {
+    display: none;
+  }
+}
+</style>

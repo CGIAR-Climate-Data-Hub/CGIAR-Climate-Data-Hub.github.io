@@ -1,17 +1,100 @@
 ---
 import { getCollection } from "astro:content";
+import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
+import { groupWikis } from "@/lib/collections";
+import { SITE_NAME } from "@/site.config";
 
-const entries = await getCollection("wikis");
+const groups = groupWikis(await getCollection("wikis"));
+const description =
+  "Reference documentation for the Climate Data Hub — metadata standards, methods, and governance.";
 ---
 
-<Layout title="Wikis">
-  <h1>Wikis</h1>
-  <ul>
-    {entries.map((entry) => (
-        <li>
-          <a href={`/wikis/${entry.id}`}>{entry.data.title}</a>
-        </li>
+<Layout description={description} title={`Wikis — ${SITE_NAME}`}>
+  <PageHead
+    breadcrumb={[{ label: "Hub", href: "/" }, { label: "Wikis" }]}
+    kicker="Reference"
+    sub="Standards, methods, and governance — the reference pages the Hub itself is built on."
+    title="Wikis"
+  >
+    <a class="btn btn-ghost" href="/faq" slot="right">FAQ →</a>
+  </PageHead>
+
+  <div class="container groups">
+    {groups.map((group) => (
+        <section>
+          <h2 class="label">{group.section}</h2>
+          <div class="rows">
+            {group.entries.map((wiki) => (
+              <a class="row" href={`/wikis/${wiki.id}`}>
+                <span class="row-text">
+                  <span class="row-title">{wiki.data.title}</span>
+                  <span class="row-summary">{wiki.data.description}</span>
+                </span>
+                <span class="mono row-meta">
+                  updated {wiki.data.updated.toISOString().slice(0, 10)}
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
       ))}
-  </ul>
+  </div>
 </Layout>
+
+<style>
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  margin-top: 40px;
+}
+
+h2 {
+  padding-bottom: 10px;
+  color: var(--text-mute);
+  border-bottom: 1px solid var(--border);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 16px 6px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+}
+
+.row:hover {
+  text-decoration: none;
+  background: var(--surface);
+}
+
+.row-text {
+  flex: 1 1 480px;
+  min-width: 0;
+}
+
+.row-title {
+  display: block;
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--cdh-blue-950);
+}
+
+.row-summary {
+  display: block;
+  margin-top: 3px;
+  font-size: 13.5px;
+  color: var(--text-soft);
+}
+
+.row-meta {
+  font-size: 11px;
+  color: var(--text-mute);
+}
+</style>

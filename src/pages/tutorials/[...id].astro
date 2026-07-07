@@ -1,6 +1,11 @@
 ---
 import { getCollection, render } from "astro:content";
+import ArticleToc from "@/components/ArticleToc.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import JsonLd from "@/components/JsonLd.astro";
 import Layout from "@/layouts/Layout.astro";
+import { isoDuration } from "@/lib/collections";
+import { SITE_NAME } from "@/site.config";
 
 export async function getStaticPaths() {
   const entries = await getCollection("tutorials");
@@ -11,10 +16,103 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": ["TechArticle", "LearningResource"],
+  headline: entry.data.title,
+  description: entry.data.description,
+  url: new URL(`/tutorials/${entry.id}`, Astro.site).href,
+  educationalLevel: entry.data.level,
+  ...(isoDuration(entry.data.time) && {
+    timeRequired: isoDuration(entry.data.time),
+  }),
+  dateModified: entry.data.updated.toISOString().slice(0, 10),
+  author: { "@type": "Organization", name: `CGIAR ${SITE_NAME}` },
+  isPartOf: { "@type": "WebSite", "@id": `${Astro.site}#website` },
+};
 ---
 
-<Layout title={entry.data.title} description={entry.data.description}>
-  <h1>{entry.data.title}</h1>
-  <Content />
+<Layout
+  description={entry.data.description}
+  title={`${entry.data.title} — ${SITE_NAME}`}
+>
+  <JsonLd data={jsonLd} slot="head" />
+
+  <div class="container narrow-grid">
+    <article>
+      <Breadcrumbs
+        items={[{ label: "Hub", href: "/" }, { label: "Tutorials", href: "/tutorials" }, { label: entry.data.title }]}
+      />
+      <div class="head">
+        <span
+          class:list={["pill", "dot", entry.data.level === "Beginner" ? "spatial" : "warn"]}
+        >
+          {entry.data.level}
+        </span>
+        <span class="pill">{entry.data.topic}</span>
+        <span class="mono meta">{entry.data.time} · {entry.data.format}</span>
+      </div>
+      <h1>{entry.data.title}</h1>
+      <p class="sub">{entry.data.description}</p>
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+
+    <aside data-pagefind-ignore>
+      <ArticleToc headings={headings} />
+    </aside>
+  </div>
 </Layout>
+
+<style>
+.narrow-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  gap: 56px;
+  max-width: 1140px;
+  padding-top: 36px;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 22px;
+}
+
+.meta {
+  font-size: 11.5px;
+  color: var(--text-mute);
+}
+
+h1 {
+  margin-top: 12px;
+  font-size: clamp(28px, 3vw, 38px);
+}
+
+.sub {
+  margin-top: 12px;
+  font-family: var(--serif);
+  font-size: 16.5px;
+  font-weight: 300;
+  color: var(--text-soft);
+}
+
+.prose {
+  margin-top: 28px;
+}
+
+@media (width <= 960px) {
+  .narrow-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  aside {
+    display: none;
+  }
+}
+</style>

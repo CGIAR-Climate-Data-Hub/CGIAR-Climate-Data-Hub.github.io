@@ -1,17 +1,106 @@
 ---
 import { getCollection } from "astro:content";
+import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
+import { SITE_NAME } from "@/site.config";
 
-const entries = await getCollection("tutorials");
+const LEVELS = ["Beginner", "Intermediate", "Advanced"];
+const tutorials = (await getCollection("tutorials")).sort(
+  (a, b) =>
+    LEVELS.indexOf(a.data.level) - LEVELS.indexOf(b.data.level)
+    || a.data.title.localeCompare(b.data.title),
+);
+const description =
+  "Runnable, step-by-step tutorials for working with Climate Data Hub datasets in Python.";
 ---
 
-<Layout title="Tutorials">
-  <h1>Tutorials</h1>
-  <ul>
-    {entries.map((entry) => (
-        <li>
-          <a href={`/tutorials/${entry.id}`}>{entry.data.title}</a>
-        </li>
+<Layout description={description} title={`Tutorials — ${SITE_NAME}`}>
+  <PageHead
+    breadcrumb={[{ label: "Hub", href: "/" }, { label: "Tutorials" }]}
+    kicker="Learn"
+    sub="Runnable, step-by-step guides — from your first dataset to analysis-ready workflows."
+    title="Tutorials"
+  >
+    <a class="btn btn-ghost" href="/wikis" slot="right">Reference wikis →</a>
+  </PageHead>
+
+  <div class="container grid">
+    {tutorials.map((t) => (
+        <a class="card" href={`/tutorials/${t.id}`}>
+          <span class="card-top">
+            <span class:list={["pill", "dot", t.data.level === "Beginner" ? "spatial" : "warn"]}>{t.data.level}</span>
+            <span class="mono time">{t.data.time}</span>
+          </span>
+          <span class="card-title">{t.data.title}</span>
+          <span class="card-summary">{t.data.description}</span>
+          <span class="mono card-meta">
+            {t.data.topic} · {t.data.format}
+          </span>
+        </a>
       ))}
-  </ul>
+  </div>
 </Layout>
+
+<style>
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 40px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition:
+    border-color 0.16s,
+    box-shadow 0.16s,
+    transform 0.16s;
+}
+
+.card:hover {
+  text-decoration: none;
+  border-color: var(--cdh-blue-300);
+  box-shadow: 0 10px 30px rgb(20 16 8 / 7%);
+  transform: translateY(-2px);
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.time {
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+.card-title {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--cdh-blue-950);
+}
+
+.card-summary {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.card-meta {
+  padding-top: 14px;
+  margin-top: auto;
+  font-size: 11.5px;
+  color: var(--text-mute);
+  border-top: 1px solid var(--border);
+}
+</style>
