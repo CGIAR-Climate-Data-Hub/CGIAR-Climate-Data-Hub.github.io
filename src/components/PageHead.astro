@@ -18,7 +18,6 @@ const { kicker, title, sub, breadcrumb } = Astro.props;
     <div class="main">
       {kicker && (
           <div class="label kicker">
-            <span class="rule"></span>
             {kicker}
           </div>
         )}
@@ -46,21 +45,6 @@ const { kicker, title, sub, breadcrumb } = Astro.props;
 
 .main {
   max-width: 720px;
-}
-
-.kicker {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 14px;
-  color: var(--terra-700);
-}
-
-.rule {
-  width: 22px;
-  height: 1.5px;
-  background: var(--terra-700);
-  opacity: 0.75;
 }
 
 h1 {

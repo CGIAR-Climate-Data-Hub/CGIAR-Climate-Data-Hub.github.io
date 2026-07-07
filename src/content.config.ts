@@ -1,6 +1,7 @@
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
+import { WIKI_SECTIONS } from "./lib/collections";
 
 const tutorials = defineCollection({
   loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/tutorials" }),
@@ -22,13 +23,7 @@ const wikis = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    section: z.enum([
-      "Standards",
-      "Methods",
-      "Concepts",
-      "Governance",
-      "Reference",
-    ]),
+    section: z.enum(WIKI_SECTIONS),
     updated: z.coerce.date(),
     // Sidebar position within a section; unordered entries sort alphabetically after
     order: z.number().optional(),
@@ -50,12 +45,8 @@ const pages = defineCollection({
   schema: z.object({
     title: z.string(),
     lede: z.string(),
-    missions: z
-      .array(z.object({ title: z.string(), body: z.string() }))
-      .default([]),
-    principles: z
-      .array(z.object({ title: z.string(), body: z.string() }))
-      .default([]),
+    missions: z.array(z.object({ title: z.string(), body: z.string() })),
+    principles: z.array(z.object({ title: z.string(), body: z.string() })),
   }),
 });
 

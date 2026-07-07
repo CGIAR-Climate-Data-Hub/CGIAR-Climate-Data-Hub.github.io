@@ -12,7 +12,6 @@ const { kicker, title, sub } = Astro.props;
   <div>
     {kicker && (
         <div class="label kicker">
-          <span class="rule"></span>
           {kicker}
         </div>
       )}
@@ -30,22 +29,6 @@ const { kicker, title, sub } = Astro.props;
   align-items: flex-end;
   justify-content: space-between;
   margin-bottom: 28px;
-}
-
-.kicker {
-  display: flex;
-  gap: 9px;
-  align-items: center;
-  margin-bottom: 12px;
-  color: var(--terra-700);
-}
-
-.rule {
-  display: inline-block;
-  width: 20px;
-  height: 1.5px;
-  background: var(--terra-700);
-  opacity: 0.7;
 }
 
 .sub {

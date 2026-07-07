@@ -21,10 +21,3 @@ export function groupWikis(entries: CollectionEntry<"wikis">[]) {
       ),
   })).filter((g) => g.entries.length > 0);
 }
-
-// "20 min" / "2 hrs" → ISO 8601 duration for schema.org timeRequired
-export function isoDuration(time: string) {
-  const match = time.match(/(\d+)\s*(min|hr|hour)/);
-  if (!match) return undefined;
-  return match[2] === "min" ? `PT${match[1]}M` : `PT${match[1]}H`;
-}

@@ -21,9 +21,7 @@ export default defineConfig({
   trailingSlash: "never",
 
   markdown: {
-    processor: satteri({
-      features: { directive: true },
-    }),
+    processor: satteri(),
     shikiConfig: {
       themes: {
         light: "github-light",

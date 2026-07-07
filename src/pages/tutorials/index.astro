@@ -68,7 +68,7 @@ const description =
   <div class="container"><hr class="head-rule"></div>
 
   <section class="container body">
-    <aside aria-label="Filters">
+    <aside aria-label="Filters" class="facets">
       {facets.map((facet) => (
           <details open>
             <summary>
@@ -231,79 +231,6 @@ clear?.addEventListener("click", () => {
   padding-top: 36px;
 }
 
-aside details {
-  padding-bottom: 16px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid var(--border);
-}
-
-aside summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  list-style: none;
-}
-
-aside summary::-webkit-details-marker {
-  display: none;
-}
-
-.chev {
-  color: var(--text-mute);
-  transition: transform 0.15s;
-}
-
-details:not([open]) .chev {
-  transform: rotate(-90deg);
-}
-
-.options {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 12px;
-}
-
-.facet-option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 8px;
-  font-size: 13px;
-  color: var(--text);
-  text-align: left;
-  background: transparent;
-  border: 0;
-  border-left: 2px solid transparent;
-  border-radius: 6px;
-}
-
-.facet-option:hover {
-  background: var(--bg);
-}
-
-.facet-option[aria-pressed="true"] {
-  font-weight: 600;
-  color: var(--cdh-blue-950);
-  background: var(--grey-1);
-  border-left-color: var(--cdh-blue-700);
-}
-
-.count {
-  font-size: 11px;
-  color: var(--text-mute);
-}
-
-#clear-filters {
-  padding: 6px 0;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--cdh-blue-700);
-  background: transparent;
-  border: 0;
-}
-
 .results-meta {
   margin-bottom: 18px;
   color: var(--text-mute);
@@ -399,39 +326,9 @@ details:not([open]) .chev {
   border-top: 1px solid var(--border);
 }
 
-.empty {
-  padding: 48px;
-  text-align: center;
-  background: var(--surface);
-  border: 1px dashed var(--border-strong);
-  border-radius: 6px;
-}
-
-.empty p {
-  margin-top: 8px;
-  font-size: 14px;
-  color: var(--text-soft);
-}
-
 /* ---- Learning path ---- */
 .path-section {
   padding-top: 56px;
-}
-
-.kicker {
-  display: flex;
-  gap: 9px;
-  align-items: center;
-  margin-bottom: 12px;
-  color: var(--terra-700);
-}
-
-.rule {
-  display: inline-block;
-  width: 20px;
-  height: 1.5px;
-  background: currentcolor;
-  opacity: 0.7;
 }
 
 .path-head p {
@@ -500,15 +397,6 @@ details:not([open]) .chev {
 
 .foot .caption {
   font-size: 13px;
-}
-
-.edit-link {
-  font-size: 12.5px;
-  color: var(--text-mute);
-}
-
-.edit-link:hover {
-  color: var(--cdh-blue-700);
 }
 
 @media (width <= 860px) {

@@ -108,7 +108,7 @@ const catalogSchema = {
   </section>
 
   <section class="container body">
-    <aside aria-label="Filters">
+    <aside aria-label="Filters" class="facets">
       <details class="bbox-box" open>
         <summary>
           <span class="bbox-title">
@@ -544,80 +544,6 @@ apply();
   padding-top: 32px;
 }
 
-/* ---- Facets ---- */
-aside details:not(.bbox-box) {
-  padding-bottom: 16px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid var(--border);
-}
-
-aside summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  list-style: none;
-}
-
-aside summary::-webkit-details-marker {
-  display: none;
-}
-
-.chev {
-  color: var(--text-mute);
-  transition: transform 0.15s;
-}
-
-details:not([open]) .chev {
-  transform: rotate(-90deg);
-}
-
-.options {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 12px;
-}
-
-.facet-option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 8px;
-  font-size: 13px;
-  color: var(--text);
-  text-align: left;
-  background: transparent;
-  border: 0;
-  border-left: 2px solid transparent;
-  border-radius: 6px;
-}
-
-.facet-option:hover {
-  background: var(--bg);
-}
-
-.facet-option[aria-pressed="true"] {
-  font-weight: 600;
-  color: var(--cdh-blue-950);
-  background: var(--grey-1);
-  border-left-color: var(--cdh-blue-700);
-}
-
-.count {
-  font-size: 11px;
-  color: var(--text-mute);
-}
-
-#clear-filters {
-  padding: 6px 0;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--cdh-blue-700);
-  background: transparent;
-  border: 0;
-}
-
 /* ---- Spatial search ---- */
 .bbox-box {
   padding: 0;
@@ -757,20 +683,6 @@ details:not([open]) .chev {
   padding: 0;
   margin: 0;
   list-style: none;
-}
-
-.empty {
-  padding: 48px;
-  text-align: center;
-  background: var(--surface);
-  border: 1px dashed var(--border-strong);
-  border-radius: 6px;
-}
-
-.empty p {
-  margin-top: 8px;
-  font-size: 14px;
-  color: var(--text-soft);
 }
 
 @media (width <= 860px) {

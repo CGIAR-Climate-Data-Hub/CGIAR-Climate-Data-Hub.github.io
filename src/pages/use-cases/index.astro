@@ -20,10 +20,7 @@ const monthOf = (d: Date) => d.toISOString().slice(0, 7);
   <div class="container head">
     <Breadcrumbs items={[{ label: "Hub", href: "/" }, { label: "In use" }]} />
     <div class="hero">
-      <div class="label kicker">
-        <span class="rule"></span>
-        In use
-      </div>
+      <div class="label kicker">In use</div>
       <h1>From the field, and beyond.</h1>
       <p class="lede">
         What people are doing with the Hub — impact from national planning and
@@ -72,21 +69,6 @@ const monthOf = (d: Date) => d.toISOString().slice(0, 7);
 
 .hero {
   margin-top: 24px;
-}
-
-.kicker {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 14px;
-  color: var(--terra-700);
-}
-
-.rule {
-  width: 22px;
-  height: 1.5px;
-  background: currentcolor;
-  opacity: 0.75;
 }
 
 h1 {
@@ -211,15 +193,6 @@ h1 {
 
 .foot .caption {
   font-size: 13px;
-}
-
-.edit-link {
-  font-size: 12.5px;
-  color: var(--text-mute);
-}
-
-.edit-link:hover {
-  color: var(--cdh-blue-700);
 }
 
 @media (width <= 800px) {

@@ -4,7 +4,6 @@ import ArticleToc from "@/components/ArticleToc.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import Layout from "@/layouts/Layout.astro";
-import { isoDuration } from "@/lib/collections";
 import { SITE_NAME } from "@/site.config";
 
 export async function getStaticPaths() {
@@ -18,6 +17,11 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
 
+// "20 min" / "2 hrs" → ISO 8601 duration for schema.org timeRequired
+const match = entry.data.time.match(/(\d+)\s*(min|hr|hour)/);
+const timeRequired =
+  match && (match[2] === "min" ? `PT${match[1]}M` : `PT${match[1]}H`);
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": ["TechArticle", "LearningResource"],
@@ -25,9 +29,7 @@ const jsonLd = {
   description: entry.data.description,
   url: new URL(`/tutorials/${entry.id}`, Astro.site).href,
   educationalLevel: entry.data.level,
-  ...(isoDuration(entry.data.time) && {
-    timeRequired: isoDuration(entry.data.time),
-  }),
+  ...(timeRequired && { timeRequired }),
   dateModified: entry.data.updated.toISOString().slice(0, 10),
   author: { "@type": "Organization", name: `CGIAR ${SITE_NAME}` },
   isPartOf: { "@type": "WebSite", "@id": `${Astro.site}#website` },

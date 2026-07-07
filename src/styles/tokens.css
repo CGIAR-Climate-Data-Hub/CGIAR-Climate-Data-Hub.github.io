@@ -43,11 +43,8 @@
   --text: var(--grey-8);
   --text-soft: var(--grey-6);
   --text-mute: var(--grey-5);
-  --accent: var(--terra-700);
   --link: var(--cdh-blue-700);
 
-  --radius-sm: 3px;
-  --radius-md: 7px;
   --radius-lg: 12px;
 
   /* Shape language — "editorial" (the shipped tweak choice): square 3px corners */

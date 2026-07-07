@@ -115,6 +115,7 @@ export function datasetJsonLd(
   catalogUrl: string,
 ) {
   const bbox = normalizeBbox(d.spatial?.bbox);
+  const cite = citationText(d);
   const creators = d.contact.filter((c) => c.roles.includes("producer"));
   const distributions = d.data.flatMap((asset) =>
     asset.locations
@@ -177,7 +178,7 @@ export function datasetJsonLd(
       })),
     }),
     ...(distributions.length > 0 && { distribution: distributions }),
-    ...(citationText(d) && { citation: citationText(d) }),
+    ...(cite && { citation: cite }),
     includedInDataCatalog: { "@type": "DataCatalog", "@id": catalogUrl },
   };
 }
