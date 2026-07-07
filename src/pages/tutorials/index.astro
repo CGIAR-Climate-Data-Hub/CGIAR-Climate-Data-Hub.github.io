@@ -5,76 +5,343 @@ import Layout from "@/layouts/Layout.astro";
 import { SITE_NAME } from "@/site.config";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
+const LEVEL_COLORS: Record<string, string> = {
+  Beginner: "var(--cdh-blue-800)",
+  Intermediate: "var(--cdh-blue-700)",
+  Advanced: "var(--cdh-blue-950)",
+};
+
 const tutorials = (await getCollection("tutorials")).sort(
   (a, b) =>
     LEVELS.indexOf(a.data.level) - LEVELS.indexOf(b.data.level)
     || a.data.title.localeCompare(b.data.title),
 );
+const topics = [...new Set(tutorials.map((t) => t.data.topic))].sort();
+
+const facets = [
+  {
+    key: "level",
+    title: "Level",
+    values: LEVELS.filter((l) => tutorials.some((t) => t.data.level === l)).map(
+      (l) => ({
+        value: l,
+        count: tutorials.filter((t) => t.data.level === l).length,
+      }),
+    ),
+  },
+  {
+    key: "topic",
+    title: "Topic",
+    values: topics.map((topic) => ({
+      value: topic,
+      count: tutorials.filter((t) => t.data.topic === topic).length,
+    })),
+  },
+];
+
+// Curated sequence for newcomers; extend as tutorials accumulate
+const PATH_IDS = [
+  "getting-started",
+  "query-mapspam-with-xarray",
+  "livestock-density-zonal-stats",
+];
+const learningPath = PATH_IDS.map((id) =>
+  tutorials.find((t) => t.id === id),
+).filter((t) => t !== undefined);
+
 const description =
-  "Runnable, step-by-step tutorials for working with Climate Data Hub datasets in Python.";
+  "Hands-on, runnable tutorials — each a notebook or recipe that produces a concrete output you can hand to your team.";
 ---
 
 <Layout description={description} title={`Tutorials — ${SITE_NAME}`}>
   <PageHead
     breadcrumb={[{ label: "Hub", href: "/" }, { label: "Tutorials" }]}
-    kicker="Learn"
-    sub="Runnable, step-by-step guides — from your first dataset to analysis-ready workflows."
+    kicker="Learn · Tutorials"
+    sub="Hands-on, runnable tutorials — each a notebook, recipe or template that produces a concrete output you can hand to your team."
     title="Tutorials"
   >
-    <a class="btn btn-ghost" href="/wikis" slot="right">Reference wikis →</a>
+    <a class="btn btn-primary" href="/tutorials/getting-started" slot="right"
+      >Start here →</a
+    >
   </PageHead>
 
-  <div class="container grid">
-    {tutorials.map((t) => (
-        <a class="card" href={`/tutorials/${t.id}`}>
-          <span class="card-top">
-            <span class:list={["pill", "dot", t.data.level === "Beginner" ? "spatial" : "warn"]}>{t.data.level}</span>
-            <span class="mono time">{t.data.time}</span>
-          </span>
-          <span class="card-title">{t.data.title}</span>
-          <span class="card-summary">{t.data.description}</span>
-          <span class="mono card-meta">
-            {t.data.topic} · {t.data.format}
-          </span>
-        </a>
-      ))}
-  </div>
+  <div class="container"><hr class="head-rule"></div>
+
+  <section class="container body">
+    <aside aria-label="Filters">
+      {facets.map((facet) => (
+          <details open>
+            <summary>
+              <span class="label">{facet.title}</span>
+              <svg aria-hidden="true" class="chev" fill="none" height="11" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" width="11">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </summary>
+            <div class="options">
+              <button aria-pressed="true" class="facet-option" data-facet={facet.key} data-value="" type="button">
+                <span>All</span>
+                <span class="mono count">{tutorials.length}</span>
+              </button>
+              {facet.values.map((v) => (
+                <button aria-pressed="false" class="facet-option" data-facet={facet.key} data-value={v.value} type="button">
+                  <span>{v.value}</span>
+                  <span class="mono count">{v.count}</span>
+                </button>
+              ))}
+            </div>
+          </details>
+        ))}
+      <button hidden id="clear-filters" type="button">Clear all filters</button>
+    </aside>
+
+    <div>
+      <div class="results-meta label">
+        <b id="match-count">{tutorials.length}</b>
+        tutorials
+      </div>
+      <ul class="grid">
+        {tutorials.map((t) => (
+            <li data-level={t.data.level} data-topic={t.data.topic} data-tutorial>
+              <a class="card" href={`/tutorials/${t.id}`} style={`--level-color: ${LEVEL_COLORS[t.data.level]}`}>
+                <span class="card-top">
+                  <span class="pill level">{t.data.level}</span>
+                  <span class="mono time">{t.data.time}</span>
+                </span>
+                <span class="card-title">{t.data.title}</span>
+                <span class="mono card-format">Format · {t.data.format}</span>
+                {t.data.outcomes.length > 0 && (
+                  <span class="outcomes">
+                    <span class="label">You'll be able to</span>
+                    <ul>
+                      {t.data.outcomes.map((o) => (
+                        <li>{o}</li>
+                      ))}
+                    </ul>
+                  </span>
+                )}
+                <span class="card-meta">
+                  <span>{t.data.topic}</span>
+                  <span>Open →</span>
+                </span>
+              </a>
+            </li>
+          ))}
+      </ul>
+      <div class="empty" hidden id="empty-state">
+        <h3>No matches.</h3>
+        <p>Try removing a filter.</p>
+      </div>
+    </div>
+  </section>
+
+  {learningPath.length > 1 && (
+      <section class="container path-section">
+        <div class="path-head">
+          <div class="label kicker">
+            <span class="rule" />
+            Learning path
+          </div>
+          <h2>From zero to an analysis-ready workflow</h2>
+          <p>A curated sequence for researchers new to the Hub.</p>
+        </div>
+        <div class="path-strip" style={`--cols: ${learningPath.length}`}>
+          {learningPath.map((t, i) => (
+            <a href={`/tutorials/${t.id}`}>
+              <span class="mono step-n">0{i + 1} · {t.data.level}</span>
+              <span class="step-title">{t.data.title}</span>
+              <span class="mono step-time">{t.data.time}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+  <section class="container foot">
+    <span class="caption"
+      >Tutorials are Markdown &amp; notebooks in the open — improvements
+      welcome.</span
+    >
+    <a class="edit-link" href="https://github.com/CGIAR-Climate-Data-Hub"
+      >Edit tutorials on GitHub</a
+    >
+  </section>
 </Layout>
 
+<script>
+const cards = [...document.querySelectorAll<HTMLElement>("li[data-tutorial]")];
+const buttons = [
+  ...document.querySelectorAll<HTMLButtonElement>(".facet-option"),
+];
+const clear = document.querySelector<HTMLButtonElement>("#clear-filters");
+const count = document.querySelector("#match-count");
+const empty = document.querySelector<HTMLElement>("#empty-state");
+
+const facetKeys = ["level", "topic"] as const;
+const state: Record<string, string> = {};
+
+function apply() {
+  let matched = 0;
+  for (const card of cards) {
+    const show = facetKeys.every(
+      (k) => !state[k] || card.dataset[k] === state[k],
+    );
+    card.hidden = !show;
+    if (show) matched++;
+  }
+  if (count) count.textContent = String(matched);
+  if (empty) empty.hidden = matched > 0;
+  for (const b of buttons) {
+    b.setAttribute(
+      "aria-pressed",
+      String(state[b.dataset.facet ?? ""] === b.dataset.value),
+    );
+  }
+  if (clear) clear.hidden = facetKeys.every((k) => !state[k]);
+}
+
+for (const b of buttons) {
+  b.addEventListener("click", () => {
+    state[b.dataset.facet ?? ""] = b.dataset.value ?? "";
+    apply();
+  });
+}
+clear?.addEventListener("click", () => {
+  for (const k of facetKeys) state[k] = "";
+  apply();
+});
+</script>
+
 <style>
+.head-rule {
+  margin-top: 28px;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 32px;
+  align-items: start;
+  padding-top: 36px;
+}
+
+aside details {
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+aside summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  list-style: none;
+}
+
+aside summary::-webkit-details-marker {
+  display: none;
+}
+
+.chev {
+  color: var(--text-mute);
+  transition: transform 0.15s;
+}
+
+details:not([open]) .chev {
+  transform: rotate(-90deg);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.facet-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  font-size: 13px;
+  color: var(--text);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 6px;
+}
+
+.facet-option:hover {
+  background: var(--bg);
+}
+
+.facet-option[aria-pressed="true"] {
+  font-weight: 600;
+  color: var(--cdh-blue-950);
+  background: var(--grey-1);
+  border-left-color: var(--cdh-blue-700);
+}
+
+.count {
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+#clear-filters {
+  padding: 6px 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--cdh-blue-700);
+  background: transparent;
+  border: 0;
+}
+
+.results-meta {
+  margin-bottom: 18px;
+  color: var(--text-mute);
+}
+
+.results-meta b {
+  color: var(--text);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 16px;
-  margin-top: 40px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
 .card {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 22px;
+  height: 100%;
+  padding: 20px;
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  transition:
-    border-color 0.16s,
-    box-shadow 0.16s,
-    transform 0.16s;
+  border-radius: 10px;
+  transition: border-color 0.12s;
 }
 
 .card:hover {
   text-decoration: none;
-  border-color: var(--cdh-blue-300);
-  box-shadow: 0 10px 30px rgb(20 16 8 / 7%);
-  transform: translateY(-2px);
+  border-color: var(--level-color);
 }
 
 .card-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.pill.level {
+  color: #fff;
+  background: var(--level-color);
 }
 
 .time {
@@ -84,23 +351,171 @@ const description =
 
 .card-title {
   font-family: var(--serif);
-  font-size: 20px;
-  font-weight: 500;
-  line-height: 1.25;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.3;
   color: var(--cdh-blue-950);
 }
 
-.card-summary {
-  font-size: 14px;
+.card-format {
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+.outcomes {
+  margin-top: 6px;
+}
+
+.outcomes .label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-soft);
+}
+
+.outcomes ul {
+  padding-left: 16px;
+  margin: 0;
+  font-size: 13px;
   line-height: 1.55;
   color: var(--text-soft);
 }
 
 .card-meta {
-  padding-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
   margin-top: auto;
-  font-size: 11.5px;
-  color: var(--text-mute);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cdh-blue-950);
   border-top: 1px solid var(--border);
+}
+
+.empty {
+  padding: 48px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: 6px;
+}
+
+.empty p {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--text-soft);
+}
+
+/* ---- Learning path ---- */
+.path-section {
+  padding-top: 56px;
+}
+
+.kicker {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  margin-bottom: 12px;
+  color: var(--terra-700);
+}
+
+.rule {
+  display: inline-block;
+  width: 20px;
+  height: 1.5px;
+  background: currentcolor;
+  opacity: 0.7;
+}
+
+.path-head p {
+  margin-top: 10px;
+  font-size: 15px;
+  color: var(--text-soft);
+}
+
+.path-strip {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  margin-top: 24px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.path-strip a {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  color: var(--text);
+  border-right: 1px solid var(--border);
+}
+
+.path-strip a:last-child {
+  border-right: 0;
+}
+
+.path-strip a:hover {
+  text-decoration: none;
+  background: var(--bg);
+}
+
+.step-n {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cdh-blue-700);
+}
+
+.step-title {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--cdh-blue-950);
+}
+
+.step-time {
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+/* ---- Footer row ---- */
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 24px;
+  margin-top: 32px;
+}
+
+.foot .caption {
+  font-size: 13px;
+}
+
+.edit-link {
+  font-size: 12.5px;
+  color: var(--text-mute);
+}
+
+.edit-link:hover {
+  color: var(--cdh-blue-700);
+}
+
+@media (width <= 860px) {
+  .body {
+    grid-template-columns: 1fr;
+  }
+
+  .path-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .path-strip a {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
 }
 </style>

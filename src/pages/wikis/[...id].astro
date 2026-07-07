@@ -3,8 +3,9 @@ import { getCollection, render } from "astro:content";
 import ArticleToc from "@/components/ArticleToc.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import JsonLd from "@/components/JsonLd.astro";
+import ScrollProgress from "@/components/ScrollProgress.astro";
+import WikiSidebar from "@/components/WikiSidebar.astro";
 import Layout from "@/layouts/Layout.astro";
-import { groupWikis } from "@/lib/collections";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
 
 export async function getStaticPaths() {
@@ -17,8 +18,12 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
-const groups = groupWikis(await getCollection("wikis"));
 const updated = entry.data.updated.toISOString().slice(0, 10);
+const updatedLong = entry.data.updated.toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -37,35 +42,25 @@ const jsonLd = {
   title={`${entry.data.title} — ${SITE_NAME}`}
 >
   <JsonLd data={jsonLd} slot="head" />
+  <ScrollProgress />
 
   <div class="container docs">
-    <aside class="side-nav" data-pagefind-ignore>
-      {groups.map((group) => (
-          <div class="group">
-            <div class="label">{group.section}</div>
-            {group.entries.map((wiki) => (
-              <a aria-current={wiki.id === entry.id ? "page" : undefined} href={`/wikis/${wiki.id}`}>
-                {wiki.data.title}
-              </a>
-            ))}
-          </div>
-        ))}
-    </aside>
+    <WikiSidebar activeId={entry.id} />
 
     <article>
       <Breadcrumbs
         items={[{ label: "Hub", href: "/" }, { label: "Wikis", href: "/wikis" }, { label: entry.data.title }]}
       />
-      <div class="head">
-        <span class="pill">{entry.data.section}</span>
-        <span class="mono updated">updated {updated}</span>
-      </div>
       <h1>{entry.data.title}</h1>
-      <p class="sub">{entry.data.description}</p>
+      <div class="meta">Updated {updatedLong}</div>
+      <p class="lede">{entry.data.description}</p>
       <div class="prose">
         <Content />
       </div>
-      <a class="edit-link" href={GITHUB_URL}>Edit this page on GitHub</a>
+      <div class="footer-row">
+        <a class="back" href="/wikis">← Back to the wiki</a>
+        <a class="edit-link" href={GITHUB_URL}>Edit this page on GitHub</a>
+      </div>
     </article>
 
     <aside data-pagefind-ignore>
@@ -77,79 +72,62 @@ const jsonLd = {
 <style>
 .docs {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr) 200px;
-  gap: 48px;
-  padding-top: 36px;
+  grid-template-columns: 208px minmax(0, 1fr) 200px;
+  gap: 44px;
+  align-items: start;
+  padding-top: 34px;
 }
 
-.side-nav {
-  position: sticky;
-  top: 96px;
-  align-self: start;
-}
-
-.group {
-  margin-bottom: 24px;
-}
-
-.group .label {
-  margin-bottom: 8px;
-  font-size: 10px;
-  color: var(--text-mute);
-}
-
-.group a {
-  display: block;
-  padding: 6px 10px;
-  font-size: 13.5px;
-  color: var(--text-soft);
-  border-radius: 6px;
-}
-
-.group a:hover {
-  color: var(--cdh-blue-950);
-  text-decoration: none;
-  background: var(--surface);
-}
-
-.group a[aria-current="page"] {
-  font-weight: 600;
-  color: var(--cdh-blue-700);
-  background: var(--cdh-blue-50);
-}
-
-.head {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-top: 22px;
-}
-
-.updated {
-  font-size: 11px;
-  color: var(--text-mute);
+article {
+  min-width: 0;
+  max-width: 760px;
 }
 
 h1 {
-  margin-top: 12px;
-  font-size: clamp(28px, 3vw, 38px);
+  margin-top: 18px;
+  font-size: clamp(30px, 3.6vw, 46px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
 }
 
-.sub {
-  margin-top: 12px;
+.meta {
+  margin-top: 14px;
+  font-size: 13.5px;
+  color: var(--text-mute);
+}
+
+.lede {
+  padding-bottom: 26px;
+  margin-top: 22px;
   font-family: var(--serif);
-  font-size: 16.5px;
+  font-size: 19px;
   font-weight: 300;
+  line-height: 1.6;
   color: var(--text-soft);
+  border-bottom: 1px solid var(--border);
 }
 
 .prose {
-  margin-top: 28px;
+  margin-top: 8px;
+}
+
+.footer-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 22px;
+  margin-top: 36px;
+  border-top: 1px solid var(--border);
+}
+
+.back {
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .edit-link {
-  display: inline-block;
-  margin-top: 32px;
   font-size: 12.5px;
   color: var(--text-mute);
 }
@@ -163,7 +141,8 @@ h1 {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .docs aside {
+  .docs > :global(nav),
+  .docs > aside {
     display: none;
   }
 }

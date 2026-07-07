@@ -1,0 +1,175 @@
+---
+// Book-like "Contents" nav shared by the wiki landing and articles.
+import { getCollection } from "astro:content";
+import { groupWikis, WIKI_SECTIONS } from "@/lib/collections";
+import { GITHUB_URL } from "@/site.config";
+
+interface Props {
+  activeId?: string;
+}
+
+const { activeId } = Astro.props;
+
+const GROUP_LABELS: Record<string, string> = { Standards: "Data standards" };
+
+// Planned-but-unwritten pages stay visible so the wiki reads as a growing book
+const SOON: Record<string, string[]> = {
+  Standards: ["CF Conventions", "ISO 19115"],
+  Reference: ["Glossary"],
+};
+
+type Item = { title: string; href?: string; id?: string; soon?: boolean };
+
+const grouped = groupWikis(await getCollection("wikis"));
+const nav = WIKI_SECTIONS.map((section) => {
+  const entries = grouped.find((g) => g.section === section)?.entries ?? [];
+  const items: Item[] = [
+    ...entries.map((e) => ({
+      title: e.data.title,
+      href: `/wikis/${e.id}`,
+      id: e.id,
+    })),
+    ...(section === "Reference" ? [{ title: "FAQs", href: "/faq" }] : []),
+    ...(SOON[section] ?? []).map((title) => ({ title, soon: true })),
+  ];
+  return { label: GROUP_LABELS[section] ?? section, items };
+}).filter((g) => g.items.length > 0);
+---
+
+<nav aria-label="Wiki contents" data-pagefind-ignore>
+  <div class="label contents">Contents</div>
+  {nav.map((group) => (
+      <div class="group">
+        <div class="group-label">{group.label}</div>
+        {group.items.map((item) =>
+          item.soon ? (
+            <span class="item soon">
+              {item.title}
+              <span class="mono soon-tag">SOON</span>
+            </span>
+          ) : (
+            <a href={item.href} class:list={["item", { "is-active": item.id !== undefined && item.id === activeId }]}>
+              {item.title}
+            </a>
+          ),
+        )}
+      </div>
+    ))}
+  <div class="contribute">
+    <div class="label">Contribute</div>
+    <p>
+      Open a pull request against the <span class="mono">wikis</span> folder.
+      Articles are reviewed by two stewards.
+    </p>
+    <a href={GITHUB_URL}>
+      <svg
+        aria-hidden="true"
+        fill="currentColor"
+        height="13"
+        viewBox="0 0 24 24"
+        width="13"
+      >
+        <path
+          d="M12 .5C5.7.5.5 5.7.5 12.1c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2 1-.3 2-.4 3-.4s2 .1 3 .4c2.3-1.6 3.3-1.2 3.3-1.2.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.1 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"
+        ></path>
+      </svg>
+      Open the wiki repo
+    </a>
+  </div>
+</nav>
+
+<style>
+nav {
+  position: sticky;
+  top: 96px;
+  align-self: start;
+}
+
+.contents {
+  margin-bottom: 18px;
+  font-size: 10px;
+  color: var(--text-mute);
+}
+
+.group {
+  margin-bottom: 24px;
+}
+
+.group-label {
+  margin-bottom: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cdh-blue-950);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.item {
+  display: block;
+  padding: 7px 12px;
+  font-size: 13.5px;
+  color: var(--text-soft);
+  border-left: 2px solid transparent;
+  transition:
+    color 0.12s,
+    background 0.12s;
+}
+
+.item:hover {
+  color: var(--cdh-blue-950);
+  text-decoration: none;
+  background: var(--bg);
+}
+
+.item.is-active {
+  font-weight: 600;
+  color: var(--cdh-blue-950);
+  background: var(--grey-1);
+  border-left-color: var(--terra-700);
+}
+
+.item.soon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--grey-4);
+  cursor: default;
+}
+
+.soon-tag {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.contribute {
+  padding: 16px;
+  margin-top: 8px;
+  background: var(--grey-1);
+  border-radius: 10px;
+}
+
+.contribute .label {
+  margin-bottom: 8px;
+  font-size: 10px;
+  color: var(--text-soft);
+}
+
+.contribute p {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.contribute p .mono {
+  font-size: 11.5px;
+}
+
+.contribute a {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+</style>

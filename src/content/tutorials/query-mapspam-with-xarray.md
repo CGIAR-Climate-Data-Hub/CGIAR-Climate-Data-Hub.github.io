@@ -5,6 +5,10 @@ level: Intermediate
 topic: Crops
 time: 45 min
 format: Notebook
+outcomes:
+  - Subset the cube by crop & technology
+  - Build national production totals
+  - Compute area-weighted yields
 updated: 2026-07-06
 ---
 

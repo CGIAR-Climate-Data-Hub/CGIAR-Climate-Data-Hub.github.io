@@ -11,6 +11,8 @@ const tutorials = defineCollection({
     topic: z.string(),
     time: z.string(),
     format: z.string().default("Guide"),
+    // "You'll be able to" bullets shown on tutorial cards
+    outcomes: z.array(z.string()).default([]),
     updated: z.coerce.date(),
   }),
 });
@@ -30,6 +32,30 @@ const wikis = defineCollection({
     updated: z.coerce.date(),
     // Sidebar position within a section; unordered entries sort alphabetically after
     order: z.number().optional(),
+  }),
+});
+
+// One markdown file per question; the body is the answer.
+const faq = defineCollection({
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/faq" }),
+  schema: z.object({
+    question: z.string(),
+    order: z.number(),
+  }),
+});
+
+// Editorial singletons (about): structured sections in frontmatter, prose in the body.
+const pages = defineCollection({
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/pages" }),
+  schema: z.object({
+    title: z.string(),
+    lede: z.string(),
+    missions: z
+      .array(z.object({ title: z.string(), body: z.string() }))
+      .default([]),
+    principles: z
+      .array(z.object({ title: z.string(), body: z.string() }))
+      .default([]),
   }),
 });
 
@@ -216,4 +242,4 @@ const catalog = defineCollection({
     .passthrough(),
 });
 
-export const collections = { tutorials, wikis, useCases, catalog };
+export const collections = { tutorials, wikis, useCases, catalog, faq, pages };

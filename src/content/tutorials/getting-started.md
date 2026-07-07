@@ -5,6 +5,10 @@ level: Beginner
 topic: Onboarding
 time: 20 min
 format: Notebook
+outcomes:
+  - Find a dataset
+  - Read a CDH metadata record
+  - Stream a layer with Python
 updated: 2026-06-01
 ---
 

@@ -5,6 +5,10 @@ level: Intermediate
 topic: Livestock
 time: 45 min
 format: Notebook
+outcomes:
+  - Convert densities to counts
+  - Aggregate to admin boundaries
+  - Sanity-check against census totals
 updated: 2026-06-23
 ---
 
