@@ -1,0 +1,63 @@
+---
+// The CDH logo IS a diverging anomaly bar chart — cool below baseline / warm
+// above, deeper colour = larger anomaly. The one signature graphic.
+interface Props {
+  size?: number;
+  baseline?: string;
+  title?: string;
+}
+
+const {
+  size = 26,
+  baseline = "var(--cdh-blue-950)",
+  title = "Climate Data Hub",
+} = Astro.props;
+
+const SERIES = [
+  { z: -0.8, color: "#4a7da6" },
+  { z: -0.45, color: "#8fb4d2" },
+  { z: -0.95, color: "#245a87" },
+  { z: 0.3, color: "#e0a783" },
+  { z: -0.35, color: "#8fb4d2" },
+  { z: 0.65, color: "#cb6a3e" },
+  { z: 0.45, color: "#e0a783" },
+  { z: 1.0, color: "#b44a22" },
+];
+
+const MAX = 36;
+const W = 122;
+const H = 72;
+const BASE = 36;
+
+const bars = SERIES.map((b, i) => ({
+  color: b.color,
+  h: Math.abs(b.z) * MAX,
+  x: i * 16,
+  y: b.z >= 0 ? BASE - Math.abs(b.z) * MAX : BASE,
+}));
+---
+
+<svg
+  aria-label={title}
+  height={size}
+  role="img"
+  viewBox={`0 0 ${W} ${H}`}
+  width={(size * W) / H}
+>
+  {bars.map((b) => <rect fill={b.color} height={b.h} rx="2.5" width="10" x={b.x} y={b.y} />)}
+  <rect
+    fill={baseline}
+    height="3"
+    rx="1.5"
+    width={W + 6}
+    x="-3"
+    y={BASE - 1.5}
+  />
+</svg>
+
+<style>
+svg {
+  display: block;
+  overflow: visible;
+}
+</style>

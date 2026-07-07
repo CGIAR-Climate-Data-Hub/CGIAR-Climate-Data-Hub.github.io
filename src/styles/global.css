@@ -239,6 +239,16 @@ hr {
   max-width: 940px;
 }
 
+/* Pagefind component-UI theme */
+:root {
+  --pf-font: var(--sans);
+  --pf-background: var(--surface);
+  --pf-border: var(--border-strong);
+  --pf-border-focus: var(--cdh-blue-300);
+  --pf-border-radius: var(--input-radius);
+  --pf-mark: var(--cdh-blue-150);
+}
+
 main.page {
   min-height: 60vh;
 }

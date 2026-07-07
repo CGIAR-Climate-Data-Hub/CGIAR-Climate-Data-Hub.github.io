@@ -1,17 +1,112 @@
 ---
-import { SITE_NAME } from "@/site.config";
+import caspLogoWhite from "@/assets/CASP_logo_white.svg";
+import { GITHUB_URL } from "@/site.config";
+import LogoBlock from "./LogoBlock.astro";
+
+const LINKS = [
+  ["Catalog", "/catalog"],
+  ["In use", "/use-cases"],
+  ["Tutorials", "/tutorials"],
+  ["Wikis", "/wikis"],
+  ["FAQ", "/faq"],
+  ["About", "/about"],
+  ["Contribute", "/contribute"],
+  ["Report an issue", `${GITHUB_URL}/issues`],
+  ["GitHub", GITHUB_URL],
+] as const;
 
 const year = new Date().getFullYear();
+
+// The ONE sanctioned CGIAR-green band — green never appears beside program blue elsewhere.
 ---
 
 <footer>
-  <p>&copy; {year} {SITE_NAME}</p>
+  <div class="container top">
+    <div class="brand">
+      <LogoBlock size={30} variant="dark" />
+      <span class="casp">
+        <img
+          alt="CGIAR Climate Action"
+          height="46"
+          src={caspLogoWhite.src}
+          width="96"
+        >
+      </span>
+    </div>
+    <nav aria-label="Footer">
+      {LINKS.map(([label, href]) => <a href={href}>{label}</a>)}
+    </nav>
+  </div>
+  <div class="container bottom">
+    <span
+      >&copy; {year} CGIAR. Data licensed CC-BY-4.0 unless noted otherwise.</span
+    >
+  </div>
 </footer>
 
 <style>
 footer {
-  padding: 1rem;
-  text-align: center;
-  border-top: 1px solid var(--grey-2);
+  padding: 28px 0 22px;
+  margin-top: 96px;
+  color: #c3d2cc;
+  background: var(--cgiar-primary);
+  border-top: 3px solid var(--cgiar-accent);
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  align-items: center;
+}
+
+.casp {
+  display: inline-flex;
+  align-items: center;
+  padding-left: 22px;
+  border-left: 1px solid rgb(255 255 255 / 20%);
+}
+
+.casp img {
+  display: block;
+  width: auto;
+  height: 46px;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  align-items: center;
+}
+
+nav a {
+  font-size: 13.5px;
+  color: #c3d2cc;
+}
+
+nav a:hover {
+  color: #fff;
+}
+
+.bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  margin-top: 20px;
+  font-size: 12px;
+  color: #758b83;
+  border-top: 1px solid rgb(255 255 255 / 10%);
 }
 </style>

@@ -1,0 +1,47 @@
+---
+import PageHead from "@/components/PageHead.astro";
+import Layout from "@/layouts/Layout.astro";
+
+// The nav's PagefindConfig already loads the component UI; this page is the
+// SearchAction target (/search?q=…) for search engines and shared links.
+---
+
+<Layout
+  description="Search datasets, documentation, tutorials, and use cases across the Climate Data Hub."
+  title="Search — Climate Data Hub"
+>
+  <PageHead
+    kicker="Search"
+    sub="Find datasets, docs, tutorials, and use cases."
+    title="Search the Hub"
+  />
+  <div class="container narrow results" data-pagefind-ignore>
+    <pagefind-input placeholder="Search the Hub"></pagefind-input>
+    <pagefind-summary></pagefind-summary>
+    <pagefind-results></pagefind-results>
+  </div>
+</Layout>
+
+<script>
+// Seed the search box from ?q= so /search?q=drought works as a landing URL.
+const q = new URLSearchParams(location.search).get("q");
+if (q) {
+  customElements.whenDefined("pagefind-input").then(() => {
+    requestAnimationFrame(() => {
+      const input = document.querySelector<HTMLInputElement>(
+        "pagefind-input input",
+      );
+      if (input) {
+        input.value = q;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    });
+  });
+}
+</script>
+
+<style>
+.results {
+  margin-top: 40px;
+}
+</style>
