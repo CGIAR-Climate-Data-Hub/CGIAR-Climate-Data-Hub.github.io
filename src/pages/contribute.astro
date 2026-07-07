@@ -1,190 +1,633 @@
 ---
-import PageHead from "@/components/PageHead.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import Layout from "@/layouts/Layout.astro";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
 
-const PATHS = [
+type Step = { title: string; body: string; code?: string };
+type Guide = {
+  id: string;
+  label: string;
+  icon: string;
+  title: string;
+  intro: string;
+  audience: string;
+  time: string;
+  steps: Step[];
+  checklist: string[];
+};
+
+const GUIDES: Guide[] = [
   {
-    title: "Contribute a dataset",
-    desc: "Publish climate-relevant data with harmonised metadata, a DOI, and cloud-native distribution.",
-    cue: "~2 days of preparation",
-    href: "#dataset",
+    id: "dataset",
+    label: "Contribute a dataset",
+    icon: "DATA",
+    title: "Add a dataset to the Climate Data Hub",
+    intro:
+      "Datasets are added by opening a submission pull request against the Hub metadata registry. CI runs structural and semantic validation; once approved, the dataset is indexed, a DOI is minted, and a STAC item is published.",
+    audience: "Center · Project · Partner",
+    time: "~2 days of preparation",
+    steps: [
+      {
+        title: "Confirm fit and licensing",
+        body: "Check that the dataset aligns with Hub scope (climate-relevant for agri-food systems) and that you can release it under CC-BY-4.0 or an approved equivalent. Need help? Open a scoping issue first.",
+      },
+      {
+        title: "Harmonise the format",
+        body: "Convert spatial rasters to Cloud-Optimised GeoTIFF or Zarr; cubes to Zarr. The COG authoring wiki has the validator.",
+      },
+      {
+        title: "Author the metadata record",
+        body: "Write the YAML record against the CDH schema — coverage, provenance, citation, and appropriate-use guidance — and validate it locally.",
+        code: "uvx check-jsonschema \\\n  --schemafile spec/schemas/profiles/cdh.schema.json my-record.yaml",
+      },
+      {
+        title: "Open a submission PR",
+        body: "Fork the metadata registry and open a PR. The template asks for provenance, QA notes and contact details. CI runs structural, schema and lineage checks.",
+      },
+      {
+        title: "Review & publish",
+        body: "A Hub maintainer and a domain reviewer assess the submission. Once approved, the dataset is merged, indexed in the catalogue, and a DOI is minted.",
+      },
+    ],
+    checklist: [
+      "Dataset uses an approved format and is COG/Zarr-compliant where applicable.",
+      "Record validates against the CDH schema.",
+      "Coverage, resolution, temporal extent, units and variables are documented.",
+      "Provenance and contributing institutions are listed; contacts are reachable.",
+      "Licence is CC-BY-4.0 or pre-approved; attribution requirements are recorded.",
+      "QA notes describe known caveats, gaps and recommended uses.",
+    ],
   },
   {
-    title: "Improve the docs",
-    desc: "Fix a wiki page, add a tutorial, or clarify appropriate-use guidance. Every page is a file in a repo.",
-    cue: "Pull requests welcome",
-    href: GITHUB_URL,
+    id: "wiki",
+    label: "Edit a wiki page",
+    icon: "WIKI",
+    title: "Edit a wiki page",
+    intro:
+      "Wikis live as Markdown files in the site repo. Edits flow through normal pull requests, so changes are reviewed, versioned and attributable.",
+    audience: "Anyone",
+    time: "~30 minutes",
+    steps: [
+      {
+        title: "Find the page in the repo",
+        body: "Each wiki page links to its source file on GitHub via the 'Edit on GitHub' link.",
+      },
+      {
+        title: "Open a PR with your edit",
+        body: "Fork or branch, edit the Markdown, and open a pull request. A preview build renders your change automatically.",
+      },
+      {
+        title: "Request review",
+        body: "Tag the relevant section maintainer (Standards, Methods, Concepts or Governance) for review.",
+      },
+    ],
+    checklist: [
+      "Front-matter (title, section, description) is updated if needed.",
+      "Internal links resolve and external links are correct.",
+      "Code blocks specify a language for syntax highlighting.",
+      "Images include alt text.",
+    ],
   },
   {
-    title: "Report an issue",
-    desc: "Spotted wrong metadata, a broken link, or a data problem? Issues are triaged by the maintainers.",
-    cue: "GitHub issues",
-    href: `${GITHUB_URL}/issues`,
+    id: "story",
+    label: "Submit a use case",
+    icon: "STORY",
+    title: "Submit a use case story",
+    intro:
+      "Stories are short, factual write-ups of work that used the Hub. They help others understand what the Hub enables in practice and become a body of evidence for impact reporting.",
+    audience: "Project leads · Partners",
+    time: "~1 hour to draft",
+    steps: [
+      {
+        title: "Use the story template",
+        body: "Title, partners, sector, country, summary (≤120 words), 2–4 measurable impacts, and the datasets you used.",
+      },
+      {
+        title: "Open a PR to the stories folder",
+        body: "Drop your filled-in template into src/content/use-cases/ as a Markdown file. CI checks that referenced datasets exist.",
+      },
+      {
+        title: "Review & publish",
+        body: "The Hub comms lead reviews for clarity and accuracy. Published stories appear in the In use section.",
+      },
+    ],
+    checklist: [
+      "All referenced datasets exist on the Hub.",
+      "Impacts are concrete (numbers, decisions, products).",
+      "Partners and contact persons are listed.",
+    ],
   },
 ];
 
-const STEPS = [
-  {
-    title: "Read the contributor docs",
-    body: "Review the metadata standard, STAC profile, and QA requirements before you start.",
-  },
-  {
-    title: "Harmonise the format",
-    body: "Convert to COG or Zarr per the data-type guide, with explicit nodata and an equal-area-safe layout.",
-  },
-  {
-    title: "Author the metadata record",
-    body: "Write the YAML record against the CDH schema — coverage, provenance, citation, and appropriate-use guidance.",
-  },
-  {
-    title: "Open a submission PR",
-    body: "Open a pull request against the metadata registry. CI validates the record and the data layout.",
-  },
-  {
-    title: "Review & publish",
-    body: "Hub maintainers and a domain reviewer approve; the dataset is indexed and a DOI is minted.",
-  },
+const STANDARDS_LINKS = [
+  ["Metadata standard", "/wikis/cdh-metadata-standard"],
+  ["STAC profile", "/wikis/stac-profile"],
+  ["COG authoring", "/wikis/cog-authoring"],
+  ["Licensing & attribution", "/wikis/licensing-and-attribution"],
 ];
+
+const REPORT_KINDS = [
+  ["Dataset issue", "Wrong values, broken access, metadata error"],
+  ["Website / UX bug", "Broken link, layout, search, accessibility"],
+  ["Wiki / docs error", "Outdated, incorrect, or missing documentation"],
+  ["Something else", "Doesn't fit any of the above"],
+];
+
+const description =
+  "How to contribute a dataset, edit the docs, submit a use case, or report an issue on the Climate Data Hub.";
 ---
 
-<Layout
-  description="How to contribute a dataset, improve the documentation, or report an issue on the Climate Data Hub."
-  title={`Contribute — ${SITE_NAME}`}
->
-  <PageHead
-    breadcrumb={[{ label: "Hub", href: "/" }, { label: "Contribute" }]}
-    kicker="Contribute"
-    sub="The Hub grows because partners add to it. Three ways in, depending on what you hold."
-    title="Add to the Hub"
-  />
-
-  <div class="container cards">
-    {PATHS.map((p) => (
-        <a class="card" href={p.href}>
-          <span class="card-title">{p.title}</span>
-          <span class="card-desc">{p.desc}</span>
-          <span class="label card-cue">{p.cue}</span>
-        </a>
-      ))}
-  </div>
-
-  <div class="container narrow" id="dataset">
-    <h2>Submitting a dataset</h2>
-    <ol class="steps">
-      {STEPS.map((step, i) => (
-          <li>
-            <span class="mono step-n">{String(i + 1).padStart(2, "0")}</span>
-            <div>
-              <h3>{step.title}</h3>
-              <p>{step.body}</p>
-            </div>
-          </li>
-        ))}
-    </ol>
-    <div class="ctas">
-      <a class="btn btn-accent" href={GITHUB_URL}>Start on GitHub</a>
-      <a class="btn btn-ghost" href="/wikis/cdh-metadata-standard"
-        >Read the metadata standard</a
-      >
+<Layout description={description} title={`Contribute — ${SITE_NAME}`}>
+  <section class="hero">
+    <div class="container">
+      <Breadcrumbs
+        items={[{ label: "Hub", href: "/" }, { label: "Contribute" }]}
+      />
+      <div class="hero-grid">
+        <div>
+          <h1>Contribute to the Hub.</h1>
+          <p class="hero-lede">
+            The Hub grows because Centers, programmes and partners contribute.
+            Whether you're publishing a new dataset, editing a wiki, or telling
+            the story of how the Hub helped your project — there's a path for
+            you.
+          </p>
+        </div>
+        <div class="help-box">
+          <div class="label">Need help?</div>
+          <p>
+            Reach the Hub stewardship team on the #cdh-stewardship Teams
+            channel, or
+            <a href={`${GITHUB_URL}/issues`}> open an issue on GitHub</a>.
+          </p>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <section class="container body">
+    <aside data-pagefind-ignore>
+      <nav aria-label="Contribution paths" class="intent" data-intent>
+        <div class="label">I want to…</div>
+        {GUIDES.map((g) => (
+            <a href={`#${g.id}`}>
+              <span class="mono chip">{g.icon}</span>
+              {g.label}
+            </a>
+          ))}
+        <a href="#report">
+          <span class="mono chip">BUG</span>
+          Report a bug or issue
+        </a>
+      </nav>
+
+      <div class="rail-box">
+        <div class="label">Hub standards</div>
+        {STANDARDS_LINKS.map(([label, href]) => <a class="rail-link" href={href}>{label}</a>)}
+      </div>
+    </aside>
+
+    <div class="guides">
+      {GUIDES.map((guide) => (
+          <article class="guide" id={guide.id}>
+            <div class="guide-meta">
+              <span class="pill warn">Guide</span>
+              <span class="label">{guide.audience}</span>
+              <span class="label">· {guide.time}</span>
+            </div>
+            <h2>{guide.title}</h2>
+            <p class="intro">{guide.intro}</p>
+
+            <div class="steps">
+              {guide.steps.map((step, i) => (
+                <div class="step">
+                  <div class="step-rail">
+                    <div class="step-n mono">{i + 1}</div>
+                    {i < guide.steps.length - 1 && <div class="step-line" />}
+                  </div>
+                  <div>
+                    <h3>{step.title}</h3>
+                    <p>{step.body}</p>
+                    {step.code && <pre class="mono">{step.code}</pre>}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div class="checklist">
+              <h3>Pre-submission checklist</h3>
+              <ul>
+                {guide.checklist.map((item) => (
+                  <li>
+                    <span aria-hidden="true" class="check">✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </article>
+        ))}
+
+      <article class="guide" id="report">
+        <div class="guide-meta">
+          <span class="pill warn">Report</span>
+          <span class="label">Anyone</span>
+          <span class="label">· ~3 minutes</span>
+        </div>
+        <h2>Report a bug or issue</h2>
+        <p class="intro">
+          Spotted something off in a dataset, a broken link, or a glitch on this
+          site? Tell us. Reports are tracked as GitHub issues and routed to the
+          relevant maintainer.
+        </p>
+        <ul class="kinds">
+          {REPORT_KINDS.map(([label, hint]) => (
+              <li>
+                <b>{label}</b>
+                <span>{hint}</span>
+              </li>
+            ))}
+        </ul>
+        <p class="report-tip">
+          Be specific — what you expected vs what you got, with exact values and
+          steps where possible. For data-quality issues, include the dataset id
+          from its catalog page.
+        </p>
+        <a class="btn btn-accent" href={`${GITHUB_URL}/issues`}
+          >Open an issue on GitHub</a
+        >
+      </article>
+    </div>
+  </section>
 </Layout>
 
+<script>
+// Highlight the guide currently in view in the "I want to…" list
+const links = [
+  ...document.querySelectorAll<HTMLAnchorElement>("[data-intent] a"),
+];
+const targets = links
+  .map((a) => document.getElementById(a.hash.slice(1)))
+  .filter((el): el is HTMLElement => el !== null);
+const spy = () => {
+  let current = targets[0];
+  for (const t of targets) {
+    if (t.getBoundingClientRect().top - 140 <= 0) current = t;
+  }
+  for (const a of links) {
+    a.setAttribute("aria-current", String(a.hash === `#${current?.id}`));
+  }
+};
+addEventListener("scroll", spy, { passive: true });
+spy();
+</script>
+
 <style>
-.cards {
+/* Navy hero — on navy, text is white or #63A9FE only */
+.hero {
+  padding: 48px 0;
+  color: #fff;
+  background: var(--cdh-blue-950);
+}
+
+.hero :global(nav a),
+.hero :global(nav li) {
+  color: rgb(255 255 255 / 60%);
+}
+
+.hero :global(nav span[aria-current]) {
+  color: #fff;
+}
+
+.hero-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
-  margin-top: 40px;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 40px;
+  align-items: center;
+  margin-top: 12px;
 }
 
-.card {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 24px;
-  color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  transition:
-    border-color 0.16s,
-    box-shadow 0.16s,
-    transform 0.16s;
+h1 {
+  color: #fff;
 }
 
-.card:hover {
-  text-decoration: none;
-  border-color: var(--terra-300);
-  box-shadow: 0 10px 30px rgb(20 16 8 / 7%);
-  transform: translateY(-2px);
+.hero-lede {
+  max-width: 640px;
+  margin-top: 12px;
+  font-size: 17px;
+  line-height: 1.6;
+  color: rgb(255 255 255 / 82%);
 }
 
-.card-title {
-  font-family: var(--serif);
-  font-size: 20px;
-  font-weight: 500;
-  color: var(--cdh-blue-950);
+.help-box {
+  padding: 18px;
+  background: rgb(0 0 0 / 18%);
+  border: 1px solid rgb(99 169 254 / 35%);
+  border-radius: 6px;
 }
 
-.card-desc {
-  font-size: 14px;
-  line-height: 1.55;
+.help-box .label {
+  color: var(--cdh-blue-300);
+}
+
+.help-box p {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgb(255 255 255 / 86%);
+}
+
+.help-box a {
+  color: var(--cdh-blue-300);
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 32px;
+  align-items: start;
+  padding-top: 32px;
+}
+
+aside {
+  position: sticky;
+  top: 96px;
+}
+
+.intent .label {
+  margin-bottom: 10px;
   color: var(--text-soft);
 }
 
-.card-cue {
-  padding-top: 12px;
-  margin-top: auto;
-  font-size: 10px;
-  color: var(--terra-700);
+.intent a {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
 }
 
-#dataset {
-  margin-top: 72px;
-  scroll-margin-top: 100px;
+.intent a:hover {
+  color: var(--cdh-blue-950);
+  text-decoration: none;
+  border-color: var(--cdh-blue-950);
+}
+
+.intent .chip {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  font-size: 10px;
+  color: var(--text-mute);
+  letter-spacing: 0.06em;
+  background: var(--grey-1);
+  border-radius: 6px;
+}
+
+.intent a[aria-current="true"] {
+  font-weight: 600;
+  color: #fff;
+  background: var(--cdh-blue-950);
+  border-color: var(--cdh-blue-950);
+}
+
+.intent a[aria-current="true"] .chip {
+  color: var(--cdh-blue-300);
+  background: rgb(99 169 254 / 18%);
+}
+
+.rail-box {
+  padding: 16px;
+  margin-top: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.rail-box .label {
+  margin-bottom: 6px;
+  color: var(--text-mute);
+}
+
+.rail-link {
+  display: block;
+  padding: 8px 0;
+  font-size: 13px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+.rail-link:last-child {
+  border-bottom: 0;
+}
+
+.rail-link:hover {
+  color: var(--cdh-blue-700);
+  text-decoration: none;
+}
+
+.guides {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-width: 0;
+}
+
+.guide {
+  padding: 28px;
+  scroll-margin-top: 96px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.guide-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.guide-meta .label {
+  color: var(--text-mute);
+}
+
+.guide h2 {
+  max-width: 720px;
+  margin-top: 12px;
+  font-size: 30px;
+}
+
+.intro {
+  max-width: 720px;
+  margin-top: 10px;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text-soft);
 }
 
 .steps {
-  padding: 0;
-  margin: 28px 0 0;
-  list-style: none;
+  margin-top: 28px;
 }
 
-.steps li {
+.step {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 18px;
-  align-items: baseline;
-  padding: 18px 0;
+  grid-template-columns: 44px 1fr;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.step:first-child {
   border-top: 1px solid var(--border);
 }
 
+.step-rail {
+  position: relative;
+}
+
 .step-n {
-  font-size: 11px;
-  color: var(--terra-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cdh-blue-300);
+  background: var(--cdh-blue-950);
+  border-radius: 50%;
 }
 
-.steps h3 {
-  font-size: 18px;
-  font-weight: 500;
+.step-line {
+  position: absolute;
+  top: 36px;
+  bottom: -16px;
+  left: 15px;
+  width: 2px;
+  background: var(--border-strong);
 }
 
-.steps p {
-  max-width: 620px;
-  margin-top: 4px;
+.step h3 {
+  font-family: var(--sans);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.step p {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-soft);
+}
+
+.step pre {
+  padding: 12px;
+  margin-top: 10px;
+  overflow-x: auto;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--cdh-blue-300);
+  background: var(--cdh-blue-950);
+  border-radius: 6px;
+}
+
+.checklist {
+  margin-top: 28px;
+}
+
+.checklist h3 {
+  font-size: 22px;
+}
+
+.checklist ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  margin: 12px 0 0;
+  list-style: none;
+}
+
+.checklist li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+}
+
+.check {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--cdh-blue-700);
+  border: 1.5px solid var(--cdh-blue-700);
+  border-radius: 6px;
+}
+
+.kinds {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  padding: 0;
+  margin: 24px 0 0;
+  list-style: none;
+}
+
+.kinds li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+
+.kinds b {
+  font-size: 14px;
+  color: var(--cdh-blue-950);
+}
+
+.kinds span {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-mute);
+}
+
+.report-tip {
+  max-width: 720px;
+  margin-top: 18px;
   font-size: 14px;
   line-height: 1.6;
   color: var(--text-soft);
 }
 
-.ctas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding-top: 28px;
-  margin-top: 8px;
-  border-top: 1px solid var(--border);
+.guide .btn {
+  margin-top: 20px;
+}
+
+@media (width <= 900px) {
+  .hero-grid,
+  .body {
+    grid-template-columns: 1fr;
+  }
+
+  aside {
+    position: static;
+  }
 }
 </style>

@@ -1,93 +1,259 @@
 ---
+import { getCollection, getEntry, render } from "astro:content";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import JsonLd from "@/components/JsonLd.astro";
-import PageHead from "@/components/PageHead.astro";
+import SectionHeader from "@/components/SectionHeader.astro";
 import Layout from "@/layouts/Layout.astro";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
 
-const description =
-  "The Climate Data Hub is CGIAR Climate Action's shared home for quality-assured, openly licensed climate and agriculture data.";
+// Copy lives in src/content/pages/about.md — sections in frontmatter, prose in the body
+const entry = await getEntry("pages", "about");
+if (!entry) throw new Error("Missing src/content/pages/about.md");
+const { Content } = await render(entry);
+const { title, lede, missions, principles } = entry.data;
+
+const datasetCount = (await getCollection("catalog")).length;
 
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "AboutPage",
   name: `About the ${SITE_NAME}`,
-  description,
+  description: lede,
   url: new URL("/about", Astro.site).href,
   about: { "@id": `${Astro.site}#organization` },
 };
 ---
 
-<Layout description={description} title={`About — ${SITE_NAME}`}>
+<Layout description={lede} title={`About — ${SITE_NAME}`}>
   <JsonLd data={jsonLd} slot="head" />
 
-  <PageHead
-    breadcrumb={[{ label: "Hub", href: "/" }, { label: "About" }]}
-    kicker="About"
-    sub="Why the Hub exists, what it holds, and who keeps it running."
-    title="One home for climate evidence"
-  />
+  <section class="hero">
+    <div class="container">
+      <Breadcrumbs items={[{ label: "Hub", href: "/" }, { label: "About" }]} />
+      <div class="hero-text">
+        <div class="label kicker">About the Hub</div>
+        <h1>{title}</h1>
+        <p>{lede}</p>
+      </div>
+    </div>
+  </section>
 
-  <div class="container narrow prose about">
-    <p class="lede">
-      Climate evidence across CGIAR used to live in scattered portals, formats,
-      and licences. The Climate Data Hub brings it into one place — consistently
-      described, quality-assured, and ready to build on.
-    </p>
+  <section class="container missions">
+    {missions.map((mission) => (
+        <div class="mission">
+          <h3>{mission.title}</h3>
+          <p>{mission.body}</p>
+        </div>
+      ))}
+  </section>
 
-    <h2>What the Hub holds</h2>
-    <p>
-      A <a href="/catalog">catalog</a> of harmonised datasets distributed in
-      cloud-native formats (Zarr, COG), the
-      <a href="/wikis/cdh-metadata-standard">metadata standard</a>
-      that describes them, and the <a href="/tutorials">tutorials</a> and
-      <a href="/wikis">reference docs</a>
-      that make them usable. Every dataset carries provenance, licensing, a
-      citation, and honest guidance on what it should <em>not</em> be used for.
-    </p>
+  <section class="container principles">
+    <SectionHeader kicker="How we work" title="Principles" />
+    <div class="principles-grid">
+      {principles.map((principle) => (
+          <div class="principle">
+            <div class="principle-title">{principle.title}</div>
+            <p>{principle.body}</p>
+          </div>
+        ))}
+    </div>
+  </section>
 
-    <h2>How quality works</h2>
-    <p>
-      Nothing lands in the catalog without review. Records are validated against
-      the CDH schema in CI, data is checked for format compliance, and a domain
-      reviewer confirms the appropriate-use guidance. Records are versioned, so
-      corrections are tracked rather than silently overwritten.
-    </p>
-
-    <h2>Who runs it</h2>
-    <p>
-      The Hub is maintained by the
-      <a href="https://alliancebioversityciat.org"
-        >Alliance of Bioversity International and CIAT</a
-      >
-      as part of the
-      <a href="https://www.cgiar.org">CGIAR</a>
-      Climate Action portfolio, with data contributed by Centers and partners
-      across the network.
-    </p>
-
-    <h2>Open by design</h2>
-    <p>
-      The metadata standard, data pipeline, and this site are developed in the
-      open on
-      <a href={GITHUB_URL}>GitHub</a>. Data is CC-BY-4.0 unless noted otherwise.
-      If something is wrong,
-      <a href={`${GITHUB_URL}/issues`}>open an issue</a>
-      — and if you have data worth sharing,
-      <a href="/contribute">there's a clear path in</a>.
-    </p>
-  </div>
+  <section class="container governance">
+    <div>
+      <SectionHeader kicker="Governance" title="Who runs the Hub" />
+      <div class="prose gov-text">
+        <Content />
+      </div>
+      <div class="ctas">
+        <a class="btn btn-primary" href="/contribute">Contribute to the Hub</a>
+        <a class="btn btn-ghost" href="/wikis">Read the standards</a>
+      </div>
+    </div>
+    <aside>
+      <div class="glance">
+        <div class="label">At a glance</div>
+        <dl>
+          <dt>Program</dt>
+          <dd>CGIAR Climate Action</dd>
+          <dt>Maintainer</dt>
+          <dd>Alliance of Bioversity International and CIAT</dd>
+          <dt>Datasets</dt>
+          <dd>{datasetCount}</dd>
+          <dt>License</dt>
+          <dd>CC-BY-4.0</dd>
+        </dl>
+        <a class="glance-link" href={GITHUB_URL}>Hub on GitHub →</a>
+      </div>
+    </aside>
+  </section>
 </Layout>
 
 <style>
-.about {
-  margin-top: 40px;
+.hero {
+  padding: 32px 0 40px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
 
-.lede {
-  font-family: var(--serif);
-  font-size: 19px;
-  font-weight: 300;
+.hero-text {
+  max-width: 780px;
+  margin-top: 16px;
+}
+
+.kicker {
+  margin-bottom: 12px;
+  color: var(--cdh-blue-700);
+}
+
+h1 {
+  font-size: clamp(32px, 3.4vw, 40px);
+  line-height: 1.08;
+}
+
+.hero-text p {
+  margin-top: 16px;
+  font-size: 17px;
   line-height: 1.6;
+  color: var(--text-soft);
+}
+
+.missions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  padding-top: 40px;
+}
+
+.mission {
+  padding: 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.mission h3 {
+  font-size: 20px;
+}
+
+.mission p {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-soft);
+}
+
+.principles {
+  padding-top: 48px;
+}
+
+.principles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.principle {
+  padding: 22px;
+  border-bottom: 1px solid var(--border);
+}
+
+.principle:nth-child(odd) {
+  border-right: 1px solid var(--border);
+}
+
+.principle:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.principle-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cdh-blue-950);
+}
+
+.principle p {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.governance {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 40px;
+  padding-top: 48px;
+}
+
+.gov-text {
+  max-width: 640px;
+  font-size: 15px;
+}
+
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.glance {
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.glance .label {
+  margin-bottom: 12px;
+  color: var(--terra-700);
+}
+
+dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  margin: 0;
+  font-size: 13px;
+}
+
+dt {
+  color: var(--text-mute);
+}
+
+dd {
+  margin: 0;
   color: var(--text);
+}
+
+.glance-link {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (width <= 860px) {
+  .governance {
+    grid-template-columns: 1fr;
+  }
+
+  .principles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .principle:nth-child(odd) {
+    border-right: 0;
+  }
+
+  .principle:nth-last-child(-n + 2) {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .principle:last-child {
+    border-bottom: 0;
+  }
 }
 </style>

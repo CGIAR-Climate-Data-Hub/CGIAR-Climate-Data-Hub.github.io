@@ -6,8 +6,9 @@ Static documentation/data hub built with **Astro 6** (output: `static`).
 
 Astro source lives in `src/`: `pages/`, `layouts/`, `components/`, `styles/`,
 `assets/`, `lib/` (shared record-shaping + JSON-LD helpers), `content/`
-(collections: `tutorials`, `wikis`, `useCases`, `catalog` — CDH YAML metadata
-records). Content collections are defined in `src/content.config.ts`;
+(collections: `tutorials`, `wikis`, `useCases`, `faq`, `pages`, `catalog` —
+CDH YAML metadata records). Content collections are defined in
+`src/content.config.ts`;
 site-wide constants live in `src/site.config.ts`.
 
 ## Commands

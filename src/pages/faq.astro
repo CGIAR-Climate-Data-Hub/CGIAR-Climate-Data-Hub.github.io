@@ -1,47 +1,26 @@
 ---
+import { getCollection, render } from "astro:content";
 import JsonLd from "@/components/JsonLd.astro";
 import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
 
-const FAQS = [
-  {
-    q: "What is the Climate Data Hub?",
-    a: "A quality-assured catalog of climate and agriculture datasets across CGIAR Climate Action. Every dataset is harmonised to one metadata standard, openly licensed, and distributed in cloud-native formats, so it can be discovered, cited, and used the same way.",
-  },
-  {
-    q: "Do I need an account to access the data?",
-    a: "No. All published data is openly accessible over HTTPS and S3 — stream it directly with tools like xarray or rioxarray, or download individual files. There is no registration, API key, or quota.",
-  },
-  {
-    q: "How is the data licensed?",
-    a: "CC-BY-4.0 unless a dataset page says otherwise (some sources are CC-BY-SA-4.0 or public domain). You can reuse it freely — including commercially — as long as you credit the original producers as given in the dataset's citation.",
-  },
-  {
-    q: "What formats does the Hub use?",
-    a: "Cloud-optimised formats: Zarr for multi-dimensional data cubes and Cloud-Optimised GeoTIFF (COG) for rasters. That means you can read just the spatial or temporal window you need without downloading whole archives.",
-  },
-  {
-    q: "How do I cite a dataset?",
-    a: "Every dataset page has a copy-ready citation and, where one exists, a DOI. Cite the original producers (for example FAO or IFPRI) alongside the Hub record.",
-  },
-  {
-    q: "Can I contribute a dataset?",
-    a: "Yes. Harmonise your data to a supported format, author a metadata record against the CDH standard, and open a submission pull request. Hub maintainers and a domain reviewer check it before publication — see the contribute page for the full path.",
-  },
-  {
-    q: "I found a problem with a dataset — where do I report it?",
-    a: "Open an issue on the Hub's GitHub organisation, or email the point of contact listed on the dataset page. Records are versioned, so corrections are tracked and attributed.",
-  },
-];
+const faqs = await Promise.all(
+  (await getCollection("faq"))
+    .sort((a, b) => a.data.order - b.data.order)
+    .map(async (entry) => ({ entry, Content: (await render(entry)).Content })),
+);
+
+// JSON-LD answers come from the markdown source, with link syntax flattened
+const plain = (md: string) => md.trim().replace(/\[([^\]]+)\]\([^)]*\)/g, "$1");
 
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  mainEntity: FAQS.map((f) => ({
+  mainEntity: faqs.map(({ entry }) => ({
     "@type": "Question",
-    name: f.q,
-    acceptedAnswer: { "@type": "Answer", text: f.a },
+    name: entry.data.question,
+    acceptedAnswer: { "@type": "Answer", text: plain(entry.body ?? "") },
   })),
 };
 ---
@@ -60,15 +39,17 @@ const jsonLd = {
   />
 
   <div class="container narrow faqs">
-    {FAQS.map((f) => (
+    {faqs.map(({ entry, Content }) => (
         <details>
           <summary>
-            <h3>{f.q}</h3>
+            <h3>{entry.data.question}</h3>
             <svg aria-hidden="true" class="chev" fill="none" height="14" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" width="14">
               <path d="M6 9l6 6 6-6" />
             </svg>
           </summary>
-          <p>{f.a}</p>
+          <div class="answer">
+            <Content />
+          </div>
         </details>
       ))}
 
@@ -127,12 +108,20 @@ details[open] .chev {
   transform: rotate(180deg);
 }
 
-details p {
+.answer {
   max-width: 720px;
   padding: 0 22px 18px;
   font-size: 14.5px;
   line-height: 1.65;
   color: var(--text-soft);
+}
+
+.answer :global(p) {
+  margin-bottom: 10px;
+}
+
+.answer :global(p:last-child) {
+  margin-bottom: 0;
 }
 
 .more {
