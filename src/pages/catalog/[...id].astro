@@ -1,23 +1,1017 @@
 ---
+import { Code } from "astro:components";
 import { getCollection } from "astro:content";
+import BboxMap from "@/components/BboxMap.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import DataGlyph from "@/components/DataGlyph.astro";
+import JsonLd from "@/components/JsonLd.astro";
 import Layout from "@/layouts/Layout.astro";
+import {
+  citationText,
+  datasetJsonLd,
+  humanize,
+  normalizeBbox,
+} from "@/lib/catalog";
+import { GITHUB_URL, SITE_NAME } from "@/site.config";
 
 export async function getStaticPaths() {
   const entries = await getCollection("catalog");
   return entries.map((entry) => ({
-    params: { id: entry.id },
+    params: { id: entry.data.id },
     props: { entry },
   }));
 }
 
 const { entry } = Astro.props;
+const d = entry.data;
+
+const type = d.spatial ? ("spatial" as const) : ("tabular" as const);
+const bbox = normalizeBbox(d.spatial?.bbox);
+const coverage = d.spatial?.geography.map(humanize).join(", ");
+const resolution = d.spatial?.resolution[0]?.label;
+const temporal =
+  d.temporal
+  && [d.temporal.start_date, d.temporal.end_date].filter(Boolean).join(" – ");
+const producers = d.contact.filter(
+  (c) => c.roles.includes("producer") || c.roles.includes("licensor"),
+);
+const source = producers[0]?.organization;
+const citation = citationText(d);
+
+// Build-time cross-links: stories that cite this dataset id in their frontmatter
+const seenIn = (
+  await getCollection("useCases", (uc) => uc.data.datasets.includes(d.id))
+).map((uc) => ({
+  href: `/use-cases/${uc.id}`,
+  title: uc.data.title,
+  partner: uc.data.partner,
+}));
+
+// Streaming snippet assembled from the record's own asset URLs
+const httpsUrl = (asset?: (typeof d.data)[number]) =>
+  asset?.locations.find((l) => l.url.startsWith("http"))?.url;
+const zarrUrl = httpsUrl(d.data.find((a) => a.name === "zarr"));
+const cogs = d.data.find((a) => a.name === "cogs");
+const cogsUrl = httpsUrl(cogs);
+const exampleFile = cogs?.href_template?.replace(
+  /\{(\w+)\}/g,
+  (_, name: string) =>
+    d.dimensions.find((dim) => dim.name === name)?.values[0]
+    ?? d.variables[0]?.name
+    ?? name,
+);
+
+const snippet = [
+  zarrUrl && `import xarray as xr\n\nds = xr.open_zarr(\n    "${zarrUrl}"\n)`,
+  cogsUrl
+    && exampleFile
+    && `import rioxarray\n\nda = rioxarray.open_rasterio(\n    "${cogsUrl}${exampleFile}", masked=True\n)`,
+]
+  .filter(Boolean)
+  .join("\n\n");
+
+const SECTIONS = [
+  ["overview", "Overview"],
+  d.dimensions.length + d.variables.length > 0 && ["schema", "Schema"],
+  d.data.length > 0 && ["access", "Access & use"],
+  d.processing.length > 0 && ["provenance", "Provenance"],
+  citation && ["citation", "Citation"],
+].filter(Boolean) as [string, string][];
+
+const jsonLd = datasetJsonLd(
+  d,
+  new URL(`/catalog/${d.id}`, Astro.site).href,
+  new URL("/catalog", Astro.site).href,
+);
 ---
 
 <Layout
-  title={entry.data.title ?? entry.id}
-  description={entry.data.description}
+  description={d.description.slice(0, 160)}
+  title={`${d.title} — ${SITE_NAME}`}
 >
-  <h1>{entry.data.title ?? entry.id}</h1>
-  {entry.data.description && <p>{entry.data.description}</p>}
-  <pre>{JSON.stringify(entry.data, null, 2)}</pre>
+  <JsonLd data={jsonLd} slot="head" />
+
+  <section class="header">
+    <div class="container">
+      <Breadcrumbs
+        items={[{ label: "Hub", href: "/" }, { label: "Catalog", href: "/catalog" }, { label: d.title }]}
+      />
+      <div class="header-grid">
+        <div>
+          <div class="pills">
+            <DataGlyph size={16} type={type} />
+            <span class:list={["pill", "dot", type]}
+              >{type === "spatial" ? "Spatial" : "Non-spatial"}</span
+            >
+            <span class="pill">{d.license}</span>
+            {d.version && <span class="pill">{d.version}</span>}
+            {d.updated && (
+              <span class="updated">
+                Updated <span class="mono">{d.updated}</span>
+              </span>
+            )}
+          </div>
+
+          <h1>{d.title}</h1>
+          <p class="description">{d.description}</p>
+
+          <div class="keywords">
+            {d.keywords.map((k) =>
+                typeof k === "string" ? (
+                  <a class="mono keyword" href={`/catalog?q=${encodeURIComponent(k)}`}>
+                    #{k}
+                  </a>
+                ) : (
+                  <a class="mono keyword ontology" href={k.uri ?? k.scheme} rel="noreferrer" title={`${k.scheme ?? "ontology"} concept`}>
+                    {k.term} ↗
+                  </a>
+                ),
+              )}
+          </div>
+
+          <div class="ctas">
+            <a class="btn btn-primary" href="#access">Access the data</a>
+            <a class="btn btn-ghost" href="#citation">Cite</a>
+            <a class="edit-link" href={GITHUB_URL}
+              >Suggest an edit to this record</a
+            >
+          </div>
+        </div>
+
+        <div>
+          <BboxMap bbox={bbox} label={coverage} />
+          <dl class="facts mono">
+            {d.doi && (
+              <>
+                <dt>doi</dt>
+                <dd><a href={`https://doi.org/${d.doi}`}>{d.doi}</a></dd>
+              </>
+            )}
+            <dt>id</dt>
+            <dd>{d.id}</dd>
+            {source && (
+              <>
+                <dt>source</dt>
+                <dd>{source}</dd>
+              </>
+            )}
+            {d.spatial?.crs && (
+              <>
+                <dt>crs</dt>
+                <dd>{d.spatial.crs}</dd>
+              </>
+            )}
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav aria-label="Sections" class="section-nav">
+    <div class="container">
+      {SECTIONS.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}
+    </div>
+  </nav>
+
+  <div class="container body">
+    <article>
+      <section id="overview">
+        {d.note && (
+            <div class="note">
+              <h3>Important note</h3>
+              <p>{d.note}</p>
+            </div>
+          )}
+
+        {d.cdh && d.cdh.use_cases.length > 0 && (
+            <div>
+              <h3>Good for</h3>
+              <ul>
+                {d.cdh.use_cases.map((u) => (
+                  <li>{humanize(u)}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+        {d.cdh && d.cdh.not_recommended_for.length > 0 && (
+            <div>
+              <h3>Not recommended for</h3>
+              <div class="warn-cards">
+                {d.cdh.not_recommended_for.map((n) => (
+                  <div class="warn-card">
+                    <b>{humanize(n.use)}</b>
+                    {n.reason && <p>{humanize(n.reason)}</p>}
+                    {n.use_instead && (
+                      <p class="instead">
+                        <b>Use instead:</b> {humanize(n.use_instead)}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+        {d.commodities.length > 0 && (
+            <div>
+              <h3>Commodities</h3>
+              <div class="chips">
+                {d.commodities.map((c) => (
+                  <span class="chip">{humanize(c)}</span>
+                ))}
+              </div>
+            </div>
+          )}
+      </section>
+
+      {SECTIONS.some(([id]) => id === "schema") && (
+          <section id="schema">
+            {d.dimensions.length > 0 && (
+              <div>
+                <h3>Dimensions</h3>
+                <p class="section-sub">Axes of the cube — spatial, temporal, and domain axes.</p>
+                <div class="dim-cards">
+                  {d.dimensions.map((dim) => (
+                    <div class="dim-card">
+                      <div class="dim-head">
+                        <span class="mono dim-name">{dim.name}</span>
+                        {dim.type && <span class="label">{dim.type}</span>}
+                      </div>
+                      {dim.description && <p>{dim.description}</p>}
+                      {dim.values.length > 0 && (
+                        <div class="chips">
+                          {dim.values.map((v) => (
+                            <span class="chip mono">{v}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {d.variables.length > 0 && (
+              <div>
+                <h3>Variables</h3>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Variable</th>
+                        <th>Type</th>
+                        <th>Unit</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {d.variables.map((v) => (
+                        <tr>
+                          <td class="mono var-name">{v.name}</td>
+                          <td class="mono">{v.data_type ?? "—"}</td>
+                          <td class="mono">{v.unit ?? "—"}</td>
+                          <td>
+                            {v.description ?? "—"}
+                            {v.note && <div class="var-note">{v.note}</div>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+      {d.data.length > 0 && (
+          <section id="access">
+            <h3>Access &amp; use</h3>
+            <p class="section-sub">
+              Cloud-optimised distributions — read just the window you need directly from object
+              storage.
+            </p>
+            {snippet && <Code code={snippet} lang="python" theme="github-light" />}
+
+            <div class="assets">
+              {[...d.data, ...d.additional_assets].map((asset) => (
+                <div class="asset">
+                  <div class="asset-head">
+                    <span class="mono asset-name">{asset.name}</span>
+                    {asset.media_type && <span class="pill spatial">{asset.media_type.split(";")[0]}</span>}
+                    {asset.file_size && <span class="mono asset-size">{asset.file_size}</span>}
+                  </div>
+                  {asset.description && <p>{asset.description}</p>}
+                  {asset.href_template && <p class="mono pattern">pattern: {asset.href_template}</p>}
+                  {asset.locations.map((loc) => (
+                    <div class="endpoint">
+                      <span class="mono proto">{loc.title ?? "URL"}</span>
+                      <span class="mono url">{loc.url}</span>
+                      <button class="btn btn-ghost copy" data-copy={loc.url} type="button">
+                        Copy
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+      {d.processing.length > 0 && (
+          <section id="provenance">
+            <h3>Provenance</h3>
+            <p class="section-sub">Ordered processing steps, from source to publication.</p>
+            <ol class="lineage">
+              {d.processing.map((step) => (
+                <li>
+                  <div class="step">
+                    <div class="step-head">
+                      <span class="mono step-id">{step.id}</span>
+                      {step.date && <span class="label">{step.date.slice(0, 10)}</span>}
+                    </div>
+                    {step.description && <p>{step.description}</p>}
+                    {step.derived_from.length > 0 && (
+                      <p class="step-meta">
+                        Derived from:{" "}
+                        {step.derived_from.map((src, i) => (
+                          <>
+                            {i > 0 && ", "}
+                            <a href={src.url} rel="noreferrer">
+                              {src.title ?? src.url}
+                            </a>
+                          </>
+                        ))}
+                      </p>
+                    )}
+                    {step.code && (
+                      <p class="step-meta mono">
+                        code: <a href={step.code.url} rel="noreferrer">{step.code.url}</a>
+                        {step.code.version && <span> @ {step.code.version}</span>}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
+      {citation && (
+          <section id="citation">
+            <h3>Citation</h3>
+            <blockquote class="cite">{citation}</blockquote>
+            {d.related_publications.length > 0 && (
+              <div>
+                <h4>Related publications</h4>
+                <ul>
+                  {d.related_publications.map((pub) => (
+                    <li>
+                      {pub.citation && `${pub.citation.authors.join(", ")} (${pub.citation.date}). ${pub.citation.title}. ${pub.citation.publisher}. `}
+                      {pub.doi && <a href={`https://doi.org/${pub.doi}`}>doi:{pub.doi}</a>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
+        )}
+    </article>
+
+    <aside>
+      <div class="rail-box">
+        <h4 class="label">Quick facts</h4>
+        <dl class="kv">
+          {coverage && (
+            <>
+              <dt>Coverage</dt>
+              <dd>{coverage}</dd>
+            </>
+          )}
+          {resolution && (
+            <>
+              <dt>Resolution</dt>
+              <dd>{resolution}</dd>
+            </>
+          )}
+          {temporal && (
+            <>
+              <dt>Temporal</dt>
+              <dd>{temporal}</dd>
+            </>
+          )}
+          <dt>License</dt>
+          <dd>{d.license}</dd>
+          {d.cdh && d.cdh.domain.length > 0 && (
+            <>
+              <dt>Domain</dt>
+              <dd>{d.cdh.domain.map(humanize).join(", ")}</dd>
+            </>
+          )}
+          {source && (
+            <>
+              <dt>Source</dt>
+              <dd>{source}</dd>
+            </>
+          )}
+        </dl>
+      </div>
+
+      {d.contact.length > 0 && (
+          <div class="rail-box">
+            <h4 class="label">Contacts</h4>
+            {d.contact.map((c) => (
+              <div class="contact">
+                <b>{c.name ?? c.organization}</b>
+                {c.name && c.organization && <div class="contact-org">{c.organization}</div>}
+                <div class="contact-meta">
+                  {c.roles.join(" · ")}
+                  {c.email && (
+                    <>
+                      {" · "}
+                      <a href={`mailto:${c.email}`}>{c.email}</a>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+      {seenIn.length > 0 && (
+          <div class="rail-box">
+            <h4 class="label">Seen in</h4>
+            {seenIn.map((uc) => (
+              <a class="rail-link" href={uc.href}>
+                <b>{uc.title}</b>
+                <span>{uc.partner}</span>
+              </a>
+            ))}
+          </div>
+        )}
+
+      {d.additional_links.length > 0 && (
+          <div class="rail-box">
+            <h4 class="label">Related links</h4>
+            {d.additional_links.map((link) => (
+              <a class="rail-link ext" href={link.url} rel="noreferrer">
+                {link.name ?? link.url} ↗
+              </a>
+            ))}
+          </div>
+        )}
+    </aside>
+  </div>
 </Layout>
+
+<script>
+// Copy-to-clipboard for asset endpoint URLs
+document.addEventListener("click", async (e) => {
+  const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
+    "button[data-copy]",
+  );
+  if (!btn?.dataset.copy) return;
+  await navigator.clipboard.writeText(btn.dataset.copy);
+  const original = btn.textContent;
+  btn.textContent = "Copied";
+  setTimeout(() => {
+    btn.textContent = original;
+  }, 1200);
+});
+</script>
+
+<style>
+.header {
+  padding: 24px 0 32px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 40px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.updated {
+  margin-left: 6px;
+  font-size: 12px;
+  color: var(--text-mute);
+}
+
+h1 {
+  max-width: 760px;
+  margin-top: 14px;
+  font-size: clamp(28px, 3vw, 36px);
+}
+
+.description {
+  max-width: 720px;
+  margin-top: 14px;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.keyword {
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text-soft);
+  background: var(--grey-1);
+  border-radius: 6px;
+}
+
+.keyword:hover {
+  text-decoration: none;
+  background: var(--grey-2);
+}
+
+.keyword.ontology {
+  color: var(--cdh-blue-700);
+  background: transparent;
+  border: 1px solid var(--cdh-blue-150);
+}
+
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 24px;
+}
+
+.edit-link {
+  font-size: 12.5px;
+  color: var(--text-mute);
+}
+
+.edit-link:hover {
+  color: var(--cdh-blue-700);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  padding: 10px 12px;
+  margin: 12px 0 0;
+  font-size: 11px;
+  color: var(--text-soft);
+  background: var(--grey-1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.facts dt {
+  color: var(--text-mute);
+}
+
+.facts dd {
+  margin: 0;
+  word-break: break-all;
+}
+
+.section-nav {
+  position: sticky;
+  top: 72px;
+  z-index: 10;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.section-nav .container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.section-nav a {
+  padding: 14px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.section-nav a:hover {
+  color: var(--cdh-blue-950);
+  text-decoration: none;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 40px;
+  padding-top: 32px;
+}
+
+article section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 40px;
+  scroll-margin-top: 130px;
+}
+
+article h3 {
+  font-size: 22px;
+}
+
+article section > div > p,
+article ul {
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text-soft);
+}
+
+.section-sub {
+  max-width: 640px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--text-soft);
+}
+
+.note {
+  padding: 16px;
+  background: rgb(194 84 43 / 6%);
+  border-left: 3px solid var(--terra-500);
+}
+
+.note h3 {
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.note p {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.warn-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.warn-card {
+  padding: 14px;
+  font-size: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.warn-card p {
+  margin-top: 4px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.warn-card .instead {
+  color: var(--cdh-blue-800);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.chip {
+  padding: 3px 9px;
+  font-size: 12px;
+  color: var(--cdh-blue-800);
+  background: var(--cdh-blue-50);
+  border-radius: 6px;
+}
+
+.dim-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.dim-card {
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.dim-card p {
+  margin-top: 6px;
+  font-size: 13.5px;
+  color: var(--text-soft);
+}
+
+.dim-head {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.dim-name {
+  font-weight: 700;
+  color: var(--cdh-blue-700);
+}
+
+.table-wrap {
+  margin-top: 14px;
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+table {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: collapse;
+}
+
+th {
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-soft);
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--grey-1);
+}
+
+td {
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+}
+
+td.mono {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.var-name {
+  font-weight: 600;
+  color: var(--cdh-blue-700);
+}
+
+.var-note {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--text-mute);
+}
+
+.assets {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.asset {
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.asset p {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.asset-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.asset-name {
+  font-weight: 700;
+  color: var(--cdh-blue-700);
+}
+
+.asset-size {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+.pattern {
+  font-size: 11.5px;
+  color: var(--text-mute);
+}
+
+.endpoint {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 7px 0;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.proto {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cdh-blue-700);
+}
+
+.url {
+  font-size: 11.5px;
+  color: var(--text-soft);
+  word-break: break-all;
+}
+
+.copy {
+  padding: 3px 10px;
+  font-size: 11px;
+}
+
+.lineage {
+  padding: 0;
+  margin: 8px 0 0;
+  list-style: none;
+}
+
+.lineage li {
+  position: relative;
+  padding: 8px 0 8px 32px;
+}
+
+.lineage li::before {
+  position: absolute;
+  top: 22px;
+  left: 10px;
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  content: "";
+  background: var(--cdh-blue-700);
+  border-radius: 50%;
+}
+
+.lineage li:first-child::before {
+  background: var(--terra-500);
+}
+
+.lineage li:not(:last-child)::after {
+  position: absolute;
+  top: 34px;
+  bottom: -12px;
+  left: 15px;
+  width: 2px;
+  content: "";
+  background: var(--border-strong);
+}
+
+.step {
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.step p {
+  margin-top: 6px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.step-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.step-id {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.step-meta {
+  font-size: 12.5px;
+  word-break: break-all;
+}
+
+.cite {
+  padding: 16px;
+  margin: 8px 0 0;
+  font-size: 14.5px;
+  line-height: 1.7;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--cdh-blue-700);
+  border-radius: 6px;
+}
+
+.rail-box {
+  padding: 16px;
+  margin-bottom: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.rail-box .label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--text-mute);
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 14px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.kv dt {
+  color: var(--text-mute);
+}
+
+.kv dd {
+  margin: 0;
+}
+
+.contact {
+  padding: 8px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+
+.contact:last-child {
+  border-bottom: 0;
+}
+
+.contact-org {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.contact-meta {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+.rail-link {
+  display: block;
+  padding: 8px 0;
+  font-size: 13px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+.rail-link:last-child {
+  border-bottom: 0;
+}
+
+.rail-link b {
+  display: block;
+}
+
+.rail-link span {
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+.rail-link.ext {
+  color: var(--cdh-blue-700);
+}
+
+@media (width <= 960px) {
+  .header-grid,
+  .body {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

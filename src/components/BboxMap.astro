@@ -1,0 +1,226 @@
+---
+// Spatial-extent preview: rough continent silhouettes + the record's bbox.
+// Illustrative, not geographically precise — no map tiles, no JS.
+interface Props {
+  bbox?: number[];
+  label?: string;
+}
+
+const { bbox, label } = Astro.props;
+
+const W = 300;
+const H = 150;
+const toSvg = (lon: number, lat: number) => [
+  ((lon + 180) / 360) * W,
+  ((90 - lat) / 180) * H,
+];
+
+const CONTINENTS: number[][][] = [
+  [
+    [-168, 66],
+    [-140, 68],
+    [-120, 55],
+    [-110, 40],
+    [-100, 28],
+    [-87, 15],
+    [-80, 9],
+    [-75, 12],
+    [-70, 22],
+    [-78, 36],
+    [-72, 42],
+    [-66, 46],
+    [-55, 52],
+    [-65, 58],
+    [-78, 68],
+    [-95, 72],
+    [-115, 73],
+    [-140, 72],
+    [-160, 70],
+  ],
+  [
+    [-80, 12],
+    [-72, 9],
+    [-65, 5],
+    [-55, 5],
+    [-50, 0],
+    [-46, -6],
+    [-38, -10],
+    [-35, -22],
+    [-43, -32],
+    [-58, -37],
+    [-65, -42],
+    [-69, -54],
+    [-73, -52],
+    [-72, -44],
+    [-72, -30],
+    [-72, -18],
+    [-80, -8],
+    [-82, 0],
+  ],
+  [
+    [-10, 36],
+    [-2, 43],
+    [4, 43],
+    [10, 44],
+    [18, 42],
+    [28, 40],
+    [28, 45],
+    [35, 50],
+    [30, 58],
+    [22, 60],
+    [10, 58],
+    [5, 62],
+    [8, 68],
+    [20, 70],
+    [28, 71],
+    [40, 69],
+    [40, 55],
+    [28, 55],
+  ],
+  [
+    [-17, 21],
+    [-15, 12],
+    [-12, 5],
+    [-2, 4],
+    [8, 4],
+    [12, -2],
+    [14, -12],
+    [12, -22],
+    [18, -34],
+    [28, -34],
+    [33, -28],
+    [38, -18],
+    [42, -12],
+    [51, -1],
+    [51, 11],
+    [44, 12],
+    [42, 17],
+    [36, 22],
+    [30, 32],
+    [18, 32],
+    [10, 35],
+    [-2, 35],
+    [-10, 31],
+  ],
+  [
+    [30, 32],
+    [42, 35],
+    [50, 28],
+    [55, 18],
+    [63, 22],
+    [68, 24],
+    [72, 12],
+    [80, 8],
+    [84, 20],
+    [92, 22],
+    [95, 16],
+    [100, 12],
+    [108, 5],
+    [110, -2],
+    [120, 3],
+    [125, 10],
+    [128, 18],
+    [122, 30],
+    [130, 40],
+    [140, 42],
+    [148, 46],
+    [155, 55],
+    [160, 60],
+    [170, 68],
+    [180, 68],
+    [180, 75],
+    [120, 78],
+    [90, 76],
+    [60, 72],
+    [50, 70],
+    [40, 68],
+    [35, 55],
+    [28, 48],
+  ],
+  [
+    [114, -22],
+    [122, -18],
+    [130, -14],
+    [138, -12],
+    [145, -15],
+    [152, -22],
+    [154, -30],
+    [148, -38],
+    [140, -38],
+    [130, -32],
+    [120, -32],
+    [114, -28],
+  ],
+  [
+    [95, 5],
+    [105, -2],
+    [115, -4],
+    [125, -2],
+    [135, -4],
+    [130, -6],
+    [120, -8],
+    [105, -7],
+    [98, -2],
+  ],
+  [
+    [-50, 60],
+    [-30, 60],
+    [-22, 72],
+    [-30, 82],
+    [-50, 82],
+    [-60, 75],
+    [-58, 65],
+  ],
+];
+
+const rect = bbox
+  ? (() => {
+      const [x1, y1] = toSvg(bbox[0], bbox[3]);
+      const [x2, y2] = toSvg(bbox[2], bbox[1]);
+      return { x: x1, y: y1, w: Math.max(2, x2 - x1), h: Math.max(2, y2 - y1) };
+    })()
+  : undefined;
+---
+
+<figure>
+  <svg
+    aria-label={`Spatial extent${label ? `: ${label}` : ""}`}
+    role="img"
+    viewBox={`0 0 ${W} ${H}`}
+  >
+    <rect fill="rgb(99 169 254 / 6%)" height={H} width={W} x="0" y="0"></rect>
+    <g
+      fill="rgb(10 44 85 / 14%)"
+      stroke="rgb(10 44 85 / 35%)"
+      stroke-linejoin="round"
+      stroke-width="0.35"
+    >
+      {CONTINENTS.map((poly) => <polygon points={poly.map(([lon, lat]) => toSvg(lon, lat).join(",")).join(" ")} />)}
+    </g>
+    {rect && <rect fill="rgb(99 169 254 / 14%)" height={rect.h} stroke="var(--cdh-blue-700)" stroke-dasharray="4 2" stroke-width="1" width={rect.w} x={rect.x} y={rect.y}></rect>}
+  </svg>
+  {label && <figcaption class="mono">{label} · EPSG:4326</figcaption>}
+</figure>
+
+<style>
+figure {
+  margin: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--surface), var(--cdh-blue-50));
+  border: 1px solid var(--cdh-blue-150);
+  border-radius: 8px;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+figcaption {
+  padding: 6px 12px;
+  font-size: 10px;
+  color: var(--cdh-blue-800);
+  border-top: 1px solid var(--cdh-blue-150);
+}
+</style>

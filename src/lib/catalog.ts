@@ -27,3 +27,125 @@ export function summarize(entry: CollectionEntry<"catalog">) {
 }
 
 export type DatasetSummary = ReturnType<typeof summarize>;
+
+export type CatalogRecord = CollectionEntry<"catalog">["data"];
+
+const LICENSE_URLS: Record<string, string> = {
+  "CC-BY-4.0": "https://creativecommons.org/licenses/by/4.0/",
+  "CC-BY-SA-4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
+  CC0: "https://creativecommons.org/publicdomain/zero/1.0/",
+};
+
+// Records store one bbox or a list of them; the site only maps the first.
+export function normalizeBbox(bbox?: number[] | number[][]) {
+  if (!bbox || bbox.length === 0) return undefined;
+  return (Array.isArray(bbox[0]) ? bbox[0] : bbox) as number[];
+}
+
+export function citationText(d: CatalogRecord) {
+  const c = d.citation;
+  if (!c) return undefined;
+  const authors = c.authors.join(", ");
+  const link = d.doi ? `https://doi.org/${d.doi}` : c.url;
+  return [
+    authors,
+    c.date && `(${c.date})`,
+    `${c.title}.`,
+    c.publisher && `${c.publisher}.`,
+    link,
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function contactToSchemaOrg(c: CatalogRecord["contact"][number]) {
+  if (c.name) {
+    return {
+      "@type": "Person",
+      name: c.name,
+      ...(c.email && { email: c.email }),
+      ...(c.organization && {
+        affiliation: { "@type": "Organization", name: c.organization },
+      }),
+    };
+  }
+  return {
+    "@type": "Organization",
+    name: c.organization,
+    ...(c.url && { url: c.url }),
+  };
+}
+
+// schema.org/Dataset JSON-LD, mapped from the CDH record (Google Dataset Search friendly).
+export function datasetJsonLd(
+  d: CatalogRecord,
+  url: string,
+  catalogUrl: string,
+) {
+  const bbox = normalizeBbox(d.spatial?.bbox);
+  const creators = d.contact.filter((c) => c.roles.includes("producer"));
+  const distributions = d.data.flatMap((asset) =>
+    asset.locations
+      .filter((loc) => loc.url.startsWith("http"))
+      .map((loc) => ({
+        "@type": "DataDownload",
+        name: asset.description ?? asset.name,
+        contentUrl: loc.url,
+        ...(asset.media_type && { encodingFormat: asset.media_type }),
+        ...(asset.file_size && { contentSize: asset.file_size }),
+      })),
+  );
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "@id": url,
+    name: d.title,
+    description: d.description,
+    url,
+    identifier: d.doi ? [`https://doi.org/${d.doi}`, d.id] : [d.id],
+    ...(d.doi && { sameAs: `https://doi.org/${d.doi}` }),
+    license: LICENSE_URLS[d.license] ?? d.license,
+    isAccessibleForFree: true,
+    ...(d.version && { version: d.version }),
+    ...(d.created && { dateCreated: d.created }),
+    ...(d.updated && { dateModified: d.updated }),
+    keywords: d.keywords.map((k) =>
+      typeof k === "string"
+        ? k
+        : {
+            "@type": "DefinedTerm",
+            name: k.term,
+            ...(k.uri && { url: k.uri }),
+            ...(k.scheme && { inDefinedTermSet: k.scheme }),
+          },
+    ),
+    ...(creators.length > 0 && { creator: creators.map(contactToSchemaOrg) }),
+    ...(bbox && {
+      spatialCoverage: {
+        "@type": "Place",
+        geo: {
+          "@type": "GeoShape",
+          // schema.org box is "minLat minLon maxLat maxLon"
+          box: `${bbox[1]} ${bbox[0]} ${bbox[3]} ${bbox[2]}`,
+        },
+      },
+    }),
+    ...(d.temporal && {
+      temporalCoverage: d.temporal.end_date
+        ? `${d.temporal.start_date}/${d.temporal.end_date}`
+        : d.temporal.start_date,
+    }),
+    ...(d.variables.length > 0 && {
+      variableMeasured: d.variables.map((v) => ({
+        "@type": "PropertyValue",
+        name: v.name,
+        ...(v.description && { description: v.description }),
+        ...(v.unit && { unitText: v.unit }),
+      })),
+    }),
+    ...(distributions.length > 0 && { distribution: distributions }),
+    ...(citationText(d) && { citation: citationText(d) }),
+    includedInDataCatalog: { "@type": "DataCatalog", "@id": catalogUrl },
+  };
+}
