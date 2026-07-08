@@ -227,31 +227,6 @@ const jsonLd = datasetJsonLd(
 
       {SECTIONS.some(([id]) => id === "schema") && (
           <section id="schema">
-            {d.dimensions.length > 0 && (
-              <div>
-                <h3>Dimensions</h3>
-                <p class="section-sub">Axes of the cube — spatial, temporal, and domain axes.</p>
-                <div class="dim-cards">
-                  {d.dimensions.map((dim) => (
-                    <div class="dim-card">
-                      <div class="dim-head">
-                        <span class="mono dim-name">{dim.name}</span>
-                        {dim.type && <span class="label">{dim.type}</span>}
-                      </div>
-                      {dim.description && <p>{dim.description}</p>}
-                      {dim.values.length > 0 && (
-                        <div class="chips">
-                          {dim.values.map((v) => (
-                            <span class="chip mono">{v}</span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {d.variables.length > 0 && (
               <div>
                 <h3>Variables</h3>
@@ -279,6 +254,31 @@ const jsonLd = datasetJsonLd(
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            )}
+
+            {d.dimensions.length > 0 && (
+              <div>
+                <h3>Dimensions</h3>
+                <p class="section-sub">Axes of the cube — spatial, temporal, and domain axes.</p>
+                <div class="dim-cards">
+                  {d.dimensions.map((dim) => (
+                    <div class="dim-card">
+                      <div class="dim-head">
+                        <span class="mono dim-name">{dim.name}</span>
+                        {dim.type && <span class="label">{dim.type}</span>}
+                      </div>
+                      {dim.description && <p>{dim.description}</p>}
+                      {dim.values.length > 0 && (
+                        <div class="chips">
+                          {dim.values.map((v) => (
+                            <span class="chip mono">{v}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
