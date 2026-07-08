@@ -201,7 +201,11 @@ const jsonLd = datasetJsonLd(
                 {d.cdh.not_recommended_for.map((n) => (
                   <div class="warn-card">
                     <b>{humanize(n.use)}</b>
-                    {n.reason && <p>{humanize(n.reason)}</p>}
+                    {n.reason && (
+                      <p>
+                        <b>Why:</b> {humanize(n.reason)}
+                      </p>
+                    )}
                     {n.use_instead && (
                       <p class="instead">
                         <b>Use instead:</b> {humanize(n.use_instead)}
