@@ -130,7 +130,6 @@ const jsonLd = datasetJsonLd(
 
           <div class="ctas">
             <a class="btn btn-primary" href="#access">Access the data</a>
-            <a class="btn btn-ghost" href="#citation">Cite</a>
             <a class="btn btn-ghost" href={`/catalog/${d.id}.json`}
               >View source</a
             >
@@ -241,6 +240,51 @@ const jsonLd = datasetJsonLd(
               </div>
             </div>
           )}
+
+        {d.variables.length + d.dimensions.length > 0 && (
+            <div>
+              <h3>What's inside</h3>
+              <div class="chips">
+                {d.variables.slice(0, 8).map((v) => (
+                  <span class="chip mono">{v.name}</span>
+                ))}
+                {d.variables.length > 8 && <span class="more">+{d.variables.length - 8}</span>}
+              </div>
+              <p class="digest">
+                {d.variables.length} variable{d.variables.length === 1 ? "" : "s"} ·{" "}
+                {d.dimensions.length} dimension{d.dimensions.length === 1 ? "" : "s"} —{" "}
+                <a href="#schema">see the full schema</a>
+              </p>
+            </div>
+          )}
+
+        {snippet && (
+            <div>
+              <h3>Quick start</h3>
+              <div class="snippet">
+                <div class="lang-tabs">
+                  <button aria-pressed="true" data-lang="python" type="button">Python</button>
+                  <button aria-pressed="false" data-lang="r" type="button">R</button>
+                </div>
+                <div data-code-label="Python" data-snippet="python">
+                  <Code code={snippet} lang="python" theme="github-light" />
+                </div>
+                <div data-code-label="R" data-snippet="r" hidden>
+                  <Code code={rSnippet} lang="r" theme="github-light" />
+                </div>
+              </div>
+              <p class="digest">
+                <a href="#access">Full access details and endpoints</a>
+              </p>
+            </div>
+          )}
+
+        {citation && (
+            <p class="cite-line">
+              <b>Cite:</b> {citation}{" "}
+              <a href="#citation">More formats</a>
+            </p>
+          )}
       </section>
 
       {SECTIONS.some(([id]) => id === "schema") && (
@@ -310,21 +354,6 @@ const jsonLd = datasetJsonLd(
               Cloud-optimised distributions — read just the window you need directly from object
               storage.
             </p>
-            {snippet && (
-              <div class="snippet">
-                <div class="lang-tabs">
-                  <button aria-pressed="true" data-lang="python" type="button">Python</button>
-                  <button aria-pressed="false" data-lang="r" type="button">R</button>
-                </div>
-                <div data-code-label="Python" data-snippet="python">
-                  <Code code={snippet} lang="python" theme="github-light" />
-                </div>
-                <div data-code-label="R" data-snippet="r" hidden>
-                  <Code code={rSnippet} lang="r" theme="github-light" />
-                </div>
-              </div>
-            )}
-
             <div class="assets">
               {[...d.data, ...d.additional_assets].map((asset) => (
                 <div class="asset">
@@ -806,6 +835,26 @@ article ul {
 
 .snippet {
   margin-top: 4px;
+}
+
+.digest {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.cite-line {
+  padding: 12px 16px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-soft);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.cite-line b {
+  color: var(--cdh-blue-950);
 }
 
 .lang-tabs {
