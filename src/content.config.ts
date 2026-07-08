@@ -68,7 +68,7 @@ const useCases = defineCollection({
 });
 
 // ---- CDH metadata records (YAML, one per dataset) ----
-// Typed for what the site renders; passthrough keeps the rest of the record
+// Typed for what the site renders; .loose() keeps the rest of the record
 // available (the CDH standard's own JSON schema is the source of truth).
 
 const keyword = z.union([
@@ -230,7 +230,7 @@ const catalog = defineCollection({
         )
         .default([]),
     })
-    .passthrough(),
+    .loose(),
 });
 
 export const collections = { tutorials, wikis, useCases, catalog, faq, pages };

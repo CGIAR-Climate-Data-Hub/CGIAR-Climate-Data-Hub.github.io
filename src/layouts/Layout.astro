@@ -32,7 +32,8 @@ const siteGraph = {
         "@type": "SearchAction",
         target: {
           "@type": "EntryPoint",
-          urlTemplate: `${site}search?q={search_term_string}`,
+          urlTemplate: new URL("/search?q={search_term_string}", Astro.site)
+            .href,
         },
         "query-input": "required name=search_term_string",
       },
