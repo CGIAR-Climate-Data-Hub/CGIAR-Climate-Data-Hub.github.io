@@ -189,6 +189,13 @@ const jsonLd = datasetJsonLd(
   <div class="container body">
     <article>
       <section id="overview">
+        {d.note && (
+            <div class="note">
+              <h3>Important note</h3>
+              <p>{d.note}</p>
+            </div>
+          )}
+
         {snippet && (
             <div>
               <h3>Quick start</h3>
@@ -207,13 +214,6 @@ const jsonLd = datasetJsonLd(
               <p class="digest">
                 <a href="#access">Full access details and endpoints</a>
               </p>
-            </div>
-          )}
-
-        {d.note && (
-            <div class="note">
-              <h3>Important note</h3>
-              <p>{d.note}</p>
             </div>
           )}
 
