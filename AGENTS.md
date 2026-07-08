@@ -1,6 +1,6 @@
 # Site (Astro app)
 
-Static documentation/data hub built with **Astro 6** (output: `static`).
+Static documentation/data hub built with **Astro 7** (output: `static`).
 
 ## Layout
 
@@ -14,12 +14,12 @@ site-wide constants live in `src/site.config.ts`.
 ## Commands
 
 - `bun install` — install deps
-- `bun dev` — dev server at `localhost:4321`
-- `bun build` — build to `dist/`
-- `bun check` — lint + format check (Biome)
-- `bun fix` — auto-fix lint/format (Biome `check --write`)
-- `bun ci` — CI lint check (Biome, no writes)
-- `bun astro check` — type-check Astro/TS
+- `bun run dev` — dev server at `localhost:4321`
+- `bun run build` — build to `dist/`
+- `bun run check` — lint + format check (Biome)
+- `bun run fix` — auto-fix lint/format (Biome `check --write`)
+- `bun run ci` — CI lint check (Biome, no writes)
+- `bun run astro check` — type-check Astro/TS
 
 ## Linting & formatting
 
