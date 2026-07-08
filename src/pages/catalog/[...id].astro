@@ -222,23 +222,6 @@ const jsonLd = datasetJsonLd(
             </div>
           )}
 
-        {d.variables.length + d.dimensions.length > 0 && (
-            <div>
-              <h3>What's inside</h3>
-              <div class="chips">
-                {d.variables.slice(0, 8).map((v) => (
-                  <span class="chip mono" title={v.description}>{v.name}</span>
-                ))}
-                {d.variables.length > 8 && <span class="more">+{d.variables.length - 8}</span>}
-              </div>
-              <p class="digest">
-                {d.variables.length} variable{d.variables.length === 1 ? "" : "s"} ·{" "}
-                {d.dimensions.length} dimension{d.dimensions.length === 1 ? "" : "s"} —{" "}
-                <a href="#schema">see the full schema</a>
-              </p>
-            </div>
-          )}
-
         {snippet && (
             <div>
               <h3>Quick start</h3>
