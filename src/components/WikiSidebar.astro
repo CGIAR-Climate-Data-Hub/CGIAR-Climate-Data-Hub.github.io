@@ -12,6 +12,10 @@ const { activeId } = Astro.props;
 
 const GROUP_LABELS: Record<string, string> = { Standards: "Data standards" };
 
+// Sections open by default — remove one to start it collapsed. The section
+// holding the current page always opens regardless.
+const DEFAULT_OPEN = new Set(["Standards", "Methods", "Concepts"]);
+
 // Planned-but-unwritten pages stay visible so the wiki reads as a growing book
 const SOON: Record<string, string[]> = {
   Standards: ["CF Conventions", "ISO 19115"],
@@ -29,18 +33,21 @@ const nav = WIKI_SECTIONS.map((section) => {
       href: `/wikis/${e.id}`,
       id: e.id,
     })),
-    ...(section === "Reference" ? [{ title: "FAQs", href: "/faq" }] : []),
     ...(SOON[section] ?? []).map((title) => ({ title, soon: true })),
   ];
-  return { label: GROUP_LABELS[section] ?? section, items };
+  return {
+    label: GROUP_LABELS[section] ?? section,
+    items,
+    open: DEFAULT_OPEN.has(section) || entries.some((e) => e.id === activeId),
+  };
 }).filter((g) => g.items.length > 0);
 ---
 
 <nav aria-label="Wiki contents" data-pagefind-ignore>
   <div class="label contents">Contents</div>
   {nav.map((group) => (
-      <div class="group">
-        <div class="group-label">{group.label}</div>
+      <details class="group" open={group.open}>
+        <summary class="group-label">{group.label}</summary>
         {group.items.map((item) =>
           item.soon ? (
             <span class="item soon">
@@ -53,7 +60,7 @@ const nav = WIKI_SECTIONS.map((section) => {
             </a>
           ),
         )}
-      </div>
+      </details>
     ))}
   <div class="contribute">
     <div class="label">Contribute</div>
@@ -96,12 +103,32 @@ nav {
 }
 
 .group-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
   margin-bottom: 10px;
   font-size: 11px;
   font-weight: 700;
   color: var(--cdh-blue-950);
   text-transform: uppercase;
   letter-spacing: 0.12em;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+
+.group-label::-webkit-details-marker {
+  display: none;
+}
+
+.group-label::after {
+  font-weight: 400;
+  color: var(--text-mute);
+  content: "+";
+}
+
+details[open] > .group-label::after {
+  content: "−";
 }
 
 .item {
