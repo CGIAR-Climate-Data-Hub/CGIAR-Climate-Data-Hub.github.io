@@ -1,6 +1,7 @@
 ---
 import { Code } from "astro:components";
 import { getCollection } from "astro:content";
+import { satteri } from "@astrojs/markdown-satteri";
 import BboxMap from "@/components/BboxMap.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import JsonLd from "@/components/JsonLd.astro";
@@ -39,6 +40,10 @@ const source = producers[0]?.organization;
 const citation = citationText(d);
 const licenseHref = licenseUrl(d.license);
 const bibtexStr = bibtex(d);
+
+// Record descriptions may carry markdown; render like any other content
+const markdown = await satteri().createRenderer({});
+const descriptionHtml = (await markdown.render(d.description)).code;
 
 // Build-time cross-links: stories that cite this dataset id in their frontmatter
 const seenIn = (
@@ -112,7 +117,6 @@ const jsonLd = datasetJsonLd(
       <div class="header-grid">
         <div>
           <h1>{d.title}</h1>
-          <p class="description">{d.description}</p>
 
           <div class="keywords">
             {d.keywords.map((k) =>
@@ -189,6 +193,8 @@ const jsonLd = datasetJsonLd(
   <div class="container body">
     <article>
       <section id="overview">
+        <div class="prose" set:html={descriptionHtml} />
+
         {d.note && (
             <div class="note">
               <h3>Important note</h3>
@@ -608,14 +614,6 @@ h1 {
   max-width: 760px;
   margin-top: 14px;
   font-size: clamp(28px, 3vw, 36px);
-}
-
-.description {
-  max-width: 720px;
-  margin-top: 14px;
-  font-size: 17px;
-  line-height: 1.55;
-  color: var(--text-soft);
 }
 
 .keywords {
