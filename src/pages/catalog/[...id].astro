@@ -12,7 +12,6 @@ import {
   datasetJsonLd,
   humanize,
   normalizeBbox,
-  ris,
 } from "@/lib/catalog";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
 
@@ -40,7 +39,6 @@ const producers = d.contact.filter(
 const source = producers[0]?.organization;
 const citation = citationText(d);
 const bibtexStr = bibtex(d);
-const risStr = ris(d);
 
 // Build-time cross-links: stories that cite this dataset id in their frontmatter
 const seenIn = (
@@ -364,16 +362,15 @@ const jsonLd = datasetJsonLd(
 
       {citation && (
           <section id="citation">
-            <h3>Citation</h3>
+            <h3>How to cite</h3>
+            <p class="cite-note">
+              Please cite the dataset and any associated peer-reviewed
+              publications.
+            </p>
             <blockquote class="cite">{citation}</blockquote>
             {bibtexStr && (
               <div data-code-label="BibTeX">
                 <Code code={bibtexStr} lang="bibtex" theme="github-light" />
-              </div>
-            )}
-            {risStr && (
-              <div data-code-label="RIS">
-                <Code code={risStr} lang="text" theme="github-light" />
               </div>
             )}
             {d.related_publications.length > 0 && (
@@ -967,14 +964,19 @@ td.mono {
   word-break: break-all;
 }
 
+.cite-note {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--text-soft);
+}
+
 .cite {
   padding: 16px;
-  margin: 8px 0 0;
+  margin: 12px 0 0;
   font-size: 14.5px;
   line-height: 1.7;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--cdh-blue-700);
   border-radius: 6px;
 }
 

@@ -73,23 +73,6 @@ export function bibtex(d: CatalogRecord) {
   return `@misc{${key},\n${lines.join(",\n")}\n}`;
 }
 
-export function ris(d: CatalogRecord) {
-  const c = d.citation;
-  if (!c) return undefined;
-  const lines = [
-    "TY  - DATA",
-    `TI  - ${c.title}`,
-    ...c.authors.map((a) => `AU  - ${a}`),
-    c.date && `PY  - ${c.date.slice(0, 4)}`,
-    c.publisher && `PB  - ${c.publisher}`,
-    d.doi && `DO  - ${d.doi}`,
-    (d.doi ? `https://doi.org/${d.doi}` : c.url)
-      && `UR  - ${d.doi ? `https://doi.org/${d.doi}` : c.url}`,
-    "ER  - ",
-  ].filter(Boolean);
-  return lines.join("\n");
-}
-
 function contactToSchemaOrg(c: CatalogRecord["contact"][number]) {
   if (c.name) {
     return {
