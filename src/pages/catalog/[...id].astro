@@ -72,6 +72,17 @@ const snippet = [
   .filter(Boolean)
   .join("\n\n");
 
+// R equivalents: GDAL's multidim ZARR driver via stars, /vsicurl/ via terra
+const rSnippet = [
+  zarrUrl
+    && `library(stars)\n\nds <- read_mdim(\n  'ZARR:"/vsicurl/${zarrUrl}"'\n)`,
+  cogsUrl
+    && exampleFile
+    && `library(terra)\n\nr <- rast(\n  "/vsicurl/${cogsUrl}${exampleFile}"\n)`,
+]
+  .filter(Boolean)
+  .join("\n\n");
+
 const SECTIONS = [
   ["overview", "Overview"],
   d.dimensions.length + d.variables.length > 0 && ["schema", "Schema"],
@@ -296,7 +307,20 @@ const jsonLd = datasetJsonLd(
               Cloud-optimised distributions — read just the window you need directly from object
               storage.
             </p>
-            {snippet && <Code code={snippet} lang="python" theme="github-light" />}
+            {snippet && (
+              <div class="snippet">
+                <div class="lang-tabs">
+                  <button aria-pressed="true" data-lang="python" type="button">Python</button>
+                  <button aria-pressed="false" data-lang="r" type="button">R</button>
+                </div>
+                <div data-code-label="Python" data-snippet="python">
+                  <Code code={snippet} lang="python" theme="github-light" />
+                </div>
+                <div data-code-label="R" data-snippet="r" hidden>
+                  <Code code={rSnippet} lang="r" theme="github-light" />
+                </div>
+              </div>
+            )}
 
             <div class="assets">
               {[...d.data, ...d.additional_assets].map((asset) => (
@@ -498,6 +522,21 @@ if (tabs.length > 0) {
   // In-content links (Access the data / Cite) and back-forward still work
   addEventListener("hashchange", () => showPanel(location.hash.slice(1)));
   showPanel(location.hash.slice(1));
+}
+
+// Streaming-snippet language switcher
+const langButtons = [
+  ...document.querySelectorAll<HTMLButtonElement>("[data-lang]"),
+];
+for (const btn of langButtons) {
+  btn.addEventListener("click", () => {
+    for (const b of langButtons)
+      b.setAttribute("aria-pressed", String(b === btn));
+    for (const block of document.querySelectorAll<HTMLElement>(
+      "[data-snippet]",
+    ))
+      block.hidden = block.dataset.snippet !== btn.dataset.lang;
+  });
 }
 
 // Copy-to-clipboard for asset endpoint URLs
@@ -760,6 +799,33 @@ article ul {
 .dim-name {
   font-weight: 700;
   color: var(--cdh-blue-700);
+}
+
+.snippet {
+  margin-top: 4px;
+}
+
+.lang-tabs {
+  display: inline-flex;
+  margin-bottom: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+
+.lang-tabs button {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+}
+
+.lang-tabs button[aria-pressed="true"] {
+  font-weight: 600;
+  color: #fff;
+  background: var(--cdh-blue-950);
 }
 
 .table-wrap {
