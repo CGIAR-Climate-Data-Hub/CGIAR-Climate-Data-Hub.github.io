@@ -321,7 +321,17 @@ nav {
   display: none;
 }
 
-@media (width <= 960px) {
+/* Below this the bar is too tight for the labelled trigger — swap to the
+   icon-only compact one Pagefind provides, same as the mobile treatment */
+@media (width <= 1200px) {
+  .search {
+    flex: 0 0 auto;
+  }
+
+  .search :global(.trigger-full) {
+    display: none;
+  }
+
   .search :global(.trigger-compact) {
     display: block;
   }
@@ -387,15 +397,6 @@ nav {
     margin-right: -8px;
   }
 
-  .search {
-    flex: 0 0 auto;
-    margin-left: auto;
-  }
-
-  .search :global(.trigger-full) {
-    display: none;
-  }
-
   .mobile-menu:not([hidden]) {
     display: block;
     border-top: 1px solid var(--border);
@@ -428,6 +429,13 @@ nav {
 
   .mobile-menu a:last-child {
     border-bottom: 0;
+  }
+}
+
+/* Narrow phones: the full wordmark pushes the menu button off-screen */
+@media (width <= 360px) {
+  .bar :global(.wordmark) {
+    display: none;
   }
 }
 </style>
