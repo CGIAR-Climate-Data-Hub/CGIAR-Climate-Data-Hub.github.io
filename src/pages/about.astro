@@ -12,7 +12,30 @@ if (!entry) throw new Error("Missing src/content/pages/about.md");
 const { Content } = await render(entry);
 const { title, lede, missions, principles } = entry.data;
 
-const datasetCount = (await getCollection("catalog")).length;
+// Derived from the catalog records at build time
+const catalogEntries = await getCollection("catalog");
+const datasetCount = catalogEntries.length;
+
+const UNITS: Record<string, number> = { KB: 1e3, MB: 1e6, GB: 1e9, TB: 1e12 };
+const totalBytes = catalogEntries
+  .flatMap((e) => [...e.data.data, ...e.data.additional_assets])
+  .reduce((sum, a) => {
+    const m = a.file_size?.match(/([\d.]+)\s*(KB|MB|GB|TB)/i);
+    return m ? sum + Number(m[1]) * UNITS[m[2].toUpperCase()] : sum;
+  }, 0);
+// Floor to one significant figure — sizes are a known undercount (not every
+// asset lists file_size), so a clean "500+ MB" is more honest than 531.
+const floorClean = (n: number) => {
+  const p = 10 ** Math.floor(Math.log10(Math.max(n, 1)));
+  return Math.floor(n / p) * p;
+};
+const [volume, volumeUnit] =
+  totalBytes >= 1e12
+    ? [totalBytes / 1e12, "TB"]
+    : totalBytes >= 1e9
+      ? [totalBytes / 1e9, "GB"]
+      : [totalBytes / 1e6, "MB"];
+const dataVolume = `${floorClean(volume)}+ ${volumeUnit}`;
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -30,10 +53,28 @@ const jsonLd = {
   <section class="hero">
     <div class="container">
       <Breadcrumbs items={[{ label: "Hub", href: "/" }, { label: "About" }]} />
-      <div class="hero-text">
-        <div class="label about-kicker">About the Hub</div>
-        <h1>{title}</h1>
-        <p>{lede}</p>
+      <div class="hero-grid">
+        <div class="hero-text">
+          <div class="label about-kicker">About the Hub</div>
+          <h1>{title}</h1>
+          <p>{lede}</p>
+        </div>
+        <aside class="glance">
+          <div class="label">At a glance</div>
+          <dl>
+            <dt>Program</dt>
+            <dd>CGIAR Climate Action</dd>
+            <dt>Maintainer</dt>
+            <dd>Alliance of Bioversity International and CIAT</dd>
+            <dt>Datasets</dt>
+            <dd>{datasetCount}</dd>
+            <dt>Data volume</dt>
+            <dd>{dataVolume}</dd>
+            <dt>License</dt>
+            <dd>CC-BY-4.0</dd>
+          </dl>
+          <a class="glance-link" href={GITHUB_URL}>Hub on GitHub →</a>
+        </aside>
       </div>
     </div>
   </section>
@@ -70,22 +111,6 @@ const jsonLd = {
         <a class="btn btn-ghost" href="/wikis">Read the standards</a>
       </div>
     </div>
-    <aside>
-      <div class="glance">
-        <div class="label">At a glance</div>
-        <dl>
-          <dt>Program</dt>
-          <dd>CGIAR Climate Action</dd>
-          <dt>Maintainer</dt>
-          <dd>Alliance of Bioversity International and CIAT</dd>
-          <dt>Datasets</dt>
-          <dd>{datasetCount}</dd>
-          <dt>License</dt>
-          <dd>CC-BY-4.0</dd>
-        </dl>
-        <a class="glance-link" href={GITHUB_URL}>Hub on GitHub →</a>
-      </div>
-    </aside>
   </section>
 </Layout>
 
@@ -96,9 +121,16 @@ const jsonLd = {
   border-bottom: 1px solid var(--border);
 }
 
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 48px;
+  align-items: start;
+  margin-top: 16px;
+}
+
 .hero-text {
   max-width: 780px;
-  margin-top: 16px;
 }
 
 .about-kicker {
@@ -181,9 +213,6 @@ h1 {
 }
 
 .governance {
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 40px;
   padding-top: 48px;
 }
 
@@ -201,7 +230,7 @@ h1 {
 
 .glance {
   padding: 20px;
-  background: var(--surface);
+  background: var(--bg); /* the hero backdrop is --surface, so invert */
   border: 1px solid var(--border);
   border-radius: 10px;
 }
@@ -236,8 +265,9 @@ dd {
 }
 
 @media (width <= 860px) {
-  .governance {
+  .hero-grid {
     grid-template-columns: 1fr;
+    gap: 28px;
   }
 
   .principles-grid {
