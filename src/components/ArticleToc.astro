@@ -7,15 +7,32 @@ interface Props {
 }
 
 const headings = Astro.props.headings.filter((h) => h.depth <= 3);
+
+// h3s group under their preceding h2 so CSS can reveal them per-section
+const groups: { heading: MarkdownHeading; children: MarkdownHeading[] }[] = [];
+for (const h of headings) {
+  if (h.depth <= 2 || groups.length === 0) {
+    groups.push({ heading: h, children: [] });
+  } else {
+    groups[groups.length - 1].children.push(h);
+  }
+}
 ---
 
 {headings.length > 1 && (
     <nav aria-label="Table of contents" data-toc>
       <div class="label">On this page</div>
-      {headings.map((h) => (
-        <a href={`#${h.slug}`} class:list={[`depth-${h.depth}`]}>
-          {h.text}
-        </a>
+      {groups.map((g) => (
+        <div class="sec">
+          <a href={`#${g.heading.slug}`} class:list={[`depth-${g.heading.depth}`]}>
+            {g.heading.text}
+          </a>
+          {g.children.map((h) => (
+            <a href={`#${h.slug}`} class:list={[`depth-${h.depth}`]}>
+              {h.text}
+            </a>
+          ))}
+        </div>
       ))}
     </nav>
   )}
@@ -71,6 +88,18 @@ a {
 a.depth-3 {
   padding-left: 28px;
   font-size: 12.5px;
+}
+
+/* Sub-headings appear only while reading their section; without :has()
+   support they simply stay visible. */
+@supports selector(:has(a)) {
+  .sec a.depth-3 {
+    display: none;
+  }
+
+  .sec:has(a[aria-current="true"]) a.depth-3 {
+    display: block;
+  }
 }
 
 a:hover {

@@ -29,11 +29,20 @@ picture takes weeks of GIS work each planning cycle.
 
 ## What was built
 
-The explorer streams Hub-hosted layers directly — crop production from
-MAPSPAM, livestock densities from GLW4, and hazard surfaces — clipped to
-county boundaries with plain-language summaries generated from the metadata
-records. Because every layer carries CDH metadata, the tool can show
-provenance and appropriate-use guidance inline.
+The explorer streams Hub-hosted layers directly, clipped to county boundaries,
+with plain-language summaries generated from the metadata records.
+
+### The data layers
+
+Crop production from MAPSPAM, livestock densities from GLW4, and hazard
+surfaces — all pulled straight from the Hub's cloud-native stores, so the
+tool ships no data of its own.
+
+### Metadata doing the talking
+
+Because every layer carries CDH metadata, the tool shows provenance and
+appropriate-use guidance inline — planners see where a number comes from
+and what it shouldn't be used for, without leaving the map.
 
 ## What changed
 
