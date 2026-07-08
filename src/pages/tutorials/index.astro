@@ -91,13 +91,14 @@ const description =
             </div>
           </details>
         ))}
-      <button hidden id="clear-filters" type="button">Clear all filters</button>
     </aside>
 
     <div>
       <div class="results-meta label">
-        <b id="match-count">{tutorials.length}</b>
-        tutorials
+        <span><b id="match-count">{tutorials.length}</b> tutorials</span>
+        <button hidden id="clear-filters" type="button">
+          Clear all filters
+        </button>
       </div>
       <ul class="grid">
         {tutorials.map((t) => (
@@ -232,6 +233,10 @@ clear?.addEventListener("click", () => {
 }
 
 .results-meta {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  min-height: 28px; /* reserve the clear button's height — no shift when it appears */
   margin-bottom: 18px;
   color: var(--text-mute);
 }

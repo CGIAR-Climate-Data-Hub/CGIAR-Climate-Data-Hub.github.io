@@ -1,5 +1,6 @@
 ---
 import { getCollection } from "astro:content";
+import DataGlyph from "@/components/DataGlyph.astro";
 import DatasetCard from "@/components/DatasetCard.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import PageHead from "@/components/PageHead.astro";
@@ -78,7 +79,7 @@ const catalogSchema = {
     title="Catalog"
   >
     <div class="head-actions" slot="right">
-      <a class="btn btn-ghost" href="/contribute">Contribute</a>
+      <a class="btn btn-ghost btn-cta" href="/contribute">Contribute</a>
       <a class="btn btn-primary" href="/wikis">Standards</a>
     </div>
   </PageHead>
@@ -103,6 +104,24 @@ const catalogSchema = {
           placeholder="Search datasets — name, source, variable, keyword…"
           type="search"
         >
+      </div>
+      <div class="layout-wrap">
+        <span class="label">Layout</span>
+        <div aria-label="Result layout" class="layout-switch" role="group">
+          {[
+            ["grid", "Cards"],
+            ["compact", "Compact"],
+            ["table", "Table"],
+          ].map(([key, label]) => (
+            <button
+              aria-pressed={key === "grid" ? "true" : "false"}
+              data-layout={key}
+              type="button"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   </section>
@@ -251,14 +270,27 @@ const catalogSchema = {
             </div>
           </details>
         ))}
-      <button hidden id="clear-filters" type="button">Clear all filters</button>
     </aside>
 
     <div>
       <div class="results-meta">
-        <span><b id="match-count">{datasets.length}</b> datasets matched</span>
+        <span
+          ><b id="match-count">{datasets.length}</b>{" "}
+          <span id="match-label">datasets</span></span
+        >
+        <button hidden id="clear-filters" type="button">
+          Clear all filters
+        </button>
       </div>
-      <ul class="grid">
+      <div class="mono table-head" hidden id="table-head">
+        <span>Type</span>
+        <span>Name</span>
+        <span>Coverage</span>
+        <span>Resolution</span>
+        <span>Format</span>
+        <span>Updated</span>
+      </div>
+      <ul class="grid" data-pagefind-ignore id="results">
         {datasets.map((d) => (
             <li
               data-bbox={d.bbox?.join(" ")}
@@ -270,6 +302,32 @@ const catalogSchema = {
               data-search={[d.title, d.description, ...d.keywords, d.coverage].join(" ").toLowerCase()}
             >
               <DatasetCard dataset={d} />
+              <a class="row-compact" href={`/catalog/${d.id}`}>
+                <DataGlyph type={d.type} />
+                <span class="row-text">
+                  <span class="row-title">{d.title}</span>
+                  <span class="row-desc">{d.description}</span>
+                </span>
+                <span class="mono row-meta">
+                  <span>{d.coverage ?? "—"}</span>
+                  <span>{d.formats.join(" · ")}</span>
+                </span>
+              </a>
+              <a class="row-table" href={`/catalog/${d.id}`}>
+                <span>
+                  <span class:list={["pill", "dot", d.type]}
+                    >{d.type === "spatial" ? "Spatial" : "Non-spatial"}</span
+                  >
+                </span>
+                <span class="row-text">
+                  <span class="row-title">{d.title}</span>
+                  <span class="row-desc">{d.description}</span>
+                </span>
+                <span class="mono">{d.coverage ?? "—"}</span>
+                <span class="mono">{d.resolution ?? "—"}</span>
+                <span class="mono">{d.formats.join(" · ")}</span>
+                <span class="mono">{d.updated.slice(0, 10) || "—"}</span>
+              </a>
             </li>
           ))}
       </ul>
@@ -282,6 +340,25 @@ const catalogSchema = {
 </Layout>
 
 <script>
+// Layout switcher — a display preference, so it persists locally, not in the URL
+const layoutButtons = [
+  ...document.querySelectorAll<HTMLButtonElement>("[data-layout]"),
+];
+const results = document.querySelector("#results");
+const tableHead = document.querySelector<HTMLElement>("#table-head");
+function setLayout(layout: string) {
+  results?.classList.toggle("layout-compact", layout === "compact");
+  results?.classList.toggle("layout-table", layout === "table");
+  if (tableHead) tableHead.hidden = layout !== "table";
+  for (const b of layoutButtons)
+    b.setAttribute("aria-pressed", String(b.dataset.layout === layout));
+  localStorage.setItem("catalog-layout", layout);
+}
+for (const b of layoutButtons)
+  b.addEventListener("click", () => setLayout(b.dataset.layout ?? "grid"));
+const savedLayout = localStorage.getItem("catalog-layout");
+if (savedLayout && savedLayout !== "grid") setLayout(savedLayout);
+
 const cards = [...document.querySelectorAll<HTMLElement>("li[data-dataset]")];
 const buttons = [
   ...document.querySelectorAll<HTMLButtonElement>(".facet-option"),
@@ -289,6 +366,7 @@ const buttons = [
 const search = document.querySelector<HTMLInputElement>("#catalog-search");
 const clear = document.querySelector<HTMLButtonElement>("#clear-filters");
 const count = document.querySelector("#match-count");
+const matchLabel = document.querySelector("#match-label");
 const empty = document.querySelector<HTMLElement>("#empty-state");
 
 const facetKeys = ["domain", "geography", "format", "license"] as const;
@@ -323,6 +401,8 @@ function apply() {
     if (show) matched++;
   }
   if (count) count.textContent = String(matched);
+  if (matchLabel)
+    matchLabel.textContent = matched === 1 ? "dataset" : "datasets";
   if (empty) empty.hidden = matched > 0;
   for (const b of buttons) {
     b.setAttribute(
@@ -665,8 +745,9 @@ apply();
 
 .results-meta {
   display: flex;
+  gap: 14px;
   align-items: center;
-  justify-content: space-between;
+  min-height: 28px; /* reserve the clear button's height — no shift when it appears */
   margin-bottom: 16px;
   font-size: 13px;
   color: var(--text-soft);
@@ -683,6 +764,171 @@ apply();
   padding: 0;
   margin: 0;
   list-style: none;
+}
+
+/* ---- Layout switcher ---- */
+.layout-wrap {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.layout-wrap .label {
+  color: var(--text-mute);
+}
+
+.layout-switch {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+
+.layout-switch button {
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+}
+
+.layout-switch button[aria-pressed="true"] {
+  font-weight: 600;
+  color: #fff;
+  background: var(--cdh-blue-950);
+}
+
+/* ---- Compact & table layouts ---- */
+/* Cards render all three variants; the list's class picks one. */
+.row-compact,
+.row-table,
+.table-head {
+  display: none;
+}
+
+.grid.layout-compact,
+.grid.layout-table {
+  display: block;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.grid.layout-table {
+  border-top: 0;
+  border-radius: 0 0 6px 6px;
+}
+
+:is(.grid.layout-compact, .grid.layout-table) :global(.ds-card) {
+  display: none;
+}
+
+.grid.layout-compact li + li,
+.grid.layout-table li + li {
+  border-top: 1px solid var(--border);
+}
+
+.row-compact {
+  display: none;
+  grid-template-columns: 38px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 18px;
+  color: inherit;
+  transition: background 0.12s;
+}
+
+.grid.layout-compact .row-compact {
+  display: grid;
+}
+
+.row-compact:hover,
+.row-table:hover {
+  text-decoration: none;
+  background: var(--grey-1);
+}
+
+.row-text {
+  display: block;
+  min-width: 0;
+}
+
+.row-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cdh-blue-950);
+}
+
+.row-desc {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+.row-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-end;
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+.table-head,
+.row-table {
+  grid-template-columns: 108px 2fr 1fr 1fr 100px 96px;
+  gap: 14px;
+  align-items: center;
+  padding: 10px 14px;
+}
+
+.table-head {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--grey-1);
+  border: 1px solid var(--border);
+  border-radius: 6px 6px 0 0;
+}
+
+.table-head:not([hidden]) {
+  display: grid;
+}
+
+.row-table {
+  padding: 13px 14px;
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+.grid.layout-table .row-table {
+  display: grid;
+}
+
+.row-table .row-desc {
+  font-size: 12.5px;
+}
+
+@media (width <= 860px) {
+  .table-head,
+  .row-table {
+    grid-template-columns: 90px 2fr 1fr;
+  }
+
+  .table-head span:nth-child(n + 4),
+  .row-table > :nth-child(n + 4) {
+    display: none;
+  }
 }
 
 @media (width <= 860px) {

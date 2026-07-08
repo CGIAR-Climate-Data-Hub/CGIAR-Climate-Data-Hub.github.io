@@ -337,13 +337,21 @@ hr {
   color: var(--text-mute);
 }
 
+/* Sits in the results-meta row (fixed height, so no layout shift), visible
+   only while filters are active */
 #clear-filters {
-  padding: 6px 0;
-  font-size: 12.5px;
+  padding: 4px 12px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--cdh-blue-700);
-  background: transparent;
-  border: 0;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+
+#clear-filters:hover {
+  color: var(--cdh-blue-950);
+  border-color: var(--cdh-blue-300);
 }
 
 .empty {
