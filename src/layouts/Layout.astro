@@ -103,15 +103,22 @@ const siteGraph = {
         pre.closest<HTMLElement>("[data-code-label]")?.dataset.codeLabel
         ?? pre.dataset.language
         ?? "code";
+      const icon = (path: string) =>
+        `<svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
+      const copyIcon = icon(
+        '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+      );
+      const checkIcon = icon('<path d="M20 6 9 17l-5-5"/>');
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "code-copy";
-      btn.textContent = "Copy";
+      btn.setAttribute("aria-label", "Copy code");
+      btn.innerHTML = copyIcon;
       btn.addEventListener("click", async () => {
         await navigator.clipboard.writeText(pre.innerText);
-        btn.textContent = "Copied";
+        btn.innerHTML = checkIcon;
         setTimeout(() => {
-          btn.textContent = "Copy";
+          btn.innerHTML = copyIcon;
         }, 1200);
       });
       head.append(lang, btn);
