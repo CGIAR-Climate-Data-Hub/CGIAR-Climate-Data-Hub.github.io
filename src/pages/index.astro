@@ -1,5 +1,6 @@
 ---
 import { getCollection } from "astro:content";
+import PagefindConfig from "astro-pagefind/components/PagefindConfig.astro";
 import DataGlyph from "@/components/DataGlyph.astro";
 import SectionHeader from "@/components/SectionHeader.astro";
 import Layout from "@/layouts/Layout.astro";
@@ -110,30 +111,17 @@ const GLYPHS: Record<string, string> = {
           use.
         </p>
 
-        <form action="/catalog" class="paper-search" method="get">
-          <svg
-            aria-hidden="true"
-            fill="none"
-            height="19"
-            stroke="currentColor"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-            width="19"
-          >
-            <circle cx="11" cy="11" r="7"></circle>
-            <path d="m21 21-4.3-4.3"></path>
-          </svg>
-          <input
-            name="q"
-            placeholder="Search datasets, docs, and tutorials"
-            type="search"
-          >
-          <button class="btn btn-primary" type="submit">Search</button>
-        </form>
+        <PagefindConfig instance="hero" />
+        <pagefind-searchbox
+          class="paper-search"
+          instance="hero"
+          placeholder="Search datasets, docs, and tutorials"
+          shortcut="/"
+        ></pagefind-searchbox>
 
         <div class="try-row">
           <span class="label">Try</span>
-          {TRY_CHIPS.map((chip) => <a class="try-chip" href={`/catalog?q=${encodeURIComponent(chip)}`}>{chip}</a>)}
+          {TRY_CHIPS.map((chip) => <a class="try-chip" href={`/search?q=${encodeURIComponent(chip)}`}>{chip}</a>)}
         </div>
       </div>
 
@@ -244,9 +232,10 @@ const GLYPHS: Record<string, string> = {
 
 <style>
 /* ---- Hero: paper statement + program-blue sweep on the right ---- */
+/* No overflow clipping here — the searchbox dropdown must extend past the
+   hero's bottom edge. The ::before gradient is inset: 0, so it can't leak. */
 .hero {
   position: relative;
-  overflow: hidden;
 }
 
 .hero::before {
@@ -292,12 +281,18 @@ h1 {
   color: var(--text-soft);
 }
 
+/* The searchbox renders its input at runtime, so inner parts are styled
+   via :global to keep the hero's paper look. */
 .paper-search {
+  display: block;
+  min-height: 59px; /* input height, reserved so JS render doesn't shift layout */
+  margin-top: 32px;
+}
+
+.paper-search :global(.pf-searchbox-input-wrapper) {
   display: flex;
   align-items: center;
-  margin-top: 32px;
-  overflow: hidden;
-  color: var(--grey-5);
+  padding-right: 14px;
   background: var(--surface);
   border: 1.5px solid var(--border-strong);
   border-radius: var(--input-radius);
@@ -307,31 +302,20 @@ h1 {
     box-shadow 0.16s;
 }
 
-.paper-search:focus-within {
+.paper-search :global(.pf-searchbox-input-wrapper:focus-within) {
   border-color: var(--cdh-blue-700);
   box-shadow: 0 8px 30px rgb(15 46 78 / 10%);
 }
 
-.paper-search svg {
-  flex-shrink: 0;
-  margin-left: 22px;
-}
-
-.paper-search input {
+.paper-search :global(.pf-searchbox-input) {
   flex: 1;
   min-width: 0;
-  padding: 18px 12px;
+  padding: 18px 22px;
   font-size: 16.5px;
   color: var(--text);
   outline: 0;
   background: transparent;
   border: 0;
-}
-
-.paper-search button {
-  padding: 10px 26px;
-  margin: 6px;
-  font-size: 14.5px;
 }
 
 .try-row {
