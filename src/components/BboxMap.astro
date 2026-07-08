@@ -5,15 +5,18 @@ import { CONTINENTS } from "@/lib/geo";
 interface Props {
   bbox?: number[];
   label?: string;
+  crs?: string;
 }
 
-const { bbox, label } = Astro.props;
+const { bbox, label, crs = "EPSG:4326" } = Astro.props;
 
+// Cropped below 60°S — nothing but empty ocean and Antarctica down there
 const W = 300;
-const H = 150;
+const H = 125;
+const LAT_RANGE = 150;
 const toSvg = (lon: number, lat: number) => [
   ((lon + 180) / 360) * W,
-  ((90 - lat) / 180) * H,
+  ((90 - lat) / LAT_RANGE) * H,
 ];
 
 const rect = bbox
@@ -42,7 +45,7 @@ const rect = bbox
     </g>
     {rect && <rect fill="rgb(99 169 254 / 14%)" height={rect.h} stroke="var(--cdh-blue-700)" stroke-dasharray="4 2" stroke-width="1" width={rect.w} x={rect.x} y={rect.y}></rect>}
   </svg>
-  {label && <figcaption class="mono">{label} · EPSG:4326</figcaption>}
+  {label && <figcaption class="mono">{label} · {crs}</figcaption>}
 </figure>
 
 <style>

@@ -37,6 +37,14 @@ const LICENSE_URLS: Record<string, string> = {
   CC0: "https://creativecommons.org/publicdomain/zero/1.0/",
 };
 
+// Records should carry SPDX ids, which all resolve to a canonical page;
+// anything non-SPDX-shaped gets no link.
+export function licenseUrl(license: string) {
+  return /^[A-Za-z0-9][A-Za-z0-9.+-]*$/.test(license)
+    ? `https://spdx.org/licenses/${license}.html`
+    : undefined;
+}
+
 // Records store one bbox or a list of them; the site only maps the first.
 export function normalizeBbox(bbox?: number[] | number[][]) {
   if (!bbox || bbox.length === 0) return undefined;

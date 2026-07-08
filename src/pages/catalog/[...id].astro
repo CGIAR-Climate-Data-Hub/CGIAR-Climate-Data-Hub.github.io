@@ -3,7 +3,6 @@ import { Code } from "astro:components";
 import { getCollection } from "astro:content";
 import BboxMap from "@/components/BboxMap.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
-import DataGlyph from "@/components/DataGlyph.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import Layout from "@/layouts/Layout.astro";
 import {
@@ -11,6 +10,7 @@ import {
   citationText,
   datasetJsonLd,
   humanize,
+  licenseUrl,
   normalizeBbox,
 } from "@/lib/catalog";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
@@ -26,7 +26,6 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const d = entry.data;
 
-const type = d.spatial ? ("spatial" as const) : ("tabular" as const);
 const bbox = normalizeBbox(d.spatial?.bbox);
 const coverage = d.spatial?.geography.map(humanize).join(", ");
 const resolution = d.spatial?.resolution[0]?.label;
@@ -38,6 +37,7 @@ const producers = d.contact.filter(
 );
 const source = producers[0]?.organization;
 const citation = citationText(d);
+const licenseHref = licenseUrl(d.license);
 const bibtexStr = bibtex(d);
 
 // Build-time cross-links: stories that cite this dataset id in their frontmatter
@@ -100,20 +100,6 @@ const jsonLd = datasetJsonLd(
       />
       <div class="header-grid">
         <div>
-          <div class="pills">
-            <DataGlyph size={16} type={type} />
-            <span class:list={["pill", "dot", type]}
-              >{type === "spatial" ? "Spatial" : "Non-spatial"}</span
-            >
-            <span class="pill">{d.license}</span>
-            {d.version && <span class="pill">{d.version}</span>}
-            {d.updated && (
-              <span class="updated">
-                Updated <span class="mono">{d.updated}</span>
-              </span>
-            )}
-          </div>
-
           <h1>{d.title}</h1>
           <p class="description">{d.description}</p>
 
@@ -141,7 +127,7 @@ const jsonLd = datasetJsonLd(
         </div>
 
         <div>
-          <BboxMap bbox={bbox} label={coverage} />
+          <BboxMap bbox={bbox} crs={d.spatial?.crs} label={coverage} />
           <dl class="facts mono">
             {d.doi && (
               <>
@@ -157,10 +143,24 @@ const jsonLd = datasetJsonLd(
                 <dd>{source}</dd>
               </>
             )}
-            {d.spatial?.crs && (
+            <dt>license</dt>
+            <dd>
+              {licenseHref ? (
+                <a href={licenseHref} rel="noreferrer">{d.license}</a>
+              ) : (
+                d.license
+              )}
+            </dd>
+            {d.version && (
               <>
-                <dt>crs</dt>
-                <dd>{d.spatial.crs}</dd>
+                <dt>version</dt>
+                <dd>{d.version}</dd>
+              </>
+            )}
+            {d.updated && (
+              <>
+                <dt>updated</dt>
+                <dd>{d.updated}</dd>
               </>
             )}
           </dl>
@@ -412,18 +412,10 @@ const jsonLd = datasetJsonLd(
               <dd>{temporal}</dd>
             </>
           )}
-          <dt>License</dt>
-          <dd>{d.license}</dd>
           {d.cdh && d.cdh.domain.length > 0 && (
             <>
               <dt>Domain</dt>
               <dd>{d.cdh.domain.map(humanize).join(", ")}</dd>
-            </>
-          )}
-          {source && (
-            <>
-              <dt>Source</dt>
-              <dd>{source}</dd>
             </>
           )}
         </dl>
@@ -536,19 +528,6 @@ document.addEventListener("click", async (e) => {
   margin-top: 16px;
 }
 
-.pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.updated {
-  margin-left: 6px;
-  font-size: 12px;
-  color: var(--text-mute);
-}
-
 h1 {
   max-width: 760px;
   margin-top: 14px;
@@ -616,7 +595,8 @@ h1 {
 
 .facts dd {
   margin: 0;
-  word-break: break-all;
+  /* Wrap at word boundaries; only break inside unbreakable tokens (DOIs, ids) */
+  overflow-wrap: anywhere;
 }
 
 .section-nav {
