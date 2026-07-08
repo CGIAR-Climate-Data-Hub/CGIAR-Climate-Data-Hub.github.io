@@ -18,13 +18,25 @@ import { GITHUB_URL, SITE_NAME } from "@/site.config";
 
 export async function getStaticPaths() {
   const entries = await getCollection("catalog");
+  // Records sharing a catalog folder are versions of the same dataset
+  const familyOf = (id: string) => id.split("/")[0];
   return entries.map((entry) => ({
     params: { id: entry.data.id },
-    props: { entry },
+    props: {
+      entry,
+      versions: entries
+        .filter((e) => familyOf(e.id) === familyOf(entry.id))
+        .map((e) => ({
+          id: e.data.id,
+          version: e.data.version,
+          updated: e.data.updated ?? e.data.created ?? "",
+        }))
+        .sort((a, b) => b.updated.localeCompare(a.updated)),
+    },
   }));
 }
 
-const { entry } = Astro.props;
+const { entry, versions } = Astro.props;
 const d = entry.data;
 
 const bbox = normalizeBbox(d.spatial?.bbox);
@@ -117,6 +129,36 @@ const jsonLd = datasetJsonLd(
       <div class="header-grid">
         <div>
           <h1>{d.title}</h1>
+          {source && <p class="source">{source}</p>}
+
+          {d.version && (
+            <div class="version-row">
+              <span class="label">Version</span>
+              <div class="version-toggle">
+                {versions.map((v, i) => (
+                  <a
+                    aria-current={v.id === d.id ? "page" : undefined}
+                    href={`/catalog/${v.id}`}
+                  >
+                    {v.version ?? v.id}
+                    {i === 0 && versions.length > 1 && (
+                      <span class="latest">LATEST</span>
+                    )}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div class="mono meta-row">
+            {licenseHref ? (
+              <a href={licenseHref} rel="noreferrer">{d.license}</a>
+            ) : (
+              <span>{d.license}</span>
+            )}
+            {d.doi && <a href={`https://doi.org/${d.doi}`}>doi:{d.doi}</a>}
+            {d.updated && <span>updated {d.updated}</span>}
+          </div>
 
           <div class="keywords">
             {d.keywords.map((k) =>
@@ -145,40 +187,6 @@ const jsonLd = datasetJsonLd(
 
         <div>
           <BboxMap bbox={bbox} crs={d.spatial?.crs} label={coverage} />
-          <dl class="facts mono">
-            {d.doi && (
-              <>
-                <dt>doi</dt>
-                <dd><a href={`https://doi.org/${d.doi}`}>{d.doi}</a></dd>
-              </>
-            )}
-            {source && (
-              <>
-                <dt>source</dt>
-                <dd>{source}</dd>
-              </>
-            )}
-            <dt>license</dt>
-            <dd>
-              {licenseHref ? (
-                <a href={licenseHref} rel="noreferrer">{d.license}</a>
-              ) : (
-                d.license
-              )}
-            </dd>
-            {d.version && (
-              <>
-                <dt>version</dt>
-                <dd>{d.version}</dd>
-              </>
-            )}
-            {d.updated && (
-              <>
-                <dt>updated</dt>
-                <dd>{d.updated}</dd>
-              </>
-            )}
-          </dl>
         </div>
       </div>
     </div>
@@ -650,27 +658,79 @@ h1 {
   margin-top: 24px;
 }
 
-.facts {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 4px 10px;
-  padding: 10px 12px;
-  margin: 12px 0 0;
-  font-size: 11px;
+.source {
+  max-width: 640px;
+  margin-top: 10px;
+  font-size: 15px;
   color: var(--text-soft);
-  background: var(--grey-1);
-  border: 1px solid var(--border);
-  border-radius: 6px;
 }
 
-.facts dt {
+.version-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.version-row .label {
   color: var(--text-mute);
 }
 
-.facts dd {
-  margin: 0;
-  /* Wrap at word boundaries; only break inside unbreakable tokens (DOIs, ids) */
-  overflow-wrap: anywhere;
+.version-toggle {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+
+.version-toggle a {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 5px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+  background: var(--surface);
+}
+
+.version-toggle a + a {
+  border-left: 1px solid var(--border-strong);
+}
+
+.version-toggle a:hover {
+  text-decoration: none;
+  background: var(--grey-1);
+}
+
+.version-toggle a[aria-current="page"] {
+  color: #fff;
+  background: var(--cdh-blue-950);
+}
+
+.latest {
+  padding: 1px 5px;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--cdh-blue-700);
+  letter-spacing: 0.04em;
+  background: var(--cdh-blue-50);
+  border-radius: 6px;
+}
+
+.version-toggle a[aria-current="page"] .latest {
+  color: #fff;
+  background: rgb(255 255 255 / 22%);
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--text-soft);
 }
 
 .section-nav {
