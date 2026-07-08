@@ -196,6 +196,23 @@ const jsonLd = datasetJsonLd(
             </div>
           )}
 
+        {d.variables.length + d.dimensions.length > 0 && (
+            <div>
+              <h3>What's inside</h3>
+              <div class="chips">
+                {d.variables.slice(0, 8).map((v) => (
+                  <span class="chip mono" title={v.description}>{v.name}</span>
+                ))}
+                {d.variables.length > 8 && <span class="more">+{d.variables.length - 8}</span>}
+              </div>
+              <p class="digest">
+                {d.variables.length} variable{d.variables.length === 1 ? "" : "s"} ·{" "}
+                {d.dimensions.length} dimension{d.dimensions.length === 1 ? "" : "s"} —{" "}
+                <a href="#schema">see the full schema</a>
+              </p>
+            </div>
+          )}
+
         {snippet && (
             <div>
               <h3>Quick start</h3>
@@ -260,30 +277,6 @@ const jsonLd = datasetJsonLd(
                 ))}
               </div>
             </div>
-          )}
-
-        {d.variables.length + d.dimensions.length > 0 && (
-            <div>
-              <h3>What's inside</h3>
-              <div class="chips">
-                {d.variables.slice(0, 8).map((v) => (
-                  <span class="chip mono">{v.name}</span>
-                ))}
-                {d.variables.length > 8 && <span class="more">+{d.variables.length - 8}</span>}
-              </div>
-              <p class="digest">
-                {d.variables.length} variable{d.variables.length === 1 ? "" : "s"} ·{" "}
-                {d.dimensions.length} dimension{d.dimensions.length === 1 ? "" : "s"} —{" "}
-                <a href="#schema">see the full schema</a>
-              </p>
-            </div>
-          )}
-
-        {citation && (
-            <p class="cite-line">
-              <b>Cite:</b> {citation}{" "}
-              <a href="#citation">More formats</a>
-            </p>
           )}
       </section>
 
@@ -851,20 +844,6 @@ article ul {
   margin-top: 8px;
   font-size: 13px;
   color: var(--text-soft);
-}
-
-.cite-line {
-  padding: 12px 16px;
-  font-size: 13.5px;
-  line-height: 1.6;
-  color: var(--text-soft);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-}
-
-.cite-line b {
-  color: var(--cdh-blue-950);
 }
 
 .lang-tabs {
