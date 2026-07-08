@@ -542,17 +542,27 @@ function showPanel(id: string) {
   for (const a of tabs)
     a.setAttribute("aria-current", String(a.hash === `#${target}`));
 }
+// Don't strand the reader mid-page: reveal the new panel top if it's off-screen
+function snapToPanel() {
+  const panel = panels.find((s) => !s.hidden);
+  if (panel && panel.getBoundingClientRect().top < 130) panel.scrollIntoView();
+}
+
 if (tabs.length > 0) {
-  // replaceState instead of a real navigation — switching tabs must not scroll
+  // replaceState instead of a real navigation — skips the browser's anchor jump
   for (const a of tabs) {
     a.addEventListener("click", (e) => {
       e.preventDefault();
       history.replaceState(null, "", a.hash);
       showPanel(a.hash.slice(1));
+      snapToPanel();
     });
   }
-  // In-content links (Access the data / Cite) and back-forward still work
-  addEventListener("hashchange", () => showPanel(location.hash.slice(1)));
+  // In-content links (Access the data / see the full schema) and back-forward
+  addEventListener("hashchange", () => {
+    showPanel(location.hash.slice(1));
+    snapToPanel();
+  });
   showPanel(location.hash.slice(1));
 }
 
