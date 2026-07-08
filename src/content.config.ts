@@ -67,6 +67,30 @@ const useCases = defineCollection({
   }),
 });
 
+const contributionGuides = defineCollection({
+  loader: glob({
+    pattern: "**/*.{yaml,yml}",
+    base: "./src/content/contribution-guides",
+  }),
+  schema: z.object({
+    order: z.number(),
+    label: z.string(),
+    icon: z.string(),
+    title: z.string(),
+    intro: z.string(),
+    audience: z.string(),
+    time: z.string(),
+    steps: z.array(
+      z.object({
+        title: z.string(),
+        body: z.string(),
+        code: z.string().optional(),
+      }),
+    ),
+    checklist: z.array(z.string()),
+  }),
+});
+
 // ---- CDH metadata records (YAML, one per dataset) ----
 // Typed for what the site renders; .loose() keeps the rest of the record
 // available (the CDH standard's own JSON schema is the source of truth).
@@ -233,4 +257,12 @@ const catalog = defineCollection({
     .loose(),
 });
 
-export const collections = { tutorials, wikis, useCases, catalog, faq, pages };
+export const collections = {
+  tutorials,
+  wikis,
+  useCases,
+  contributionGuides,
+  catalog,
+  faq,
+  pages,
+};

@@ -1,123 +1,12 @@
 ---
+import { getCollection } from "astro:content";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import Layout from "@/layouts/Layout.astro";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
 
-type Step = { title: string; body: string; code?: string };
-type Guide = {
-  id: string;
-  label: string;
-  icon: string;
-  title: string;
-  intro: string;
-  audience: string;
-  time: string;
-  steps: Step[];
-  checklist: string[];
-};
-
-const GUIDES: Guide[] = [
-  {
-    id: "dataset",
-    label: "Contribute a dataset",
-    icon: "DATA",
-    title: "Add a dataset to the Climate Data Hub",
-    intro:
-      "Datasets are added by opening a submission pull request against the Hub metadata registry. CI runs structural and semantic validation; once approved, the dataset is indexed, a DOI is minted, and a STAC item is published.",
-    audience: "Center · Project · Partner",
-    time: "~2 days of preparation",
-    steps: [
-      {
-        title: "Confirm fit and licensing",
-        body: "Check that the dataset aligns with Hub scope (climate-relevant for agri-food systems) and that you can release it under CC-BY-4.0 or an approved equivalent. Need help? Open a scoping issue first.",
-      },
-      {
-        title: "Harmonise the format",
-        body: "Convert spatial rasters to Cloud-Optimised GeoTIFF or Zarr; cubes to Zarr. The COG authoring wiki has the validator.",
-      },
-      {
-        title: "Author the metadata record",
-        body: "Write the YAML record against the CDH schema — coverage, provenance, citation, and appropriate-use guidance — and validate it locally.",
-        code: "uvx check-jsonschema \\\n  --schemafile spec/schemas/profiles/cdh.schema.json my-record.yaml",
-      },
-      {
-        title: "Open a submission PR",
-        body: "Fork the metadata registry and open a PR. The template asks for provenance, QA notes and contact details. CI runs structural, schema and lineage checks.",
-      },
-      {
-        title: "Review & publish",
-        body: "A Hub maintainer and a domain reviewer assess the submission. Once approved, the dataset is merged, indexed in the catalogue, and a DOI is minted.",
-      },
-    ],
-    checklist: [
-      "Dataset uses an approved format and is COG/Zarr-compliant where applicable.",
-      "Record validates against the CDH schema.",
-      "Coverage, resolution, temporal extent, units and variables are documented.",
-      "Provenance and contributing institutions are listed; contacts are reachable.",
-      "Licence is CC-BY-4.0 or pre-approved; attribution requirements are recorded.",
-      "QA notes describe known caveats, gaps and recommended uses.",
-    ],
-  },
-  {
-    id: "wiki",
-    label: "Edit a wiki page",
-    icon: "WIKI",
-    title: "Edit a wiki page",
-    intro:
-      "Wikis live as Markdown files in the site repo. Edits flow through normal pull requests, so changes are reviewed, versioned and attributable.",
-    audience: "Anyone",
-    time: "~30 minutes",
-    steps: [
-      {
-        title: "Find the page in the repo",
-        body: "Each wiki page links to its source file on GitHub via the 'Edit on GitHub' link.",
-      },
-      {
-        title: "Open a PR with your edit",
-        body: "Fork or branch, edit the Markdown, and open a pull request. A preview build renders your change automatically.",
-      },
-      {
-        title: "Request review",
-        body: "Tag the relevant section maintainer (Standards, Methods, Concepts or Governance) for review.",
-      },
-    ],
-    checklist: [
-      "Front-matter (title, section, description) is updated if needed.",
-      "Internal links resolve and external links are correct.",
-      "Code blocks specify a language for syntax highlighting.",
-      "Images include alt text.",
-    ],
-  },
-  {
-    id: "story",
-    label: "Submit a use case",
-    icon: "STORY",
-    title: "Submit a use case story",
-    intro:
-      "Stories are short, factual write-ups of work that used the Hub. They help others understand what the Hub enables in practice and become a body of evidence for impact reporting.",
-    audience: "Project leads · Partners",
-    time: "~1 hour to draft",
-    steps: [
-      {
-        title: "Use the story template",
-        body: "Title, partners, sector, country, summary (≤120 words), 2–4 measurable impacts, and the datasets you used.",
-      },
-      {
-        title: "Open a PR to the stories folder",
-        body: "Drop your filled-in template into src/content/use-cases/ as a Markdown file. CI checks that referenced datasets exist.",
-      },
-      {
-        title: "Review & publish",
-        body: "The Hub comms lead reviews for clarity and accuracy. Published stories appear in the In use section.",
-      },
-    ],
-    checklist: [
-      "All referenced datasets exist on the Hub.",
-      "Impacts are concrete (numbers, decisions, products).",
-      "Partners and contact persons are listed.",
-    ],
-  },
-];
+const guides = (await getCollection("contributionGuides"))
+  .sort((a, b) => a.data.order - b.data.order)
+  .map(({ id, data }) => ({ id, ...data }));
 
 const STANDARDS_LINKS = [
   ["Metadata standard", "/wikis/cdh-metadata-standard"],
@@ -169,7 +58,7 @@ const description =
     <aside data-pagefind-ignore>
       <nav aria-label="Contribution paths" class="intent" data-intent>
         <div class="label">I want to…</div>
-        {GUIDES.map((g) => (
+        {guides.map((g) => (
             <a href={`#${g.id}`}>
               <span class="mono chip">{g.icon}</span>
               {g.label}
@@ -188,7 +77,7 @@ const description =
     </aside>
 
     <div class="guides">
-      {GUIDES.map((guide) => (
+      {guides.map((guide) => (
           <article class="guide" id={guide.id}>
             <div class="guide-meta">
               <span class="pill warn">Guide</span>

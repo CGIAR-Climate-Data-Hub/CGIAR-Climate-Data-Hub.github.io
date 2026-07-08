@@ -1,0 +1,42 @@
+order: 1
+label: Contribute a dataset
+icon: DATA
+title: Add a dataset to the Climate Data Hub
+intro: >
+  Datasets are added by opening a submission pull request against the Hub metadata registry.
+  CI runs structural and semantic validation; once approved, the dataset is indexed, a DOI is
+  minted, and a STAC item is published.
+audience: Center · Project · Partner
+time: ~2 days of preparation
+steps:
+  - title: Confirm fit and licensing
+    body: >
+      Check that the dataset aligns with Hub scope (climate-relevant for agri-food systems)
+      and that you can release it under CC-BY-4.0 or an approved equivalent. Need help?
+      Open a scoping issue first.
+  - title: Harmonise the format
+    body: >
+      Convert spatial rasters to Cloud-Optimised GeoTIFF or Zarr; cubes to Zarr. The COG
+      authoring wiki has the validator.
+  - title: Author the metadata record
+    body: >
+      Write the YAML record against the CDH schema — coverage, provenance, citation, and
+      appropriate-use guidance — and validate it locally.
+    code: |
+      uvx check-jsonschema \
+        --schemafile spec/schemas/profiles/cdh.schema.json my-record.yaml
+  - title: Open a submission PR
+    body: >
+      Fork the metadata registry and open a PR. The template asks for provenance, QA notes
+      and contact details. CI runs structural, schema and lineage checks.
+  - title: Review & publish
+    body: >
+      A Hub maintainer and a domain reviewer assess the submission. Once approved, the dataset
+      is merged, indexed in the catalogue, and a DOI is minted.
+checklist:
+  - Dataset uses an approved format and is COG/Zarr-compliant where applicable.
+  - Record validates against the CDH schema.
+  - Coverage, resolution, temporal extent, units and variables are documented.
+  - Provenance and contributing institutions are listed; contacts are reachable.
+  - Licence is CC-BY-4.0 or pre-approved; attribution requirements are recorded.
+  - QA notes describe known caveats, gaps and recommended uses.
