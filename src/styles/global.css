@@ -234,6 +234,43 @@ hr {
   border-color: var(--terra-700);
 }
 
+/* Segmented control — layout switcher, version toggle, snippet language tabs */
+.seg {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+
+.seg > * {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+}
+
+.seg > a:hover {
+  text-decoration: none;
+  background: var(--grey-1);
+}
+
+/* Link-based segs (version toggle) separate their options with a hairline */
+.seg > a + a {
+  border-left: 1px solid var(--border-strong);
+}
+
+.seg > [aria-pressed="true"],
+.seg > [aria-current="page"] {
+  font-weight: 600;
+  color: #fff;
+  background: var(--cdh-blue-950);
+}
+
 .container {
   width: 100%;
   max-width: 1320px;

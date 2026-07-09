@@ -154,7 +154,7 @@ const jsonLd = datasetJsonLd(
           {d.version && (
             <div class="version-row">
               <span class="label">Version</span>
-              <div class="version-toggle">
+              <div class="seg version-toggle">
                 {versions.map((v, i) => (
                   <a
                     aria-current={v.id === d.id ? "page" : undefined}
@@ -246,7 +246,7 @@ const jsonLd = datasetJsonLd(
             <div>
               <h3>Quick start</h3>
               <div class="snippet">
-                <div class="lang-tabs">
+                <div class="seg">
                   <button aria-pressed="true" data-lang="python" type="button">Python</button>
                   <button aria-pressed="false" data-lang="r" type="button">R</button>
                 </div>
@@ -379,7 +379,7 @@ const jsonLd = datasetJsonLd(
 
             {(pyExample || rExample) && (
               <div class="snippet">
-                <div class="lang-tabs">
+                <div class="seg">
                   <button aria-pressed="true" data-lang="python" type="button">Python</button>
                   <button aria-pressed="false" data-lang="r" type="button">R</button>
                 </div>
@@ -712,38 +712,6 @@ h1 {
   color: var(--text-mute);
 }
 
-.version-toggle {
-  display: inline-flex;
-  overflow: hidden;
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-}
-
-.version-toggle a {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  padding: 5px 12px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-soft);
-  background: var(--surface);
-}
-
-.version-toggle a + a {
-  border-left: 1px solid var(--border-strong);
-}
-
-.version-toggle a:hover {
-  text-decoration: none;
-  background: var(--grey-1);
-}
-
-.version-toggle a[aria-current="page"] {
-  color: #fff;
-  background: var(--cdh-blue-950);
-}
-
 .latest {
   padding: 1px 5px;
   font-size: 9.5px;
@@ -954,27 +922,8 @@ article ul {
   color: var(--text-soft);
 }
 
-.lang-tabs {
-  display: inline-flex;
+.snippet > .seg {
   margin-bottom: 10px;
-  overflow: hidden;
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-}
-
-.lang-tabs button {
-  padding: 5px 12px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text);
-  background: transparent;
-  border: 0;
-}
-
-.lang-tabs button[aria-pressed="true"] {
-  font-weight: 600;
-  color: #fff;
-  background: var(--cdh-blue-950);
 }
 
 .table-wrap {

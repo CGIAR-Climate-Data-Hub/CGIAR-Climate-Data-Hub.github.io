@@ -107,7 +107,7 @@ const catalogSchema = {
       </div>
       <div class="layout-wrap">
         <span class="label">Layout</span>
-        <div aria-label="Result layout" class="layout-switch" role="group">
+        <div aria-label="Result layout" class="seg" role="group">
           {[
             ["grid", "Cards"],
             ["compact", "Compact"],
@@ -282,7 +282,7 @@ const catalogSchema = {
           Clear all filters
         </button>
       </div>
-      <div class="mono table-head" hidden id="table-head">
+      <div class="mono table-head">
         <span>Type</span>
         <span>Name</span>
         <span>Coverage</span>
@@ -345,11 +345,9 @@ const layoutButtons = [
   ...document.querySelectorAll<HTMLButtonElement>("[data-layout]"),
 ];
 const results = document.querySelector("#results");
-const tableHead = document.querySelector<HTMLElement>("#table-head");
 function setLayout(layout: string) {
   results?.classList.toggle("layout-compact", layout === "compact");
   results?.classList.toggle("layout-table", layout === "table");
-  if (tableHead) tableHead.hidden = layout !== "table";
   for (const b of layoutButtons)
     b.setAttribute("aria-pressed", String(b.dataset.layout === layout));
   localStorage.setItem("catalog-layout", layout);
@@ -778,28 +776,6 @@ apply();
   color: var(--text-mute);
 }
 
-.layout-switch {
-  display: flex;
-  overflow: hidden;
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-}
-
-.layout-switch button {
-  padding: 6px 10px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text);
-  background: transparent;
-  border: 0;
-}
-
-.layout-switch button[aria-pressed="true"] {
-  font-weight: 600;
-  color: #fff;
-  background: var(--cdh-blue-950);
-}
-
 /* ---- Compact & table layouts ---- */
 /* Cards render all three variants; the list's class picks one. */
 .row-compact,
@@ -901,7 +877,7 @@ apply();
   border-radius: 6px 6px 0 0;
 }
 
-.table-head:not([hidden]) {
+.table-head:has(+ .grid.layout-table) {
   display: grid;
 }
 
