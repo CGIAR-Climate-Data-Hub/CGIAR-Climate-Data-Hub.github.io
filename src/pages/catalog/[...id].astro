@@ -15,6 +15,12 @@ import {
   normalizeBbox,
 } from "@/lib/catalog";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
+import quickstartCogsPy from "@/snippets/quickstart-cogs.py?raw";
+import quickstartCogsR from "@/snippets/quickstart-cogs.R?raw";
+import quickstartZarrPy from "@/snippets/quickstart-zarr.py?raw";
+import quickstartZarrR from "@/snippets/quickstart-zarr.R?raw";
+import subsetExamplePy from "@/snippets/subset-example.py?raw";
+import subsetExampleR from "@/snippets/subset-example.R?raw";
 
 export async function getStaticPaths() {
   const entries = await getCollection("catalog");
@@ -80,25 +86,39 @@ const exampleFile = cogs?.href_template?.replace(
     ?? name,
 );
 
+// Snippets are real code files in src/snippets with __VAR__ placeholders —
+// edit or add languages there, not here.
+const dim = d.dimensions[0];
+const member = dim?.values[0];
+const vars = {
+  ZARR_URL: zarrUrl ?? "",
+  COG_URL: `${cogsUrl ?? ""}${exampleFile ?? ""}`,
+  DIM: dim?.name ?? "",
+  MEMBER: member ?? "",
+};
+const fill = (template: string) =>
+  Object.entries(vars)
+    .reduce((s, [k, v]) => s.replaceAll(`__${k}__`, v), template)
+    .trim();
+
+const hasCogs = Boolean(cogsUrl && exampleFile);
 const snippet = [
-  zarrUrl && `import xarray as xr\n\nds = xr.open_zarr(\n    "${zarrUrl}"\n)`,
-  cogsUrl
-    && exampleFile
-    && `import rioxarray\n\nda = rioxarray.open_rasterio(\n    "${cogsUrl}${exampleFile}", masked=True\n)`,
+  zarrUrl && fill(quickstartZarrPy),
+  hasCogs && fill(quickstartCogsPy),
+]
+  .filter(Boolean)
+  .join("\n\n");
+const rSnippet = [
+  zarrUrl && fill(quickstartZarrR),
+  hasCogs && fill(quickstartCogsR),
 ]
   .filter(Boolean)
   .join("\n\n");
 
-// R equivalents: GDAL's multidim ZARR driver via stars, /vsicurl/ via terra
-const rSnippet = [
-  zarrUrl
-    && `library(stars)\n\nds <- read_mdim(\n  'ZARR:"/vsicurl/${zarrUrl}"'\n)`,
-  cogsUrl
-    && exampleFile
-    && `library(terra)\n\nr <- rast(\n  "/vsicurl/${cogsUrl}${exampleFile}"\n)`,
-]
-  .filter(Boolean)
-  .join("\n\n");
+// Worked example: one member of the first dimension, clipped to a window or
+// sampled at a point (East Africa / Nairobi, illustrative)
+const pyExample = zarrUrl && member ? fill(subsetExamplePy) : "";
+const rExample = hasCogs ? fill(subsetExampleR) : "";
 
 const SECTIONS = [
   ["overview", "Overview"],
@@ -356,6 +376,26 @@ const jsonLd = datasetJsonLd(
               Cloud-optimised distributions — read just the window you need directly from object
               storage.
             </p>
+
+            {(pyExample || rExample) && (
+              <div class="snippet">
+                <div class="lang-tabs">
+                  <button aria-pressed="true" data-lang="python" type="button">Python</button>
+                  <button aria-pressed="false" data-lang="r" type="button">R</button>
+                </div>
+                {pyExample && (
+                  <div data-code-label="Python" data-snippet="python">
+                    <Code code={pyExample} lang="python" theme="github-light" />
+                  </div>
+                )}
+                {rExample && (
+                  <div data-code-label="R" data-snippet="r" hidden>
+                    <Code code={rExample} lang="r" theme="github-light" />
+                  </div>
+                )}
+              </div>
+            )}
+
             <div class="assets">
               {[...d.data, ...d.additional_assets].map((asset) => (
                 <div class="asset">
