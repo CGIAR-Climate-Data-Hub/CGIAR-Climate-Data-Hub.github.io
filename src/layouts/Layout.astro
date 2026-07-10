@@ -32,7 +32,7 @@ const siteGraph = {
         "@type": "SearchAction",
         target: {
           "@type": "EntryPoint",
-          urlTemplate: new URL("/search?q={search_term_string}", Astro.site)
+          urlTemplate: new URL("/search/?q={search_term_string}", Astro.site)
             .href,
         },
         "query-input": "required name=search_term_string",
@@ -70,7 +70,7 @@ const siteGraph = {
     <meta property="og:type" content="website">
     <meta property="og:site_name" content={SITE_NAME}>
     <meta property="og:url" content={canonical}>
-    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content={title}>
     {description && <meta content={description} name="twitter:description" />}
 
