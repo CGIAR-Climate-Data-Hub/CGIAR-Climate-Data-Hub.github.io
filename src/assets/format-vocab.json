@@ -1,0 +1,24 @@
+{
+  "scheme": {
+    "id": "cdh-formats",
+    "title": "Climate Data Hub Format Vocabulary",
+    "description": "Data distribution formats used by CDH assets. Concept ids name the site's snippet templates; media_type is matched as a prefix of the asset's media_type. Site-local for now — replace with the standard's published vocabulary when it exists."
+  },
+  "concepts": [
+    {
+      "id": "zarr",
+      "label": "Zarr",
+      "media_type": "application/vnd.zarr"
+    },
+    {
+      "id": "cogs",
+      "label": "Cloud-Optimized GeoTIFF",
+      "media_type": "image/tiff; application=geotiff; profile=cloud-optimized"
+    },
+    {
+      "id": "parquet",
+      "label": "Apache Parquet",
+      "media_type": "application/vnd.apache.parquet"
+    }
+  ]
+}

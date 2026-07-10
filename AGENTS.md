@@ -39,5 +39,10 @@ site-wide constants live in `src/site.config.ts`.
   `/`). The canonical domain is hardcoded as `site` in `astro.config.mjs` — to
   move to a custom domain, change that one value and add `public/CNAME`.
 - Style with the design tokens in `src/styles/tokens.css`.
+- Record-page example code lives in `src/snippets/` as
+  `(quickstart|subset)-<format>.{py,R}` templates with a `__URL__`
+  placeholder, where `<format>` is a concept id from
+  `src/assets/format-vocab.json` (id ↔ media type ↔ label). To support a
+  new data format: add a vocab entry + template files, nothing else.
 - Deployed to GitHub Pages via `.github/workflows/astroDeploy.yml` on push to
   `main` (or manual dispatch).

@@ -1,7 +1,7 @@
 library(terra)
 
 r <- rast(
-  "/vsicurl/__COG_URL__"
+  "/vsicurl/__URL__"
 )
 
 # Clip a window (East Africa)

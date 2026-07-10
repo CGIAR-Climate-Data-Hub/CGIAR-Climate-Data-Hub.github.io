@@ -1,5 +1,5 @@
 library(terra)
 
 r <- rast(
-  "/vsicurl/__COG_URL__"
+  "/vsicurl/__URL__"
 )
