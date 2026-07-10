@@ -18,28 +18,30 @@ export const GET: APIRoute = async ({ site }) => {
 
 > ${SITE_DESCRIPTION} Datasets are harmonised to the CDH metadata standard, openly licensed, and distributed in cloud-native formats (Zarr, COG). Every dataset page embeds schema.org/Dataset JSON-LD.
 
+When citing a dataset, use the citation on its record page ("How to cite"), which credits the original publisher and includes an "Accessed through the CGIAR ${SITE_NAME}" clause with the record URL.
+
 ## Datasets
 
-${catalog.map((c) => line(c.data.title, `/catalog/${c.data.id}`, c.data.description)).join("\n")}
+${catalog.map((c) => line(c.data.title, `/catalog/${c.data.id}/`, c.data.description)).join("\n")}
 
 ## Documentation
 
-${wikis.map((w) => line(w.data.title, `/wikis/${w.id}`, w.data.description)).join("\n")}
+${wikis.map((w) => line(w.data.title, `/wikis/${w.id}/`, w.data.description)).join("\n")}
 
 ## Tutorials
 
-${tutorials.map((t) => line(t.data.title, `/tutorials/${t.id}`, t.data.description)).join("\n")}
+${tutorials.map((t) => line(t.data.title, `/tutorials/${t.id}/`, t.data.description)).join("\n")}
 
 ## Use cases
 
-${useCases.map((u) => line(u.data.title, `/use-cases/${u.id}`, u.data.description)).join("\n")}
+${useCases.map((u) => line(u.data.title, `/use-cases/${u.id}/`, u.data.description)).join("\n")}
 
 ## Reference
 
-- [Catalog](${abs("/catalog")}): Browse and filter all datasets
-- [FAQ](${abs("/faq")}): Access, licensing, formats, and contributing
-- [About](${abs("/about")}): What the Hub is and who runs it
-- [Contribute](${abs("/contribute")}): How to submit a dataset
+- [Catalog](${abs("/catalog/")}): Browse and filter all datasets
+- [FAQ](${abs("/faq/")}): Access, licensing, formats, and contributing
+- [About](${abs("/about/")}): What the Hub is and who runs it
+- [Contribute](${abs("/contribute/")}): How to submit a dataset
 `;
 
   return new Response(md, {

@@ -1,5 +1,32 @@
 // Shared shaping of CDH catalog records for cards, facets, and JSON-LD.
 import type { CollectionEntry } from "astro:content";
+import { SITE_NAME } from "@/site.config";
+
+const VIA = `Accessed through the CGIAR ${SITE_NAME}`;
+
+// STAC catalogs are derived from these records by the publishing pipeline,
+// so records never store STAC URLs — the site assumes this layout instead.
+// If the pipeline publishes elsewhere, this is the one place to change.
+const STAC_ROOT = "https://digital-atlas.s3.amazonaws.com/cdh/stac";
+
+export function stacCollectionUrl(id: string) {
+  return `${STAC_ROOT}/${id}/collection.json`;
+}
+
+// Fill an asset's href_template ("glw4-2020-{species}.tif") with the first
+// value of each dimension ({variable} maps to the first variable name) to
+// name one real file for example snippets. Undefined when unresolvable.
+export function exampleTemplateFile(d: CatalogRecord, template: string) {
+  let file = template;
+  for (const [, name] of template.matchAll(/\{(\w+)\}/g)) {
+    const value =
+      d.dimensions.find((dim) => dim.name === name)?.values[0]
+      ?? (name === "variable" ? d.variables[0]?.name : undefined);
+    if (!value) return undefined;
+    file = file.replaceAll(`{${name}}`, value);
+  }
+  return file;
+}
 
 const FORMAT_LABELS: Record<string, string> = { zarr: "Zarr", cogs: "COG" };
 
@@ -51,7 +78,9 @@ export function normalizeBbox(bbox?: number[] | number[][]) {
   return (Array.isArray(bbox[0]) ? bbox[0] : bbox) as number[];
 }
 
-export function citationText(d: CatalogRecord) {
+// recordUrl appends an "accessed through" clause pointing at the hub's
+// record page; omit it where only the original citation belongs (JSON-LD).
+export function citationText(d: CatalogRecord, recordUrl?: string) {
   const c = d.citation;
   if (!c) return undefined;
   const authors = c.authors.join(", ");
@@ -62,12 +91,13 @@ export function citationText(d: CatalogRecord) {
     `${c.title}.`,
     c.publisher && `${c.publisher}.`,
     link,
+    recordUrl && `${VIA}, ${recordUrl}.`,
   ]
     .filter(Boolean)
     .join(" ");
 }
 
-export function bibtex(d: CatalogRecord) {
+export function bibtex(d: CatalogRecord, recordUrl?: string) {
   const c = d.citation;
   if (!c) return undefined;
   const key = `${d.id.replaceAll("-", "_")}_${(c.date ?? "").slice(0, 4)}`;
@@ -77,6 +107,7 @@ export function bibtex(d: CatalogRecord) {
     c.date && `  year      = {${c.date.slice(0, 4)}}`,
     c.publisher && `  publisher = {${c.publisher}}`,
     d.doi ? `  doi       = {${d.doi}}` : c.url && `  url       = {${c.url}}`,
+    recordUrl && `  note      = {${VIA}, ${recordUrl}}`,
   ].filter(Boolean);
   return `@misc{${key},\n${lines.join(",\n")}\n}`;
 }
@@ -108,17 +139,34 @@ export function datasetJsonLd(
   const bbox = normalizeBbox(d.spatial?.bbox);
   const cite = citationText(d);
   const creators = d.contact.filter((c) => c.roles.includes("producer"));
-  const distributions = d.data.flatMap((asset) =>
-    asset.locations
-      .filter((loc) => loc.url.startsWith("http"))
-      .map((loc) => ({
-        "@type": "DataDownload",
-        name: asset.description ?? asset.name,
-        contentUrl: loc.url,
-        ...(asset.media_type && { encodingFormat: asset.media_type }),
-        ...(asset.file_size && { contentSize: asset.file_size }),
-      })),
-  );
+  // Distributions stay coarse, and only URLs a consumer can fetch directly
+  // (e.g. a Zarr root). Templated assets have no such URL — their prefix
+  // isn't retrievable — so the STAC Collection file index represents them.
+  const distributions = [
+    ...d.data.flatMap((asset) =>
+      asset.href_template
+        ? []
+        : asset.locations
+            .filter((loc) => loc.url.startsWith("http"))
+            .map((loc) => ({
+              "@type": "DataDownload",
+              name: asset.description ?? asset.name,
+              contentUrl: loc.url,
+              ...(asset.media_type && { encodingFormat: asset.media_type }),
+              ...(asset.file_size && { contentSize: asset.file_size }),
+            })),
+    ),
+    ...(d.data.some((a) => a.href_template)
+      ? [
+          {
+            "@type": "DataDownload",
+            name: "STAC Collection (machine-readable index of all files)",
+            contentUrl: stacCollectionUrl(d.id),
+            encodingFormat: "application/json",
+          },
+        ]
+      : []),
+  ];
 
   return {
     "@context": "https://schema.org",

@@ -10,9 +10,11 @@ import {
   bibtex,
   citationText,
   datasetJsonLd,
+  exampleTemplateFile,
   humanize,
   licenseUrl,
   normalizeBbox,
+  stacCollectionUrl,
 } from "@/lib/catalog";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
 import quickstartCogsPy from "@/snippets/quickstart-cogs.py?raw";
@@ -24,25 +26,30 @@ import subsetExampleR from "@/snippets/subset-example.R?raw";
 
 export async function getStaticPaths() {
   const entries = await getCollection("catalog");
+  // Record descriptions may carry markdown; render like any other content
+  const markdown = await satteri().createRenderer({});
   // Records sharing a catalog folder are versions of the same dataset
   const familyOf = (id: string) => id.split("/")[0];
-  return entries.map((entry) => ({
-    params: { id: entry.data.id },
-    props: {
-      entry,
-      versions: entries
-        .filter((e) => familyOf(e.id) === familyOf(entry.id))
-        .map((e) => ({
-          id: e.data.id,
-          version: e.data.version,
-          updated: e.data.updated ?? e.data.created ?? "",
-        }))
-        .sort((a, b) => b.updated.localeCompare(a.updated)),
-    },
-  }));
+  return Promise.all(
+    entries.map(async (entry) => ({
+      params: { id: entry.data.id },
+      props: {
+        entry,
+        descriptionHtml: (await markdown.render(entry.data.description)).code,
+        versions: entries
+          .filter((e) => familyOf(e.id) === familyOf(entry.id))
+          .map((e) => ({
+            id: e.data.id,
+            version: e.data.version,
+            updated: e.data.updated ?? e.data.created ?? "",
+          }))
+          .sort((a, b) => b.updated.localeCompare(a.updated)),
+      },
+    })),
+  );
 }
 
-const { entry, versions } = Astro.props;
+const { entry, versions, descriptionHtml } = Astro.props;
 const d = entry.data;
 
 const bbox = normalizeBbox(d.spatial?.bbox);
@@ -55,19 +62,16 @@ const producers = d.contact.filter(
   (c) => c.roles.includes("producer") || c.roles.includes("licensor"),
 );
 const source = producers[0]?.organization;
-const citation = citationText(d);
+const recordUrl = new URL(`/catalog/${d.id}/`, Astro.site).href;
+const citation = citationText(d, recordUrl);
 const licenseHref = licenseUrl(d.license);
-const bibtexStr = bibtex(d);
-
-// Record descriptions may carry markdown; render like any other content
-const markdown = await satteri().createRenderer({});
-const descriptionHtml = (await markdown.render(d.description)).code;
+const bibtexStr = bibtex(d, recordUrl);
 
 // Build-time cross-links: stories that cite this dataset id in their frontmatter
 const seenIn = (
   await getCollection("useCases", (uc) => uc.data.datasets.includes(d.id))
 ).map((uc) => ({
-  href: `/use-cases/${uc.id}`,
+  href: `/use-cases/${uc.id}/`,
   title: uc.data.title,
   partner: uc.data.partner,
 }));
@@ -78,13 +82,9 @@ const httpsUrl = (asset?: (typeof d.data)[number]) =>
 const zarrUrl = httpsUrl(d.data.find((a) => a.name === "zarr"));
 const cogs = d.data.find((a) => a.name === "cogs");
 const cogsUrl = httpsUrl(cogs);
-const exampleFile = cogs?.href_template?.replace(
-  /\{(\w+)\}/g,
-  (_, name: string) =>
-    d.dimensions.find((dim) => dim.name === name)?.values[0]
-    ?? d.variables[0]?.name
-    ?? name,
-);
+const exampleFile = cogs?.href_template
+  ? exampleTemplateFile(d, cogs.href_template)
+  : undefined;
 
 // Snippets are real code files in src/snippets with __VAR__ placeholders —
 // edit or add languages there, not here.
@@ -130,8 +130,8 @@ const SECTIONS = [
 
 const jsonLd = datasetJsonLd(
   d,
-  new URL(`/catalog/${d.id}`, Astro.site).href,
-  new URL("/catalog", Astro.site).href,
+  recordUrl,
+  new URL("/catalog/", Astro.site).href,
 );
 ---
 
@@ -144,7 +144,7 @@ const jsonLd = datasetJsonLd(
   <section class="header">
     <div class="container">
       <Breadcrumbs
-        items={[{ label: "Hub", href: "/" }, { label: "Catalog", href: "/catalog" }, { label: d.title }]}
+        items={[{ label: "Hub", href: "/" }, { label: "Catalog", href: "/catalog/" }, { label: d.title }]}
       />
       <div class="header-grid">
         <div>
@@ -158,7 +158,7 @@ const jsonLd = datasetJsonLd(
                 {versions.map((v, i) => (
                   <a
                     aria-current={v.id === d.id ? "page" : undefined}
-                    href={`/catalog/${v.id}`}
+                    href={`/catalog/${v.id}/`}
                   >
                     {v.version ?? v.id}
                     {i === 0 && versions.length > 1 && (
@@ -209,7 +209,7 @@ const jsonLd = datasetJsonLd(
           <div class="keywords">
             {d.keywords.map((k) =>
                 typeof k === "string" ? (
-                  <a class="mono keyword" href={`/catalog?q=${encodeURIComponent(k)}`}>
+                  <a class="mono keyword" href={`/catalog/?q=${encodeURIComponent(k)}`}>
                     #{k}
                   </a>
                 ) : (
@@ -376,6 +376,12 @@ const jsonLd = datasetJsonLd(
               Cloud-optimised distributions — read just the window you need directly from object
               storage.
             </p>
+            {d.data.some((a) => a.href_template) && (
+              <p class="digest">
+                Machine-readable file index:{" "}
+                <a href={stacCollectionUrl(d.id)} rel="noreferrer">STAC Collection</a>
+              </p>
+            )}
 
             {(pyExample || rExample) && (
               <div class="snippet">
