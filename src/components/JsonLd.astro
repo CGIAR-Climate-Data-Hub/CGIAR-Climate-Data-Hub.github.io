@@ -5,6 +5,10 @@ interface Props {
 }
 
 const { data } = Astro.props;
+
+// Escape "<" (to backslash-u003c) so record text can never close the tag
+// early via "</script>"; JSON parsers decode it back, payload unchanged.
+const json = JSON.stringify(data).replace(/</g, "\\u003c");
 ---
 
-<script is:inline set:html={JSON.stringify(data)} type="application/ld+json" />
+<script is:inline set:html={json} type="application/ld+json" />
