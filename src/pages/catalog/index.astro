@@ -7,7 +7,7 @@ import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
 import { humanize, summarize } from "@/lib/catalog";
 import { BBOX_PRESETS } from "@/lib/geo";
-import { equirectLand } from "@/lib/map";
+import { landPath } from "@/lib/map";
 import { SITE_NAME } from "@/site.config";
 
 const entries = await getCollection("catalog");
@@ -47,7 +47,7 @@ const toSvg = (lon: number, lat: number) => [
   ((lon + 180) / 360) * W,
   ((90 - lat) / 180) * H,
 ];
-const landPath = equirectLand(W, H);
+const land = landPath(W, H);
 
 const description =
   "Browse the Hub's harmonised climate and agriculture datasets — consistent metadata, licensing, and cloud-native access.";
@@ -206,7 +206,7 @@ const catalogSchema = {
               y2={H / 2}
             ></line>
             <path
-              d={landPath}
+              d={land}
               fill="rgb(10 44 85 / 16%)"
               stroke="rgb(10 44 85 / 38%)"
               stroke-linejoin="round"

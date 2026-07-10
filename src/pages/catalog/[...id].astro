@@ -205,7 +205,7 @@ const jsonLd = datasetJsonLd(
         </div>
 
         <div>
-          <BboxMap bbox={bbox} crs={d.spatial?.crs} label={coverage} />
+          <BboxMap bbox={bbox} label={coverage} />
           <div class="keywords">
             {d.keywords.map((k) =>
                 typeof k === "string" ? (

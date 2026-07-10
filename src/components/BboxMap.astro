@@ -1,41 +1,46 @@
 ---
-// Spatial-extent preview: Natural Earth land on an Equal Earth projection,
-// with the record's bbox. All paths are projected at build time — no JS.
-import { extentMap as m } from "@/lib/map";
+// Spatial-extent preview: Natural Earth land + the record's bbox. No JS.
+import { landPath } from "@/lib/map";
 
 interface Props {
   bbox?: number[];
   label?: string;
-  crs?: string;
 }
 
-const { bbox, label, crs = "EPSG:4326" } = Astro.props;
-const box = bbox && m.bbox(bbox);
+const { bbox, label } = Astro.props;
+
+const W = 300;
+const H = 150;
+const toSvg = (lon: number, lat: number) => [
+  ((lon + 180) / 360) * W,
+  ((90 - lat) / 180) * H,
+];
+
+const rect = bbox
+  ? (() => {
+      const [x1, y1] = toSvg(bbox[0], bbox[3]);
+      const [x2, y2] = toSvg(bbox[2], bbox[1]);
+      return { x: x1, y: y1, w: Math.max(2, x2 - x1), h: Math.max(2, y2 - y1) };
+    })()
+  : undefined;
 ---
 
 <figure>
   <svg
     aria-label={`Spatial extent${label ? `: ${label}` : ""}`}
     role="img"
-    viewBox={`0 0 ${m.width} ${m.height}`}
+    viewBox={`0 0 ${W} ${H}`}
   >
-    <path d={m.sphere} fill="rgb(99 169 254 / 8%)"></path>
+    <rect fill="rgb(99 169 254 / 6%)" height={H} width={W} x="0" y="0"></rect>
     <path
-      d={m.graticule}
-      fill="none"
-      stroke="rgb(10 44 85 / 10%)"
-      stroke-width="0.4"
-    ></path>
-    <path
-      d={m.land}
+      d={landPath(W, H)}
       fill="rgb(10 44 85 / 14%)"
       stroke="rgb(10 44 85 / 35%)"
       stroke-linejoin="round"
       stroke-width="0.35"
     ></path>
-    {box && <path d={box} fill="rgb(99 169 254 / 14%)" stroke="var(--cdh-blue-700)" stroke-dasharray="4 2" stroke-width="1"></path>}
+    {rect && <rect fill="rgb(99 169 254 / 14%)" height={rect.h} stroke="var(--cdh-blue-700)" stroke-dasharray="4 2" stroke-width="1" width={rect.w} x={rect.x} y={rect.y}></rect>}
   </svg>
-  {label && <figcaption class="mono">{label} · {crs} · Equal Earth</figcaption>}
 </figure>
 
 <style>
@@ -51,13 +56,5 @@ svg {
   display: block;
   width: 100%;
   height: auto;
-  padding: 6px;
-}
-
-figcaption {
-  padding: 6px 12px;
-  font-size: 10px;
-  color: var(--cdh-blue-800);
-  border-top: 1px solid var(--cdh-blue-150);
 }
 </style>
