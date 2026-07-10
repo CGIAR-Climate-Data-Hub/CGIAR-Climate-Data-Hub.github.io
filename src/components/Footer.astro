@@ -4,13 +4,13 @@ import { GITHUB_URL } from "@/site.config";
 import LogoBlock from "./LogoBlock.astro";
 
 const LINKS = [
-  ["Catalog", "/catalog"],
-  ["In use", "/use-cases"],
-  ["Tutorials", "/tutorials"],
-  ["Wikis", "/wikis"],
-  ["FAQ", "/faq"],
-  ["About", "/about"],
-  ["Contribute", "/contribute"],
+  ["Catalog", "/catalog/"],
+  ["In use", "/use-cases/"],
+  ["Tutorials", "/tutorials/"],
+  ["Wikis", "/wikis/"],
+  ["FAQ", "/faq/"],
+  ["About", "/about/"],
+  ["Contribute", "/contribute/"],
   ["Report an issue", `${GITHUB_URL}/issues`],
   ["GitHub", GITHUB_URL],
 ] as const;
@@ -38,9 +38,15 @@ const year = new Date().getFullYear();
     </nav>
   </div>
   <div class="container bottom">
-    <span
-      >&copy; {year} CGIAR. Data licensed CC-BY-4.0 unless noted otherwise.</span
-    >
+    <span>&copy; {year} CGIAR.</span>
+    <span>
+      Website content licensed under{" "}
+      <a href="https://creativecommons.org/licenses/by/4.0/" rel="noreferrer"
+        >CC BY 4.0</a
+      >, source code under{" "}
+      <a href="https://spdx.org/licenses/MIT.html" rel="noreferrer">MIT</a>.
+      Datasets carry their own licenses.
+    </span>
   </div>
 </footer>
 
@@ -94,6 +100,15 @@ nav a {
 }
 
 nav a:hover {
+  color: #fff;
+}
+
+.bottom a {
+  color: #9db4ab;
+  text-decoration: underline;
+}
+
+.bottom a:hover {
   color: #fff;
 }
 
