@@ -32,6 +32,10 @@ RECORDS_REPO=you/cdh-catalog bun run dev
 Unset, builds fetch `cdh-catalog@main`. If the records fetch fails, the
 previously loaded records are kept, so offline dev keeps working.
 
+Don't commit record YAML to this repo — `src/content/catalog/` is
+gitignored and anything in it is ignored by the build; records belong in
+`cdh-catalog`.
+
 ## Licensing
 
 - **Website content** (text, documentation, images) is licensed under

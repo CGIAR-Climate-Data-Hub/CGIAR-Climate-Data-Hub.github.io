@@ -1,17 +1,8 @@
-// Catalog records live in the cdh-catalog repo and are fetched at build
-// time (one tree-listing API call + parallel raw fetches), validated by the
-// catalog schema. The records repo pings this repo's deploy workflow via
-// repository_dispatch on merge.
-//
-// Overrides:
-//   RECORDS_DIR=../cdh-catalog/records  read a local checkout (offline dev,
-//                                       previewing unmerged records)
-//   RECORDS_REF=some-branch             fetch a branch other than main
-//   RECORDS_REPO=you/your-fork           fetch from a different repo
-//   GITHUB_TOKEN                        raises the API rate limit (set
-//                                       automatically in Actions)
-//
-// On fetch failure, previously loaded records are kept (offline dev).
+// Catalog records live in the cdh-catalog repo, fetched at build time and
+// validated by the catalog schema; that repo pings this repo's deploy
+// workflow on merge. Shell-env overrides (RECORDS_DIR, RECORDS_REF,
+// RECORDS_REPO — see README) redirect a session; on fetch failure the
+// previously loaded records are kept, so offline dev keeps working.
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Loader } from "astro/loaders";
