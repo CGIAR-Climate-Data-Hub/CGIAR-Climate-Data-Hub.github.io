@@ -36,7 +36,6 @@ function facetOf(
 const facets = [
   facetOf("domain", "Domain", (d) => d.domains),
   facetOf("geography", "Geography", (d) => d.geographies),
-  facetOf("format", "Format", (d) => d.formats),
   facetOf("license", "License", (d) => [d.license]),
 ];
 
@@ -224,12 +223,6 @@ const catalogSchema = {
               y="0"
             ></rect>
           </svg>
-          <dl class="mono bbox-coords" hidden id="bbox-coords">
-            <dt>W,S</dt>
-            <dd id="bbox-ws"></dd>
-            <dt>E,N</dt>
-            <dd id="bbox-en"></dd>
-          </dl>
           <div class="bbox-presets">
             {BBOX_PRESETS.map((p) => (
                 <button class="mono preset" data-bbox={p.bbox.join(" ")} type="button">
@@ -238,11 +231,50 @@ const catalogSchema = {
               ))}
           </div>
           <div class="bbox-actions">
-            <span class="bbox-count" id="bbox-count">Draw to filter</span>
+            <span class="bbox-count">Draw to filter</span>
             <button class="mono" hidden id="bbox-clear" type="button">
               Clear
             </button>
           </div>
+        </div>
+      </details>
+
+      <details open>
+        <summary>
+          <span class="label">Temporal</span>
+          <svg
+            aria-hidden="true"
+            class="chev"
+            fill="none"
+            height="11"
+            stroke="currentColor"
+            stroke-width="2.4"
+            viewBox="0 0 24 24"
+            width="11"
+          >
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </summary>
+        <div class="year-range">
+          <input
+            aria-label="From year"
+            class="mono"
+            id="year-from"
+            max="2100"
+            min="1900"
+            placeholder="From"
+            type="number"
+          >
+          <span class="year-sep">–</span>
+          <input
+            aria-label="To year"
+            class="mono"
+            id="year-to"
+            max="2100"
+            min="1900"
+            placeholder="To"
+            type="number"
+          >
         </div>
       </details>
 
@@ -294,8 +326,8 @@ const catalogSchema = {
               data-bbox={d.bbox?.join(" ")}
               data-dataset
               data-domain={d.domains.join(" ")}
-              data-format={d.formats.join(" ")}
               data-geography={d.geographies.join(" ")}
+              data-years={d.temporalYears?.join(" ")}
               data-license={d.license}
               data-search={[d.title, d.description, ...d.keywords, d.coverage].join(" ").toLowerCase()}
             >
@@ -365,11 +397,21 @@ const count = document.querySelector("#match-count");
 const matchLabel = document.querySelector("#match-label");
 const empty = document.querySelector<HTMLElement>("#empty-state");
 
-const facetKeys = ["domain", "geography", "format", "license"] as const;
-const state: { q: string; bbox: number[] | null; [key: string]: unknown } = {
+const facetKeys = ["domain", "geography", "license"] as const;
+const state: {
+  q: string;
+  bbox: number[] | null;
+  from: number | null;
+  to: number | null;
+  [key: string]: unknown;
+} = {
   q: "",
   bbox: null,
+  from: null,
+  to: null,
 };
+const yearFrom = document.querySelector<HTMLInputElement>("#year-from");
+const yearTo = document.querySelector<HTMLInputElement>("#year-to");
 
 const bboxIntersects = (a: number[], b: number[]) =>
   !(a[2] < b[0] || a[0] > b[2] || a[3] < b[1] || a[1] > b[3]);
@@ -382,6 +424,18 @@ function matchesBbox(card: HTMLElement) {
   return bboxIntersects(raw.split(" ").map(Number), state.bbox);
 }
 
+// Interval intersection, like the bbox but in one dimension
+function matchesYears(card: HTMLElement) {
+  if (state.from === null && state.to === null) return true;
+  const raw = card.dataset.years;
+  if (!raw) return false;
+  const [start, end] = raw.split(" ").map(Number);
+  return (
+    (state.to === null || start <= state.to)
+    && (state.from === null || end >= state.from)
+  );
+}
+
 function apply() {
   let matched = 0;
   for (const card of cards) {
@@ -392,7 +446,8 @@ function apply() {
           || (card.dataset[k] ?? "").split(" ").includes(state[k] as string),
       )
       && (!state.q || (card.dataset.search ?? "").includes(state.q))
-      && matchesBbox(card);
+      && matchesBbox(card)
+      && matchesYears(card);
     card.hidden = !show;
     if (show) matched++;
   }
@@ -407,7 +462,12 @@ function apply() {
     );
   }
   if (clear)
-    clear.hidden = !state.q && !state.bbox && facetKeys.every((k) => !state[k]);
+    clear.hidden =
+      !state.q
+      && !state.bbox
+      && state.from === null
+      && state.to === null
+      && facetKeys.every((k) => !state[k]);
   syncBboxUi();
 
   // Keep filters shareable
@@ -416,6 +476,8 @@ function apply() {
   for (const k of facetKeys) if (state[k]) params.set(k, state[k] as string);
   if (state.bbox)
     params.set("bbox", state.bbox.map((n) => n.toFixed(2)).join(","));
+  if (state.from !== null || state.to !== null)
+    params.set("years", `${state.from ?? ""}-${state.to ?? ""}`);
   history.replaceState(
     null,
     "",
@@ -433,22 +495,29 @@ search?.addEventListener("input", () => {
   state.q = search.value.trim().toLowerCase();
   apply();
 });
+for (const input of [yearFrom, yearTo]) {
+  input?.addEventListener("input", () => {
+    state.from = yearFrom?.value ? +yearFrom.value : null;
+    state.to = yearTo?.value ? +yearTo.value : null;
+    apply();
+  });
+}
 clear?.addEventListener("click", () => {
   for (const k of facetKeys) state[k] = "";
   state.q = "";
   state.bbox = null;
+  state.from = null;
+  state.to = null;
   if (search) search.value = "";
+  if (yearFrom) yearFrom.value = "";
+  if (yearTo) yearTo.value = "";
   apply();
 });
 
 // ---- Spatial (bbox) search: drag a rectangle on the minimap ----
 const map = document.querySelector<SVGSVGElement>("#bbox-map");
 const rect = document.querySelector<SVGRectElement>("#bbox-rect");
-const coords = document.querySelector<HTMLElement>("#bbox-coords");
-const ws = document.querySelector("#bbox-ws");
-const en = document.querySelector("#bbox-en");
 const activeTag = document.querySelector<HTMLElement>("#bbox-active");
-const bboxCount = document.querySelector("#bbox-count");
 const bboxClear = document.querySelector<HTMLButtonElement>("#bbox-clear");
 const hint = document.querySelector<HTMLElement>(".bbox-hint");
 
@@ -484,7 +553,6 @@ function syncBboxUi() {
   const active = state.bbox !== null;
   if (activeTag) activeTag.hidden = !active;
   if (bboxClear) bboxClear.hidden = !active;
-  if (coords) coords.hidden = !active;
   if (hint) {
     hint.textContent = active
       ? "Datasets whose coverage intersects your box."
@@ -492,16 +560,11 @@ function syncBboxUi() {
   }
   if (state.bbox) {
     const [w, s, e, n] = state.bbox;
-    if (ws) ws.textContent = `${w.toFixed(2)}, ${s.toFixed(2)}`;
-    if (en) en.textContent = `${e.toFixed(2)}, ${n.toFixed(2)}`;
     const [x1, y1] = toSvgPt(w, n);
     const [x2, y2] = toSvgPt(e, s);
     drawRect(x1, y1, x2 - x1, y2 - y1);
-    const intersecting = cards.filter((c) => matchesBbox(c)).length;
-    if (bboxCount) bboxCount.innerHTML = `<b>${intersecting}</b> intersect`;
-  } else {
-    if (rect) rect.style.display = "none";
-    if (bboxCount) bboxCount.textContent = "Draw to filter";
+  } else if (rect) {
+    rect.style.display = "none";
   }
 }
 
@@ -567,6 +630,13 @@ for (const k of facetKeys) state[k] = params.get(k) ?? "";
 const urlBbox = params.get("bbox")?.split(",").map(Number);
 if (urlBbox?.length === 4 && urlBbox.every((n) => !Number.isNaN(n)))
   state.bbox = urlBbox;
+const urlYears = params.get("years")?.split("-");
+if (urlYears?.length === 2) {
+  state.from = urlYears[0] ? +urlYears[0] : null;
+  state.to = urlYears[1] ? +urlYears[1] : null;
+  if (yearFrom && state.from !== null) yearFrom.value = String(state.from);
+  if (yearTo && state.to !== null) yearTo.value = String(state.to);
+}
 apply();
 </script>
 
@@ -671,27 +741,6 @@ apply();
   border: 1px solid var(--border);
 }
 
-.bbox-coords {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 2px 8px;
-  padding: 6px 8px;
-  margin: 8px 0 0;
-  font-size: 10px;
-  line-height: 1.5;
-  color: var(--text-soft);
-  background: var(--grey-1);
-}
-
-.bbox-coords[hidden] {
-  display: none;
-}
-
-.bbox-coords dt,
-.bbox-coords dd {
-  margin: 0;
-}
-
 .bbox-presets {
   display: flex;
   flex-wrap: wrap;
@@ -718,6 +767,7 @@ apply();
   gap: 8px;
   align-items: center;
   justify-content: space-between;
+  min-height: 24px;
   margin-top: 10px;
 }
 
@@ -726,8 +776,25 @@ apply();
   color: var(--text-mute);
 }
 
-.bbox-count :global(b) {
-  color: var(--text);
+.year-range {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 2px 0 12px;
+}
+
+.year-range input {
+  width: 100%;
+  min-width: 0;
+  padding: 6px 8px;
+  font-size: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--input-radius);
+}
+
+.year-sep {
+  color: var(--text-mute);
 }
 
 #bbox-clear {

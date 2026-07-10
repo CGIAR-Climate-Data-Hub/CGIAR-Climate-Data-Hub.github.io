@@ -48,6 +48,12 @@ export function summarize(entry: CollectionEntry<"catalog">) {
     resolution: d.spatial?.resolution[0]?.label?.split(" (")[0],
     formats: d.data.map((a) => FORMAT_LABELS[a.name] ?? a.name),
     temporal: temporalText(d.temporal)?.main,
+    temporalYears: d.temporal
+      ? [
+          +d.temporal.start_date.slice(0, 4),
+          +(d.temporal.end_date ?? d.temporal.start_date).slice(0, 4),
+        ]
+      : undefined,
     domains: d.cdh?.domain ?? [],
     geographies: d.spatial?.geography ?? [],
     bbox: normalizeBbox(d.spatial?.bbox),
