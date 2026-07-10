@@ -1,0 +1,55 @@
+order: 4
+label: Write a tutorial
+icon: TUTORIAL
+title: Write a tutorial
+intro: >
+  Tutorials are runnable, step-by-step guides to working with Hub data. They can be
+  written as Markdown or contributed as an executed Jupyter notebook — both render
+  the same way on the site, with styled prose, highlighted code, and saved outputs.
+audience: Anyone comfortable with Python or R
+time: ~2 hours
+steps:
+  - title: Pick a format
+    body: >
+      Markdown (.md) suits prose-led guides; a Jupyter notebook (.ipynb) suits
+      analysis-led ones — commit it executed, and saved outputs (plots, tables,
+      dataset previews) render right in the page. Either file goes in
+      src/content/tutorials/.
+  - title: Add the tutorial metadata
+    body: >
+      Markdown files take YAML front-matter. Notebooks carry the same fields in
+      their notebook metadata under a "cdh" key (in Jupyter, edit it via the
+      Property Inspector → Advanced Tools).
+    code: |
+      {
+        "cdh": {
+          "title": "Tropical Livestock Units from GLW4",
+          "description": "Compute TLU from GLW4 species densities.",
+          "level": "Intermediate",
+          "topic": "Livestock",
+          "time": "15 min",
+          "updated": "2026-07-10",
+          "datasets": ["glw4-2020"]
+        }
+      }
+  - title: Link the data you use
+    body: >
+      List the catalog record ids your tutorial works with in "datasets". The site
+      cross-links both ways — your tutorial shows the records it uses, and each
+      record page lists tutorials that use it.
+  - title: Keep outputs static
+    body: >
+      Matplotlib figures, pandas tables and xarray previews all render on the site.
+      Interactive outputs (Plotly, ipywidgets) don't — clear them, or talk to us
+      about publishing that tutorial as an exported HTML page instead.
+  - title: Open a PR
+    body: >
+      Fork or branch, add your file, and open a pull request. A preview build
+      renders your tutorial so you can check it reads well.
+checklist:
+  - Filename is lowercase (it becomes the URL, and the notebook download link).
+  - Metadata is complete (title, description, level, topic, time, updated).
+  - Data is streamed from Hub endpoints, not bundled or downloaded ahead.
+  - The notebook is committed executed, with only the outputs that teach.
+  - Section headings (##) are present so the page gets a table of contents.
+  - Linked dataset ids in "datasets" match catalog record ids.
