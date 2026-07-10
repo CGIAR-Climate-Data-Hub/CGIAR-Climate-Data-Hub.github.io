@@ -58,10 +58,14 @@ const resolution = d.spatial?.resolution
   .filter(Boolean)
   .join(" · ");
 const temporal = temporalText(d.temporal);
-const producers = d.contact.filter(
-  (c) => c.roles.includes("producer") || c.roles.includes("licensor"),
-);
-const source = producers[0]?.organization;
+// The header's source line: the licensor (a required role in the standard)
+const source = d.contact.find((c) =>
+  c.roles.includes("licensor"),
+)?.organization;
+// Contact order: custodians (hub-side stewards), then licensors, then the rest
+const roleRank = (c: (typeof d.contact)[number]) =>
+  c.roles.includes("custodian") ? 2 : c.roles.includes("licensor") ? 1 : 0;
+const contacts = [...d.contact].sort((a, b) => roleRank(b) - roleRank(a));
 const recordUrl = new URL(`/catalog/${d.id}/`, Astro.site).href;
 const citation = citationText(d, recordUrl);
 const licenseHref = licenseUrl(d.license);
@@ -102,6 +106,7 @@ const SECTIONS = [
   d.dimensions.length + d.variables.length > 0 && ["schema", "Schema"],
   d.data.length > 0 && ["access", "Access & use"],
   d.processing.length > 0 && ["provenance", "Provenance"],
+  d.contact.length > 0 && ["contacts", "Contacts"],
   citation && ["citation", "Citation"],
 ].filter(Boolean) as [string, string][];
 
@@ -428,6 +433,55 @@ const jsonLd = datasetJsonLd(
           </section>
         )}
 
+      {d.contact.length > 0 && (
+          <section id="contacts">
+            <h3>Contacts</h3>
+            <p class="section-sub">
+              Who produced this dataset, and who to reach about it.
+            </p>
+            <div class="contact-cards">
+              {contacts.map((c) => (
+                <div class:list={["contact-card", c.roles.includes("custodian") && "custodian"]}>
+                  <div class="contact-head">
+                    <b>{c.name ?? c.organization}</b>
+                    <span class="badges">
+                      {c.roles.includes("custodian") && (
+                        <span class="role-badge custodian-badge">Hub custodian</span>
+                      )}
+                      {c.roles.includes("licensor") && (
+                        <span class="role-badge licensor-badge">Licensor</span>
+                      )}
+                    </span>
+                  </div>
+                  {c.name && c.organization && (
+                    <div class="contact-org">{c.organization}</div>
+                  )}
+                  {c.roles.filter((r) => r !== "custodian" && r !== "licensor")
+                    .length > 0 && (
+                    <div class="chips">
+                      {c.roles
+                        .filter((r) => r !== "custodian" && r !== "licensor")
+                        .map((r) => (
+                          <span class="chip">{humanize(r)}</span>
+                        ))}
+                    </div>
+                  )}
+                  {(c.email || c.url) && (
+                    <div class="contact-links">
+                      {c.email && <a href={`mailto:${c.email}`}>{c.email}</a>}
+                      {c.url && (
+                        <a href={c.url} rel="noreferrer">
+                          {c.url.replace(/^https?:\/\//, "")} ↗
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
       {citation && (
           <section id="citation">
             <h3>How to cite</h3>
@@ -505,27 +559,6 @@ const jsonLd = datasetJsonLd(
           )}
         </dl>
       </div>
-
-      {d.contact.length > 0 && (
-          <div class="rail-box">
-            <h4 class="label">Contacts</h4>
-            {d.contact.map((c) => (
-              <div class="contact">
-                <b>{c.name ?? c.organization}</b>
-                {c.name && c.organization && <div class="contact-org">{c.organization}</div>}
-                <div class="contact-meta">
-                  {c.roles.join(" · ")}
-                  {c.email && (
-                    <>
-                      {" · "}
-                      <a href={`mailto:${c.email}`}>{c.email}</a>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
       {tutorialLinks.length > 0 && (
           <div class="rail-box">
@@ -1181,25 +1214,74 @@ td.mono {
   color: var(--text-mute);
 }
 
-.contact {
-  padding: 8px 0;
-  font-size: 13px;
-  border-bottom: 1px solid var(--border);
+.contact-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
 }
 
-.contact:last-child {
-  border-bottom: 0;
+.contact-card {
+  padding: 14px;
+  font-size: 13.5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.contact-card.custodian {
+  border-left: 3px solid var(--terra-500);
+}
+
+.contact-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.role-badge {
+  padding: 1px 6px;
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: 6px;
+}
+
+.custodian-badge {
+  color: var(--terra-700);
+  background: var(--terra-50);
+}
+
+.licensor-badge {
+  color: var(--cdh-blue-700);
+  background: var(--cdh-blue-50);
 }
 
 .contact-org {
-  font-size: 12px;
+  margin-top: 2px;
+  font-size: 12.5px;
   color: var(--text-soft);
 }
 
-.contact-meta {
-  margin-top: 2px;
-  font-size: 11px;
-  color: var(--text-mute);
+.contact-card .chips {
+  margin-top: 8px;
+}
+
+.contact-links {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 10px;
+  font-size: 12.5px;
 }
 
 .rail-link {
