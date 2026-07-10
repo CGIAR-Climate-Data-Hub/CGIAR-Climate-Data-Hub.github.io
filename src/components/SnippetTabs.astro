@@ -1,0 +1,62 @@
+---
+// Python/R code block with a language toggle. The chosen language syncs
+// across every instance on the page; a block missing that language keeps
+// showing the one it has. Single-language blocks render without a toggle.
+import { Code } from "astro:components";
+
+interface Props {
+  python?: string;
+  r?: string;
+}
+
+const { python, r } = Astro.props;
+---
+
+<div class="snippet">
+  {python && r && (
+    <div class="seg">
+      <button aria-pressed="true" data-lang="python" type="button">Python</button>
+      <button aria-pressed="false" data-lang="r" type="button">R</button>
+    </div>
+  )}
+  {python && (
+    <div data-code-label="Python" data-snippet="python">
+      <Code code={python} lang="python" theme="github-light" />
+    </div>
+  )}
+  {r && (
+    <div data-code-label="R" data-snippet="r" hidden={Boolean(python)}>
+      <Code code={r} lang="r" theme="github-light" />
+    </div>
+  )}
+</div>
+
+<script>
+const buttons = [
+  ...document.querySelectorAll<HTMLButtonElement>("[data-lang]"),
+];
+for (const btn of buttons) {
+  btn.addEventListener("click", () => {
+    for (const b of buttons)
+      b.setAttribute(
+        "aria-pressed",
+        String(b.dataset.lang === btn.dataset.lang),
+      );
+    for (const snip of document.querySelectorAll<HTMLElement>(".snippet")) {
+      const panels = [...snip.querySelectorAll<HTMLElement>("[data-snippet]")];
+      if (!panels.some((p) => p.dataset.snippet === btn.dataset.lang)) continue;
+      for (const p of panels) p.hidden = p.dataset.snippet !== btn.dataset.lang;
+    }
+  });
+}
+</script>
+
+<style>
+.snippet {
+  margin-top: 4px;
+}
+
+.seg {
+  margin-bottom: 10px;
+}
+</style>

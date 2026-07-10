@@ -5,12 +5,12 @@ import { satteri } from "@astrojs/markdown-satteri";
 import BboxMap from "@/components/BboxMap.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import JsonLd from "@/components/JsonLd.astro";
+import SnippetTabs from "@/components/SnippetTabs.astro";
 import Layout from "@/layouts/Layout.astro";
 import {
   bibtex,
   citationText,
   datasetJsonLd,
-  exampleTemplateFile,
   geoLabel,
   humanize,
   licenseUrl,
@@ -18,14 +18,9 @@ import {
   stacCollectionUrl,
   temporalText,
 } from "@/lib/catalog";
+import { assetExample, formatLabel, quickstarts } from "@/lib/snippets";
 import { commodity } from "@/lib/vocab";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
-import quickstartCogsPy from "@/snippets/quickstart-cogs.py?raw";
-import quickstartCogsR from "@/snippets/quickstart-cogs.R?raw";
-import quickstartZarrPy from "@/snippets/quickstart-zarr.py?raw";
-import quickstartZarrR from "@/snippets/quickstart-zarr.R?raw";
-import subsetExamplePy from "@/snippets/subset-example.py?raw";
-import subsetExampleR from "@/snippets/subset-example.R?raw";
 
 export async function getStaticPaths() {
   const entries = await getCollection("catalog");
@@ -80,49 +75,19 @@ const seenIn = (
   partner: uc.data.partner,
 }));
 
-// Streaming snippet assembled from the record's own asset URLs
-const httpsUrl = (asset?: (typeof d.data)[number]) =>
-  asset?.locations.find((l) => l.url.startsWith("http"))?.url;
-const zarrUrl = httpsUrl(d.data.find((a) => a.name === "zarr"));
-const cogs = d.data.find((a) => a.name === "cogs");
-const cogsUrl = httpsUrl(cogs);
-const exampleFile = cogs?.href_template
-  ? exampleTemplateFile(d, cogs.href_template)
-  : undefined;
-
-// Snippets are real code files in src/snippets with __VAR__ placeholders —
-// edit or add languages there, not here.
-const dim = d.dimensions[0];
-const member = dim?.values[0];
-const vars = {
-  ZARR_URL: zarrUrl ?? "",
-  COG_URL: `${cogsUrl ?? ""}${exampleFile ?? ""}`,
-  DIM: dim?.name ?? "",
-  MEMBER: member ?? "",
+// Example code, from the template files in src/snippets (see lib/snippets).
+// The quick start stacks one short block per format; each asset card in
+// Access & use carries its own worked example (spatial clip / point sample).
+const quickstart = {
+  python: quickstarts(d, "py").join("\n\n"),
+  r: quickstarts(d, "R").join("\n\n"),
 };
-const fill = (template: string) =>
-  Object.entries(vars)
-    .reduce((s, [k, v]) => s.replaceAll(`__${k}__`, v), template)
-    .trim();
-
-const hasCogs = Boolean(cogsUrl && exampleFile);
-const snippet = [
-  zarrUrl && fill(quickstartZarrPy),
-  hasCogs && fill(quickstartCogsPy),
-]
-  .filter(Boolean)
-  .join("\n\n");
-const rSnippet = [
-  zarrUrl && fill(quickstartZarrR),
-  hasCogs && fill(quickstartCogsR),
-]
-  .filter(Boolean)
-  .join("\n\n");
-
-// Worked example: one member of the first dimension, clipped to a window or
-// sampled at a point (East Africa / Nairobi, illustrative)
-const pyExample = zarrUrl && member ? fill(subsetExamplePy) : "";
-const rExample = hasCogs ? fill(subsetExampleR) : "";
+const assets = [...d.data, ...d.additional_assets].map((asset) => ({
+  asset,
+  example: assetExample(d, asset),
+}));
+// The lead example ships expanded; the rest stay a click away
+const firstExample = assets.findIndex((a) => a.example);
 
 const SECTIONS = [
   ["overview", "Overview"],
@@ -246,21 +211,10 @@ const jsonLd = datasetJsonLd(
             </div>
           )}
 
-        {snippet && (
+        {(quickstart.python || quickstart.r) && (
             <div>
               <h3>Quick start</h3>
-              <div class="snippet">
-                <div class="seg">
-                  <button aria-pressed="true" data-lang="python" type="button">Python</button>
-                  <button aria-pressed="false" data-lang="r" type="button">R</button>
-                </div>
-                <div data-code-label="Python" data-snippet="python">
-                  <Code code={snippet} lang="python" theme="github-light" />
-                </div>
-                <div data-code-label="R" data-snippet="r" hidden>
-                  <Code code={rSnippet} lang="r" theme="github-light" />
-                </div>
-              </div>
+              <SnippetTabs python={quickstart.python} r={quickstart.r} />
               <p class="digest">
                 <a href="#access">Full access details and endpoints</a>
               </p>
@@ -394,31 +348,12 @@ const jsonLd = datasetJsonLd(
               </p>
             )}
 
-            {(pyExample || rExample) && (
-              <div class="snippet">
-                <div class="seg">
-                  <button aria-pressed="true" data-lang="python" type="button">Python</button>
-                  <button aria-pressed="false" data-lang="r" type="button">R</button>
-                </div>
-                {pyExample && (
-                  <div data-code-label="Python" data-snippet="python">
-                    <Code code={pyExample} lang="python" theme="github-light" />
-                  </div>
-                )}
-                {rExample && (
-                  <div data-code-label="R" data-snippet="r" hidden>
-                    <Code code={rExample} lang="r" theme="github-light" />
-                  </div>
-                )}
-              </div>
-            )}
-
             <div class="assets">
-              {[...d.data, ...d.additional_assets].map((asset) => (
+              {assets.map(({ asset, example }, i) => (
                 <div class="asset">
                   <div class="asset-head">
                     <span class="mono asset-name">{asset.name}</span>
-                    {asset.media_type && <span class="pill spatial">{asset.media_type.split(";")[0]}</span>}
+                    {asset.media_type && <span class="pill spatial">{formatLabel(asset.media_type)}</span>}
                     {asset.file_size && <span class="mono asset-size">{asset.file_size}</span>}
                   </div>
                   {asset.description && <p>{asset.description}</p>}
@@ -432,6 +367,12 @@ const jsonLd = datasetJsonLd(
                       </button>
                     </div>
                   ))}
+                  {example && (
+                    <details class="asset-example" open={i === firstExample}>
+                      <summary>Example use</summary>
+                      <SnippetTabs python={example.python} r={example.r} />
+                    </details>
+                  )}
                 </div>
               ))}
             </div>
@@ -640,21 +581,6 @@ if (tabs.length > 0) {
     snapToPanel();
   });
   showPanel(location.hash.slice(1));
-}
-
-// Streaming-snippet language switcher
-const langButtons = [
-  ...document.querySelectorAll<HTMLButtonElement>("[data-lang]"),
-];
-for (const btn of langButtons) {
-  btn.addEventListener("click", () => {
-    for (const b of langButtons)
-      b.setAttribute("aria-pressed", String(b === btn));
-    for (const block of document.querySelectorAll<HTMLElement>(
-      "[data-snippet]",
-    ))
-      block.hidden = block.dataset.snippet !== btn.dataset.lang;
-  });
 }
 
 // Copy-to-clipboard for asset endpoint URLs
@@ -958,18 +884,10 @@ a.chip:hover {
   color: var(--cdh-blue-700);
 }
 
-.snippet {
-  margin-top: 4px;
-}
-
 .digest {
   margin-top: 8px;
   font-size: 13px;
   color: var(--text-soft);
-}
-
-.snippet > .seg {
-  margin-bottom: 10px;
 }
 
 .table-wrap {
@@ -1099,6 +1017,19 @@ td.mono {
 .copy {
   padding: 3px 10px;
   font-size: 11px;
+}
+
+.asset-example {
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.asset-example summary {
+  padding: 8px 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cdh-blue-700);
+  cursor: pointer;
 }
 
 .lineage {
