@@ -653,10 +653,16 @@ document.addEventListener("click", async (e) => {
 
 .header-grid {
   display: grid;
-  grid-template-columns: 1fr 340px;
+  grid-template-columns: 1fr 350px;
   gap: 40px;
-  align-items: start;
+  align-items: stretch;
   margin-top: 16px;
+}
+
+/* Anchor keywords to the row bottom so they end flush with the CTAs */
+.header-grid > div:last-child {
+  display: flex;
+  flex-direction: column;
 }
 
 h1 {
@@ -669,7 +675,8 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 12px;
+  padding-top: 12px;
+  margin-top: auto;
 }
 
 .keyword {
