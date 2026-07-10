@@ -1,6 +1,5 @@
 // @ts-check
 
-import { satteri } from "@astrojs/markdown-satteri";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import { defineConfig, fontProviders } from "astro/config";
@@ -16,17 +15,14 @@ const site = "https://cgiar-climate-data-hub.github.io";
 export default defineConfig({
   site,
   integrations: [mdx(), sitemap(), pagefind()],
-  prefetch: true,
+  prefetch: { prefetchAll: true },
   output: "static",
-  trailingSlash: "never",
+  trailingSlash: "always",
 
   markdown: {
-    processor: satteri(),
+    // Single theme: the site is light-only, and <Code> components use github-light
     shikiConfig: {
-      themes: {
-        light: "github-light",
-        dark: "github-dark",
-      },
+      theme: "github-light",
     },
   },
 

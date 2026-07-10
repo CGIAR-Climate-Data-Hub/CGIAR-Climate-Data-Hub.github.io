@@ -31,8 +31,9 @@ site-wide constants live in `src/site.config.ts`.
 ## Conventions
 
 - Package manager: **Bun** (`bun.lock`). Node `>=22.12`.
-- Astro pages use `.astro`/`.mdx`; markdown is processed with
-  `@astrojs/markdown-satteri` (directives enabled).
+- Astro pages use `.astro`/`.mdx`; markdown is processed with Astro's default
+  Sätteri pipeline (`@astrojs/markdown-satteri` is a direct dependency only
+  because catalog pages use its `createRenderer` for record descriptions).
 - Search via `astro-pagefind`; sitemap via `@astrojs/sitemap`.
 - Site is served at the GitHub Pages **root**, so there's no `base` (defaults to
   `/`). The canonical domain is hardcoded as `site` in `astro.config.mjs` — to
