@@ -1,13 +1,13 @@
 ---
-// Spatial-extent preview: Natural Earth land + the record's bbox. No JS.
+// Spatial-extent preview: Natural Earth land + the record's bbox(es). No JS.
 import { landPath } from "@/lib/map";
 
 interface Props {
-  bbox?: number[];
+  bboxes?: number[][];
   label?: string;
 }
 
-const { bbox, label } = Astro.props;
+const { bboxes = [], label } = Astro.props;
 
 const W = 300;
 const H = 150;
@@ -16,13 +16,11 @@ const toSvg = (lon: number, lat: number) => [
   ((90 - lat) / 180) * H,
 ];
 
-const rect = bbox
-  ? (() => {
-      const [x1, y1] = toSvg(bbox[0], bbox[3]);
-      const [x2, y2] = toSvg(bbox[2], bbox[1]);
-      return { x: x1, y: y1, w: Math.max(2, x2 - x1), h: Math.max(2, y2 - y1) };
-    })()
-  : undefined;
+const rects = bboxes.map((b) => {
+  const [x1, y1] = toSvg(b[0], b[3]);
+  const [x2, y2] = toSvg(b[2], b[1]);
+  return { x: x1, y: y1, w: Math.max(2, x2 - x1), h: Math.max(2, y2 - y1) };
+});
 ---
 
 <figure>
@@ -39,7 +37,7 @@ const rect = bbox
       stroke-linejoin="round"
       stroke-width="0.35"
     ></path>
-    {rect && <rect fill="rgb(99 169 254 / 14%)" height={rect.h} stroke="var(--cdh-blue-700)" stroke-dasharray="4 2" stroke-width="1" width={rect.w} x={rect.x} y={rect.y}></rect>}
+    {rects.map((r) => <rect fill="rgb(99 169 254 / 14%)" height={r.h} stroke="var(--cdh-blue-700)" stroke-dasharray="4 2" stroke-width="1" width={r.w} x={r.x} y={r.y}></rect>)}
   </svg>
 </figure>
 

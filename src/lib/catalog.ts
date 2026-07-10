@@ -3,7 +3,7 @@ import type { CollectionEntry } from "astro:content";
 import {
   commodity,
   geography,
-  geographyBbox,
+  geographyBboxes,
   geographyWithParents,
   VOCAB_URL,
 } from "@/lib/vocab";
@@ -72,9 +72,9 @@ export function summarize(entry: CollectionEntry<"catalog">) {
       ...new Set((d.spatial?.geography ?? []).flatMap(geographyWithParents)),
     ],
     // Explicit extent, else derived from geography tags for spatial search
-    bbox:
-      normalizeBbox(d.spatial?.bbox)
-      ?? geographyBbox(d.spatial?.geography ?? []),
+    bboxes:
+      normalizeBboxes(d.spatial?.bbox)
+      ?? geographyBboxes(d.spatial?.geography ?? []),
     updated: d.updated ?? d.created ?? "",
   };
 }
@@ -97,10 +97,10 @@ export function licenseUrl(license: string) {
     : undefined;
 }
 
-// Records store one bbox or a list of them; the site only maps the first.
-export function normalizeBbox(bbox?: number[] | number[][]) {
+// Records store one bbox or a list of them; normalize to a list.
+export function normalizeBboxes(bbox?: number[] | number[][]) {
   if (!bbox || bbox.length === 0) return undefined;
-  return (Array.isArray(bbox[0]) ? bbox[0] : bbox) as number[];
+  return (Array.isArray(bbox[0]) ? bbox : [bbox]) as number[][];
 }
 
 // recordUrl appends an "accessed through" clause pointing at the hub's
@@ -199,7 +199,7 @@ export function datasetJsonLd(
   url: string,
   catalogUrl: string,
 ) {
-  const bbox = normalizeBbox(d.spatial?.bbox);
+  const boxes = normalizeBboxes(d.spatial?.bbox) ?? [];
   const cite = citationText(d);
   const creators = d.contact.filter((c) => c.roles.includes("producer"));
   // Distributions stay coarse, and only URLs a consumer can fetch directly
@@ -292,13 +292,13 @@ export function datasetJsonLd(
           }),
         };
       });
-      if (bbox)
+      for (const b of boxes)
         places.push({
           "@type": "Place",
           geo: {
             "@type": "GeoShape",
             // schema.org box is "minLat minLon maxLat maxLon"
-            box: `${bbox[1]} ${bbox[0]} ${bbox[3]} ${bbox[2]}`,
+            box: `${b[1]} ${b[0]} ${b[3]} ${b[2]}`,
           },
         });
       return places.length > 0 ? { spatialCoverage: places } : {};

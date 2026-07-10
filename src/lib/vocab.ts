@@ -41,25 +41,18 @@ export function geographyWithParents(id: string) {
   return c ? [c.id, ...(c.parents ?? [])] : [id];
 }
 
-const bboxes = geoBboxes.bboxes as Record<string, number[]>;
+const bboxes = geoBboxes.bboxes as Record<string, number[][]>;
 
-// Union of the tags' Natural-Earth-derived boxes: the spatial-search fallback
-// for records with geography tags but no explicit bbox. Concepts NE doesn't
-// model (micro-territories) borrow their nearest parent's box.
-export function geographyBbox(ids: string[]) {
-  const boxes = ids
-    .map((id) => {
-      const own = bboxes[id];
-      if (own) return own;
-      const parent = geoById.get(id)?.parents?.find((p) => bboxes[p]);
-      return parent ? bboxes[parent] : undefined;
-    })
-    .filter((b): b is number[] => !!b);
-  if (boxes.length === 0) return undefined;
-  return boxes.reduce((u, b) => [
-    Math.min(u[0], b[0]),
-    Math.min(u[1], b[1]),
-    Math.max(u[2], b[2]),
-    Math.max(u[3], b[3]),
-  ]);
+// The tags' Natural-Earth-derived boxes: the spatial-search fallback for
+// records with geography tags but no explicit bbox. A list, not a union —
+// antimeridian countries carry two boxes, multi-tag records several.
+// Concepts NE doesn't model (micro-territories) borrow a parent's boxes.
+export function geographyBboxes(ids: string[]) {
+  const boxes = ids.flatMap((id) => {
+    const own = bboxes[id];
+    if (own) return own;
+    const parent = geoById.get(id)?.parents?.find((p) => bboxes[p]);
+    return parent ? bboxes[parent] : [];
+  });
+  return boxes.length > 0 ? boxes : undefined;
 }

@@ -324,7 +324,7 @@ const catalogSchema = {
       <ul class="grid" data-pagefind-ignore id="results">
         {datasets.map((d) => (
             <li
-              data-bbox={d.bbox?.join(" ")}
+              data-bbox={d.bboxes?.map((b) => b.join(" ")).join(";")}
               data-dataset
               data-domain={d.domains.join(" ")}
               data-geography={d.geographies.join(" ")}
@@ -418,11 +418,15 @@ const bboxIntersects = (a: number[], b: number[]) =>
   !(a[2] < b[0] || a[0] > b[2] || a[3] < b[1] || a[1] > b[3]);
 
 function matchesBbox(card: HTMLElement) {
-  if (!state.bbox) return true;
+  const drawn = state.bbox;
+  if (!drawn) return true;
   const raw = card.dataset.bbox;
   // Datasets without a spatial extent can't intersect a drawn box
   if (!raw) return false;
-  return bboxIntersects(raw.split(" ").map(Number), state.bbox);
+  // A dataset may span several boxes (antimeridian splits, multi-region)
+  return raw
+    .split(";")
+    .some((b) => bboxIntersects(b.split(" ").map(Number), drawn));
 }
 
 // Interval intersection, like the bbox but in one dimension

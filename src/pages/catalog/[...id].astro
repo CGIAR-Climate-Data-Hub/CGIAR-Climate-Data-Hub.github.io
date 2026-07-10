@@ -14,7 +14,7 @@ import {
   geoLabel,
   humanize,
   licenseUrl,
-  normalizeBbox,
+  normalizeBboxes,
   stacCollectionUrl,
   temporalText,
 } from "@/lib/catalog";
@@ -55,7 +55,7 @@ export async function getStaticPaths() {
 const { entry, versions, descriptionHtml } = Astro.props;
 const d = entry.data;
 
-const bbox = normalizeBbox(d.spatial?.bbox);
+const bboxes = normalizeBboxes(d.spatial?.bbox);
 const coverage = d.spatial?.geography.map(geoLabel).join(", ");
 const resolution = d.spatial?.resolution
   .map((r) => r.label)
@@ -209,7 +209,7 @@ const jsonLd = datasetJsonLd(
         </div>
 
         <div>
-          <BboxMap bbox={bbox} label={coverage} />
+          <BboxMap bboxes={bboxes} label={coverage} />
           <div class="keywords">
             {d.keywords.map((k) =>
                 typeof k === "string" ? (
