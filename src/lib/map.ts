@@ -17,5 +17,6 @@ export function landPath(width: number, height: number) {
     ],
     { type: "Sphere" },
   );
-  return geoPath(proj).digits(1)(land) ?? "";
+  // Whole-pixel coordinates: ~38% smaller, invisible at these display sizes
+  return geoPath(proj).digits(0)(land) ?? "";
 }
