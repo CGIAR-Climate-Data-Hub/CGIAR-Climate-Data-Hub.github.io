@@ -1,5 +1,14 @@
 // Shared ordering/grouping for the docs collections.
-import type { CollectionEntry } from "astro:content";
+import { type CollectionEntry, getCollection } from "astro:content";
+
+// Markdown tutorials and notebook tutorials share a schema and render the
+// same way — every consumer treats them as one collection.
+export async function allTutorials() {
+  return [
+    ...(await getCollection("tutorials")),
+    ...(await getCollection("notebookTutorials")),
+  ];
+}
 
 export const WIKI_SECTIONS = [
   "Standards",

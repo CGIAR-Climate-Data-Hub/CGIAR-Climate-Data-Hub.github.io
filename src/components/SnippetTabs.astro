@@ -32,9 +32,7 @@ const { python, r } = Astro.props;
 </div>
 
 <script>
-const buttons = [
-  ...document.querySelectorAll<HTMLButtonElement>("[data-lang]"),
-];
+const buttons = document.querySelectorAll<HTMLButtonElement>("[data-lang]");
 
 function setLang(lang: string) {
   for (const b of buttons)

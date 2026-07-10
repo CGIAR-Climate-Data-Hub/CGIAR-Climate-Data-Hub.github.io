@@ -4,10 +4,11 @@ import ArticleToc from "@/components/ArticleToc.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import Layout from "@/layouts/Layout.astro";
+import { allTutorials } from "@/lib/collections";
 import { SITE_NAME } from "@/site.config";
 
 export async function getStaticPaths() {
-  const entries = await getCollection("tutorials");
+  const entries = await allTutorials();
   return entries.map((entry) => ({
     params: { id: entry.id },
     props: { entry },
@@ -16,6 +17,13 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
+
+// Resolve linked catalog records for the "Data" line
+const catalog = await getCollection("catalog");
+const datasets = entry.data.datasets.map((id) => ({
+  id,
+  title: catalog.find((c) => c.data.id === id)?.data.title ?? id,
+}));
 
 // "20 min" / "2 hrs" → ISO 8601 duration for schema.org timeRequired
 const match = entry.data.time.match(/(\d+)\s*(min|hr|hour)/);
@@ -58,6 +66,17 @@ const jsonLd = {
       </div>
       <h1>{entry.data.title}</h1>
       <p class="sub">{entry.data.description}</p>
+      {datasets.length > 0 && (
+        <p class="mono uses">
+          Data:{" "}
+          {datasets.map((ds, i) => (
+            <>
+              {i > 0 && ", "}
+              <a href={`/catalog/${ds.id}/`}>{ds.title}</a>
+            </>
+          ))}
+        </p>
+      )}
       <div class="prose">
         <Content />
       </div>
@@ -94,6 +113,12 @@ const jsonLd = {
 h1 {
   margin-top: 12px;
   font-size: clamp(28px, 3vw, 38px);
+}
+
+.uses {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-mute);
 }
 
 .sub {

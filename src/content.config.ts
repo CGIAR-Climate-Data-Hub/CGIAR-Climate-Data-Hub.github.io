@@ -2,20 +2,33 @@ import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { WIKI_SECTIONS } from "./lib/collections";
+import { notebooks } from "./lib/notebooks";
+
+const tutorialSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  level: z.enum(["Beginner", "Intermediate", "Advanced"]),
+  topic: z.string(),
+  time: z.string(),
+  format: z.string().default("Guide"),
+  // "You'll be able to" bullets shown on tutorial cards
+  outcomes: z.array(z.string()).default([]),
+  // Catalog record ids (data.id) this tutorial works with — cross-linked
+  // on both the tutorial and the record pages
+  datasets: z.array(z.string()).default([]),
+  updated: z.coerce.date(),
+});
 
 const tutorials = defineCollection({
   loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/tutorials" }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    level: z.enum(["Beginner", "Intermediate", "Advanced"]),
-    topic: z.string(),
-    time: z.string(),
-    format: z.string().default("Guide"),
-    // "You'll be able to" bullets shown on tutorial cards
-    outcomes: z.array(z.string()).default([]),
-    updated: z.coerce.date(),
-  }),
+  schema: tutorialSchema,
+});
+
+// Executed Jupyter notebooks in the same folder; frontmatter lives in the
+// notebook's metadata.cdh block (see src/lib/notebooks.ts)
+const notebookTutorials = defineCollection({
+  loader: notebooks("./src/content/tutorials"),
+  schema: tutorialSchema,
 });
 
 const wikis = defineCollection({
@@ -259,6 +272,7 @@ const catalog = defineCollection({
 
 export const collections = {
   tutorials,
+  notebookTutorials,
   wikis,
   useCases,
   contributionGuides,

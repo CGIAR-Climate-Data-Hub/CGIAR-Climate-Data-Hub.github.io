@@ -1,7 +1,7 @@
 ---
-import { getCollection } from "astro:content";
 import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
+import { allTutorials } from "@/lib/collections";
 import { SITE_NAME } from "@/site.config";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
@@ -11,7 +11,7 @@ const LEVEL_COLORS: Record<string, string> = {
   Advanced: "var(--cdh-blue-950)",
 };
 
-const tutorials = (await getCollection("tutorials")).sort(
+const tutorials = (await allTutorials()).sort(
   (a, b) =>
     LEVELS.indexOf(a.data.level) - LEVELS.indexOf(b.data.level)
     || a.data.title.localeCompare(b.data.title),
