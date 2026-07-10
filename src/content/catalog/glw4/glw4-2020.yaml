@@ -133,9 +133,9 @@ data:
     file_size: 31.1 MB
   - name: cogs
     locations:
-      - url: https://digital-atlas.s3.amazonaws.com/cdh/data/glw4-2020/cogs/
+      - url: https://digital-atlas.s3.amazonaws.com/cdh/data/glw4-2020/cog/
         title: HTTPS
-      - url: s3://digital-atlas/cdh/data/glw4-2020/cogs/
+      - url: s3://digital-atlas/cdh/data/glw4-2020/cog/
         title: S3
     href_template: "glw4-2020-{species}.tif"
     processing_steps: [cloud-optimize]
