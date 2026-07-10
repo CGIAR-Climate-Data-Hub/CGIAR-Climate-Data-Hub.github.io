@@ -27,9 +27,10 @@ export async function getStaticPaths() {
   const entries = await getCollection("catalog");
   // Record descriptions may carry markdown; render like any other content
   const markdown = await satteri().createRenderer({});
-  // Records sharing a catalog folder are versions of the same dataset
+  // Records sharing a catalog folder are versions of the same dataset; the
+  // folder name doubles as the series id, served as an always-latest redirect
   const familyOf = (id: string) => id.split("/")[0];
-  return Promise.all(
+  const recordPaths = await Promise.all(
     entries.map(async (entry) => ({
       params: { id: entry.data.id },
       props: {
@@ -43,12 +44,34 @@ export async function getStaticPaths() {
             updated: e.data.updated ?? e.data.created ?? "",
           }))
           .sort((a, b) => b.updated.localeCompare(a.updated)),
+        redirect: undefined as string | undefined,
       },
     })),
   );
+  const familyPaths = [
+    ...new Set(
+      entries.filter((e) => e.id.includes("/")).map((e) => familyOf(e.id)),
+    ),
+  ]
+    // A family sharing a name with a record id would collide
+    .filter((family) => !entries.some((e) => e.data.id === family))
+    .map((family) => {
+      const latest = recordPaths
+        .filter((p) => familyOf(p.props.entry.id) === family)
+        .sort((a, b) =>
+          b.props.versions[0].updated.localeCompare(
+            a.props.versions[0].updated,
+          ),
+        )[0].props;
+      return {
+        params: { id: family },
+        props: { ...latest, redirect: `/catalog/${latest.entry.data.id}/` },
+      };
+    });
+  return [...recordPaths, ...familyPaths];
 }
 
-const { entry, versions, descriptionHtml } = Astro.props;
+const { entry, versions, descriptionHtml, redirect } = Astro.props;
 const d = entry.data;
 
 const bboxes = normalizeBboxes(d.spatial?.bbox);
@@ -117,6 +140,22 @@ const jsonLd = datasetJsonLd(
 );
 ---
 
+{redirect && (
+  <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <title>{d.title}</title>
+      <meta content={`0;url=${redirect}`} http-equiv="refresh">
+      <link href={new URL(redirect, Astro.site).href} rel="canonical">
+      <meta content="noindex" name="robots">
+    </head>
+    <body>
+      <p>Latest version: <a href={redirect}>{d.title}</a></p>
+    </body>
+  </html>
+)}
+
+{!redirect && (
 <Layout
   description={d.description.slice(0, 160)}
   title={`${d.title} — ${SITE_NAME}`}
@@ -597,6 +636,7 @@ const jsonLd = datasetJsonLd(
     </aside>
   </div>
 </Layout>
+)}
 
 <script>
 // Hash-driven tabs: all panels stay in the DOM (crawlers see everything);
