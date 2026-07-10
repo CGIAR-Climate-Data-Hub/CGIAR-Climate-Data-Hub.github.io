@@ -7,6 +7,7 @@
 //   RECORDS_DIR=../cdh-catalog/records  read a local checkout (offline dev,
 //                                       previewing unmerged records)
 //   RECORDS_REF=some-branch             fetch a branch other than main
+//   RECORDS_REPO=you/your-fork           fetch from a different repo
 //   GITHUB_TOKEN                        raises the API rate limit (set
 //                                       automatically in Actions)
 //
@@ -66,7 +67,10 @@ export function records(source: RecordsSource): Loader {
       try {
         files = process.env.RECORDS_DIR
           ? await fromLocal(process.env.RECORDS_DIR)
-          : await fromGitHub(source, process.env.RECORDS_REF ?? "main");
+          : await fromGitHub(
+              { ...source, repo: process.env.RECORDS_REPO ?? source.repo },
+              process.env.RECORDS_REF ?? "main",
+            );
       } catch (err) {
         logger.warn(
           `records fetch failed (${err}) — keeping previously loaded records`,

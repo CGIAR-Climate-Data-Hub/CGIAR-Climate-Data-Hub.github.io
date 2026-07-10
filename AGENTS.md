@@ -8,8 +8,9 @@ Astro source lives in `src/`: `pages/`, `layouts/`, `components/`, `styles/`,
 `assets/`, `lib/` (shared record-shaping + JSON-LD helpers), `content/`
 (collections: `tutorials`, `wikis`, `useCases`, `faq`, `pages`). The `catalog`
 collection (CDH YAML metadata records) is fetched at build time from the
-`cdh-catalog` repo's `records/` dir (`src/lib/records.ts`; overrides:
-`RECORDS_DIR` for a local checkout, `RECORDS_REF` for a branch), and that repo
+`cdh-catalog` repo's `records/` dir (`src/lib/records.ts`; shell-env overrides — `.env` files don't reach it:
+`RECORDS_DIR` local checkout, `RECORDS_REF` branch, `RECORDS_REPO` fork), and
+that repo
 triggers a site rebuild via `repository_dispatch` when records change.
 Content collections are defined in `src/content.config.ts`;
 site-wide constants live in `src/site.config.ts`.
