@@ -35,20 +35,28 @@ const { python, r } = Astro.props;
 const buttons = [
   ...document.querySelectorAll<HTMLButtonElement>("[data-lang]"),
 ];
+
+function setLang(lang: string) {
+  for (const b of buttons)
+    b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
+  for (const snip of document.querySelectorAll<HTMLElement>(".snippet")) {
+    const panels = [...snip.querySelectorAll<HTMLElement>("[data-snippet]")];
+    if (!panels.some((p) => p.dataset.snippet === lang)) continue;
+    for (const p of panels) p.hidden = p.dataset.snippet !== lang;
+  }
+}
+
 for (const btn of buttons) {
   btn.addEventListener("click", () => {
-    for (const b of buttons)
-      b.setAttribute(
-        "aria-pressed",
-        String(b.dataset.lang === btn.dataset.lang),
-      );
-    for (const snip of document.querySelectorAll<HTMLElement>(".snippet")) {
-      const panels = [...snip.querySelectorAll<HTMLElement>("[data-snippet]")];
-      if (!panels.some((p) => p.dataset.snippet === btn.dataset.lang)) continue;
-      for (const p of panels) p.hidden = p.dataset.snippet !== btn.dataset.lang;
-    }
+    const lang = btn.dataset.lang ?? "python";
+    localStorage.setItem("snippet-lang", lang);
+    setLang(lang);
   });
 }
+
+// Returning visitors land on their language (same pattern as catalog-layout)
+const saved = localStorage.getItem("snippet-lang");
+if (saved && saved !== "python") setLang(saved);
 </script>
 
 <style>
