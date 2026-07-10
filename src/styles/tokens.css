@@ -58,3 +58,14 @@
   --sans: var(--font-sans), arial, system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", menlo, consolas, "Courier New", monospace;
 }
+
+/* Site header height — sticky offsets below the nav derive from this */
+:root {
+  --nav-height: 72px;
+}
+
+@media (width <= 960px) {
+  :root {
+    --nav-height: 60px;
+  }
+}

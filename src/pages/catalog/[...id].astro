@@ -766,7 +766,7 @@ h1 {
 
 .section-nav {
   position: sticky;
-  top: 72px;
+  top: var(--nav-height);
   z-index: 10;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
@@ -813,7 +813,7 @@ article section {
   flex-direction: column;
   gap: 24px;
   padding-bottom: 40px;
-  scroll-margin-top: 130px;
+  scroll-margin-top: calc(var(--nav-height) + 58px);
 }
 
 article h3 {
