@@ -15,6 +15,7 @@ import {
   licenseUrl,
   normalizeBbox,
   stacCollectionUrl,
+  temporalText,
 } from "@/lib/catalog";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
 import quickstartCogsPy from "@/snippets/quickstart-cogs.py?raw";
@@ -54,10 +55,11 @@ const d = entry.data;
 
 const bbox = normalizeBbox(d.spatial?.bbox);
 const coverage = d.spatial?.geography.map(humanize).join(", ");
-const resolution = d.spatial?.resolution[0]?.label;
-const temporal =
-  d.temporal
-  && [d.temporal.start_date, d.temporal.end_date].filter(Boolean).join(" – ");
+const resolution = d.spatial?.resolution
+  .map((r) => r.label)
+  .filter(Boolean)
+  .join(" · ");
+const temporal = temporalText(d.temporal);
 const producers = d.contact.filter(
   (c) => c.roles.includes("producer") || c.roles.includes("licensor"),
 );
@@ -512,10 +514,27 @@ const jsonLd = datasetJsonLd(
               <dd>{resolution}</dd>
             </>
           )}
+          {d.spatial?.crs && (
+            <>
+              <dt>CRS</dt>
+              <dd>
+                {/^EPSG:\d+$/.test(d.spatial.crs) ? (
+                  <a href={`https://epsg.io/${d.spatial.crs.split(":")[1]}`} rel="noreferrer">
+                    {d.spatial.crs}
+                  </a>
+                ) : (
+                  d.spatial.crs
+                )}
+              </dd>
+            </>
+          )}
           {temporal && (
             <>
               <dt>Temporal</dt>
-              <dd>{temporal}</dd>
+              <dd>
+                {temporal.main}
+                {temporal.sub && <div class="fact-sub">{temporal.sub}</div>}
+              </dd>
             </>
           )}
           {d.cdh && d.cdh.domain.length > 0 && (
@@ -1180,6 +1199,12 @@ td.mono {
 
 .kv dd {
   margin: 0;
+}
+
+.fact-sub {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-mute);
 }
 
 .contact {

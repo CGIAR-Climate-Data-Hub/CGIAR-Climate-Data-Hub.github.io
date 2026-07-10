@@ -112,6 +112,44 @@ export function bibtex(d: CatalogRecord, recordUrl?: string) {
   return `@misc{${key},\n${lines.join(",\n")}\n}`;
 }
 
+const STEP_LABELS: Record<string, string> = {
+  P1Y: "annual",
+  P1M: "monthly",
+  P10D: "10-daily",
+  P1D: "daily",
+  PT1H: "hourly",
+};
+
+// ISO 8601 duration → approximate days, to size the extent against the step
+function stepDays(step: string) {
+  const m = step.match(/^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?(?:T(\d+)H)?$/);
+  if (!m) return undefined;
+  return (
+    +(m[1] ?? 0) * 365 + +(m[2] ?? 0) * 30 + +(m[3] ?? 0) + +(m[4] ?? 0) / 24
+  );
+}
+
+// An extent that fits inside one step is a single time slice — a static
+// snapshot, not a series — so render it as its reference year.
+export function temporalText(t: CatalogRecord["temporal"]) {
+  if (!t) return undefined;
+  const days =
+    (Date.parse(t.end_date ?? t.start_date) - Date.parse(t.start_date)) / 864e5;
+  const step = t.resolution?.step;
+  const single = step ? days <= (stepDays(step) ?? 0) : days <= 366;
+  const year = (date: string) => date.slice(0, 4);
+  return {
+    main: single
+      ? year(t.start_date)
+      : `${year(t.start_date)} – ${t.end_date ? year(t.end_date) : "present"}`,
+    sub: single
+      ? (t.resolution?.note ?? "static snapshot")
+      : [step && (STEP_LABELS[step] ?? step), t.resolution?.note]
+          .filter(Boolean)
+          .join(" · "),
+  };
+}
+
 function contactToSchemaOrg(c: CatalogRecord["contact"][number]) {
   if (c.name) {
     return {
