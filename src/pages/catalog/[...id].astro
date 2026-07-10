@@ -1241,5 +1241,11 @@ td.mono {
   .body {
     grid-template-columns: 1fr;
   }
+
+  /* Keep the map at its desktop size — full-bleed makes the generalised
+     coastlines look coarse */
+  .header-grid > div:last-child {
+    max-width: 350px;
+  }
 }
 </style>
