@@ -5,7 +5,7 @@ import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import Layout from "@/layouts/Layout.astro";
 import { allTutorials } from "@/lib/collections";
-import { SITE_NAME } from "@/site.config";
+import { GITHUB_REPO, SITE_NAME } from "@/site.config";
 
 export async function getStaticPaths() {
   const entries = await allTutorials();
@@ -17,6 +17,10 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
+
+// Notebook tutorials offer the source for download / opening in Colab
+const isNotebook = entry.collection === "notebookTutorials";
+const notebookPath = `src/content/tutorials/${entry.id}.ipynb`;
 
 // Resolve linked catalog records for the "Data" line
 const catalog = await getCollection("catalog");
@@ -77,6 +81,20 @@ const jsonLd = {
           ))}
         </p>
       )}
+      {isNotebook && (
+        <div class="nb-actions">
+          <a class="btn btn-ghost" download href={`/tutorials/${entry.id}.ipynb`}>
+            Download notebook
+          </a>
+          <a
+            class="btn btn-ghost"
+            href={`https://colab.research.google.com/github/${GITHUB_REPO}/blob/main/${notebookPath}`}
+            rel="noreferrer"
+          >
+            Open in Colab
+          </a>
+        </div>
+      )}
       <div class="prose">
         <Content />
       </div>
@@ -127,6 +145,18 @@ h1 {
   font-size: 16.5px;
   font-weight: 300;
   color: var(--text-soft);
+}
+
+.nb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.nb-actions .btn {
+  padding: 6px 14px;
+  font-size: 12.5px;
 }
 
 .prose {
