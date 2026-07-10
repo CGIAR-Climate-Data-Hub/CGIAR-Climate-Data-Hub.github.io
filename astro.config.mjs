@@ -17,7 +17,9 @@ export default defineConfig({
   integrations: [mdx(), sitemap(), pagefind()],
   prefetch: { prefetchAll: true },
   output: "static",
-  trailingSlash: "always",
+  // Slashed URLs come from build.format "directory"; trailingSlash stays at
+  // its default ("ignore") — "always" 404s extensioned endpoints in dev
+  // (withastro/astro#10149).
 
   markdown: {
     // Single theme: the site is light-only, and <Code> components use github-light
