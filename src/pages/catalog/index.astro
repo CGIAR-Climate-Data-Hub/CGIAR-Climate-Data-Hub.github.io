@@ -6,7 +6,8 @@ import JsonLd from "@/components/JsonLd.astro";
 import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
 import { humanize, summarize } from "@/lib/catalog";
-import { BBOX_PRESETS, CONTINENTS } from "@/lib/geo";
+import { BBOX_PRESETS } from "@/lib/geo";
+import { equirectLand } from "@/lib/map";
 import { SITE_NAME } from "@/site.config";
 
 const entries = await getCollection("catalog");
@@ -46,9 +47,7 @@ const toSvg = (lon: number, lat: number) => [
   ((lon + 180) / 360) * W,
   ((90 - lat) / 180) * H,
 ];
-const continentPoints = CONTINENTS.map((poly) =>
-  poly.map(([lon, lat]) => toSvg(lon, lat).join(",")).join(" "),
-);
+const landPath = equirectLand(W, H);
 
 const description =
   "Browse the Hub's harmonised climate and agriculture datasets — consistent metadata, licensing, and cloud-native access.";
@@ -206,14 +205,13 @@ const catalogSchema = {
               y1={H / 2}
               y2={H / 2}
             ></line>
-            <g
+            <path
+              d={landPath}
               fill="rgb(10 44 85 / 16%)"
               stroke="rgb(10 44 85 / 38%)"
               stroke-linejoin="round"
               stroke-width="0.35"
-            >
-              {continentPoints.map((points) => <polygon points={points} />)}
-            </g>
+            ></path>
             <rect
               fill="rgb(99 169 254 / 28%)"
               height="0"
