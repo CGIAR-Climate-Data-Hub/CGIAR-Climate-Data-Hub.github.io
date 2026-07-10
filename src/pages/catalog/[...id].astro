@@ -607,7 +607,9 @@ document.addEventListener("click", async (e) => {
 
 .header-grid {
   display: grid;
-  grid-template-columns: 1fr 350px;
+
+  /* Map shrinks 350→260 before the layout collapses (see media queries) */
+  grid-template-columns: 1fr minmax(260px, 350px);
   gap: 40px;
   align-items: stretch;
   margin-top: 16px;
@@ -1207,8 +1209,13 @@ td.mono {
 }
 
 @media (width <= 960px) {
-  .header-grid,
   .body {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (width <= 820px) {
+  .header-grid {
     grid-template-columns: 1fr;
   }
 
