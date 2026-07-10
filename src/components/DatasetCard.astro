@@ -32,7 +32,7 @@ const { dataset: d } = Astro.props;
     )}
   <div class="meta mono">
     <span>{[d.coverage, d.resolution].filter(Boolean).join(" · ")}</span>
-    <span>{d.formats.join(" · ")}</span>
+    {d.temporal && <span>{d.temporal}</span>}
   </div>
 </article>
 

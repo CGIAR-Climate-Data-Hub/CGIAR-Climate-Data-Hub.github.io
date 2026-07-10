@@ -285,7 +285,7 @@ const catalogSchema = {
         <span>Name</span>
         <span>Coverage</span>
         <span>Resolution</span>
-        <span>Format</span>
+        <span>Temporal</span>
         <span>Updated</span>
       </div>
       <ul class="grid" data-pagefind-ignore id="results">
@@ -308,7 +308,7 @@ const catalogSchema = {
                 </span>
                 <span class="mono row-meta">
                   <span>{d.coverage ?? "—"}</span>
-                  <span>{d.formats.join(" · ")}</span>
+                  <span>{d.temporal ?? "—"}</span>
                 </span>
               </a>
               <a class="row-table" href={`/catalog/${d.id}/`}>
@@ -323,7 +323,7 @@ const catalogSchema = {
                 </span>
                 <span class="mono">{d.coverage ?? "—"}</span>
                 <span class="mono">{d.resolution ?? "—"}</span>
-                <span class="mono">{d.formats.join(" · ")}</span>
+                <span class="mono">{d.temporal ?? "—"}</span>
                 <span class="mono">{d.updated.slice(0, 10) || "—"}</span>
               </a>
             </li>

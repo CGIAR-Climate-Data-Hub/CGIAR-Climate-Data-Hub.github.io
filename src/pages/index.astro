@@ -22,7 +22,7 @@ const essentials = [
     name: d.title,
     badge: d.type === "spatial" ? "Spatial" : "Non-spatial",
     badgeClass: d.type,
-    meta: [d.coverage, d.formats.join(" · ")].filter(Boolean).join(" · "),
+    meta: [d.coverage, d.temporal].filter(Boolean).join(" · "),
     glyph: d.type,
   })),
   ...tutorials.slice(0, 2).map((t) => ({

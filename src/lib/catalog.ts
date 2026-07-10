@@ -47,6 +47,7 @@ export function summarize(entry: CollectionEntry<"catalog">) {
     // Short form for card meta rows — full label lives on the detail page
     resolution: d.spatial?.resolution[0]?.label?.split(" (")[0],
     formats: d.data.map((a) => FORMAT_LABELS[a.name] ?? a.name),
+    temporal: temporalText(d.temporal)?.main,
     domains: d.cdh?.domain ?? [],
     geographies: d.spatial?.geography ?? [],
     bbox: normalizeBbox(d.spatial?.bbox),
