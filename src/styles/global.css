@@ -87,9 +87,11 @@ textarea {
   color: inherit;
 }
 
+/* Selection is the one warm-accent micro-moment outside kickers/CTAs —
+   terracotta reads as deliberate where a blue tint mimics browser default */
 ::selection {
-  color: var(--cdh-blue-950);
-  background: var(--cdh-blue-150);
+  color: var(--grey-8);
+  background: var(--terra-300);
 }
 
 hr {
