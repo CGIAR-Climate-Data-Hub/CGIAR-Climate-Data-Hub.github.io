@@ -11,12 +11,14 @@ import {
   citationText,
   datasetJsonLd,
   exampleTemplateFile,
+  geoLabel,
   humanize,
   licenseUrl,
   normalizeBbox,
   stacCollectionUrl,
   temporalText,
 } from "@/lib/catalog";
+import { commodity } from "@/lib/vocab";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
 import quickstartCogsPy from "@/snippets/quickstart-cogs.py?raw";
 import quickstartCogsR from "@/snippets/quickstart-cogs.R?raw";
@@ -54,7 +56,7 @@ const { entry, versions, descriptionHtml } = Astro.props;
 const d = entry.data;
 
 const bbox = normalizeBbox(d.spatial?.bbox);
-const coverage = d.spatial?.geography.map(humanize).join(", ");
+const coverage = d.spatial?.geography.map(geoLabel).join(", ");
 const resolution = d.spatial?.resolution
   .map((r) => r.label)
   .filter(Boolean)
@@ -303,9 +305,16 @@ const jsonLd = datasetJsonLd(
             <div>
               <h3>Commodities</h3>
               <div class="chips">
-                {d.commodities.map((c) => (
-                  <span class="chip">{humanize(c)}</span>
-                ))}
+                {d.commodities.map((id) => {
+                  const c = commodity(id);
+                  return c?.uri ? (
+                    <a class="chip" href={c.uri} rel="noreferrer" title={`AGROVOC ${c.code}`}>
+                      {c.label} ↗
+                    </a>
+                  ) : (
+                    <span class="chip">{c?.label ?? humanize(id)}</span>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -911,6 +920,11 @@ article ul {
   color: var(--cdh-blue-800);
   background: var(--cdh-blue-50);
   border-radius: 6px;
+}
+
+a.chip:hover {
+  text-decoration: none;
+  background: var(--cdh-blue-150);
 }
 
 .dim-cards {

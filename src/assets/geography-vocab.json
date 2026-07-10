@@ -1,0 +1,2295 @@
+{
+  "scheme": {
+    "id": "cdh-geography",
+    "title": "Climate Data Hub Geography Vocabulary",
+    "description": "Controlled vocabulary of geographies (World, regions, sub-regions, intermediate regions, and countries) used by the Climate Data Hub for metadata filtering and catalog browse. Generated from the UN M49 standard; each concept carries its M49 code, ISO 3166-1 alpha-3 code (countries), ancestor ids for roll-up, and LDC/LLDC/SIDS membership.",
+    "source_scheme": {
+      "id": "un-m49",
+      "uri": "https://unstats.un.org/unsd/methodology/m49/",
+      "title": "UN Standard Country or Area Codes for Statistical Use (M49)"
+    }
+  },
+  "concepts": [
+    {
+      "id": "afghanistan",
+      "label": "Afghanistan",
+      "code": "004",
+      "iso3": "AFG",
+      "parents": ["southern-asia", "asia", "world"],
+      "groups": ["LDC", "LLDC"]
+    },
+    {
+      "id": "africa",
+      "label": "Africa",
+      "code": "002",
+      "parents": ["world"]
+    },
+    {
+      "id": "aland-islands",
+      "label": "Åland Islands",
+      "code": "248",
+      "iso3": "ALA",
+      "parents": ["northern-europe", "europe", "world"]
+    },
+    {
+      "id": "albania",
+      "label": "Albania",
+      "code": "008",
+      "iso3": "ALB",
+      "parents": ["southern-europe", "europe", "world"]
+    },
+    {
+      "id": "algeria",
+      "label": "Algeria",
+      "code": "012",
+      "iso3": "DZA",
+      "parents": ["northern-africa", "africa", "world"]
+    },
+    {
+      "id": "american-samoa",
+      "label": "American Samoa",
+      "code": "016",
+      "iso3": "ASM",
+      "parents": ["polynesia", "oceania", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "americas",
+      "label": "Americas",
+      "code": "019",
+      "parents": ["world"]
+    },
+    {
+      "id": "andorra",
+      "label": "Andorra",
+      "code": "020",
+      "iso3": "AND",
+      "parents": ["southern-europe", "europe", "world"]
+    },
+    {
+      "id": "angola",
+      "label": "Angola",
+      "code": "024",
+      "iso3": "AGO",
+      "parents": ["middle-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "anguilla",
+      "label": "Anguilla",
+      "code": "660",
+      "iso3": "AIA",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "antarctica",
+      "label": "Antarctica",
+      "code": "010",
+      "iso3": "ATA",
+      "parents": ["world"]
+    },
+    {
+      "id": "antigua-and-barbuda",
+      "label": "Antigua and Barbuda",
+      "code": "028",
+      "iso3": "ATG",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "argentina",
+      "label": "Argentina",
+      "code": "032",
+      "iso3": "ARG",
+      "parents": [
+        "south-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "armenia",
+      "label": "Armenia",
+      "code": "051",
+      "iso3": "ARM",
+      "parents": ["western-asia", "asia", "world"],
+      "groups": ["LLDC"]
+    },
+    {
+      "id": "aruba",
+      "label": "Aruba",
+      "code": "533",
+      "iso3": "ABW",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "asia",
+      "label": "Asia",
+      "code": "142",
+      "parents": ["world"]
+    },
+    {
+      "id": "australia",
+      "label": "Australia",
+      "code": "036",
+      "iso3": "AUS",
+      "parents": ["australia-and-new-zealand", "oceania", "world"]
+    },
+    {
+      "id": "australia-and-new-zealand",
+      "label": "Australia and New Zealand",
+      "code": "053",
+      "parents": ["oceania", "world"]
+    },
+    {
+      "id": "austria",
+      "label": "Austria",
+      "code": "040",
+      "iso3": "AUT",
+      "parents": ["western-europe", "europe", "world"]
+    },
+    {
+      "id": "azerbaijan",
+      "label": "Azerbaijan",
+      "code": "031",
+      "iso3": "AZE",
+      "parents": ["western-asia", "asia", "world"],
+      "groups": ["LLDC"]
+    },
+    {
+      "id": "bahamas",
+      "label": "Bahamas",
+      "code": "044",
+      "iso3": "BHS",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "bahrain",
+      "label": "Bahrain",
+      "code": "048",
+      "iso3": "BHR",
+      "parents": ["western-asia", "asia", "world"]
+    },
+    {
+      "id": "bangladesh",
+      "label": "Bangladesh",
+      "code": "050",
+      "iso3": "BGD",
+      "parents": ["southern-asia", "asia", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "barbados",
+      "label": "Barbados",
+      "code": "052",
+      "iso3": "BRB",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "belarus",
+      "label": "Belarus",
+      "code": "112",
+      "iso3": "BLR",
+      "parents": ["eastern-europe", "europe", "world"]
+    },
+    {
+      "id": "belgium",
+      "label": "Belgium",
+      "code": "056",
+      "iso3": "BEL",
+      "parents": ["western-europe", "europe", "world"]
+    },
+    {
+      "id": "belize",
+      "label": "Belize",
+      "code": "084",
+      "iso3": "BLZ",
+      "parents": [
+        "central-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "benin",
+      "label": "Benin",
+      "code": "204",
+      "iso3": "BEN",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "bermuda",
+      "label": "Bermuda",
+      "code": "060",
+      "iso3": "BMU",
+      "parents": ["northern-america", "americas", "world"]
+    },
+    {
+      "id": "bhutan",
+      "label": "Bhutan",
+      "code": "064",
+      "iso3": "BTN",
+      "parents": ["southern-asia", "asia", "world"],
+      "groups": ["LLDC"]
+    },
+    {
+      "id": "bolivia-plurinational-state-of",
+      "label": "Bolivia (Plurinational State of)",
+      "code": "068",
+      "iso3": "BOL",
+      "parents": [
+        "south-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["LLDC"]
+    },
+    {
+      "id": "bonaire-sint-eustatius-and-saba",
+      "label": "Bonaire, Sint Eustatius and Saba",
+      "code": "535",
+      "iso3": "BES",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "bosnia-and-herzegovina",
+      "label": "Bosnia and Herzegovina",
+      "code": "070",
+      "iso3": "BIH",
+      "parents": ["southern-europe", "europe", "world"]
+    },
+    {
+      "id": "botswana",
+      "label": "Botswana",
+      "code": "072",
+      "iso3": "BWA",
+      "parents": ["southern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LLDC"]
+    },
+    {
+      "id": "bouvet-island",
+      "label": "Bouvet Island",
+      "code": "074",
+      "iso3": "BVT",
+      "parents": [
+        "south-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "brazil",
+      "label": "Brazil",
+      "code": "076",
+      "iso3": "BRA",
+      "parents": [
+        "south-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "british-indian-ocean-territory",
+      "label": "British Indian Ocean Territory",
+      "code": "086",
+      "iso3": "IOT",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "british-virgin-islands",
+      "label": "British Virgin Islands",
+      "code": "092",
+      "iso3": "VGB",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "brunei-darussalam",
+      "label": "Brunei Darussalam",
+      "code": "096",
+      "iso3": "BRN",
+      "parents": ["south-eastern-asia", "asia", "world"]
+    },
+    {
+      "id": "bulgaria",
+      "label": "Bulgaria",
+      "code": "100",
+      "iso3": "BGR",
+      "parents": ["eastern-europe", "europe", "world"]
+    },
+    {
+      "id": "burkina-faso",
+      "label": "Burkina Faso",
+      "code": "854",
+      "iso3": "BFA",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC", "LLDC"]
+    },
+    {
+      "id": "burundi",
+      "label": "Burundi",
+      "code": "108",
+      "iso3": "BDI",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC", "LLDC"]
+    },
+    {
+      "id": "cabo-verde",
+      "label": "Cabo Verde",
+      "code": "132",
+      "iso3": "CPV",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "cambodia",
+      "label": "Cambodia",
+      "code": "116",
+      "iso3": "KHM",
+      "parents": ["south-eastern-asia", "asia", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "cameroon",
+      "label": "Cameroon",
+      "code": "120",
+      "iso3": "CMR",
+      "parents": ["middle-africa", "sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "canada",
+      "label": "Canada",
+      "code": "124",
+      "iso3": "CAN",
+      "parents": ["northern-america", "americas", "world"]
+    },
+    {
+      "id": "caribbean",
+      "label": "Caribbean",
+      "code": "029",
+      "parents": ["latin-america-and-the-caribbean", "americas", "world"]
+    },
+    {
+      "id": "cayman-islands",
+      "label": "Cayman Islands",
+      "code": "136",
+      "iso3": "CYM",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "central-african-republic",
+      "label": "Central African Republic",
+      "code": "140",
+      "iso3": "CAF",
+      "parents": ["middle-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC", "LLDC"]
+    },
+    {
+      "id": "central-america",
+      "label": "Central America",
+      "code": "013",
+      "parents": ["latin-america-and-the-caribbean", "americas", "world"]
+    },
+    {
+      "id": "central-asia",
+      "label": "Central Asia",
+      "code": "143",
+      "parents": ["asia", "world"]
+    },
+    {
+      "id": "chad",
+      "label": "Chad",
+      "code": "148",
+      "iso3": "TCD",
+      "parents": ["middle-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC", "LLDC"]
+    },
+    {
+      "id": "chile",
+      "label": "Chile",
+      "code": "152",
+      "iso3": "CHL",
+      "parents": [
+        "south-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "china",
+      "label": "China",
+      "code": "156",
+      "iso3": "CHN",
+      "parents": ["eastern-asia", "asia", "world"]
+    },
+    {
+      "id": "china-hong-kong-special-administrative-region",
+      "label": "China, Hong Kong Special Administrative Region",
+      "code": "344",
+      "iso3": "HKG",
+      "parents": ["eastern-asia", "asia", "world"]
+    },
+    {
+      "id": "china-macao-special-administrative-region",
+      "label": "China, Macao Special Administrative Region",
+      "code": "446",
+      "iso3": "MAC",
+      "parents": ["eastern-asia", "asia", "world"]
+    },
+    {
+      "id": "christmas-island",
+      "label": "Christmas Island",
+      "code": "162",
+      "iso3": "CXR",
+      "parents": ["australia-and-new-zealand", "oceania", "world"]
+    },
+    {
+      "id": "cocos-keeling-islands",
+      "label": "Cocos (Keeling) Islands",
+      "code": "166",
+      "iso3": "CCK",
+      "parents": ["australia-and-new-zealand", "oceania", "world"]
+    },
+    {
+      "id": "colombia",
+      "label": "Colombia",
+      "code": "170",
+      "iso3": "COL",
+      "parents": [
+        "south-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "comoros",
+      "label": "Comoros",
+      "code": "174",
+      "iso3": "COM",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC", "SIDS"]
+    },
+    {
+      "id": "congo",
+      "label": "Congo",
+      "code": "178",
+      "iso3": "COG",
+      "parents": ["middle-africa", "sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "cook-islands",
+      "label": "Cook Islands",
+      "code": "184",
+      "iso3": "COK",
+      "parents": ["polynesia", "oceania", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "costa-rica",
+      "label": "Costa Rica",
+      "code": "188",
+      "iso3": "CRI",
+      "parents": [
+        "central-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "cote-d-ivoire",
+      "label": "Côte d’Ivoire",
+      "code": "384",
+      "iso3": "CIV",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "croatia",
+      "label": "Croatia",
+      "code": "191",
+      "iso3": "HRV",
+      "parents": ["southern-europe", "europe", "world"]
+    },
+    {
+      "id": "cuba",
+      "label": "Cuba",
+      "code": "192",
+      "iso3": "CUB",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "curacao",
+      "label": "Curaçao",
+      "code": "531",
+      "iso3": "CUW",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "cyprus",
+      "label": "Cyprus",
+      "code": "196",
+      "iso3": "CYP",
+      "parents": ["western-asia", "asia", "world"]
+    },
+    {
+      "id": "czechia",
+      "label": "Czechia",
+      "code": "203",
+      "iso3": "CZE",
+      "parents": ["eastern-europe", "europe", "world"]
+    },
+    {
+      "id": "democratic-people-s-republic-of-korea",
+      "label": "Democratic People's Republic of Korea",
+      "code": "408",
+      "iso3": "PRK",
+      "parents": ["eastern-asia", "asia", "world"]
+    },
+    {
+      "id": "democratic-republic-of-the-congo",
+      "label": "Democratic Republic of the Congo",
+      "code": "180",
+      "iso3": "COD",
+      "parents": ["middle-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "denmark",
+      "label": "Denmark",
+      "code": "208",
+      "iso3": "DNK",
+      "parents": ["northern-europe", "europe", "world"]
+    },
+    {
+      "id": "djibouti",
+      "label": "Djibouti",
+      "code": "262",
+      "iso3": "DJI",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "dominica",
+      "label": "Dominica",
+      "code": "212",
+      "iso3": "DMA",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "dominican-republic",
+      "label": "Dominican Republic",
+      "code": "214",
+      "iso3": "DOM",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "eastern-africa",
+      "label": "Eastern Africa",
+      "code": "014",
+      "parents": ["sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "eastern-asia",
+      "label": "Eastern Asia",
+      "code": "030",
+      "parents": ["asia", "world"]
+    },
+    {
+      "id": "eastern-europe",
+      "label": "Eastern Europe",
+      "code": "151",
+      "parents": ["europe", "world"]
+    },
+    {
+      "id": "ecuador",
+      "label": "Ecuador",
+      "code": "218",
+      "iso3": "ECU",
+      "parents": [
+        "south-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "egypt",
+      "label": "Egypt",
+      "code": "818",
+      "iso3": "EGY",
+      "parents": ["northern-africa", "africa", "world"]
+    },
+    {
+      "id": "el-salvador",
+      "label": "El Salvador",
+      "code": "222",
+      "iso3": "SLV",
+      "parents": [
+        "central-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "equatorial-guinea",
+      "label": "Equatorial Guinea",
+      "code": "226",
+      "iso3": "GNQ",
+      "parents": ["middle-africa", "sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "eritrea",
+      "label": "Eritrea",
+      "code": "232",
+      "iso3": "ERI",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "estonia",
+      "label": "Estonia",
+      "code": "233",
+      "iso3": "EST",
+      "parents": ["northern-europe", "europe", "world"]
+    },
+    {
+      "id": "eswatini",
+      "label": "Eswatini",
+      "code": "748",
+      "iso3": "SWZ",
+      "parents": ["southern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LLDC"]
+    },
+    {
+      "id": "ethiopia",
+      "label": "Ethiopia",
+      "code": "231",
+      "iso3": "ETH",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC", "LLDC"]
+    },
+    {
+      "id": "europe",
+      "label": "Europe",
+      "code": "150",
+      "parents": ["world"]
+    },
+    {
+      "id": "falkland-islands-malvinas",
+      "label": "Falkland Islands (Malvinas)",
+      "code": "238",
+      "iso3": "FLK",
+      "parents": [
+        "south-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "faroe-islands",
+      "label": "Faroe Islands",
+      "code": "234",
+      "iso3": "FRO",
+      "parents": ["northern-europe", "europe", "world"]
+    },
+    {
+      "id": "fiji",
+      "label": "Fiji",
+      "code": "242",
+      "iso3": "FJI",
+      "parents": ["melanesia", "oceania", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "finland",
+      "label": "Finland",
+      "code": "246",
+      "iso3": "FIN",
+      "parents": ["northern-europe", "europe", "world"]
+    },
+    {
+      "id": "france",
+      "label": "France",
+      "code": "250",
+      "iso3": "FRA",
+      "parents": ["western-europe", "europe", "world"]
+    },
+    {
+      "id": "french-guiana",
+      "label": "French Guiana",
+      "code": "254",
+      "iso3": "GUF",
+      "parents": [
+        "south-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "french-polynesia",
+      "label": "French Polynesia",
+      "code": "258",
+      "iso3": "PYF",
+      "parents": ["polynesia", "oceania", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "french-southern-territories",
+      "label": "French Southern Territories",
+      "code": "260",
+      "iso3": "ATF",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "gabon",
+      "label": "Gabon",
+      "code": "266",
+      "iso3": "GAB",
+      "parents": ["middle-africa", "sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "gambia",
+      "label": "Gambia",
+      "code": "270",
+      "iso3": "GMB",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "georgia",
+      "label": "Georgia",
+      "code": "268",
+      "iso3": "GEO",
+      "parents": ["western-asia", "asia", "world"]
+    },
+    {
+      "id": "germany",
+      "label": "Germany",
+      "code": "276",
+      "iso3": "DEU",
+      "parents": ["western-europe", "europe", "world"]
+    },
+    {
+      "id": "ghana",
+      "label": "Ghana",
+      "code": "288",
+      "iso3": "GHA",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "gibraltar",
+      "label": "Gibraltar",
+      "code": "292",
+      "iso3": "GIB",
+      "parents": ["southern-europe", "europe", "world"]
+    },
+    {
+      "id": "greece",
+      "label": "Greece",
+      "code": "300",
+      "iso3": "GRC",
+      "parents": ["southern-europe", "europe", "world"]
+    },
+    {
+      "id": "greenland",
+      "label": "Greenland",
+      "code": "304",
+      "iso3": "GRL",
+      "parents": ["northern-america", "americas", "world"]
+    },
+    {
+      "id": "grenada",
+      "label": "Grenada",
+      "code": "308",
+      "iso3": "GRD",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "guadeloupe",
+      "label": "Guadeloupe",
+      "code": "312",
+      "iso3": "GLP",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "guam",
+      "label": "Guam",
+      "code": "316",
+      "iso3": "GUM",
+      "parents": ["micronesia", "oceania", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "guatemala",
+      "label": "Guatemala",
+      "code": "320",
+      "iso3": "GTM",
+      "parents": [
+        "central-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "guernsey",
+      "label": "Guernsey",
+      "code": "831",
+      "iso3": "GGY",
+      "parents": ["northern-europe", "europe", "world"]
+    },
+    {
+      "id": "guinea",
+      "label": "Guinea",
+      "code": "324",
+      "iso3": "GIN",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "guinea-bissau",
+      "label": "Guinea-Bissau",
+      "code": "624",
+      "iso3": "GNB",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC", "SIDS"]
+    },
+    {
+      "id": "guyana",
+      "label": "Guyana",
+      "code": "328",
+      "iso3": "GUY",
+      "parents": [
+        "south-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "haiti",
+      "label": "Haiti",
+      "code": "332",
+      "iso3": "HTI",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["LDC", "SIDS"]
+    },
+    {
+      "id": "heard-island-and-mcdonald-islands",
+      "label": "Heard Island and McDonald Islands",
+      "code": "334",
+      "iso3": "HMD",
+      "parents": ["australia-and-new-zealand", "oceania", "world"]
+    },
+    {
+      "id": "holy-see",
+      "label": "Holy See",
+      "code": "336",
+      "iso3": "VAT",
+      "parents": ["southern-europe", "europe", "world"]
+    },
+    {
+      "id": "honduras",
+      "label": "Honduras",
+      "code": "340",
+      "iso3": "HND",
+      "parents": [
+        "central-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "hungary",
+      "label": "Hungary",
+      "code": "348",
+      "iso3": "HUN",
+      "parents": ["eastern-europe", "europe", "world"]
+    },
+    {
+      "id": "iceland",
+      "label": "Iceland",
+      "code": "352",
+      "iso3": "ISL",
+      "parents": ["northern-europe", "europe", "world"]
+    },
+    {
+      "id": "india",
+      "label": "India",
+      "code": "356",
+      "iso3": "IND",
+      "parents": ["southern-asia", "asia", "world"]
+    },
+    {
+      "id": "indonesia",
+      "label": "Indonesia",
+      "code": "360",
+      "iso3": "IDN",
+      "parents": ["south-eastern-asia", "asia", "world"]
+    },
+    {
+      "id": "iran-islamic-republic-of",
+      "label": "Iran (Islamic Republic of)",
+      "code": "364",
+      "iso3": "IRN",
+      "parents": ["southern-asia", "asia", "world"]
+    },
+    {
+      "id": "iraq",
+      "label": "Iraq",
+      "code": "368",
+      "iso3": "IRQ",
+      "parents": ["western-asia", "asia", "world"]
+    },
+    {
+      "id": "ireland",
+      "label": "Ireland",
+      "code": "372",
+      "iso3": "IRL",
+      "parents": ["northern-europe", "europe", "world"]
+    },
+    {
+      "id": "isle-of-man",
+      "label": "Isle of Man",
+      "code": "833",
+      "iso3": "IMN",
+      "parents": ["northern-europe", "europe", "world"]
+    },
+    {
+      "id": "israel",
+      "label": "Israel",
+      "code": "376",
+      "iso3": "ISR",
+      "parents": ["western-asia", "asia", "world"]
+    },
+    {
+      "id": "italy",
+      "label": "Italy",
+      "code": "380",
+      "iso3": "ITA",
+      "parents": ["southern-europe", "europe", "world"]
+    },
+    {
+      "id": "jamaica",
+      "label": "Jamaica",
+      "code": "388",
+      "iso3": "JAM",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "japan",
+      "label": "Japan",
+      "code": "392",
+      "iso3": "JPN",
+      "parents": ["eastern-asia", "asia", "world"]
+    },
+    {
+      "id": "jersey",
+      "label": "Jersey",
+      "code": "832",
+      "iso3": "JEY",
+      "parents": ["northern-europe", "europe", "world"]
+    },
+    {
+      "id": "jordan",
+      "label": "Jordan",
+      "code": "400",
+      "iso3": "JOR",
+      "parents": ["western-asia", "asia", "world"]
+    },
+    {
+      "id": "kazakhstan",
+      "label": "Kazakhstan",
+      "code": "398",
+      "iso3": "KAZ",
+      "parents": ["central-asia", "asia", "world"],
+      "groups": ["LLDC"]
+    },
+    {
+      "id": "kenya",
+      "label": "Kenya",
+      "code": "404",
+      "iso3": "KEN",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "kiribati",
+      "label": "Kiribati",
+      "code": "296",
+      "iso3": "KIR",
+      "parents": ["micronesia", "oceania", "world"],
+      "groups": ["LDC", "SIDS"]
+    },
+    {
+      "id": "kuwait",
+      "label": "Kuwait",
+      "code": "414",
+      "iso3": "KWT",
+      "parents": ["western-asia", "asia", "world"]
+    },
+    {
+      "id": "kyrgyzstan",
+      "label": "Kyrgyzstan",
+      "code": "417",
+      "iso3": "KGZ",
+      "parents": ["central-asia", "asia", "world"],
+      "groups": ["LLDC"]
+    },
+    {
+      "id": "lao-people-s-democratic-republic",
+      "label": "Lao People's Democratic Republic",
+      "code": "418",
+      "iso3": "LAO",
+      "parents": ["south-eastern-asia", "asia", "world"],
+      "groups": ["LDC", "LLDC"]
+    },
+    {
+      "id": "latin-america-and-the-caribbean",
+      "label": "Latin America and the Caribbean",
+      "code": "419",
+      "parents": ["americas", "world"]
+    },
+    {
+      "id": "latvia",
+      "label": "Latvia",
+      "code": "428",
+      "iso3": "LVA",
+      "parents": ["northern-europe", "europe", "world"]
+    },
+    {
+      "id": "lebanon",
+      "label": "Lebanon",
+      "code": "422",
+      "iso3": "LBN",
+      "parents": ["western-asia", "asia", "world"]
+    },
+    {
+      "id": "lesotho",
+      "label": "Lesotho",
+      "code": "426",
+      "iso3": "LSO",
+      "parents": ["southern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC", "LLDC"]
+    },
+    {
+      "id": "liberia",
+      "label": "Liberia",
+      "code": "430",
+      "iso3": "LBR",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "libya",
+      "label": "Libya",
+      "code": "434",
+      "iso3": "LBY",
+      "parents": ["northern-africa", "africa", "world"]
+    },
+    {
+      "id": "liechtenstein",
+      "label": "Liechtenstein",
+      "code": "438",
+      "iso3": "LIE",
+      "parents": ["western-europe", "europe", "world"]
+    },
+    {
+      "id": "lithuania",
+      "label": "Lithuania",
+      "code": "440",
+      "iso3": "LTU",
+      "parents": ["northern-europe", "europe", "world"]
+    },
+    {
+      "id": "luxembourg",
+      "label": "Luxembourg",
+      "code": "442",
+      "iso3": "LUX",
+      "parents": ["western-europe", "europe", "world"]
+    },
+    {
+      "id": "madagascar",
+      "label": "Madagascar",
+      "code": "450",
+      "iso3": "MDG",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "malawi",
+      "label": "Malawi",
+      "code": "454",
+      "iso3": "MWI",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC", "LLDC"]
+    },
+    {
+      "id": "malaysia",
+      "label": "Malaysia",
+      "code": "458",
+      "iso3": "MYS",
+      "parents": ["south-eastern-asia", "asia", "world"]
+    },
+    {
+      "id": "maldives",
+      "label": "Maldives",
+      "code": "462",
+      "iso3": "MDV",
+      "parents": ["southern-asia", "asia", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "mali",
+      "label": "Mali",
+      "code": "466",
+      "iso3": "MLI",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC", "LLDC"]
+    },
+    {
+      "id": "malta",
+      "label": "Malta",
+      "code": "470",
+      "iso3": "MLT",
+      "parents": ["southern-europe", "europe", "world"]
+    },
+    {
+      "id": "marshall-islands",
+      "label": "Marshall Islands",
+      "code": "584",
+      "iso3": "MHL",
+      "parents": ["micronesia", "oceania", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "martinique",
+      "label": "Martinique",
+      "code": "474",
+      "iso3": "MTQ",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "mauritania",
+      "label": "Mauritania",
+      "code": "478",
+      "iso3": "MRT",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "mauritius",
+      "label": "Mauritius",
+      "code": "480",
+      "iso3": "MUS",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "mayotte",
+      "label": "Mayotte",
+      "code": "175",
+      "iso3": "MYT",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "melanesia",
+      "label": "Melanesia",
+      "code": "054",
+      "parents": ["oceania", "world"]
+    },
+    {
+      "id": "mexico",
+      "label": "Mexico",
+      "code": "484",
+      "iso3": "MEX",
+      "parents": [
+        "central-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "micronesia",
+      "label": "Micronesia",
+      "code": "057",
+      "parents": ["oceania", "world"]
+    },
+    {
+      "id": "micronesia-federated-states-of",
+      "label": "Micronesia (Federated States of)",
+      "code": "583",
+      "iso3": "FSM",
+      "parents": ["micronesia", "oceania", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "middle-africa",
+      "label": "Middle Africa",
+      "code": "017",
+      "parents": ["sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "monaco",
+      "label": "Monaco",
+      "code": "492",
+      "iso3": "MCO",
+      "parents": ["western-europe", "europe", "world"]
+    },
+    {
+      "id": "mongolia",
+      "label": "Mongolia",
+      "code": "496",
+      "iso3": "MNG",
+      "parents": ["eastern-asia", "asia", "world"],
+      "groups": ["LLDC"]
+    },
+    {
+      "id": "montenegro",
+      "label": "Montenegro",
+      "code": "499",
+      "iso3": "MNE",
+      "parents": ["southern-europe", "europe", "world"]
+    },
+    {
+      "id": "montserrat",
+      "label": "Montserrat",
+      "code": "500",
+      "iso3": "MSR",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "morocco",
+      "label": "Morocco",
+      "code": "504",
+      "iso3": "MAR",
+      "parents": ["northern-africa", "africa", "world"]
+    },
+    {
+      "id": "mozambique",
+      "label": "Mozambique",
+      "code": "508",
+      "iso3": "MOZ",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "myanmar",
+      "label": "Myanmar",
+      "code": "104",
+      "iso3": "MMR",
+      "parents": ["south-eastern-asia", "asia", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "namibia",
+      "label": "Namibia",
+      "code": "516",
+      "iso3": "NAM",
+      "parents": ["southern-africa", "sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "nauru",
+      "label": "Nauru",
+      "code": "520",
+      "iso3": "NRU",
+      "parents": ["micronesia", "oceania", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "nepal",
+      "label": "Nepal",
+      "code": "524",
+      "iso3": "NPL",
+      "parents": ["southern-asia", "asia", "world"],
+      "groups": ["LDC", "LLDC"]
+    },
+    {
+      "id": "netherlands-kingdom-of-the",
+      "label": "Netherlands (Kingdom of the)",
+      "code": "528",
+      "iso3": "NLD",
+      "parents": ["western-europe", "europe", "world"]
+    },
+    {
+      "id": "new-caledonia",
+      "label": "New Caledonia",
+      "code": "540",
+      "iso3": "NCL",
+      "parents": ["melanesia", "oceania", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "new-zealand",
+      "label": "New Zealand",
+      "code": "554",
+      "iso3": "NZL",
+      "parents": ["australia-and-new-zealand", "oceania", "world"]
+    },
+    {
+      "id": "nicaragua",
+      "label": "Nicaragua",
+      "code": "558",
+      "iso3": "NIC",
+      "parents": [
+        "central-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "niger",
+      "label": "Niger",
+      "code": "562",
+      "iso3": "NER",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC", "LLDC"]
+    },
+    {
+      "id": "nigeria",
+      "label": "Nigeria",
+      "code": "566",
+      "iso3": "NGA",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "niue",
+      "label": "Niue",
+      "code": "570",
+      "iso3": "NIU",
+      "parents": ["polynesia", "oceania", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "norfolk-island",
+      "label": "Norfolk Island",
+      "code": "574",
+      "iso3": "NFK",
+      "parents": ["australia-and-new-zealand", "oceania", "world"]
+    },
+    {
+      "id": "north-macedonia",
+      "label": "North Macedonia",
+      "code": "807",
+      "iso3": "MKD",
+      "parents": ["southern-europe", "europe", "world"],
+      "groups": ["LLDC"]
+    },
+    {
+      "id": "northern-africa",
+      "label": "Northern Africa",
+      "code": "015",
+      "parents": ["africa", "world"]
+    },
+    {
+      "id": "northern-america",
+      "label": "Northern America",
+      "code": "021",
+      "parents": ["americas", "world"]
+    },
+    {
+      "id": "northern-europe",
+      "label": "Northern Europe",
+      "code": "154",
+      "parents": ["europe", "world"]
+    },
+    {
+      "id": "northern-mariana-islands",
+      "label": "Northern Mariana Islands",
+      "code": "580",
+      "iso3": "MNP",
+      "parents": ["micronesia", "oceania", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "norway",
+      "label": "Norway",
+      "code": "578",
+      "iso3": "NOR",
+      "parents": ["northern-europe", "europe", "world"]
+    },
+    {
+      "id": "oceania",
+      "label": "Oceania",
+      "code": "009",
+      "parents": ["world"]
+    },
+    {
+      "id": "oman",
+      "label": "Oman",
+      "code": "512",
+      "iso3": "OMN",
+      "parents": ["western-asia", "asia", "world"]
+    },
+    {
+      "id": "pakistan",
+      "label": "Pakistan",
+      "code": "586",
+      "iso3": "PAK",
+      "parents": ["southern-asia", "asia", "world"]
+    },
+    {
+      "id": "palau",
+      "label": "Palau",
+      "code": "585",
+      "iso3": "PLW",
+      "parents": ["micronesia", "oceania", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "panama",
+      "label": "Panama",
+      "code": "591",
+      "iso3": "PAN",
+      "parents": [
+        "central-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "papua-new-guinea",
+      "label": "Papua New Guinea",
+      "code": "598",
+      "iso3": "PNG",
+      "parents": ["melanesia", "oceania", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "paraguay",
+      "label": "Paraguay",
+      "code": "600",
+      "iso3": "PRY",
+      "parents": [
+        "south-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["LLDC"]
+    },
+    {
+      "id": "peru",
+      "label": "Peru",
+      "code": "604",
+      "iso3": "PER",
+      "parents": [
+        "south-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "philippines",
+      "label": "Philippines",
+      "code": "608",
+      "iso3": "PHL",
+      "parents": ["south-eastern-asia", "asia", "world"]
+    },
+    {
+      "id": "pitcairn",
+      "label": "Pitcairn",
+      "code": "612",
+      "iso3": "PCN",
+      "parents": ["polynesia", "oceania", "world"]
+    },
+    {
+      "id": "poland",
+      "label": "Poland",
+      "code": "616",
+      "iso3": "POL",
+      "parents": ["eastern-europe", "europe", "world"]
+    },
+    {
+      "id": "polynesia",
+      "label": "Polynesia",
+      "code": "061",
+      "parents": ["oceania", "world"]
+    },
+    {
+      "id": "portugal",
+      "label": "Portugal",
+      "code": "620",
+      "iso3": "PRT",
+      "parents": ["southern-europe", "europe", "world"]
+    },
+    {
+      "id": "puerto-rico",
+      "label": "Puerto Rico",
+      "code": "630",
+      "iso3": "PRI",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "qatar",
+      "label": "Qatar",
+      "code": "634",
+      "iso3": "QAT",
+      "parents": ["western-asia", "asia", "world"]
+    },
+    {
+      "id": "republic-of-korea",
+      "label": "Republic of Korea",
+      "code": "410",
+      "iso3": "KOR",
+      "parents": ["eastern-asia", "asia", "world"]
+    },
+    {
+      "id": "republic-of-moldova",
+      "label": "Republic of Moldova",
+      "code": "498",
+      "iso3": "MDA",
+      "parents": ["eastern-europe", "europe", "world"],
+      "groups": ["LLDC"]
+    },
+    {
+      "id": "reunion",
+      "label": "Réunion",
+      "code": "638",
+      "iso3": "REU",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "romania",
+      "label": "Romania",
+      "code": "642",
+      "iso3": "ROU",
+      "parents": ["eastern-europe", "europe", "world"]
+    },
+    {
+      "id": "russian-federation",
+      "label": "Russian Federation",
+      "code": "643",
+      "iso3": "RUS",
+      "parents": ["eastern-europe", "europe", "world"]
+    },
+    {
+      "id": "rwanda",
+      "label": "Rwanda",
+      "code": "646",
+      "iso3": "RWA",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC", "LLDC"]
+    },
+    {
+      "id": "saint-barthelemy",
+      "label": "Saint Barthélemy",
+      "code": "652",
+      "iso3": "BLM",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "saint-helena",
+      "label": "Saint Helena",
+      "code": "654",
+      "iso3": "SHN",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "saint-kitts-and-nevis",
+      "label": "Saint Kitts and Nevis",
+      "code": "659",
+      "iso3": "KNA",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "saint-lucia",
+      "label": "Saint Lucia",
+      "code": "662",
+      "iso3": "LCA",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "saint-martin-french-part",
+      "label": "Saint Martin (French Part)",
+      "code": "663",
+      "iso3": "MAF",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "saint-pierre-and-miquelon",
+      "label": "Saint Pierre and Miquelon",
+      "code": "666",
+      "iso3": "SPM",
+      "parents": ["northern-america", "americas", "world"]
+    },
+    {
+      "id": "saint-vincent-and-the-grenadines",
+      "label": "Saint Vincent and the Grenadines",
+      "code": "670",
+      "iso3": "VCT",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "samoa",
+      "label": "Samoa",
+      "code": "882",
+      "iso3": "WSM",
+      "parents": ["polynesia", "oceania", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "san-marino",
+      "label": "San Marino",
+      "code": "674",
+      "iso3": "SMR",
+      "parents": ["southern-europe", "europe", "world"]
+    },
+    {
+      "id": "sao-tome-and-principe",
+      "label": "Sao Tome and Principe",
+      "code": "678",
+      "iso3": "STP",
+      "parents": ["middle-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "saudi-arabia",
+      "label": "Saudi Arabia",
+      "code": "682",
+      "iso3": "SAU",
+      "parents": ["western-asia", "asia", "world"]
+    },
+    {
+      "id": "senegal",
+      "label": "Senegal",
+      "code": "686",
+      "iso3": "SEN",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "serbia",
+      "label": "Serbia",
+      "code": "688",
+      "iso3": "SRB",
+      "parents": ["southern-europe", "europe", "world"]
+    },
+    {
+      "id": "seychelles",
+      "label": "Seychelles",
+      "code": "690",
+      "iso3": "SYC",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "sierra-leone",
+      "label": "Sierra Leone",
+      "code": "694",
+      "iso3": "SLE",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "singapore",
+      "label": "Singapore",
+      "code": "702",
+      "iso3": "SGP",
+      "parents": ["south-eastern-asia", "asia", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "sint-maarten-dutch-part",
+      "label": "Sint Maarten (Dutch part)",
+      "code": "534",
+      "iso3": "SXM",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "slovakia",
+      "label": "Slovakia",
+      "code": "703",
+      "iso3": "SVK",
+      "parents": ["eastern-europe", "europe", "world"]
+    },
+    {
+      "id": "slovenia",
+      "label": "Slovenia",
+      "code": "705",
+      "iso3": "SVN",
+      "parents": ["southern-europe", "europe", "world"]
+    },
+    {
+      "id": "solomon-islands",
+      "label": "Solomon Islands",
+      "code": "090",
+      "iso3": "SLB",
+      "parents": ["melanesia", "oceania", "world"],
+      "groups": ["LDC", "SIDS"]
+    },
+    {
+      "id": "somalia",
+      "label": "Somalia",
+      "code": "706",
+      "iso3": "SOM",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "south-africa",
+      "label": "South Africa",
+      "code": "710",
+      "iso3": "ZAF",
+      "parents": ["southern-africa", "sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "south-america",
+      "label": "South America",
+      "code": "005",
+      "parents": ["latin-america-and-the-caribbean", "americas", "world"]
+    },
+    {
+      "id": "south-eastern-asia",
+      "label": "South-eastern Asia",
+      "code": "035",
+      "parents": ["asia", "world"]
+    },
+    {
+      "id": "south-georgia-and-the-south-sandwich-islands",
+      "label": "South Georgia and the South Sandwich Islands",
+      "code": "239",
+      "iso3": "SGS",
+      "parents": [
+        "south-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "south-sudan",
+      "label": "South Sudan",
+      "code": "728",
+      "iso3": "SSD",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC", "LLDC"]
+    },
+    {
+      "id": "southern-africa",
+      "label": "Southern Africa",
+      "code": "018",
+      "parents": ["sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "southern-asia",
+      "label": "Southern Asia",
+      "code": "034",
+      "parents": ["asia", "world"]
+    },
+    {
+      "id": "southern-europe",
+      "label": "Southern Europe",
+      "code": "039",
+      "parents": ["europe", "world"]
+    },
+    {
+      "id": "spain",
+      "label": "Spain",
+      "code": "724",
+      "iso3": "ESP",
+      "parents": ["southern-europe", "europe", "world"]
+    },
+    {
+      "id": "sri-lanka",
+      "label": "Sri Lanka",
+      "code": "144",
+      "iso3": "LKA",
+      "parents": ["southern-asia", "asia", "world"]
+    },
+    {
+      "id": "state-of-palestine",
+      "label": "State of Palestine",
+      "code": "275",
+      "iso3": "PSE",
+      "parents": ["western-asia", "asia", "world"]
+    },
+    {
+      "id": "sub-saharan-africa",
+      "label": "Sub-Saharan Africa",
+      "code": "202",
+      "parents": ["africa", "world"]
+    },
+    {
+      "id": "sudan",
+      "label": "Sudan",
+      "code": "729",
+      "iso3": "SDN",
+      "parents": ["northern-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "suriname",
+      "label": "Suriname",
+      "code": "740",
+      "iso3": "SUR",
+      "parents": [
+        "south-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "svalbard-and-jan-mayen-islands",
+      "label": "Svalbard and Jan Mayen Islands",
+      "code": "744",
+      "iso3": "SJM",
+      "parents": ["northern-europe", "europe", "world"]
+    },
+    {
+      "id": "sweden",
+      "label": "Sweden",
+      "code": "752",
+      "iso3": "SWE",
+      "parents": ["northern-europe", "europe", "world"]
+    },
+    {
+      "id": "switzerland",
+      "label": "Switzerland",
+      "code": "756",
+      "iso3": "CHE",
+      "parents": ["western-europe", "europe", "world"]
+    },
+    {
+      "id": "syrian-arab-republic",
+      "label": "Syrian Arab Republic",
+      "code": "760",
+      "iso3": "SYR",
+      "parents": ["western-asia", "asia", "world"]
+    },
+    {
+      "id": "tajikistan",
+      "label": "Tajikistan",
+      "code": "762",
+      "iso3": "TJK",
+      "parents": ["central-asia", "asia", "world"],
+      "groups": ["LLDC"]
+    },
+    {
+      "id": "thailand",
+      "label": "Thailand",
+      "code": "764",
+      "iso3": "THA",
+      "parents": ["south-eastern-asia", "asia", "world"]
+    },
+    {
+      "id": "timor-leste",
+      "label": "Timor-Leste",
+      "code": "626",
+      "iso3": "TLS",
+      "parents": ["south-eastern-asia", "asia", "world"],
+      "groups": ["LDC", "SIDS"]
+    },
+    {
+      "id": "togo",
+      "label": "Togo",
+      "code": "768",
+      "iso3": "TGO",
+      "parents": ["western-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "tokelau",
+      "label": "Tokelau",
+      "code": "772",
+      "iso3": "TKL",
+      "parents": ["polynesia", "oceania", "world"]
+    },
+    {
+      "id": "tonga",
+      "label": "Tonga",
+      "code": "776",
+      "iso3": "TON",
+      "parents": ["polynesia", "oceania", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "trinidad-and-tobago",
+      "label": "Trinidad and Tobago",
+      "code": "780",
+      "iso3": "TTO",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "tunisia",
+      "label": "Tunisia",
+      "code": "788",
+      "iso3": "TUN",
+      "parents": ["northern-africa", "africa", "world"]
+    },
+    {
+      "id": "turkiye",
+      "label": "Türkiye",
+      "code": "792",
+      "iso3": "TUR",
+      "parents": ["western-asia", "asia", "world"]
+    },
+    {
+      "id": "turkmenistan",
+      "label": "Turkmenistan",
+      "code": "795",
+      "iso3": "TKM",
+      "parents": ["central-asia", "asia", "world"],
+      "groups": ["LLDC"]
+    },
+    {
+      "id": "turks-and-caicos-islands",
+      "label": "Turks and Caicos Islands",
+      "code": "796",
+      "iso3": "TCA",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "tuvalu",
+      "label": "Tuvalu",
+      "code": "798",
+      "iso3": "TUV",
+      "parents": ["polynesia", "oceania", "world"],
+      "groups": ["LDC", "SIDS"]
+    },
+    {
+      "id": "uganda",
+      "label": "Uganda",
+      "code": "800",
+      "iso3": "UGA",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC", "LLDC"]
+    },
+    {
+      "id": "ukraine",
+      "label": "Ukraine",
+      "code": "804",
+      "iso3": "UKR",
+      "parents": ["eastern-europe", "europe", "world"]
+    },
+    {
+      "id": "united-arab-emirates",
+      "label": "United Arab Emirates",
+      "code": "784",
+      "iso3": "ARE",
+      "parents": ["western-asia", "asia", "world"]
+    },
+    {
+      "id": "united-kingdom-of-great-britain-and-northern-ireland",
+      "label": "United Kingdom of Great Britain and Northern Ireland",
+      "code": "826",
+      "iso3": "GBR",
+      "parents": ["northern-europe", "europe", "world"]
+    },
+    {
+      "id": "united-republic-of-tanzania",
+      "label": "United Republic of Tanzania",
+      "code": "834",
+      "iso3": "TZA",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "united-states-minor-outlying-islands",
+      "label": "United States Minor Outlying Islands",
+      "code": "581",
+      "iso3": "UMI",
+      "parents": ["micronesia", "oceania", "world"]
+    },
+    {
+      "id": "united-states-of-america",
+      "label": "United States of America",
+      "code": "840",
+      "iso3": "USA",
+      "parents": ["northern-america", "americas", "world"]
+    },
+    {
+      "id": "united-states-virgin-islands",
+      "label": "United States Virgin Islands",
+      "code": "850",
+      "iso3": "VIR",
+      "parents": [
+        "caribbean",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "uruguay",
+      "label": "Uruguay",
+      "code": "858",
+      "iso3": "URY",
+      "parents": [
+        "south-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "uzbekistan",
+      "label": "Uzbekistan",
+      "code": "860",
+      "iso3": "UZB",
+      "parents": ["central-asia", "asia", "world"],
+      "groups": ["LLDC"]
+    },
+    {
+      "id": "vanuatu",
+      "label": "Vanuatu",
+      "code": "548",
+      "iso3": "VUT",
+      "parents": ["melanesia", "oceania", "world"],
+      "groups": ["SIDS"]
+    },
+    {
+      "id": "venezuela-bolivarian-republic-of",
+      "label": "Venezuela (Bolivarian Republic of)",
+      "code": "862",
+      "iso3": "VEN",
+      "parents": [
+        "south-america",
+        "latin-america-and-the-caribbean",
+        "americas",
+        "world"
+      ]
+    },
+    {
+      "id": "viet-nam",
+      "label": "Viet Nam",
+      "code": "704",
+      "iso3": "VNM",
+      "parents": ["south-eastern-asia", "asia", "world"]
+    },
+    {
+      "id": "wallis-and-futuna-islands",
+      "label": "Wallis and Futuna Islands",
+      "code": "876",
+      "iso3": "WLF",
+      "parents": ["polynesia", "oceania", "world"]
+    },
+    {
+      "id": "western-africa",
+      "label": "Western Africa",
+      "code": "011",
+      "parents": ["sub-saharan-africa", "africa", "world"]
+    },
+    {
+      "id": "western-asia",
+      "label": "Western Asia",
+      "code": "145",
+      "parents": ["asia", "world"]
+    },
+    {
+      "id": "western-europe",
+      "label": "Western Europe",
+      "code": "155",
+      "parents": ["europe", "world"]
+    },
+    {
+      "id": "western-sahara",
+      "label": "Western Sahara",
+      "code": "732",
+      "iso3": "ESH",
+      "parents": ["northern-africa", "africa", "world"]
+    },
+    {
+      "id": "world",
+      "label": "World",
+      "code": "001"
+    },
+    {
+      "id": "yemen",
+      "label": "Yemen",
+      "code": "887",
+      "iso3": "YEM",
+      "parents": ["western-asia", "asia", "world"],
+      "groups": ["LDC"]
+    },
+    {
+      "id": "zambia",
+      "label": "Zambia",
+      "code": "894",
+      "iso3": "ZMB",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LDC", "LLDC"]
+    },
+    {
+      "id": "zimbabwe",
+      "label": "Zimbabwe",
+      "code": "716",
+      "iso3": "ZWE",
+      "parents": ["eastern-africa", "sub-saharan-africa", "africa", "world"],
+      "groups": ["LLDC"]
+    }
+  ]
+}

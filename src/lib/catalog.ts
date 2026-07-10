@@ -1,5 +1,12 @@
 // Shared shaping of CDH catalog records for cards, facets, and JSON-LD.
 import type { CollectionEntry } from "astro:content";
+import {
+  commodity,
+  geography,
+  geographyBbox,
+  geographyWithParents,
+  VOCAB_URL,
+} from "@/lib/vocab";
 import { SITE_NAME } from "@/site.config";
 
 const VIA = `Accessed through the CGIAR ${SITE_NAME}`;
@@ -34,6 +41,11 @@ export function humanize(slug: string) {
   return slug.charAt(0).toUpperCase() + slug.slice(1).replaceAll("-", " ");
 }
 
+// Canonical UN M49 label ("Sub-Saharan Africa"), falling back for unknown ids
+export function geoLabel(id: string) {
+  return geography(id)?.label ?? humanize(id);
+}
+
 export function summarize(entry: CollectionEntry<"catalog">) {
   const d = entry.data;
   return {
@@ -43,7 +55,7 @@ export function summarize(entry: CollectionEntry<"catalog">) {
     type: d.spatial ? ("spatial" as const) : ("tabular" as const),
     license: d.license,
     keywords: d.keywords.map((k) => (typeof k === "string" ? k : k.term)),
-    coverage: d.spatial?.geography.map(humanize).join(", ") || undefined,
+    coverage: d.spatial?.geography.map(geoLabel).join(", ") || undefined,
     // Short form for card meta rows — full label lives on the detail page
     resolution: d.spatial?.resolution[0]?.label?.split(" (")[0],
     formats: d.data.map((a) => FORMAT_LABELS[a.name] ?? a.name),
@@ -55,8 +67,14 @@ export function summarize(entry: CollectionEntry<"catalog">) {
         ]
       : undefined,
     domains: d.cdh?.domain ?? [],
-    geographies: d.spatial?.geography ?? [],
-    bbox: normalizeBbox(d.spatial?.bbox),
+    // Tags plus their M49 ancestors, so filtering by a region rolls up
+    geographies: [
+      ...new Set((d.spatial?.geography ?? []).flatMap(geographyWithParents)),
+    ],
+    // Explicit extent, else derived from geography tags for spatial search
+    bbox:
+      normalizeBbox(d.spatial?.bbox)
+      ?? geographyBbox(d.spatial?.geography ?? []),
     updated: d.updated ?? d.created ?? "",
   };
 }
@@ -237,17 +255,54 @@ export function datasetJsonLd(
             ...(k.scheme && { inDefinedTermSet: k.scheme }),
           },
     ),
-    ...(creators.length > 0 && { creator: creators.map(contactToSchemaOrg) }),
-    ...(bbox && {
-      spatialCoverage: {
-        "@type": "Place",
-        geo: {
-          "@type": "GeoShape",
-          // schema.org box is "minLat minLon maxLat maxLon"
-          box: `${bbox[1]} ${bbox[0]} ${bbox[3]} ${bbox[2]}`,
-        },
-      },
+    // Commodities as AGROVOC-linked subjects, via the CDH controlled vocab
+    ...(d.commodities.length > 0 && {
+      about: d.commodities.map((id) => {
+        const c = commodity(id);
+        return {
+          "@type": "DefinedTerm",
+          name: c?.label ?? humanize(id),
+          ...(c?.code && { termCode: c.code }),
+          ...(c?.uri && { url: c.uri }),
+          ...(c && { inDefinedTermSet: VOCAB_URL }),
+        };
+      }),
     }),
+    ...(creators.length > 0 && { creator: creators.map(contactToSchemaOrg) }),
+    ...(() => {
+      // Named places (with M49/ISO codes) alongside the bbox GeoShape
+      const places: object[] = (d.spatial?.geography ?? []).map((g) => {
+        const c = geography(g);
+        return {
+          "@type": "Place",
+          name: c?.label ?? humanize(g),
+          ...(c && {
+            identifier: [
+              { "@type": "PropertyValue", propertyID: "UN M49", value: c.code },
+              ...(c.iso3
+                ? [
+                    {
+                      "@type": "PropertyValue",
+                      propertyID: "ISO 3166-1 alpha-3",
+                      value: c.iso3,
+                    },
+                  ]
+                : []),
+            ],
+          }),
+        };
+      });
+      if (bbox)
+        places.push({
+          "@type": "Place",
+          geo: {
+            "@type": "GeoShape",
+            // schema.org box is "minLat minLon maxLat maxLon"
+            box: `${bbox[1]} ${bbox[0]} ${bbox[3]} ${bbox[2]}`,
+          },
+        });
+      return places.length > 0 ? { spatialCoverage: places } : {};
+    })(),
     ...(d.temporal && {
       temporalCoverage: d.temporal.end_date
         ? `${d.temporal.start_date}/${d.temporal.end_date}`

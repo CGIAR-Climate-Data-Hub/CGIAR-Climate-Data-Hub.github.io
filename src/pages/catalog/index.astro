@@ -5,7 +5,7 @@ import DatasetCard from "@/components/DatasetCard.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
-import { humanize, summarize } from "@/lib/catalog";
+import { geoLabel, humanize, summarize } from "@/lib/catalog";
 import { BBOX_PRESETS } from "@/lib/geo";
 import { landPath } from "@/lib/map";
 import { SITE_NAME } from "@/site.config";
@@ -20,6 +20,7 @@ function facetOf(
   key: string,
   title: string,
   get: (d: (typeof datasets)[number]) => string[],
+  label: (value: string) => string = humanize,
 ) {
   const counts = new Map<string, number>();
   for (const d of datasets) {
@@ -28,14 +29,14 @@ function facetOf(
     }
   }
   const values = [...counts]
-    .map(([value, count]) => ({ value, label: humanize(value), count }))
+    .map(([value, count]) => ({ value, label: label(value), count }))
     .sort((a, b) => a.label.localeCompare(b.label));
   return { key, title, values };
 }
 
 const facets = [
   facetOf("domain", "Domain", (d) => d.domains),
-  facetOf("geography", "Geography", (d) => d.geographies),
+  facetOf("geography", "Geography", (d) => d.geographies, geoLabel),
   facetOf("license", "License", (d) => [d.license]),
 ];
 
@@ -329,7 +330,7 @@ const catalogSchema = {
               data-geography={d.geographies.join(" ")}
               data-years={d.temporalYears?.join(" ")}
               data-license={d.license}
-              data-search={[d.title, d.description, ...d.keywords, d.coverage].join(" ").toLowerCase()}
+              data-search={[d.title, d.description, ...d.keywords, ...d.geographies.map(geoLabel)].join(" ").toLowerCase()}
             >
               <DatasetCard dataset={d} />
               <a class="row-compact" href={`/catalog/${d.id}/`}>
@@ -440,11 +441,13 @@ function apply() {
   let matched = 0;
   for (const card of cards) {
     const show =
-      facetKeys.every(
-        (k) =>
-          !state[k]
-          || (card.dataset[k] ?? "").split(" ").includes(state[k] as string),
-      )
+      facetKeys.every((k) => {
+        if (!state[k]) return true;
+        const values = (card.dataset[k] ?? "").split(" ");
+        // Global datasets cover every geography
+        if (k === "geography" && values.includes("world")) return true;
+        return values.includes(state[k] as string);
+      })
       && (!state.q || (card.dataset.search ?? "").includes(state.q))
       && matchesBbox(card)
       && matchesYears(card);
