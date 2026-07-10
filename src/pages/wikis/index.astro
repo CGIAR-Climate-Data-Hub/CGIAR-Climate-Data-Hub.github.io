@@ -26,7 +26,7 @@ const description =
           below.
         </p>
         <div class="ctas">
-          <a class="btn btn-primary" href="/wikis/cdh-metadata-standard"
+          <a class="btn btn-primary" href="/wikis/cdh-metadata-standard/"
             >Start with the metadata standard →</a
           >
           <a class="btn btn-ghost" href={GITHUB_URL}>Contribute an article</a>
@@ -38,7 +38,7 @@ const description =
             <h2>{GROUP_LABELS[group.section] ?? group.section}</h2>
             <div class="rows">
               {group.entries.map((wiki) => (
-                <a class="row" href={`/wikis/${wiki.id}`}>
+                <a class="row" href={`/wikis/${wiki.id}/`}>
                   <span class="row-text">
                     <span class="row-title">{wiki.data.title}</span>
                     <span class="row-summary">{wiki.data.description}</span>

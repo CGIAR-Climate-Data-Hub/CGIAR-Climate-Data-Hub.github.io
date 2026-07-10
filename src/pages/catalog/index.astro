@@ -56,15 +56,15 @@ const description =
 const catalogSchema = {
   "@context": "https://schema.org",
   "@type": "DataCatalog",
-  "@id": new URL("/catalog", Astro.site).href,
+  "@id": new URL("/catalog/", Astro.site).href,
   name: `${SITE_NAME} Catalog`,
   description,
-  url: new URL("/catalog", Astro.site).href,
+  url: new URL("/catalog/", Astro.site).href,
   dataset: datasets.map((d) => ({
     "@type": "Dataset",
     name: d.title,
     description: d.description,
-    url: new URL(`/catalog/${d.id}`, Astro.site).href,
+    url: new URL(`/catalog/${d.id}/`, Astro.site).href,
   })),
 };
 ---
@@ -79,8 +79,8 @@ const catalogSchema = {
     title="Catalog"
   >
     <div class="head-actions" slot="right">
-      <a class="btn btn-ghost btn-cta" href="/contribute">Contribute</a>
-      <a class="btn btn-primary" href="/wikis">Standards</a>
+      <a class="btn btn-ghost btn-cta" href="/contribute/">Contribute</a>
+      <a class="btn btn-primary" href="/wikis/">Standards</a>
     </div>
   </PageHead>
 
@@ -302,7 +302,7 @@ const catalogSchema = {
               data-search={[d.title, d.description, ...d.keywords, d.coverage].join(" ").toLowerCase()}
             >
               <DatasetCard dataset={d} />
-              <a class="row-compact" href={`/catalog/${d.id}`}>
+              <a class="row-compact" href={`/catalog/${d.id}/`}>
                 <DataGlyph type={d.type} />
                 <span class="row-text">
                   <span class="row-title">{d.title}</span>
@@ -313,7 +313,7 @@ const catalogSchema = {
                   <span>{d.formats.join(" · ")}</span>
                 </span>
               </a>
-              <a class="row-table" href={`/catalog/${d.id}`}>
+              <a class="row-table" href={`/catalog/${d.id}/`}>
                 <span>
                   <span class:list={["pill", "dot", d.type]}
                     >{d.type === "spatial" ? "Spatial" : "Non-spatial"}</span

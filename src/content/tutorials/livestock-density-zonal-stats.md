@@ -12,7 +12,7 @@ outcomes:
 updated: 2026-06-23
 ---
 
-[GLW4](/catalog/glw4-2020) values are densities (head/km²) on a lat/long grid,
+[GLW4](/catalog/glw4-2020/) values are densities (head/km²) on a lat/long grid,
 where pixel ground area shrinks toward the poles. Naive zonal sums are biased.
 This tutorial aggregates densities to admin-1 boundaries the right way.
 

@@ -18,7 +18,7 @@ const wikis = (await getCollection("wikis"))
 // One begin-here list mixing the collections; grows with the content.
 const essentials = [
   ...datasets.map((d) => ({
-    href: `/catalog/${d.id}`,
+    href: `/catalog/${d.id}/`,
     name: d.title,
     badge: d.type === "spatial" ? "Spatial" : "Non-spatial",
     badgeClass: d.type,
@@ -26,7 +26,7 @@ const essentials = [
     glyph: d.type,
   })),
   ...tutorials.slice(0, 2).map((t) => ({
-    href: `/tutorials/${t.id}`,
+    href: `/tutorials/${t.id}/`,
     name: t.data.title,
     badge: "Tutorial",
     badgeClass: "warn",
@@ -34,7 +34,7 @@ const essentials = [
     glyph: undefined,
   })),
   ...wikis.map((w) => ({
-    href: `/wikis/${w.id}`,
+    href: `/wikis/${w.id}/`,
     name: w.data.title,
     badge: "Wiki",
     badgeClass: "",
@@ -45,25 +45,25 @@ const essentials = [
 
 const PATHS = [
   {
-    href: "/catalog",
+    href: "/catalog/",
     glyph: "search",
     label: "Find a specific dataset",
     cue: "Search & filter",
   },
   {
-    href: "/tutorials",
+    href: "/tutorials/",
     glyph: "book",
     label: "Learn how to use the data",
     cue: "Runnable tutorials",
   },
   {
-    href: "/use-cases",
+    href: "/use-cases/",
     glyph: "layers",
     label: "See it working in the field",
     cue: "Use cases",
   },
   {
-    href: "/contribute",
+    href: "/contribute/",
     glyph: "upload",
     label: "Contribute data or docs",
     cue: "Add to the Hub",
@@ -121,7 +121,7 @@ const GLYPHS: Record<string, string> = {
 
         <div class="try-row">
           <span class="label">Try</span>
-          {TRY_CHIPS.map((chip) => <a class="try-chip" href={`/search?q=${encodeURIComponent(chip)}`}>{chip}</a>)}
+          {TRY_CHIPS.map((chip) => <a class="try-chip" href={`/search/?q=${encodeURIComponent(chip)}`}>{chip}</a>)}
         </div>
       </div>
 
@@ -152,7 +152,7 @@ const GLYPHS: Record<string, string> = {
         sub="Not looking for something specific yet? Start here — a curated mix of the data and documentation most climate work on the Hub is built on."
         title="A place to begin"
       >
-        <a class="btn btn-ghost" href="/catalog" slot="right"
+        <a class="btn btn-ghost" href="/catalog/" slot="right"
           >Browse everything →</a
         >
       </SectionHeader>
@@ -196,7 +196,7 @@ const GLYPHS: Record<string, string> = {
             portals. The Hub brings it under one set of principles, so teams can
             build on each other's work instead of starting over.
           </p>
-          <a class="band-link" href="/about">More about the Hub →</a>
+          <a class="band-link" href="/about/">More about the Hub →</a>
         </div>
         <div>
           {PRINCIPLES.map(([title, body], i) => (
@@ -223,7 +223,7 @@ const GLYPHS: Record<string, string> = {
         </p>
       </div>
       <div class="contribute-ctas">
-        <a class="btn btn-accent" href="/contribute">Contribute a dataset</a>
+        <a class="btn btn-accent" href="/contribute/">Contribute a dataset</a>
         <a class="btn btn-ghost" href={GITHUB_URL}>Open on GitHub</a>
       </div>
     </div>

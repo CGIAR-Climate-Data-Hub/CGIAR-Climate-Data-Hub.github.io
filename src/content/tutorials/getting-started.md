@@ -18,14 +18,14 @@ a distribution with standard Python tools.
 
 ## Find a dataset
 
-Browse the [catalog](/catalog) or search from any page. Each result is backed
+Browse the [catalog](/catalog/) or search from any page. Each result is backed
 by a metadata record that tells you what the data is, where it comes from, and
 — just as important — what it should *not* be used for. Read the
 "Not recommended for" block before committing to a dataset.
 
 ## Read the record
 
-Open the [GLW4 livestock density](/catalog/glw4-2020) page. The record tells
+Open the [GLW4 livestock density](/catalog/glw4-2020/) page. The record tells
 you the data is a Zarr store and a set of COGs, gridded at 5 arc-minutes,
 with a `species` dimension covering six livestock species.
 
@@ -59,5 +59,5 @@ producers — for GLW4 that's FAO — alongside the Hub record.
 
 ## Next steps
 
-- [Query MAPSPAM crop production with xarray](/tutorials/query-mapspam-with-xarray)
-- [Zonal statistics over livestock density](/tutorials/livestock-density-zonal-stats)
+- [Query MAPSPAM crop production with xarray](/tutorials/query-mapspam-with-xarray/)
+- [Zonal statistics over livestock density](/tutorials/livestock-density-zonal-stats/)

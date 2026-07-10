@@ -60,7 +60,7 @@ const description =
     sub="Hands-on, runnable tutorials — each a notebook, recipe or template that produces a concrete output you can hand to your team."
     title="Tutorials"
   >
-    <a class="btn btn-primary" href="/tutorials/getting-started" slot="right"
+    <a class="btn btn-primary" href="/tutorials/getting-started/" slot="right"
       >Start here →</a
     >
   </PageHead>
@@ -103,7 +103,7 @@ const description =
       <ul class="grid">
         {tutorials.map((t) => (
             <li data-level={t.data.level} data-topic={t.data.topic} data-tutorial>
-              <a class="card" href={`/tutorials/${t.id}`} style={`--level-color: ${LEVEL_COLORS[t.data.level]}`}>
+              <a class="card" href={`/tutorials/${t.id}/`} style={`--level-color: ${LEVEL_COLORS[t.data.level]}`}>
                 <span class="card-top">
                   <span class="pill level">{t.data.level}</span>
                   <span class="mono time">{t.data.time}</span>
@@ -147,7 +147,7 @@ const description =
         </div>
         <div class="path-strip" style={`--cols: ${learningPath.length}`}>
           {learningPath.map((t, i) => (
-            <a href={`/tutorials/${t.id}`}>
+            <a href={`/tutorials/${t.id}/`}>
               <span class="mono step-n">0{i + 1} · {t.data.level}</span>
               <span class="step-title">{t.data.title}</span>
               <span class="mono step-time">{t.data.time}</span>

@@ -42,7 +42,7 @@ const jsonLd = {
   "@type": "AboutPage",
   name: `About the ${SITE_NAME}`,
   description: lede,
-  url: new URL("/about", Astro.site).href,
+  url: new URL("/about/", Astro.site).href,
   about: { "@id": `${Astro.site}#organization` },
 };
 ---
@@ -107,8 +107,8 @@ const jsonLd = {
         <Content />
       </div>
       <div class="ctas">
-        <a class="btn btn-accent" href="/contribute">Contribute to the Hub</a>
-        <a class="btn btn-ghost" href="/wikis">Read the standards</a>
+        <a class="btn btn-accent" href="/contribute/">Contribute to the Hub</a>
+        <a class="btn btn-ghost" href="/wikis/">Read the standards</a>
       </div>
     </div>
   </section>

@@ -44,11 +44,11 @@ const monthOf = (d: Date) => d.toISOString().slice(0, 7);
           </div>
           <div class="body">
             <h2 class:list={[{ "lead-title": i === 0 }]}>
-              <a href={`/use-cases/${uc.id}`}>{uc.data.title}</a>
+              <a href={`/use-cases/${uc.id}/`}>{uc.data.title}</a>
             </h2>
             <p class="summary">{uc.data.description}</p>
             <Takeaways items={uc.data.impact} />
-            <a class="read" href={`/use-cases/${uc.id}`}>Read the full story →</a>
+            <a class="read" href={`/use-cases/${uc.id}/`}>Read the full story →</a>
           </div>
         </article>
       ))}

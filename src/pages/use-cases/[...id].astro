@@ -24,7 +24,7 @@ const date = entry.data.date.toISOString().slice(0, 10);
 const datasets = (
   await getCollection("catalog", (c) => entry.data.datasets.includes(c.data.id))
 ).map((c) => ({
-  href: `/catalog/${c.data.id}`,
+  href: `/catalog/${c.data.id}/`,
   title: c.data.title,
   type: c.data.spatial ? ("spatial" as const) : ("tabular" as const),
 }));
@@ -35,7 +35,7 @@ const jsonLd = {
   headline: entry.data.title,
   description: entry.data.description,
   datePublished: date,
-  url: new URL(`/use-cases/${entry.id}`, Astro.site).href,
+  url: new URL(`/use-cases/${entry.id}/`, Astro.site).href,
   author: { "@type": "Organization", name: `CGIAR ${SITE_NAME}` },
   about: entry.data.sector,
   contentLocation: { "@type": "Place", name: entry.data.country },
@@ -51,7 +51,7 @@ const jsonLd = {
 
   <div class="container head">
     <Breadcrumbs
-      items={[{ label: "Hub", href: "/" }, { label: "In use", href: "/use-cases" }, { label: entry.data.title }]}
+      items={[{ label: "Hub", href: "/" }, { label: "In use", href: "/use-cases/" }, { label: entry.data.title }]}
     />
   </div>
 
@@ -89,7 +89,7 @@ const jsonLd = {
         )}
 
       <div class="footer-row">
-        <a class="back" href="/use-cases">← Back to In use</a>
+        <a class="back" href="/use-cases/">← Back to In use</a>
         <a class="edit-link" href={GITHUB_URL}>Suggest an edit on GitHub</a>
       </div>
     </article>

@@ -30,7 +30,7 @@ const jsonLd = {
   headline: entry.data.title,
   description: entry.data.description,
   dateModified: updated,
-  url: new URL(`/wikis/${entry.id}`, Astro.site).href,
+  url: new URL(`/wikis/${entry.id}/`, Astro.site).href,
   author: { "@type": "Organization", name: `CGIAR ${SITE_NAME}` },
   isPartOf: { "@type": "WebSite", "@id": `${Astro.site}#website` },
 };
@@ -47,7 +47,7 @@ const jsonLd = {
 
     <article>
       <Breadcrumbs
-        items={[{ label: "Hub", href: "/" }, { label: "Wikis", href: "/wikis" }, { label: entry.data.title }]}
+        items={[{ label: "Hub", href: "/" }, { label: "Wikis", href: "/wikis/" }, { label: entry.data.title }]}
       />
       <h1>{entry.data.title}</h1>
       <div class="meta">Updated {updatedLong}</div>
@@ -56,7 +56,7 @@ const jsonLd = {
         <Content />
       </div>
       <div class="footer-row">
-        <a class="back" href="/wikis">← Back to the wiki</a>
+        <a class="back" href="/wikis/">← Back to the wiki</a>
         <a class="edit-link" href={GITHUB_URL}>Edit this page on GitHub</a>
       </div>
     </article>

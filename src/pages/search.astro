@@ -3,7 +3,7 @@ import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
 
 // The nav's PagefindConfig already loads the component UI; this page is the
-// SearchAction target (/search?q=…) for search engines and shared links.
+// SearchAction target (/search/?q=…) for search engines and shared links.
 ---
 
 <Layout
@@ -23,7 +23,7 @@ import Layout from "@/layouts/Layout.astro";
 </Layout>
 
 <script>
-// Seed the search box from ?q= so /search?q=drought works as a landing URL.
+// Seed the search box from ?q= so /search/?q=drought works as a landing URL.
 const q = new URLSearchParams(location.search).get("q");
 if (q) {
   customElements.whenDefined("pagefind-input").then(() => {

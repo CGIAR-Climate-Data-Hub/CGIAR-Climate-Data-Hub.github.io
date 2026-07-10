@@ -18,7 +18,7 @@ about *where* exposed animals actually are.
 
 ## The approach
 
-The team combined [GLW4 gridded livestock densities](/catalog/glw4-2020) with
+The team combined [GLW4 gridded livestock densities](/catalog/glw4-2020/) with
 downscaled temperature-humidity projections to map, species by species, where
 heat-stress days will intersect with dense livestock populations by 2030.
 

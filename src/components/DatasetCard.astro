@@ -20,7 +20,7 @@ const { dataset: d } = Astro.props;
       <span class="pill">{d.license}</span>
     </div>
   </div>
-  <h3><a href={`/catalog/${d.id}`}>{d.title}</a></h3>
+  <h3><a href={`/catalog/${d.id}/`}>{d.title}</a></h3>
   <p class="summary">{d.description}</p>
   {d.keywords.length > 0 && (
       <div class="chips">

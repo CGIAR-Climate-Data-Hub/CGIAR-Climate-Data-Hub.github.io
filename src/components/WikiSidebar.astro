@@ -30,7 +30,7 @@ const nav = WIKI_SECTIONS.map((section) => {
   const items: Item[] = [
     ...entries.map((e) => ({
       title: e.data.title,
-      href: `/wikis/${e.id}`,
+      href: `/wikis/${e.id}/`,
       id: e.id,
     })),
     ...(SOON[section] ?? []).map((title) => ({ title, soon: true })),

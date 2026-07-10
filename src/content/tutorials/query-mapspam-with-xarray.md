@@ -12,7 +12,7 @@ outcomes:
 updated: 2026-07-06
 ---
 
-[MAPSPAM 2020](/catalog/spam2020) is distributed as a single Zarr data cube
+[MAPSPAM 2020](/catalog/spam2020/) is distributed as a single Zarr data cube
 with `crop` and `technology` dimensions and four variables: physical area,
 harvested area, production, and yield. This tutorial subsets the cube and
 builds a national production summary.

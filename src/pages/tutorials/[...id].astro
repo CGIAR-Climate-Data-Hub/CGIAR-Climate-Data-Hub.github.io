@@ -27,7 +27,7 @@ const jsonLd = {
   "@type": ["TechArticle", "LearningResource"],
   headline: entry.data.title,
   description: entry.data.description,
-  url: new URL(`/tutorials/${entry.id}`, Astro.site).href,
+  url: new URL(`/tutorials/${entry.id}/`, Astro.site).href,
   educationalLevel: entry.data.level,
   ...(timeRequired && { timeRequired }),
   dateModified: entry.data.updated.toISOString().slice(0, 10),
@@ -45,7 +45,7 @@ const jsonLd = {
   <div class="container narrow-grid">
     <article>
       <Breadcrumbs
-        items={[{ label: "Hub", href: "/" }, { label: "Tutorials", href: "/tutorials" }, { label: entry.data.title }]}
+        items={[{ label: "Hub", href: "/" }, { label: "Tutorials", href: "/tutorials/" }, { label: entry.data.title }]}
       />
       <div class="head">
         <span

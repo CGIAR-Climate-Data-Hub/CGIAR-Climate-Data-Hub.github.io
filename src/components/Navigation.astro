@@ -4,14 +4,14 @@ import { GITHUB_URL } from "@/site.config";
 import LogoBlock from "./LogoBlock.astro";
 
 const LINKS = [
-  { href: "/catalog", label: "Catalog" },
-  { href: "/use-cases", label: "In use" },
+  { href: "/catalog/", label: "Catalog" },
+  { href: "/use-cases/", label: "In use" },
 ];
 
 const LEARN = [
-  { href: "/tutorials", label: "Tutorials", desc: "Runnable, step-by-step" },
-  { href: "/wikis", label: "Wikis", desc: "Reference & standards" },
-  { href: "/faq", label: "FAQ", desc: "Common questions, answered" },
+  { href: "/tutorials/", label: "Tutorials", desc: "Runnable, step-by-step" },
+  { href: "/wikis/", label: "Wikis", desc: "Reference & standards" },
+  { href: "/faq/", label: "FAQ", desc: "Common questions, answered" },
 ];
 
 const path = Astro.url.pathname;
@@ -35,7 +35,7 @@ const learnActive = LEARN.some((l) => isActive(l.href));
       <div class="dropdown">
         <a
           class:list={["nav-item", { "is-active": learnActive }]}
-          href="/tutorials"
+          href="/tutorials/"
         >
           Learn
           <svg
@@ -61,8 +61,8 @@ const learnActive = LEARN.some((l) => isActive(l.href));
       </div>
 
       <a
-        class:list={["nav-item", { "is-active": isActive("/about") }]}
-        href="/about"
+        class:list={["nav-item", { "is-active": isActive("/about/") }]}
+        href="/about/"
         >About</a
       >
     </nav>
@@ -80,7 +80,7 @@ const learnActive = LEARN.some((l) => isActive(l.href));
       <pagefind-modal></pagefind-modal>
     </div>
 
-    <a class="btn btn-ghost btn-cta cta" href="/contribute">Contribute</a>
+    <a class="btn btn-ghost btn-cta cta" href="/contribute/">Contribute</a>
 
     <a
       aria-label="CGIAR Climate Data Hub on GitHub"
@@ -126,12 +126,12 @@ const learnActive = LEARN.some((l) => isActive(l.href));
 
   <div class="mobile-menu" hidden id="mobile-menu">
     <nav aria-label="Mobile">
-      {[...LINKS, ...LEARN, { href: "/about", label: "About" }].map((link) => (
+      {[...LINKS, ...LEARN, { href: "/about/", label: "About" }].map((link) => (
           <a href={link.href} class:list={[{ "is-active": isActive(link.href) }]}>
             {link.label}
           </a>
         ))}
-      <a href="/contribute">Contribute</a>
+      <a href="/contribute/">Contribute</a>
       <a href={GITHUB_URL}>GitHub ↗</a>
     </nav>
   </div>
