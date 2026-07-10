@@ -15,6 +15,24 @@ export function commodity(id: string) {
   return byId.get(id);
 }
 
+// A commodity plus all its broader concepts, for roll-up filtering
+export function commodityWithParents(id: string) {
+  const c = byId.get(id);
+  return c ? [c.id, ...(c.broader ?? [])] : [id];
+}
+
+// Facet-level concepts are the ones that group others — anything appearing
+// as some concept's broader (cereals, livestock, crops…), never bare leaves
+// like cattle or sorghum. Filtering a closure by this keeps facet counts
+// consistent with closure-based matching.
+const groupConcepts = new Set(
+  commodityVocab.concepts.flatMap((c) => c.broader ?? []),
+);
+
+export function isCommodityGroup(id: string) {
+  return groupConcepts.has(id);
+}
+
 // UN M49 tree: World → regions → sub-regions → countries. Not every concept
 // carries every field (world has no parents; only countries have iso3).
 interface GeoConcept {

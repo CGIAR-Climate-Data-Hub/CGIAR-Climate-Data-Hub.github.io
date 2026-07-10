@@ -5,7 +5,7 @@ import DatasetCard from "@/components/DatasetCard.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
-import { geoLabel, humanize, summarize } from "@/lib/catalog";
+import { commodityLabel, geoLabel, humanize, summarize } from "@/lib/catalog";
 import { BBOX_PRESETS } from "@/lib/geo";
 import { landPath } from "@/lib/map";
 import { SITE_NAME } from "@/site.config";
@@ -37,7 +37,7 @@ function facetOf(
 const facets = [
   facetOf("domain", "Domain", (d) => d.domains),
   facetOf("geography", "Geography", (d) => d.geographies, geoLabel),
-  facetOf("license", "License", (d) => [d.license]),
+  facetOf("commodity", "Commodity", (d) => d.commodityGroups, commodityLabel),
 ];
 
 // Spatial-search minimap (equirectangular; lon/lat → svg coords)
@@ -280,7 +280,7 @@ const catalogSchema = {
       </details>
 
       {facets.map((facet) => (
-          <details open>
+          <details open={facet.key !== "commodity"}>
             <summary>
               <span class="label">{facet.title}</span>
               <svg aria-hidden="true" class="chev" fill="none" height="11" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" width="11">
@@ -325,12 +325,12 @@ const catalogSchema = {
         {datasets.map((d) => (
             <li
               data-bbox={d.bboxes?.map((b) => b.join(" ")).join(";")}
+              data-commodity={d.commodities.join(" ")}
               data-dataset
               data-domain={d.domains.join(" ")}
               data-geography={d.geographies.join(" ")}
               data-years={d.temporalYears?.join(" ")}
-              data-license={d.license}
-              data-search={[d.title, d.description, ...d.keywords, ...d.geographies.map(geoLabel)].join(" ").toLowerCase()}
+              data-search={[d.title, d.description, ...d.keywords, ...d.geographies.map(geoLabel), ...d.commodities.map(commodityLabel)].join(" ").toLowerCase()}
             >
               <DatasetCard dataset={d} />
               <a class="row-compact" href={`/catalog/${d.id}/`}>
@@ -398,7 +398,7 @@ const count = document.querySelector("#match-count");
 const matchLabel = document.querySelector("#match-label");
 const empty = document.querySelector<HTMLElement>("#empty-state");
 
-const facetKeys = ["domain", "geography", "license"] as const;
+const facetKeys = ["domain", "geography", "commodity"] as const;
 const state: {
   q: string;
   bbox: number[] | null;

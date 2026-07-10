@@ -2,9 +2,11 @@
 import type { CollectionEntry } from "astro:content";
 import {
   commodity,
+  commodityWithParents,
   geography,
   geographyBboxes,
   geographyWithParents,
+  isCommodityGroup,
   VOCAB_URL,
 } from "@/lib/vocab";
 import { SITE_NAME } from "@/site.config";
@@ -46,6 +48,10 @@ export function geoLabel(id: string) {
   return geography(id)?.label ?? humanize(id);
 }
 
+export function commodityLabel(id: string) {
+  return commodity(id)?.label ?? humanize(id);
+}
+
 export function summarize(entry: CollectionEntry<"catalog">) {
   const d = entry.data;
   return {
@@ -67,6 +73,14 @@ export function summarize(entry: CollectionEntry<"catalog">) {
         ]
       : undefined,
     domains: d.cdh?.domain ?? [],
+    // Tags plus their broader concepts, so filtering by a group rolls up;
+    // the group tier of the closure feeds the facet
+    commodities: [...new Set(d.commodities.flatMap(commodityWithParents))],
+    commodityGroups: [
+      ...new Set(
+        d.commodities.flatMap(commodityWithParents).filter(isCommodityGroup),
+      ),
+    ],
     // Tags plus their M49 ancestors, so filtering by a region rolls up
     geographies: [
       ...new Set((d.spatial?.geography ?? []).flatMap(geographyWithParents)),
