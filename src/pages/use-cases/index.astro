@@ -10,6 +10,7 @@ const all = (await getCollection("useCases")).sort(
 );
 const lead = all.find((uc) => uc.data.featured) ?? all[0];
 const rest = all.filter((uc) => uc !== lead);
+const stories = lead ? [lead, ...rest] : [];
 const description =
   "What people are doing with the Hub — impact from national planning and climate finance, and adoption of its data and standards.";
 
@@ -33,7 +34,12 @@ const monthOf = (d: Date) => d.toISOString().slice(0, 7);
   <div class="container"><hr class="head-rule"></div>
 
   <div class="container stories">
-    {[lead, ...rest].map((uc, i) => (
+    {stories.length === 0 && (
+      <p class="empty">
+        No published stories yet — the first ones are on their way.
+      </p>
+    )}
+    {stories.map((uc, i) => (
         <article class:list={["story", { lead: i === 0 }]}>
           <div class="rail">
             {i === 0 && <div class="label featured">Featured</div>}
@@ -63,6 +69,12 @@ const monthOf = (d: Date) => d.toISOString().slice(0, 7);
 </Layout>
 
 <style>
+.empty {
+  padding: 48px 0;
+  font-size: 15px;
+  color: var(--text-soft);
+}
+
 .head {
   padding-top: 30px;
 }

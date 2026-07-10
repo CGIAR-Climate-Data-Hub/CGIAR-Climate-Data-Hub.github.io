@@ -9,9 +9,10 @@ const guides = (await getCollection("contributionGuides"))
   .map(({ id, data }) => ({ id, ...data }));
 
 const STANDARDS_LINKS = [
-  ["Metadata standard", "/wikis/cdh-metadata-standard/"],
-  ["STAC profile", "/wikis/stac-profile/"],
-  ["COG authoring", "/wikis/cog-authoring/"],
+  [
+    "Metadata standard",
+    "https://github.com/CGIAR-Climate-Data-Hub/cdh-metadata-standard",
+  ],
   ["Licensing & attribution", "/wikis/licensing-and-attribution/"],
 ];
 
@@ -36,10 +37,9 @@ const description =
         <div>
           <h1>Contribute to the Hub.</h1>
           <p class="hero-lede">
-            The Hub grows because Centers, programmes and partners contribute.
-            Whether you're publishing a new dataset, editing a wiki, or telling
-            the story of how the Hub helped your project — there's a path for
-            you.
+            The Hub grows because Centers, programmes and partners contribute —
+            datasets, docs, tutorials, and the stories of how they get used.
+            Pick a guide below.
           </p>
         </div>
         <div class="help-box">

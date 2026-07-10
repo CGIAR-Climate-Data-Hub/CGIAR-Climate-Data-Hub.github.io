@@ -4,7 +4,8 @@ description: Find a dataset, read its metadata, and pull a layer into Python in 
 level: Beginner
 topic: Onboarding
 time: 20 min
-format: Notebook
+format: Guide
+datasets: [glw4-2020]
 outcomes:
   - Find a dataset
   - Read a CDH metadata record
@@ -27,7 +28,7 @@ by a metadata record that tells you what the data is, where it comes from, and
 
 Open the [GLW4 livestock density](/catalog/glw4-2020/) page. The record tells
 you the data is a Zarr store and a set of COGs, gridded at 5 arc-minutes,
-with a `species` dimension covering six livestock species.
+with one array per species for six livestock species.
 
 ## Open it in Python
 
@@ -39,7 +40,7 @@ import xarray as xr
 ds = xr.open_zarr(
     "https://digital-atlas.s3.amazonaws.com/cdh/data/glw4-2020/glw4-2020.zarr"
 )
-cattle = ds.sel(species="cattle")["density"]
+cattle = ds["cattle"]
 cattle.plot()
 ```
 
@@ -48,7 +49,7 @@ Single GeoTIFFs work with rasterio or rioxarray:
 ```python
 import rioxarray
 
-url = "https://digital-atlas.s3.amazonaws.com/cdh/data/glw4-2020/cogs/glw4-2020-cattle.tif"
+url = "https://digital-atlas.s3.amazonaws.com/cdh/data/glw4-2020/cog/glw4-2020-cattle.tif"
 cattle = rioxarray.open_rasterio(url, masked=True)
 ```
 
@@ -59,5 +60,4 @@ producers — for GLW4 that's FAO — alongside the Hub record.
 
 ## Next steps
 
-- [Query MAPSPAM crop production with xarray](/tutorials/query-mapspam-with-xarray/)
-- [Zonal statistics over livestock density](/tutorials/livestock-density-zonal-stats/)
+- [Tropical Livestock Units from GLW4](/tutorials/tlu_glw4/)
