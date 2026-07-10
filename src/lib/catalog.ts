@@ -66,12 +66,6 @@ export function summarize(entry: CollectionEntry<"catalog">) {
     resolution: d.spatial?.resolution[0]?.label?.split(" (")[0],
     formats: d.data.map((a) => FORMAT_LABELS[a.name] ?? a.name),
     temporal: temporalText(d.temporal)?.main,
-    temporalYears: d.temporal
-      ? [
-          +d.temporal.start_date.slice(0, 4),
-          +(d.temporal.end_date ?? d.temporal.start_date).slice(0, 4),
-        ]
-      : undefined,
     domains: d.cdh?.domain ?? [],
     // Tags plus their broader concepts, so filtering by a group rolls up;
     // the group tier of the closure feeds the facet
