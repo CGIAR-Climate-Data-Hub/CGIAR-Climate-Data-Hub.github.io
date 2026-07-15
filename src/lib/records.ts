@@ -72,7 +72,8 @@ export function records(source: RecordsSource): Loader {
       for (const f of files) {
         const id = f.path.replace(/\.ya?ml$/, "");
         const data = await parseData({ id, data: parse(f.body) });
-        store.set({ id, data });
+        // filePath is repo-relative, for "view source" links on record pages
+        store.set({ id, data, filePath: `${source.dir}/${f.path}` });
       }
       logger.info(`loaded ${files.length} records`);
     },

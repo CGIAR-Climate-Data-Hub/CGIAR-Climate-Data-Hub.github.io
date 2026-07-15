@@ -6,7 +6,7 @@ import DataGlyph from "@/components/DataGlyph.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import Takeaways from "@/components/Takeaways.astro";
 import Layout from "@/layouts/Layout.astro";
-import { GITHUB_URL, SITE_NAME } from "@/site.config";
+import { GITHUB_REPO, SITE_NAME } from "@/site.config";
 
 export async function getStaticPaths() {
   const entries = await getCollection("useCases");
@@ -90,7 +90,11 @@ const jsonLd = {
 
       <div class="footer-row">
         <a class="back" href="/use-cases/">← Back to In use</a>
-        <a class="edit-link" href={GITHUB_URL}>Suggest an edit on GitHub</a>
+        <a
+          class="edit-link"
+          href={`https://github.com/${GITHUB_REPO}/edit/main/${entry.filePath}`}
+          >Suggest an edit on GitHub</a
+        >
       </div>
     </article>
 
@@ -215,22 +219,6 @@ h1 {
   width: auto;
   height: auto;
   background: transparent;
-}
-
-.footer-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 22px;
-  margin-top: 32px;
-  border-top: 1px solid var(--border);
-}
-
-.back {
-  font-size: 14px;
-  font-weight: 600;
 }
 
 @media (width <= 960px) {

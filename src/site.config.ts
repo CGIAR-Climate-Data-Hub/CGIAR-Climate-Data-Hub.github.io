@@ -5,3 +5,5 @@ export const SITE_DESCRIPTION =
 export const GITHUB_URL = "https://github.com/CGIAR-Climate-Data-Hub";
 // org/repo slug of this site's repository (Colab links, source links)
 export const GITHUB_REPO = "CGIAR-Climate-Data-Hub/climate-data-hub";
+// org/repo slug of the catalog metadata repo (record source + data issues)
+export const CATALOG_REPO = "CGIAR-Climate-Data-Hub/cdh-catalog";

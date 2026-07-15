@@ -4,6 +4,7 @@ import { z } from "astro/zod";
 import { WIKI_SECTIONS } from "./lib/collections";
 import { notebooks } from "./lib/notebooks";
 import { records } from "./lib/records";
+import { CATALOG_REPO } from "./site.config";
 
 const tutorialSchema = z.object({
   title: z.string(),
@@ -149,7 +150,7 @@ const asset = z.object({
 
 const catalog = defineCollection({
   loader: records({
-    repo: "CGIAR-Climate-Data-Hub/cdh-catalog",
+    repo: CATALOG_REPO,
     dir: "records",
   }),
   schema: z

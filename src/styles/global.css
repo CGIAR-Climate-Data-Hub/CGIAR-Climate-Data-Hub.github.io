@@ -317,6 +317,23 @@ hr {
   opacity: 0.8;
 }
 
+/* Article footer: back link + edit-on-GitHub (wikis, tutorials, use cases) */
+.footer-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 22px;
+  margin-top: 36px;
+  border-top: 1px solid var(--border);
+}
+
+.back {
+  font-size: 14px;
+  font-weight: 600;
+}
+
 /* Quiet edit-on-GitHub affordance */
 .edit-link {
   font-size: 12.5px;

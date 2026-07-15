@@ -86,7 +86,7 @@ export function notebooks(dir: string): Loader {
           slug: m[2],
           text: m[3].replace(/<[^>]+>/g, ""),
         }));
-        store.set({ id, data, rendered });
+        store.set({ id, data, filePath: join(dir, file), rendered });
       }
     },
   };
