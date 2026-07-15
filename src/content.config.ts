@@ -219,7 +219,8 @@ const catalog = defineCollection({
             name: z.string(),
             type: z.string().optional(),
             description: z.string().optional(),
-            values: z.array(z.string()).default([]),
+            // The standard allows bare numbers (years); the site works in strings
+            values: z.array(z.coerce.string()).default([]),
           }),
         )
         .default([]),
