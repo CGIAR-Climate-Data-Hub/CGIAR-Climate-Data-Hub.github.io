@@ -144,11 +144,11 @@ const jsonLd = datasetJsonLd(
 {redirect && (
   <html lang="en">
     <head>
-      <meta charset="utf-8">
+      <meta charset="utf-8" />
       <title>{d.title}</title>
-      <meta content={`0;url=${redirect}`} http-equiv="refresh">
-      <link href={new URL(redirect, Astro.site).href} rel="canonical">
-      <meta content="noindex" name="robots">
+      <meta content={`0;url=${redirect}`} http-equiv="refresh" />
+      <link href={new URL(redirect, Astro.site).href} rel="canonical" />
+      <meta content="noindex" name="robots" />
     </head>
     <body>
       <p>Latest version: <a href={redirect}>{d.title}</a></p>
