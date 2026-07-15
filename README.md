@@ -30,7 +30,9 @@ RECORDS_REPO=you/cdh-catalog bun run dev
 ```
 
 Unset, builds fetch `cdh-catalog@main`. If the records fetch fails, the
-previously loaded records are kept, so offline dev keeps working.
+previously loaded records are kept, so offline dev keeps working — unless
+`REQUIRE_RECORDS` is set (the deploy workflow's guard), in which case a
+build that would produce an empty catalog fails instead.
 
 No records checked out? `bun run dev:example` runs the site against the
 bundled fixtures in `examples/records/` — a populated catalog for frontend

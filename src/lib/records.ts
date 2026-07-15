@@ -63,11 +63,16 @@ export function records(source: RecordsSource): Loader {
               process.env.RECORDS_REF ?? "main",
             );
       } catch (err) {
+        // With REQUIRE_RECORDS set (deploy workflow), an unavailable catalog
+        // fails the build instead of deploying without records
+        if (process.env.REQUIRE_RECORDS) throw err;
         logger.warn(
           `records fetch failed (${err}) — keeping previously loaded records`,
         );
         return;
       }
+      if (files.length === 0 && process.env.REQUIRE_RECORDS)
+        throw new Error("REQUIRE_RECORDS is set but zero records were loaded");
       store.clear();
       for (const f of files) {
         const id = f.path.replace(/\.ya?ml$/, "");
