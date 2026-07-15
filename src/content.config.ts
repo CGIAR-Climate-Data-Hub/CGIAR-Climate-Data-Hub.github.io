@@ -165,6 +165,9 @@ const catalog = defineCollection({
       deprecated: z.boolean().default(false),
       license: z.string(),
       resource_type: z.string(),
+      // Absent means open; anything else flags the header + Access section
+      access: z.string().optional(),
+      access_note: z.string().optional(),
       doi: z.string().optional(),
       note: z.string().optional(),
       keywords: z.array(keyword).default([]),
@@ -177,6 +180,9 @@ const catalog = defineCollection({
             citation: citation.optional(),
           }),
         )
+        .default([]),
+      funding: z
+        .array(z.object({ name: z.string(), url: z.string().optional() }))
         .default([]),
       created: z.string().optional(),
       updated: z.string().optional(),
@@ -250,6 +256,49 @@ const catalog = defineCollection({
             .default([]),
         })
         .optional(),
+      // Climate extension: modelling methods behind projection datasets
+      climate: z
+        .object({
+          baseline: z
+            .object({
+              start_date: z.string(),
+              end_date: z.string().optional(),
+            })
+            .optional(),
+          bias_adjustment: z
+            .object({
+              method: z.string().optional(),
+              reference_dataset: z.string().optional(),
+            })
+            .optional(),
+          downscaling: z
+            .object({
+              method: z.string().optional(),
+              resolution: z.string().optional(),
+            })
+            .optional(),
+          mip_era: z.string().optional(),
+          models: z.array(z.string()).default([]),
+          scenarios: z.array(z.string()).default([]),
+        })
+        .optional(),
+      // Classification extension: value → label maps for categorical variables
+      classes: z
+        .array(
+          z.object({
+            variable: z.string(),
+            values: z
+              .array(
+                z.object({
+                  value: z.coerce.string(),
+                  label: z.string(),
+                  description: z.string().optional(),
+                }),
+              )
+              .default([]),
+          }),
+        )
+        .default([]),
       commodities: z.array(z.string()).default([]),
       processing: z
         .array(

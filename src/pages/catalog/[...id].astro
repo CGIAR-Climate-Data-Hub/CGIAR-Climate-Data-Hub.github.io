@@ -140,6 +140,7 @@ const firstExample = assets.findIndex((a) => a.example);
 const SECTIONS = [
   ["overview", "Overview"],
   d.dimensions.length + d.variables.length > 0 && ["schema", "Schema"],
+  d.climate && ["climate", "Climate"],
   d.data.length > 0 && ["access", "Access & use"],
   d.processing.length > 0 && ["provenance", "Provenance"],
   d.contact.length > 0 && ["contacts", "Contacts"],
@@ -205,6 +206,9 @@ const jsonLd = datasetJsonLd(
           )}
 
           <div class="mono meta-row">
+            {d.access && d.access !== "open" && (
+              <span class="access-flag">{humanize(d.access)} access</span>
+            )}
             <span class="fact">
               <span class="fact-label">license</span>
               {licenseHref ? (
@@ -362,17 +366,40 @@ const jsonLd = datasetJsonLd(
                       </tr>
                     </thead>
                     <tbody>
-                      {d.variables.map((v) => (
-                        <tr>
-                          <td class="mono var-name">{v.name}</td>
-                          <td class="mono">{v.data_type ?? "—"}</td>
-                          <td class="mono">{v.unit ?? "—"}</td>
-                          <td>
-                            {v.description ?? "—"}
-                            {v.note && <div class="var-note">{v.note}</div>}
-                          </td>
-                        </tr>
-                      ))}
+                      {d.variables.map((v) => {
+                        const classValues = d.classes.find(
+                          (c) => c.variable === v.name,
+                        )?.values;
+                        return (
+                          <tr>
+                            <td class="mono var-name">{v.name}</td>
+                            <td class="mono">{v.data_type ?? "—"}</td>
+                            <td class="mono">{v.unit ?? "—"}</td>
+                            <td>
+                              {v.description ?? "—"}
+                              {v.note && <div class="var-note">{v.note}</div>}
+                              {classValues && classValues.length > 0 && (
+                                <dl class="class-list">
+                                  {classValues.map((cv) => (
+                                    <>
+                                      <dt class="mono">{cv.value}</dt>
+                                      <dd>
+                                        {cv.label}
+                                        {cv.description && (
+                                          <span class="class-desc">
+                                            {" "}
+                                            — {cv.description}
+                                          </span>
+                                        )}
+                                      </dd>
+                                    </>
+                                  ))}
+                                </dl>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -413,6 +440,12 @@ const jsonLd = datasetJsonLd(
               Cloud-optimised distributions — read just the window you need directly from object
               storage.
             </p>
+            {d.access_note && (
+              <div class="note">
+                <h3>Access conditions</h3>
+                <p>{d.access_note}</p>
+              </div>
+            )}
             {d.data.some((a) => a.href_template) && (
               <p class="digest">
                 Machine-readable file index:{" "}
@@ -447,6 +480,74 @@ const jsonLd = datasetJsonLd(
                   )}
                 </div>
               ))}
+            </div>
+          </section>
+        )}
+
+      {d.climate && (
+          <section id="climate">
+            <h3>Climate methods</h3>
+            <p class="section-sub">
+              The modelling setup behind the projections — era, models,
+              scenarios, and adjustments.
+            </p>
+            <div class="climate-card">
+              <dl class="kv">
+                  {d.climate.mip_era && (
+                    <>
+                      <dt>MIP era</dt>
+                      <dd>{d.climate.mip_era}</dd>
+                    </>
+                  )}
+                  {d.climate.models.length > 0 && (
+                    <>
+                      <dt>Models</dt>
+                      <dd class="mono">{d.climate.models.join(", ")}</dd>
+                    </>
+                  )}
+                  {d.climate.scenarios.length > 0 && (
+                    <>
+                      <dt>Scenarios</dt>
+                      <dd class="mono">{d.climate.scenarios.join(", ")}</dd>
+                    </>
+                  )}
+                  {d.climate.baseline && (
+                    <>
+                      <dt>Baseline</dt>
+                      <dd>
+                        {d.climate.baseline.start_date.slice(0, 4)}
+                        {d.climate.baseline.end_date
+                          && ` – ${d.climate.baseline.end_date.slice(0, 4)}`}
+                      </dd>
+                    </>
+                  )}
+                  {d.climate.bias_adjustment && (
+                    <>
+                      <dt>Bias adjustment</dt>
+                      <dd>
+                        {[
+                          d.climate.bias_adjustment.method,
+                          d.climate.bias_adjustment.reference_dataset,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </dd>
+                    </>
+                  )}
+                  {d.climate.downscaling && (
+                    <>
+                      <dt>Downscaling</dt>
+                      <dd>
+                        {[
+                          d.climate.downscaling.method,
+                          d.climate.downscaling.resolution,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </dd>
+                    </>
+                  )}
+              </dl>
             </div>
           </section>
         )}
@@ -672,6 +773,21 @@ const jsonLd = datasetJsonLd(
             ))}
           </div>
         )}
+
+      {d.funding.length > 0 && (
+          <div class="rail-box">
+            <h4 class="label">Funding</h4>
+            {d.funding.map((f) =>
+              f.url ? (
+                <a class="rail-link ext" href={f.url} rel="noreferrer">
+                  {f.name} ↗
+                </a>
+              ) : (
+                <div class="rail-text">{f.name}</div>
+              ),
+            )}
+          </div>
+        )}
     </aside>
   </div>
 </Layout>
@@ -736,6 +852,46 @@ document.addEventListener("click", async (e) => {
   padding: 24px 0 32px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+}
+
+.access-flag {
+  padding: 3px 9px;
+  color: var(--terra-900);
+  background: var(--terra-50);
+  border: 1px solid var(--terra-300);
+  border-radius: var(--pill-radius);
+}
+
+.climate-card {
+  padding: 16px 18px;
+  margin-bottom: 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.climate-card h4 {
+  margin-bottom: 12px;
+}
+
+.class-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 10px;
+  margin: 8px 0 0;
+  font-size: 12.5px;
+}
+
+.class-list dt {
+  color: var(--text-soft);
+}
+
+.class-list dd {
+  margin: 0;
+}
+
+.class-desc {
+  color: var(--text-mute);
 }
 
 .deprecated-note {
@@ -1384,6 +1540,13 @@ td.mono {
   padding: 8px 0;
   font-size: 13px;
   color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Rail entry with no link (e.g. an unlinked funder) */
+.rail-text {
+  padding: 8px 0;
+  font-size: 13px;
   border-bottom: 1px solid var(--border);
 }
 

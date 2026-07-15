@@ -290,7 +290,9 @@ export function datasetJsonLd(
     identifier: d.doi ? [`https://doi.org/${d.doi}`, d.id] : [d.id],
     ...(d.doi && { sameAs: `https://doi.org/${d.doi}` }),
     license: LICENSE_URLS[d.license] ?? d.license,
-    isAccessibleForFree: true,
+    // "Free" in the Dataset Search sense: openly retrievable, no gate
+    isAccessibleForFree: (d.access ?? "open") === "open",
+    ...(d.access_note && { conditionsOfAccess: d.access_note }),
     ...(d.version && { version: d.version }),
     ...(d.created && { dateCreated: d.created }),
     ...(d.updated && { dateModified: d.updated }),
@@ -318,6 +320,13 @@ export function datasetJsonLd(
       }),
     }),
     ...(creators.length > 0 && { creator: creators.map(contactToSchemaOrg) }),
+    ...(d.funding.length > 0 && {
+      funder: d.funding.map((f) => ({
+        "@type": "Organization",
+        name: f.name,
+        ...(f.url && { url: f.url }),
+      })),
+    }),
     ...(() => {
       // Named places (with M49/ISO codes) alongside the bbox GeoShape
       const places: object[] = (d.spatial?.geography ?? []).map((g) => {
