@@ -91,6 +91,25 @@ const siteGraph = {
     <Footer />
 
     <script>
+    // Section links (heading anchors, TOC, contribute's intent nav): swap the
+    // hash with replaceState so Back returns to the previous page, not a walk
+    // through every section clicked. The guard leaves other hash links (e.g.
+    // the catalog tabs, which manage their own) alone. Heading clicks don't
+    // scroll — the reader is already there; TOC clicks lose the native jump
+    // to preventDefault, so scroll explicitly.
+    document.addEventListener("click", (e) => {
+      const link = (e.target as HTMLElement).closest<HTMLAnchorElement>(
+        'a.section-link[href^="#"], [data-toc] a[href^="#"], [data-intent] a[href^="#"]',
+      );
+      if (!link) return;
+      e.preventDefault();
+      history.replaceState(null, "", link.hash);
+      if (!link.classList.contains("section-link"))
+        document
+          .getElementById(decodeURIComponent(link.hash.slice(1)))
+          ?.scrollIntoView();
+    });
+
     // Code-block chrome is baked in at build time (src/lib/code-block.ts);
     // only the clipboard write needs JS.
     document.addEventListener("click", async (e) => {

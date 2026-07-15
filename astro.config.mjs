@@ -1,5 +1,6 @@
 // @ts-check
 
+import { satteri, satteriHeadingIdsPlugin } from "@astrojs/markdown-satteri";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import { defineConfig, fontProviders } from "astro/config";
@@ -7,6 +8,7 @@ import { defineConfig, fontProviders } from "astro/config";
 import pagefind from "astro-pagefind";
 
 import { shikiConfig } from "./src/lib/code-block.ts";
+import { headingAnchors } from "./src/lib/heading-anchors.ts";
 
 // Canonical production domain. Served at the root as the org's GitHub Pages site, so there
 // is no `base` (Astro defaults to "/"). To switch to a custom domain later: change this one
@@ -23,8 +25,15 @@ export default defineConfig({
   // its default ("ignore") — "always" 404s extensioned endpoints in dev
   // (withastro/astro#10149).
 
-  // Shared with the satteri renderer and <Code> components — src/lib/code-block.ts
-  markdown: { shikiConfig },
+  // shikiConfig is shared with the satteri renderer and <Code> components —
+  // src/lib/code-block.ts. Plugin order matters: ids are assigned first, the
+  // anchor wrap reads them (Astro's own ids pass re-runs after, idempotently).
+  markdown: {
+    processor: satteri({
+      hastPlugins: [satteriHeadingIdsPlugin(), headingAnchors()],
+    }),
+    shikiConfig,
+  },
 
   fonts: [
     {

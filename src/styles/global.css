@@ -429,6 +429,30 @@ hr {
   scroll-margin-top: calc(var(--nav-height) + 58px);
 }
 
+/* Self-linking headings (src/lib/heading-anchors.ts): quiet until hovered */
+.section-link {
+  color: inherit;
+}
+
+.section-link:hover {
+  text-decoration: none;
+}
+
+.section-link::after {
+  margin-left: 0.4em;
+  font-size: 0.85em;
+  font-weight: 400;
+  color: var(--text-mute);
+  content: "#";
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.section-link:hover::after,
+.section-link:focus-visible::after {
+  opacity: 1;
+}
+
 .prose p,
 .prose ul,
 .prose ol {
