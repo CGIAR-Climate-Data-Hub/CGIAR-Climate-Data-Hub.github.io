@@ -73,16 +73,13 @@ a.depth-3 {
   font-size: 12.5px;
 }
 
-/* Sub-headings appear only while reading their section; without :has()
-   support they simply stay visible. */
-@supports selector(:has(a)) {
-  .sec a.depth-3 {
-    display: none;
-  }
+/* Sub-headings appear only while reading their section */
+.sec a.depth-3 {
+  display: none;
+}
 
-  .sec:has(a[aria-current="true"]) a.depth-3 {
-    display: block;
-  }
+.sec:has(a[aria-current="true"]) a.depth-3 {
+  display: block;
 }
 
 a:hover {

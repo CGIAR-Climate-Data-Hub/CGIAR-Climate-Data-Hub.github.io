@@ -105,18 +105,8 @@ hr {
   outline-offset: 2px;
 }
 
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--grey-2);
-  border-radius: 6px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--grey-3);
+:root {
+  scrollbar-color: var(--grey-2) transparent;
 }
 
 /* ---- Utilities ---- */
@@ -324,10 +314,6 @@ hr {
   justify-content: space-between;
   cursor: pointer;
   list-style: none;
-}
-
-.facets summary::-webkit-details-marker {
-  display: none;
 }
 
 .facets .chev {
