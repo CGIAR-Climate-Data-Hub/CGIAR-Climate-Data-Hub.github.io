@@ -323,8 +323,17 @@ nav {
 }
 
 .search {
+  /* Match the Contribute button's ~40px so the bar reads as one row */
+  --pf-input-height: 40px;
+
   flex: 0 1 260px;
   margin-left: auto;
+}
+
+/* Block, not pagefind's inline-block: the baseline descender gap under the
+   inline-block trigger nudged it ~2px off the flex row's centre */
+.search :global(pagefind-modal-trigger) {
+  display: block;
 }
 
 .search :global(.trigger-compact) {
