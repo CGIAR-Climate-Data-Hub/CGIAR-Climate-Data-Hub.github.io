@@ -101,11 +101,9 @@ const learnActive = LEARN.some((l) => isActive(l.href));
     </a>
 
     <button
-      aria-controls="mobile-menu"
-      aria-expanded="false"
       aria-label="Menu"
       class="menu-btn"
-      data-menu-btn
+      popovertarget="mobile-menu"
       type="button"
     >
       <svg
@@ -124,7 +122,7 @@ const learnActive = LEARN.some((l) => isActive(l.href));
     </button>
   </div>
 
-  <div class="mobile-menu" hidden id="mobile-menu">
+  <div class="mobile-menu" id="mobile-menu" popover>
     <nav aria-label="Mobile">
       {[...LINKS, ...LEARN, { href: "/about/", label: "About" }].map((link) => (
           <a href={link.href} class:list={[{ "is-active": isActive(link.href) }]}>
@@ -137,28 +135,6 @@ const learnActive = LEARN.some((l) => isActive(l.href));
   </div>
 </header>
 
-<script>
-const header = document.querySelector("header");
-const onScroll = () =>
-  header?.toggleAttribute("data-scrolled", window.scrollY > 8);
-addEventListener("scroll", onScroll, { passive: true });
-onScroll();
-
-const btn = document.querySelector("[data-menu-btn]");
-const menu = document.querySelector("#mobile-menu");
-btn?.addEventListener("click", () => {
-  const open = !menu?.toggleAttribute("hidden");
-  btn.setAttribute("aria-expanded", String(open));
-});
-// Close after navigating (also covers same-page anchor taps)
-menu?.addEventListener("click", (e) => {
-  if ((e.target as HTMLElement).closest("a")) {
-    menu.setAttribute("hidden", "");
-    btn?.setAttribute("aria-expanded", "false");
-  }
-});
-</script>
-
 <style>
 header {
   position: sticky;
@@ -166,16 +142,22 @@ header {
   z-index: 30;
   background: var(--bg);
   border-bottom: 1px solid transparent;
-  transition:
-    background 0.2s,
-    border-color 0.2s;
+  /* Glassy once scrolled. Longhands on purpose: the CSS minifier merges an
+     `animation` shorthand with `animation-timeline` into one invalid
+     declaration browsers drop */
+  animation-name: header-glass;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+  animation-timeline: scroll(root);
+  animation-range: 0 8px;
 }
 
-/* Glassy once scrolled */
-header[data-scrolled] {
-  background: rgb(252 250 245 / 86%);
-  border-color: var(--border);
-  backdrop-filter: blur(12px) saturate(160%);
+@keyframes header-glass {
+  to {
+    background: rgb(252 250 245 / 86%);
+    border-color: var(--border);
+    backdrop-filter: blur(12px) saturate(160%);
+  }
 }
 
 .bar {
@@ -363,20 +345,41 @@ nav {
   border: 0;
 }
 
-.menu-btn .i-close {
+.menu-btn .i-close,
+header:has(#mobile-menu:popover-open) .i-open {
   display: none;
 }
 
-.menu-btn[aria-expanded="true"] .i-open {
-  display: none;
-}
-
-.menu-btn[aria-expanded="true"] .i-close {
+header:has(#mobile-menu:popover-open) .i-close {
   display: block;
 }
 
+/* Top-layer popover pinned just below the sticky header */
 .mobile-menu {
-  display: none;
+  position: fixed;
+  inset: var(--nav-height) 0 auto;
+  width: auto;
+  padding: 0;
+  margin: 0;
+  background: var(--bg);
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+/* No popover support (pre-2024 browser): hide the menu entirely rather than
+   render it permanently expanded in the page flow */
+@supports not selector(:popover-open) {
+  .mobile-menu {
+    display: none;
+  }
+}
+
+/* Belt-and-braces: never show it at desktop widths, even if it was opened
+   just before a resize (author display beats the UA popover rule) */
+@media (width > 960px) {
+  .mobile-menu {
+    display: none;
+  }
 }
 
 @media (width <= 960px) {
@@ -394,11 +397,6 @@ nav {
     display: inline-flex;
     flex-shrink: 0;
     margin-right: -8px;
-  }
-
-  .mobile-menu:not([hidden]) {
-    display: block;
-    border-top: 1px solid var(--border);
   }
 
   .mobile-menu nav {
