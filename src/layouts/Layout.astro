@@ -83,9 +83,10 @@ const siteGraph = {
     <slot name="head" />
   </head>
   <body>
+    <a class="skip-link" href="#main">Skip to content</a>
     <ScrollProgress />
     <Navigation />
-    <main class="page">
+    <main class="page" id="main">
       <slot />
     </main>
     <Footer />
