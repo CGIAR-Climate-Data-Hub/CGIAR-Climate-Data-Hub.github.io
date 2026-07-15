@@ -1,0 +1,267 @@
+# yaml-language-server: $schema=../../spec/schemas/profiles/cdh.schema.json
+"$schema": https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.1.0/schemas/profiles/cdh.schema.json
+#
+# ============================================================================
+# SAMPLE RECORD - NOT REAL DATA.
+# A deliberately fictional record that fills in (almost) every field the CDH
+# standard and its extensions offer, so authors can see the full shape in one
+# place. Names, orgs, URLs, DOIs, and numbers are all invented.
+# This is the CURRENT release (v2.0); its predecessor snapshot lives in
+# example-crop-suitability-v1.yaml and is referenced via previous_version.
+# ============================================================================
+cdh_schema_version: "v0.1.0"
+extensions:
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.1.0/extensions/cdh/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.1.0/extensions/climate/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.1.0/extensions/datacube/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.1.0/extensions/classification/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.1.0/extensions/agriculture/schema.json
+
+id: example-crop-suitability
+title: "Example Gridded Crop Suitability Projections (SAMPLE - NOT REAL DATA)"
+version: "2.0"
+previous_version: example-crop-suitability-v1
+series:
+  name: Example Suitability Atlas
+  url: https://example.org/atlas
+description: >
+  FICTIONAL SAMPLE RECORD. Modelled climate-driven suitability for three example crops over the
+  imaginary region of Farland, projected under two scenarios for the 2030 and 2050 horizons.
+  Provided as a gridded data cube plus per-slice Cloud Optimized GeoTIFFs. Every value here is
+  invented to demonstrate the CDH schema - do not use for any real analysis.
+license: CC-BY-4.0
+resource_type: dataset
+
+access: restricted
+access_note: >
+  Example access note. In this fictional scenario the data is discoverable but obtaining it requires
+  an account request at https://example.org/atlas/request.
+
+keywords:
+  - suitability
+  - projections
+  - sample data
+  - term: climate change
+    scheme: https://agrovoc.fao.org/
+    uri: http://aims.fao.org/aos/agrovoc/c_1666
+    description: Linked keyword surfaced as an ontology theme in serialized output.
+
+note: >
+  This is sample data. Suitability classes are illustrative and were generated for documentation
+  purposes only.
+
+contact:
+  - name: Ada Placeholder
+    roles: [producer, point-of-contact]
+    email: ada.placeholder@example.org
+    organization: Institute for Example Data
+    url: https://example.org
+  - name: Sam Sample
+    roles: [processor]
+    email: sam.sample@example.org
+    organization: Institute for Example Data
+    url: https://example.org
+  - name: Jan Itor
+    roles: [custodian]
+    email: jan.itor@example.org
+    organization: Institute for Example Data
+    url: https://example.org
+  - organization: Institute for Example Data
+    roles: [licensor]
+    url: https://example.org
+
+citation:
+  title: "Example Gridded Crop Suitability Projections"
+  authors:
+    - Placeholder, A.
+    - Sample, S.
+  date: "2026"
+  publisher: Example Data Repository
+  url: https://example.org/atlas/example-crop-suitability
+doi: 10.5555/EXAMPLE.0002
+
+related_publications:
+  - citation:
+      title: "A worked example of a suitability modelling workflow"
+      authors:
+        - Placeholder, A.
+        - Example, E.
+      date: "2025"
+      publisher: Journal of Example Studies
+      url: https://example.org/papers/suitability-workflow
+    doi: 10.5555/EXAMPLE.PAPER.1
+
+funding:
+  - name: Example Funding Programme
+    url: https://example.org/funding
+
+created: "2026-07-15"
+updated: "2026-07-15"
+
+spatial:
+  # Two boxes: the first is the overall extent, the second an inset sub-region.
+  bbox:
+    - [10, -5, 40, 20]
+    - [22, 2, 30, 10]
+  geography:
+    - africa
+  crs: EPSG:4326
+  # geometry_column is intentionally omitted: it applies to vector tables, not
+  # a gridded raster cube like this one.
+  resolution:
+    - type: xy
+      unit: degree
+      value: 0.05
+      label: 3 arc-minutes (~5 km at equator)
+      note: Regular lat/lon grid; cell ground area shrinks toward the poles.
+
+temporal:
+  start_date: "2030-01-01"
+  end_date: "2050-12-31"
+  resolution:
+    unit: year
+    step: P20Y
+    note: Two discrete projection horizons rather than a continuous series.
+    values: [2030, 2050]
+
+dimensions:
+  - name: crop
+    type: crop
+    description: Example crop code. Full labels are in the dimension codes asset.
+    reference_system: https://example.org/vocab/crop-codes
+    values: [maiz, rice, whea]
+  - name: scenario
+    type: scenario
+    description: Emissions scenario label.
+    reference_system: https://example.org/vocab/scenarios
+    values: [ssp245, ssp585]
+  # No explicit time dimension: a temporal resolution implies the time axis;
+  # consumers append it themselves.
+
+variables:
+  - name: suitability_index
+    description: Continuous modelled suitability, 0 (unsuitable) to 1 (optimal).
+    data_type: float32
+    dimensions: [crop, scenario, time]
+    unit: "1"
+    note: Dimensionless index; do not sum across cells.
+  - name: suitability_class
+    description: Categorical suitability derived by binning suitability_index.
+    data_type: int8
+    dimensions: [crop, scenario, time]
+    unit: "1"
+    note: See the classification classes for value meanings.
+
+cdh:
+  domain: [agricultural-production, adaptation]
+  not_recommended_for:
+    - use: field-scale planting decisions
+      reason: the grid is far too coarse, and the data is fictional.
+      use_instead: real, locally validated agronomic data.
+
+climate:
+  baseline:
+    start_date: "1995-01-01"
+    end_date: "2014-12-31"
+  bias_adjustment:
+    method: Example quantile mapping
+    reference_dataset: Example reference climatology v1
+  downscaling:
+    method: Example statistical downscaling
+    resolution: 0.05 degree
+  mip_era: CMIP6
+  models:
+    - EXAMPLE-ESM1
+    - EXAMPLE-ESM2
+  scenarios:
+    - ssp245
+    - ssp585
+
+classes:
+  - variable: suitability_class
+    values:
+      - value: 0
+        label: Unsuitable
+        description: Modelled suitability below 0.25.
+      - value: 1
+        label: Marginal
+        description: Modelled suitability 0.25 to 0.5.
+      - value: 2
+        label: Moderate
+        description: Modelled suitability 0.5 to 0.75.
+      - value: 3
+        label: High
+        description: Modelled suitability above 0.75.
+
+commodities:
+  - maize
+  - rice
+  - wheat
+
+processing:
+  - id: source
+    description: Original suitability modelling run for the fictional Farland region.
+    code:
+      url: https://example.org/code/suitability-model
+      version: v2.0.0
+    date: "2026-06-01T00:00:00Z"
+    derived_from:
+      - url: https://example.org/data/example-climate-projections
+        title: Example downscaled climate projections
+  - id: cloud-optimize
+    description: Conversion of model output to a consolidated Zarr cube and COGs.
+    code:
+      url: https://example.org/code/cdh-pipeline
+      version: "abc1234"
+    date: "2026-07-10"
+
+data:
+  - name: zarr
+    description: Zarr representation of the full suitability cube.
+    locations:
+      - url: https://example.org/data/example-crop-suitability/v2/cube.zarr
+        title: HTTPS
+      - url: s3://example-bucket/example-crop-suitability/v2/cube.zarr
+        title: S3
+    media_type: application/vnd.zarr; version=3
+    nodata: -9999
+    file_size: 250 MB
+    processing_steps: [cloud-optimize]
+  - name: cogs
+    description: Per-slice Cloud Optimized GeoTIFFs, one file per scenario/crop/variable.
+    locations:
+      - url: https://example.org/data/example-crop-suitability/v2/cogs/
+        title: HTTPS
+      - url: s3://example-bucket/example-crop-suitability/v2/cogs/
+        title: S3
+    href_template: "suit_{scenario}_{crop}_{variable}.tif"
+    media_type: "image/tiff; application=geotiff; profile=cloud-optimized"
+    nodata: -9999
+    file_size: 3 MB
+    processing_steps: [cloud-optimize]
+
+additional_assets:
+  - name: dimension codes
+    description: Code-to-label lists for the crop and scenario dimensions.
+    locations:
+      - url: https://example.org/data/example-crop-suitability/v2/codes.json
+    media_type: application/json
+    roles: [metadata, describedby]
+    file_size: 4 KB
+  - name: qa report
+    description: QA/QC report documenting validation checks for this release.
+    locations:
+      - url: https://example.org/data/example-crop-suitability/v2/qaqc-report.pdf
+    media_type: application/pdf
+    roles: [metadata, quality]
+    file_size: 800 KB
+
+additional_links:
+  - name: Example Suitability Atlas
+    rel: about
+    url: https://example.org/atlas
+    description: Landing page describing the fictional atlas and its methods.
+  - name: Changelog
+    rel: version-history
+    url: https://example.org/atlas/example-crop-suitability/changelog
+    description: Human-readable history of releases for this record.

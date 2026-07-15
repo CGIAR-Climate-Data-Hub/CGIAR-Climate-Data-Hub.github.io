@@ -1,0 +1,123 @@
+# yaml-language-server: $schema=../../spec/schemas/profiles/cdh.schema.json
+"$schema": https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.1.0/schemas/profiles/cdh.schema.json
+#
+# ============================================================================
+# SAMPLE RECORD - NOT REAL DATA.
+# The DEPRECATED v1.0 snapshot of example-crop-suitability. Kept frozen so the
+# earlier release stays citable; the current release lives in
+# example-crop-suitability.yaml and points back here via previous_version.
+# Snapshots are never edited again and are surfaced only through the version
+# chain, not catalog listings (see standard.md section 4.7).
+# ============================================================================
+cdh_schema_version: "v0.1.0"
+extensions:
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.1.0/extensions/cdh/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.1.0/extensions/climate/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.1.0/extensions/datacube/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.1.0/extensions/classification/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.1.0/extensions/agriculture/schema.json
+
+id: example-crop-suitability-v1
+title: "Example Gridded Crop Suitability Projections (SAMPLE - NOT REAL DATA), v1.0"
+version: "1.0"
+deprecated: true
+series:
+  name: Example Suitability Atlas
+  url: https://example.org/atlas
+description: >
+  FICTIONAL SAMPLE RECORD - superseded snapshot. The first release of the example suitability cube
+  for the imaginary region of Farland, covering two crops under a single scenario. Retained frozen
+  for citation; use the current release (example-crop-suitability) instead.
+license: CC-BY-4.0
+resource_type: dataset
+
+keywords:
+  - suitability
+  - projections
+  - sample data
+
+contact:
+  - name: Ada Placeholder
+    roles: [producer, point-of-contact]
+    email: ada.placeholder@example.org
+    organization: Institute for Example Data
+    url: https://example.org
+  - organization: Institute for Example Data
+    roles: [licensor]
+    url: https://example.org
+
+citation:
+  title: "Example Gridded Crop Suitability Projections, v1.0"
+  authors:
+    - Placeholder, A.
+  date: "2024"
+  publisher: Example Data Repository
+  url: https://example.org/atlas/example-crop-suitability-v1
+doi: 10.5555/EXAMPLE.0001
+
+created: "2024-05-01"
+updated: "2024-05-01"
+
+spatial:
+  bbox: [10, -5, 40, 20]
+  geography:
+    - africa
+  crs: EPSG:4326
+  resolution:
+    - type: xy
+      unit: degree
+      value: 0.1
+      label: 6 arc-minutes (~10 km at equator)
+
+temporal:
+  start_date: "2030-01-01"
+  end_date: "2050-12-31"
+  resolution:
+    unit: year
+    step: P20Y
+    values: [2030, 2050]
+
+dimensions:
+  - name: crop
+    type: crop
+    description: Example crop code.
+    values: [maiz, rice]
+  # No explicit time dimension: a temporal resolution implies the time axis;
+  # consumers append it themselves.
+
+variables:
+  - name: suitability_index
+    description: Continuous modelled suitability, 0 (unsuitable) to 1 (optimal).
+    data_type: float32
+    unit: "1"
+
+cdh:
+  domain: [agricultural-production]
+
+climate:
+  mip_era: CMIP6
+  models:
+    - EXAMPLE-ESM1
+  scenarios:
+    - ssp245
+
+commodities:
+  - maize
+  - rice
+
+processing:
+  - id: source
+    description: Original v1 suitability modelling run.
+    code:
+      url: https://example.org/code/suitability-model
+      version: v1.0.0
+    date: "2024-04-01T00:00:00Z"
+
+data:
+  - name: zarr
+    description: Zarr representation of the v1 suitability cube.
+    locations:
+      - url: https://example.org/data/example-crop-suitability/v1/cube.zarr
+        title: HTTPS
+    media_type: application/vnd.zarr; version=3
+    nodata: -9999
