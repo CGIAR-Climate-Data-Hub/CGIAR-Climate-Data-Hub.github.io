@@ -12,6 +12,8 @@ collection (CDH YAML metadata records) is fetched at build time from the
 `RECORDS_DIR` local checkout, `RECORDS_REF` branch, `RECORDS_REPO` fork), and
 that repo
 triggers a site rebuild via `repository_dispatch` when records change.
+Dev fixtures live in `examples/records/` — `bun run dev:example` builds the
+catalog from them (see that folder's README).
 Content collections are defined in `src/content.config.ts`;
 site-wide constants live in `src/site.config.ts`.
 
