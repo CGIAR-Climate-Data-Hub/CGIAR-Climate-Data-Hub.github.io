@@ -6,6 +6,8 @@ import { defineConfig, fontProviders } from "astro/config";
 
 import pagefind from "astro-pagefind";
 
+import { shikiConfig } from "./src/lib/code-block.ts";
+
 // Canonical production domain. Served at the root as the org's GitHub Pages site, so there
 // is no `base` (Astro defaults to "/"). To switch to a custom domain later: change this one
 // value + add public/CNAME — base stays "/" the whole time.
@@ -21,12 +23,8 @@ export default defineConfig({
   // its default ("ignore") — "always" 404s extensioned endpoints in dev
   // (withastro/astro#10149).
 
-  markdown: {
-    // Single theme: the site is light-only, and <Code> components use github-light
-    shikiConfig: {
-      theme: "github-light",
-    },
-  },
+  // Shared with the satteri renderer and <Code> components — src/lib/code-block.ts
+  markdown: { shikiConfig },
 
   fonts: [
     {

@@ -18,6 +18,7 @@ import {
   stacCollectionUrl,
   temporalText,
 } from "@/lib/catalog";
+import { codeHeader, shikiConfig } from "@/lib/code-block";
 import { allTutorials } from "@/lib/collections";
 import { assetExample, formatLabel, quickstarts } from "@/lib/snippets";
 import { commodity } from "@/lib/vocab";
@@ -26,7 +27,7 @@ import { GITHUB_URL, SITE_NAME } from "@/site.config";
 export async function getStaticPaths() {
   const entries = await getCollection("catalog");
   // Record descriptions may carry markdown; render like any other content
-  const markdown = await satteri().createRenderer({});
+  const markdown = await satteri().createRenderer({ shikiConfig });
   // Records sharing a catalog folder are versions of the same dataset; the
   // folder name doubles as the series id, served as an always-latest redirect
   const familyOf = (id: string) => id.split("/")[0];
@@ -530,9 +531,12 @@ const jsonLd = datasetJsonLd(
             </p>
             <blockquote class="cite">{citation}</blockquote>
             {bibtexStr && (
-              <div data-code-label="BibTeX">
-                <Code code={bibtexStr} lang="bibtex" theme="github-light" />
-              </div>
+              <Code
+                code={bibtexStr}
+                lang="bibtex"
+                theme={shikiConfig.theme}
+                transformers={[codeHeader("BibTeX")]}
+              />
             )}
             {d.related_publications.length > 0 && (
               <div>

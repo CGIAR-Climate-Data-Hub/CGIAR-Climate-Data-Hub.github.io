@@ -3,6 +3,7 @@
 // across every instance on the page; a block missing that language keeps
 // showing the one it has. Single-language blocks render without a toggle.
 import { Code } from "astro:components";
+import { codeHeader, shikiConfig } from "@/lib/code-block";
 
 interface Props {
   python?: string;
@@ -20,13 +21,23 @@ const { python, r } = Astro.props;
     </div>
   )}
   {python && (
-    <div data-code-label="Python" data-snippet="python">
-      <Code code={python} lang="python" theme="github-light" />
+    <div data-snippet="python">
+      <Code
+        code={python}
+        lang="python"
+        theme={shikiConfig.theme}
+        transformers={[codeHeader("Python")]}
+      />
     </div>
   )}
   {r && (
-    <div data-code-label="R" data-snippet="r" hidden={Boolean(python)}>
-      <Code code={r} lang="r" theme="github-light" />
+    <div data-snippet="r" hidden={Boolean(python)}>
+      <Code
+        code={r}
+        lang="r"
+        theme={shikiConfig.theme}
+        transformers={[codeHeader("R")]}
+      />
     </div>
   )}
 </div>

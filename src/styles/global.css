@@ -483,7 +483,7 @@ hr {
   max-width: 100%;
 }
 
-/* Code-block chrome (added around shiki blocks at runtime) */
+/* Code-block chrome (added around shiki blocks at build time — src/lib/code-block.ts) */
 .code-block {
   margin: 0 0 16px;
   overflow: hidden;
@@ -519,6 +519,16 @@ hr {
 .code-copy:hover {
   color: var(--cdh-blue-950);
   border-color: var(--cdh-blue-300);
+}
+
+/* .copied (set for 1.2s after a click) swaps the copy icon for the check */
+.code-copy .ic-check,
+.code-copy.copied .ic-copy {
+  display: none;
+}
+
+.code-copy.copied .ic-check {
+  display: block;
 }
 
 .code-block pre {
