@@ -3,21 +3,8 @@
 ---
 
 <div aria-hidden="true" class="scroll-progress">
-  <div class="fill" data-scroll-progress></div>
+  <div class="fill"></div>
 </div>
-
-<script>
-const fill = document.querySelector<HTMLElement>("[data-scroll-progress]");
-const onScroll = () => {
-  const el = document.documentElement;
-  const max = el.scrollHeight - el.clientHeight;
-  if (fill)
-    fill.style.width = `${max > 0 ? Math.min(100, (el.scrollTop / max) * 100) : 0}%`;
-};
-addEventListener("scroll", onScroll, { passive: true });
-addEventListener("resize", onScroll, { passive: true });
-onScroll();
-</script>
 
 <style>
 .scroll-progress {
@@ -31,9 +18,23 @@ onScroll();
 }
 
 .fill {
-  width: 0;
   height: 100%;
   background: linear-gradient(90deg, var(--cdh-blue-700), var(--cdh-blue-300));
-  transition: width 0.08s linear;
+  transform: scaleX(0);
+  transform-origin: left;
+  /* longhands on purpose: the CSS minifier merges an `animation` shorthand
+     with `animation-timeline` into one invalid declaration browsers drop */
+  animation-name: scroll-progress-fill;
+  animation-timing-function: linear;
+  animation-timeline: scroll(root);
+}
+
+@keyframes scroll-progress-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
 </style>
