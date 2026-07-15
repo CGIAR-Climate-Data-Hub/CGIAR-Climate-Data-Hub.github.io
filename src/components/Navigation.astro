@@ -135,6 +135,18 @@ const learnActive = LEARN.some((l) => isActive(l.href));
   </div>
 </header>
 
+<script>
+// Firefox hasn't shipped scroll-driven animations — toggle the glass effect
+// the old way there. Supporting browsers skip this (the @supports CSS runs it).
+if (!CSS.supports("animation-timeline: scroll(root)")) {
+  const header = document.querySelector("header");
+  const onScroll = () =>
+    header?.toggleAttribute("data-scrolled", window.scrollY > 8);
+  addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+}
+</script>
+
 <style>
 header {
   position: sticky;
@@ -142,14 +154,30 @@ header {
   z-index: 30;
   background: var(--bg);
   border-bottom: 1px solid transparent;
-  /* Glassy once scrolled. Longhands on purpose: the CSS minifier merges an
-     `animation` shorthand with `animation-timeline` into one invalid
-     declaration browsers drop */
-  animation-name: header-glass;
-  animation-timing-function: linear;
-  animation-fill-mode: both;
-  animation-timeline: scroll(root);
-  animation-range: 0 8px;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+/* Glassy once scrolled — data-scrolled is the JS fallback path */
+header[data-scrolled] {
+  background: rgb(252 250 245 / 86%);
+  border-color: var(--border);
+  backdrop-filter: blur(12px) saturate(160%);
+}
+
+/* Gated: without the timeline this runs as an instant 0s animation and
+   fill-mode pins the glass on permanently */
+@supports (animation-timeline: scroll(root)) {
+  header {
+    /* longhands on purpose: the CSS minifier merges an `animation` shorthand
+       with `animation-timeline` into one invalid declaration browsers drop */
+    animation-name: header-glass;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: scroll(root);
+    animation-range: 0 8px;
+  }
 }
 
 @keyframes header-glass {
