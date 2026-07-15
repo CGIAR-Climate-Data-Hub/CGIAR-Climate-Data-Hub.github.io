@@ -40,6 +40,12 @@ h1 {
   letter-spacing: -0.02em;
 }
 
+/* Even line lengths in the big serif headlines */
+h1,
+h2 {
+  text-wrap: balance;
+}
+
 h2 {
   font-size: clamp(25px, 2.6vw, 36px);
   line-height: 1.14;
@@ -106,6 +112,8 @@ hr {
 }
 
 :root {
+  /* Light-only site: keeps UA scrollbars/form controls light under dark-mode OS */
+  color-scheme: light;
   scrollbar-color: var(--grey-2) transparent;
 }
 
