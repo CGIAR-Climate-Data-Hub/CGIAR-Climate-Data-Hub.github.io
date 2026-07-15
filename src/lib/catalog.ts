@@ -50,6 +50,49 @@ export function commodityLabel(id: string) {
   return commodity(id)?.label ?? humanize(id);
 }
 
+// Version chain per the standard (§4.7): records link backward via
+// previous_version; successors come from inverting those edges. Returns the
+// record's full chain newest-first. Chain integrity (dangling ids, forks,
+// cycles) is validated at catalog submission, not here — a bad edge just
+// ends the walk.
+export function versionChain(
+  id: string,
+  entries: CollectionEntry<"catalog">[],
+) {
+  const byId = new Map(entries.map((e) => [e.data.id, e]));
+  const successor = new Map(
+    entries.flatMap((e) =>
+      e.data.previous_version
+        ? [[e.data.previous_version, e.data.id] as const]
+        : [],
+    ),
+  );
+
+  // Walk forward to the newest release, then collect backward from there
+  const seen = new Set([id]);
+  let head = id;
+  while (successor.has(head) && !seen.has(successor.get(head) as string)) {
+    head = successor.get(head) as string;
+    seen.add(head);
+  }
+  const chain: CollectionEntry<"catalog">[] = [];
+  const visited = new Set<string>();
+  let cursor: string | undefined = head;
+  while (cursor && byId.has(cursor) && !visited.has(cursor)) {
+    visited.add(cursor);
+    chain.push(byId.get(cursor) as CollectionEntry<"catalog">);
+    cursor = byId.get(cursor)?.data.previous_version;
+  }
+  return chain;
+}
+
+// A URL that targets a Hub record page — relative or absolute — resolves to
+// its record id. Callers must check the id against the catalog; that lookup
+// is the real guard against false positives.
+export function hubRecordId(url: string) {
+  return url.match(/^(?:https?:\/\/[^/]+)?\/catalog\/([^/]+)\/?$/)?.[1];
+}
+
 export function summarize(entry: CollectionEntry<"catalog">) {
   const d = entry.data;
   return {
@@ -94,10 +137,11 @@ const LICENSE_URLS: Record<string, string> = {
   CC0: "https://creativecommons.org/publicdomain/zero/1.0/",
 };
 
-// Records should carry SPDX ids, which all resolve to a canonical page;
-// anything non-SPDX-shaped gets no link.
+// Simple SPDX ids resolve to a canonical page. Submission also accepts
+// compound expressions ("Apache-2.0 OR MIT", "… WITH …") and custom
+// LicenseRef-* — neither has an spdx.org page, so those render as plain text.
 export function licenseUrl(license: string) {
-  return /^[A-Za-z0-9][A-Za-z0-9.+-]*$/.test(license)
+  return /^(?!LicenseRef-)[A-Za-z0-9.+-]+$/.test(license)
     ? `https://spdx.org/licenses/${license}.html`
     : undefined;
 }

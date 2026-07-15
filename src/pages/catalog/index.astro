@@ -10,7 +10,11 @@ import { BBOX_PRESETS } from "@/lib/geo";
 import { landPath } from "@/lib/map";
 import { SITE_NAME } from "@/site.config";
 
-const entries = await getCollection("catalog");
+// Deprecated snapshots stay reachable from their record's version switcher,
+// but only current releases list in the grid
+const entries = (await getCollection("catalog")).filter(
+  (e) => !e.data.deprecated,
+);
 const datasets = entries
   .map(summarize)
   .sort((a, b) => b.updated.localeCompare(a.updated));

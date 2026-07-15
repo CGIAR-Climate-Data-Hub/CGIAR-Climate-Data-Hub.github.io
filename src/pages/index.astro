@@ -8,7 +8,9 @@ import { summarize } from "@/lib/catalog";
 import { allTutorials } from "@/lib/collections";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
 
-const datasets = (await getCollection("catalog")).map(summarize);
+const datasets = (await getCollection("catalog"))
+  .filter((e) => !e.data.deprecated)
+  .map(summarize);
 const tutorials = (await allTutorials()).sort(
   (a, b) => b.data.updated.valueOf() - a.data.updated.valueOf(),
 );

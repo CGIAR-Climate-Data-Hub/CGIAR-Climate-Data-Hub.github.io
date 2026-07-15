@@ -7,7 +7,9 @@ import { SITE_DESCRIPTION, SITE_NAME } from "@/site.config";
 
 export const GET: APIRoute = async ({ site }) => {
   const abs = (path: string) => new URL(path, site).href;
-  const catalog = await getCollection("catalog");
+  const catalog = (await getCollection("catalog")).filter(
+    (e) => !e.data.deprecated,
+  );
   const wikis = await getCollection("wikis");
   const tutorials = await allTutorials();
   const useCases = await getCollection("useCases");

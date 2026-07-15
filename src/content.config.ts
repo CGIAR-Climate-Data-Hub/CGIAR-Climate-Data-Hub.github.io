@@ -159,6 +159,10 @@ const catalog = defineCollection({
       title: z.string(),
       description: z.string(),
       version: z.string().optional(),
+      // Versioning per standard §4.7: snapshots are frozen records marked
+      // deprecated; the chain links backward via previous_version ids
+      previous_version: z.string().optional(),
+      deprecated: z.boolean().default(false),
       license: z.string(),
       resource_type: z.string(),
       doi: z.string().optional(),

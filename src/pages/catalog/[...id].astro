@@ -12,68 +12,62 @@ import {
   citationText,
   datasetJsonLd,
   geoLabel,
+  hubRecordId,
   humanize,
   licenseUrl,
   normalizeBboxes,
   stacCollectionUrl,
   temporalText,
+  versionChain,
 } from "@/lib/catalog";
 import { codeHeader, shikiConfig } from "@/lib/code-block";
 import { allTutorials } from "@/lib/collections";
 import { assetExample, formatLabel, quickstarts } from "@/lib/snippets";
 import { commodity } from "@/lib/vocab";
-import { GITHUB_URL, SITE_NAME } from "@/site.config";
+import { CATALOG_REPO, SITE_NAME } from "@/site.config";
 
 export async function getStaticPaths() {
   const entries = await getCollection("catalog");
   // Record descriptions may carry markdown; render like any other content
   const markdown = await satteri().createRenderer({ shikiConfig });
-  // Records sharing a catalog folder are versions of the same dataset; the
-  // folder name doubles as the series id, served as an always-latest redirect
-  const familyOf = (id: string) => id.split("/")[0];
-  const recordPaths = await Promise.all(
+  // No series/redirect routes: per the standard (§4.7) the unversioned id is
+  // always the current release, updated in place; snapshots are their own
+  // records marked deprecated.
+  return Promise.all(
     entries.map(async (entry) => ({
       params: { id: entry.data.id },
       props: {
         entry,
         descriptionHtml: (await markdown.render(entry.data.description)).code,
-        versions: entries
-          .filter((e) => familyOf(e.id) === familyOf(entry.id))
-          .map((e) => ({
-            id: e.data.id,
-            version: e.data.version,
-            updated: e.data.updated ?? e.data.created ?? "",
-          }))
-          .sort((a, b) => b.updated.localeCompare(a.updated)),
-        redirect: undefined as string | undefined,
       },
     })),
   );
-  const familyPaths = [
-    ...new Set(
-      entries.filter((e) => e.id.includes("/")).map((e) => familyOf(e.id)),
-    ),
-  ]
-    // A family sharing a name with a record id would collide
-    .filter((family) => !entries.some((e) => e.data.id === family))
-    .map((family) => {
-      const latest = recordPaths
-        .filter((p) => familyOf(p.props.entry.id) === family)
-        .sort((a, b) =>
-          b.props.versions[0].updated.localeCompare(
-            a.props.versions[0].updated,
-          ),
-        )[0].props;
-      return {
-        params: { id: family },
-        props: { ...latest, redirect: `/catalog/${latest.entry.data.id}/` },
-      };
-    });
-  return [...recordPaths, ...familyPaths];
 }
 
-const { entry, versions, descriptionHtml, redirect } = Astro.props;
+const { entry, descriptionHtml } = Astro.props;
 const d = entry.data;
+
+const catalog = await getCollection("catalog");
+// Newest-first version chain; the head is the current release
+const chain = versionChain(d.id, catalog);
+const current = chain[0]?.data.id !== d.id ? chain[0] : undefined;
+
+// Provenance cross-links: derived_from urls that resolve to Hub records
+// render as internal links, and records derived from this one list in the
+// rail. The links carry the graph; there is no drawn DAG.
+const hubSource = (url: string) => {
+  const rec = catalog.find((e) => e.data.id === hubRecordId(url));
+  return rec && { href: `/catalog/${rec.data.id}/`, title: rec.data.title };
+};
+const derivatives = catalog
+  .filter(
+    (e) =>
+      !e.data.deprecated
+      && e.data.processing.some((s) =>
+        s.derived_from.some((src) => hubRecordId(src.url) === d.id),
+      ),
+  )
+  .map((e) => ({ href: `/catalog/${e.data.id}/`, title: e.data.title }));
 
 const bboxes = normalizeBboxes(d.spatial?.bbox);
 const coverage = d.spatial?.geography.map(geoLabel).join(", ");
@@ -91,6 +85,24 @@ const roleRank = (c: (typeof d.contact)[number]) =>
   c.roles.includes("custodian") ? 2 : c.roles.includes("licensor") ? 1 : 0;
 const contacts = [...d.contact].sort((a, b) => roleRank(b) - roleRank(a));
 const recordUrl = new URL(`/catalog/${d.id}/`, Astro.site).href;
+// Record metadata lives in the catalog repo, so source + issue links point
+// there. Flat strings on purpose: Biome's Astro frontmatter parser trips on
+// template literals nested two deep.
+const sourceUrl = entry.filePath
+  ? `https://github.com/${CATALOG_REPO}/blob/main/${entry.filePath}`
+  : undefined;
+const reportBody = [
+  `Record page: ${recordUrl}`,
+  sourceUrl ? `Source: ${sourceUrl}` : "",
+  "",
+  "**What's wrong?**",
+  "",
+].join("\n");
+const reportParams = new URLSearchParams({
+  title: `[record] ${d.id}: `,
+  body: reportBody,
+});
+const reportUrl = `https://github.com/${CATALOG_REPO}/issues/new?${reportParams}`;
 const citation = citationText(d, recordUrl);
 const licenseHref = licenseUrl(d.license);
 const bibtexStr = bibtex(d, recordUrl);
@@ -141,22 +153,6 @@ const jsonLd = datasetJsonLd(
 );
 ---
 
-{redirect && (
-  <html lang="en">
-    <head>
-      <meta charset="utf-8" />
-      <title>{d.title}</title>
-      <meta content={`0;url=${redirect}`} http-equiv="refresh" />
-      <link href={new URL(redirect, Astro.site).href} rel="canonical" />
-      <meta content="noindex" name="robots" />
-    </head>
-    <body>
-      <p>Latest version: <a href={redirect}>{d.title}</a></p>
-    </body>
-  </html>
-)}
-
-{!redirect && (
 <Layout
   description={d.description.slice(0, 160)}
   title={`${d.title} — ${SITE_NAME}`}
@@ -168,6 +164,20 @@ const jsonLd = datasetJsonLd(
       <Breadcrumbs
         items={[{ label: "Hub", href: "/" }, { label: "Catalog", href: "/catalog/" }, { label: d.title }]}
       />
+      {d.deprecated && (
+        <div class="deprecated-note">
+          This is a frozen snapshot of an older release{d.version ? ` (${d.version})` : ""}.
+          {current && (
+            <>
+              {" "}
+              <a href={`/catalog/${current.data.id}/`}>
+                Go to the current version
+                {current.data.version ? ` (${current.data.version})` : ""} →
+              </a>
+            </>
+          )}
+        </div>
+      )}
       <div class="header-grid">
         <div>
           <h1>{d.title}</h1>
@@ -176,14 +186,14 @@ const jsonLd = datasetJsonLd(
           {d.version && (
             <div class="version-row">
               <span class="label">Version</span>
-              {versions.length > 1 ? (
+              {chain.length > 1 ? (
                 <div class="seg version-toggle">
-                  {versions.map((v, i) => (
+                  {chain.map((v, i) => (
                     <a
-                      aria-current={v.id === d.id ? "page" : undefined}
-                      href={`/catalog/${v.id}/`}
+                      aria-current={v.data.id === d.id ? "page" : undefined}
+                      href={`/catalog/${v.data.id}/`}
                     >
-                      {v.version ?? v.id}
+                      {v.data.version ?? v.data.id}
                       {i === 0 && <span class="latest">LATEST</span>}
                     </a>
                   ))}
@@ -222,8 +232,15 @@ const jsonLd = datasetJsonLd(
             <a class="btn btn-ghost" href={`/catalog/${d.id}.json`}
               >View source</a
             >
-            <a class="edit-link" href={GITHUB_URL}
-              >Suggest an edit to this record</a
+            {entry.filePath && (
+              <a
+                class="edit-link"
+                href={`https://github.com/${CATALOG_REPO}/edit/main/${entry.filePath}`}
+                >Suggest an edit to this record</a
+              >
+            )}
+            <a class="edit-link" href={reportUrl} rel="noreferrer"
+              >Report a problem</a
             >
           </div>
         </div>
@@ -450,14 +467,21 @@ const jsonLd = datasetJsonLd(
                     {step.derived_from.length > 0 && (
                       <p class="step-meta">
                         Derived from:{" "}
-                        {step.derived_from.map((src, i) => (
-                          <>
-                            {i > 0 && ", "}
-                            <a href={src.url} rel="noreferrer">
-                              {src.title ?? src.url}
-                            </a>
-                          </>
-                        ))}
+                        {step.derived_from.map((src, i) => {
+                          const hub = hubSource(src.url);
+                          return (
+                            <>
+                              {i > 0 && ", "}
+                              {hub ? (
+                                <a href={hub.href}>{src.title ?? hub.title}</a>
+                              ) : (
+                                <a href={src.url} rel="noreferrer">
+                                  {src.title ?? src.url}
+                                </a>
+                              )}
+                            </>
+                          );
+                        })}
                       </p>
                     )}
                     {step.code && (
@@ -615,6 +639,17 @@ const jsonLd = datasetJsonLd(
           </div>
         )}
 
+      {derivatives.length > 0 && (
+          <div class="rail-box">
+            <h4 class="label">Derived datasets</h4>
+            {derivatives.map((der) => (
+              <a class="rail-link" href={der.href}>
+                <b>{der.title}</b>
+              </a>
+            ))}
+          </div>
+        )}
+
       {seenIn.length > 0 && (
           <div class="rail-box">
             <h4 class="label">Seen in</h4>
@@ -640,7 +675,6 @@ const jsonLd = datasetJsonLd(
     </aside>
   </div>
 </Layout>
-)}
 
 <script>
 // Hash-driven tabs: all panels stay in the DOM (crawlers see everything);
@@ -702,6 +736,23 @@ document.addEventListener("click", async (e) => {
   padding: 24px 0 32px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+}
+
+.deprecated-note {
+  padding: 10px 14px;
+  margin-top: 18px;
+  font-size: 14px;
+  color: var(--terra-900);
+  background: var(--terra-50);
+  border: 1px solid var(--terra-300);
+  border-radius: 8px;
+}
+
+.deprecated-note a {
+  font-weight: 600;
+  color: var(--terra-900);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .header-grid {
