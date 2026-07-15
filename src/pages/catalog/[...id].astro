@@ -76,6 +76,20 @@ const resolution = d.spatial?.resolution
   .filter(Boolean)
   .join(" · ");
 const temporal = temporalText(d.temporal);
+// Time is an implicit axis: a temporal resolution means a time dimension,
+// which records never declare explicitly — the site appends it here.
+const timeDimension = d.temporal?.resolution && {
+  name: "time",
+  type: "temporal",
+  description: d.temporal.resolution.note,
+  values:
+    d.temporal.resolution.values.length > 0
+      ? d.temporal.resolution.values
+      : [temporal?.main ?? ""].filter(Boolean),
+};
+const dimensions = timeDimension
+  ? [...d.dimensions, timeDimension]
+  : d.dimensions;
 // The header's source line: the licensor (a required role in the standard)
 const source = d.contact.find((c) =>
   c.roles.includes("licensor"),
@@ -139,7 +153,7 @@ const firstExample = assets.findIndex((a) => a.example);
 
 const SECTIONS = [
   ["overview", "Overview"],
-  d.dimensions.length + d.variables.length > 0 && ["schema", "Schema"],
+  dimensions.length + d.variables.length > 0 && ["schema", "Schema"],
   d.climate && ["climate", "Climate"],
   d.data.length > 0 && ["access", "Access & use"],
   d.processing.length > 0 && ["provenance", "Provenance"],
@@ -406,12 +420,12 @@ const jsonLd = datasetJsonLd(
               </div>
             )}
 
-            {d.dimensions.length > 0 && (
+            {dimensions.length > 0 && (
               <div>
                 <h3>Dimensions</h3>
                 <p class="section-sub">Axes of the cube — spatial, temporal, and domain axes.</p>
                 <div class="dim-cards">
-                  {d.dimensions.map((dim) => (
+                  {dimensions.map((dim) => (
                     <div class="dim-card">
                       <div class="dim-head">
                         <span class="mono dim-name">{dim.name}</span>

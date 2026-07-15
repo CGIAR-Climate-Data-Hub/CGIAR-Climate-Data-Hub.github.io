@@ -215,6 +215,8 @@ const catalog = defineCollection({
               unit: z.string().optional(),
               step: z.string().optional(),
               note: z.string().optional(),
+              // Discrete slices (e.g. projection horizons) instead of a range
+              values: z.array(z.coerce.string()).default([]),
             })
             .optional(),
         })
