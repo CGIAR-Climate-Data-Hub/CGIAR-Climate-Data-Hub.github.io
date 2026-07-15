@@ -42,6 +42,7 @@ ${useCases.map((u) => line(u.data.title, `/use-cases/${u.id}/`, u.data.descripti
 ## Reference
 
 - [Catalog](${abs("/catalog/")}): Browse and filter all datasets
+- [Catalog index](${abs("/catalog.json")}): Machine-readable schema.org DataCatalog of every record (per-record raw metadata at /catalog/<id>.json)
 - [FAQ](${abs("/faq/")}): Access, licensing, formats, and contributing
 - [About](${abs("/about/")}): What the Hub is and who runs it
 - [Contribute](${abs("/contribute/")}): How to submit a dataset
