@@ -92,30 +92,31 @@ const catalogSchema = {
   </PageHead>
 
   <section class="toolbar">
-    <div class="container toolbar-row">
-      <div class="searchbox">
-        <svg
-          aria-hidden="true"
-          fill="none"
-          height="14"
-          stroke="currentColor"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="14"
-        >
-          <circle cx="11" cy="11" r="7"></circle>
-          <path d="m21 21-4.3-4.3"></path>
-        </svg>
-        <input
-          id="catalog-search"
-          placeholder="Search datasets — name, source, variable, keyword…"
-          type="search"
-        >
-      </div>
-      <div class="layout-wrap">
-        <span class="label">Layout</span>
-        <div aria-label="Result layout" class="seg" role="group">
-          {[
+    <div class="container">
+      <div class="toolbar-row">
+        <div class="searchbox">
+          <svg
+            aria-hidden="true"
+            fill="none"
+            height="14"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="14"
+          >
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m21 21-4.3-4.3"></path>
+          </svg>
+          <input
+            id="catalog-search"
+            placeholder="Search datasets — name, source, variable, keyword…"
+            type="search"
+          >
+        </div>
+        <div class="layout-wrap">
+          <span class="label">Layout</span>
+          <div aria-label="Result layout" class="seg" role="group">
+            {[
             ["grid", "Cards"],
             ["compact", "Compact"],
             ["table", "Table"],
@@ -128,6 +129,7 @@ const catalogSchema = {
               {label}
             </button>
           ))}
+          </div>
         </div>
       </div>
     </div>
@@ -611,10 +613,9 @@ apply();
 
 .toolbar {
   margin-top: 28px;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
 }
 
+/* Hairlines sit inside the container's padding, flush with the content */
 .toolbar-row {
   display: flex;
   flex-wrap: wrap;
@@ -622,6 +623,8 @@ apply();
   align-items: center;
   padding-top: 16px;
   padding-bottom: 16px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .searchbox {
