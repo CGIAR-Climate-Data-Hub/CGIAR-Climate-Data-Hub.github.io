@@ -32,7 +32,7 @@ steps:
   - title: Review & publish
     body: >
       A Hub maintainer and a domain reviewer assess the submission. Once approved, the dataset
-      is merged, indexed in the catalogue, and a DOI is minted.
+      is merged, indexed in the catalog, and a DOI is minted.
 checklist:
   - Dataset uses an approved format and is COG/Zarr-compliant where applicable.
   - Record validates against the CDH schema.

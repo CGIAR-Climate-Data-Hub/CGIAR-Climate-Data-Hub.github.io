@@ -8,7 +8,7 @@ missions:
   - title: Find
     body: >
       Quality-assured datasets, consistently formatted and documented, discoverable from a single
-      catalogue.
+      catalog.
   - title: Use
     body: >
       Cloud-native distributions, runnable tutorials, and reference docs that turn raw climate
