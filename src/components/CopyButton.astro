@@ -11,7 +11,13 @@ interface Props {
 const { copy, label = "Copy" } = Astro.props;
 ---
 
-<button aria-label={label} class="code-copy" data-copy={copy} type="button">
+<button
+  aria-label={label}
+  class="code-copy"
+  data-copy={copy}
+  title={label}
+  type="button"
+>
   <svg
     aria-hidden="true"
     class="ic-copy"

@@ -179,13 +179,15 @@ const templateDefaultUrl = (asset: (typeof d.data)[number]) => {
   return file && root ? root + file : undefined;
 };
 
-// One primary endpoint per asset (HTTPS when available); the rest fold into
-// an "Other access methods" disclosure — s3:// users know to look there
-const splitLocations = (asset: (typeof d.data)[number]) => {
-  const primary =
-    asset.locations.find((l) => l.url.startsWith("http")) ?? asset.locations[0];
-  return { primary, others: asset.locations.filter((l) => l !== primary) };
-};
+// The spotlighted access route (HTTPS when available). "Other access
+// methods" lists the rest — or everything on templated assets, where the
+// picker stands in for the panel and no root URL shows above
+const primaryLocation = (asset: (typeof d.data)[number]) =>
+  asset.locations.find((l) => l.url.startsWith("http")) ?? asset.locations[0];
+const otherLocations = (asset: (typeof d.data)[number]) =>
+  asset.href_template
+    ? asset.locations
+    : asset.locations.filter((l) => l !== primaryLocation(asset));
 
 // A download button only where one click yields one file: an http(s) URL to
 // a single object — never templated collections, Zarr stores, or prefixes.
@@ -633,12 +635,6 @@ const jsonLd = datasetJsonLd(
                       <b>No Data:</b> <span class="mono">{asset.nodata}</span>
                     </p>
                   )}
-                  {asset.href_template && (
-                    <p class="asset-fact">
-                      <b>File pattern:</b>{" "}
-                      <span class="mono">{asset.href_template}</span>
-                    </p>
-                  )}
                   {asset.href_template && templateDefaultUrl(asset) && (
                       <div
                         class="tpl-picker"
@@ -646,7 +642,7 @@ const jsonLd = datasetJsonLd(
                         data-root={asset.locations.find((l) => l.url.startsWith("http"))?.url}
                         data-template={asset.href_template}
                       >
-                        <p class="label tpl-title">Select a specific file</p>
+                        <p class="label tpl-title">Access a specific file</p>
                         <div class="tpl-fields">
                           {(templateFields(asset.href_template) ?? []).map((f) => (
                             <label class="tpl-field">
@@ -658,13 +654,10 @@ const jsonLd = datasetJsonLd(
                           ))}
                         </div>
                         <p class="asset-fact tpl-selected">
-                          <b>Selected file:</b>
-                          <span class="mono" data-tpl-file>
-                            {templateDefaultFile(asset)}
-                          </span>
+                          <span class="mono selected-url" data-tpl-url>{templateDefaultUrl(asset)}</span>
                           <CopyButton
                             copy={templateDefaultUrl(asset) ?? ""}
-                            label="Copy file URL"
+                            label="Copy selected file URL"
                           />
                           <a
                             class="btn btn-ghost dl"
@@ -676,33 +669,40 @@ const jsonLd = datasetJsonLd(
                         </p>
                       </div>
                     )}
-                  {splitLocations(asset).primary && (
-                    <div class="endpoint">
-                      <span class="mono proto">
-                        {splitLocations(asset).primary.title ?? "URL"}
-                      </span>
-                      <span class="mono url">
-                        {urlParts(splitLocations(asset).primary.url).map(
-                          (part) => (
+                  {!asset.href_template && primaryLocation(asset) && (
+                    <div class="access-panel">
+                      <p class="label tpl-title">Access the data</p>
+                      <p class="asset-fact access-row">
+                        <span class="mono access-url">
+                          {urlParts(primaryLocation(asset).url).map((part) => (
                             <>
                               {part}
                               <wbr />
                             </>
-                          ),
-                        )}
-                      </span>
-                      <CopyButton
-                        copy={splitLocations(asset).primary.url}
-                        label="Copy URL"
-                      />
+                          ))}
+                        </span>
+                        <CopyButton
+                          copy={primaryLocation(asset).url}
+                          label="Copy URL"
+                        />
+                      </p>
                     </div>
                   )}
-                  {splitLocations(asset).others.length > 0 && (
+                  {otherLocations(asset).length > 0 && (
                     <details class="alt-access">
                       <summary>Other access methods</summary>
-                      {splitLocations(asset).others.map((loc) => (
+                      {asset.href_template && (
+                        <p class="asset-fact">
+                          <b>File pattern:</b>{" "}
+                          <span class="mono">{asset.href_template}</span>
+                        </p>
+                      )}
+                      {otherLocations(asset).map((loc) => (
                         <div class="endpoint">
-                          <span class="mono proto">{loc.title ?? "URL"}</span>
+                          <span class="proto">
+                            {loc.title ?? "URL"}
+                            {asset.href_template ? " directory" : ""}:
+                          </span>
                           <span class="mono url">
                             {urlParts(loc.url).map((part) => (
                               <>
@@ -1233,8 +1233,8 @@ for (const picker of document.querySelectorAll<HTMLElement>(".tpl-picker")) {
     ))
       file = file.replaceAll(`{${sel.dataset.tplDim}}`, sel.value);
     const url = (picker.dataset.root ?? "") + file;
-    const fileEl = picker.querySelector<HTMLElement>("[data-tpl-file]");
-    if (fileEl) fileEl.textContent = file;
+    const urlEl = picker.querySelector<HTMLElement>("[data-tpl-url]");
+    if (urlEl) urlEl.textContent = url;
     const copyBtn =
       picker.querySelector<HTMLButtonElement>("button[data-copy]");
     if (copyBtn) copyBtn.dataset.copy = url;
@@ -1933,36 +1933,73 @@ td.mono {
   color: var(--text-mute);
 }
 
-/* The picker is one interactive unit — a tinted inset panel groups its
-   label, controls, and result against the card's white surface */
-.tpl-picker {
-  padding: 12px 14px 10px;
-  margin-top: 12px;
+/* Interactive units — a tinted inset panel groups the file picker (or the
+   spotlighted access URL) against the card's white surface */
+.tpl-picker,
+.access-panel {
+  padding: 10px 14px 8px;
+  margin-top: 10px;
   background: var(--bg);
   border-radius: 8px;
 }
 
-/* Baseline-align the label and mono filename; buttons self-centre */
+/* Plain URL, wrapping normally; the actions keep the right edge. Same
+   voice as every other URL on the card */
+.selected-url {
+  flex: 1 1 0;
+  min-width: 160px;
+  font-size: 12px;
+  color: var(--text-soft);
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Slight hanging indent: continuation lines of a wrapped URL tuck in,
+   marking them as the same value */
+.selected-url,
+.access-url,
+.url {
+  padding-left: 5px;
+  text-indent: -5px;
+}
+
+.access-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.access-url {
+  font-size: 12px;
+  color: var(--text-soft);
+  overflow-wrap: break-word;
+}
+
+.access-row :global(.code-copy) {
+  margin-left: auto;
+}
+
+/* Label + actions on one centred row; the URL lives on the line below */
 .tpl-selected {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  align-items: baseline;
+  align-items: center;
   margin-top: 10px;
 }
 
 .tpl-selected :global(.code-copy) {
-  align-self: center;
   margin-left: auto;
 }
 
 .tpl-selected .dl {
-  align-self: center;
   margin-left: 0;
 }
 
 .alt-access {
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .alt-access summary {
@@ -1978,29 +2015,30 @@ td.mono {
 
 .endpoint {
   display: grid;
-  grid-template-columns: 56px 1fr auto;
+  grid-template-columns: minmax(56px, max-content) 1fr auto;
   gap: 10px;
   align-items: center;
   padding: 3px 0;
   margin-top: 6px;
 }
 
+/* Same voice as the fact labels (Format, No Data) — sans, light, muted */
 .proto {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--text-mute);
 }
 
 /* <wbr> hints break URLs at slashes; break-word is the last resort for a
    single segment wider than the column — never mid-token orphans */
 .url {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--text-soft);
   overflow-wrap: break-word;
 }
 
 .example-row {
-  margin-top: 14px;
+  margin-top: 8px;
 }
 
 /* A quiet text affordance — the Download button stays the card's one button */
