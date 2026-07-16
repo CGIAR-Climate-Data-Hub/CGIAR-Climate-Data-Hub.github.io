@@ -24,7 +24,12 @@ import {
 } from "@/lib/catalog";
 import { codeHeader, shikiConfig } from "@/lib/code-block";
 import { allTutorials } from "@/lib/collections";
-import { assetExample, formatLabel, quickstarts } from "@/lib/snippets";
+import {
+  assetExample,
+  formatBestFor,
+  formatLabel,
+  quickstarts,
+} from "@/lib/snippets";
 import { commodity } from "@/lib/vocab";
 import { CATALOG_REPO, SITE_NAME } from "@/site.config";
 
@@ -140,6 +145,58 @@ const tutorialLinks = (await allTutorials())
     meta: `${t.data.level} · ${t.data.time}`,
   }));
 
+// Templated assets get a file picker: one select per placeholder, options
+// straight from the cube's dimensions (and variable names). Renders only
+// when every placeholder resolves.
+const templateFields = (template: string) => {
+  const fields = [
+    ...new Set([...template.matchAll(/\{(\w+)\}/g)].map((m) => m[1])),
+  ].map((name) => ({
+    name,
+    values:
+      dimensions.find((dim) => dim.name === name)?.values
+      ?? (name === "variable" ? d.variables.map((v) => v.name) : []),
+  }));
+  return fields.every((f) => f.values.length > 0) ? fields : undefined;
+};
+
+// Long URLs wrap at path boundaries, not mid-token: each segment gets a
+// <wbr> break hint (see also the picker's replaceChildren in the script)
+const urlParts = (url: string) => url.split(/(?<=\/)/);
+
+// The picker's initial state, prerendered: first value of every field
+const templateDefaultFile = (asset: (typeof d.data)[number]) => {
+  if (!asset.href_template) return undefined;
+  const fields = templateFields(asset.href_template);
+  if (!fields) return undefined;
+  let file = asset.href_template;
+  for (const f of fields) file = file.replaceAll(`{${f.name}}`, f.values[0]);
+  return file;
+};
+const templateDefaultUrl = (asset: (typeof d.data)[number]) => {
+  const file = templateDefaultFile(asset);
+  const root = asset.locations.find((l) => l.url.startsWith("http"))?.url;
+  return file && root ? root + file : undefined;
+};
+
+// One primary endpoint per asset (HTTPS when available); the rest fold into
+// an "Other access methods" disclosure — s3:// users know to look there
+const splitLocations = (asset: (typeof d.data)[number]) => {
+  const primary =
+    asset.locations.find((l) => l.url.startsWith("http")) ?? asset.locations[0];
+  return { primary, others: asset.locations.filter((l) => l !== primary) };
+};
+
+// A download button only where one click yields one file: an http(s) URL to
+// a single object — never templated collections, Zarr stores, or prefixes.
+const downloadUrl = (asset: (typeof d.data)[number]) => {
+  if (asset.href_template) return undefined;
+  const url = asset.locations.find((l) => l.url.startsWith("http"))?.url;
+  if (!url || url.endsWith("/")) return undefined;
+  const file = url.split("/").pop() ?? "";
+  return file.includes(".") && !file.endsWith(".zarr") ? url : undefined;
+};
+
 // Example code, from the template files in src/snippets (see lib/snippets).
 // The quick start stacks one short block per format; each asset card in
 // Access & use carries its own worked example (spatial clip / point sample).
@@ -151,8 +208,11 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => ({
   asset,
   example: assetExample(d, asset),
 }));
-// The lead example ships expanded; the rest stay a click away
-const firstExample = assets.findIndex((a) => a.example);
+// The standard separates the distributions from supporting material
+const assetGroups = [
+  { title: "Data", items: assets.slice(0, d.data.length) },
+  { title: "Additional assets", items: assets.slice(d.data.length) },
+].filter((g) => g.items.length > 0);
 
 const SECTIONS = [
   ["overview", "Overview"],
@@ -537,37 +597,155 @@ const jsonLd = datasetJsonLd(
               </p>
             )}
 
+            {assetGroups.map((group) => (
+            <div>
+              <h4 class="tech-title">{group.title}</h4>
             <div class="assets">
-              {assets.map(({ asset, example }, i) => (
+              {group.items.map(({ asset, example }) => (
                 <div class="asset">
                   <div class="asset-head">
                     <span class="mono asset-name">{asset.name}</span>
-                    {asset.media_type && <span class="pill spatial">{formatLabel(asset.media_type)}</span>}
                     {asset.file_size && <span class="mono asset-size">{asset.file_size}</span>}
+                    {downloadUrl(asset) && (
+                      <a
+                        class="btn btn-ghost dl"
+                        download
+                        href={downloadUrl(asset)}
+                      >
+                        Download
+                      </a>
+                    )}
                   </div>
                   {asset.description && <p>{asset.description}</p>}
-                  {asset.href_template && <p class="mono pattern">pattern: {asset.href_template}</p>}
-                  {asset.nodata !== undefined && (
-                    <p class="mono nodata">
-                      <b>No Data:</b> {asset.nodata}
+                  {asset.media_type && (
+                    <p class="asset-fact">
+                      <b>Format:</b> {formatLabel(asset.media_type)}
+                      {formatBestFor(asset.media_type) && (
+                        <span class="best-for">
+                          {" "}
+                          — best for {formatBestFor(asset.media_type)}
+                        </span>
+                      )}
                     </p>
                   )}
-                  {asset.locations.map((loc) => (
+                  {asset.nodata !== undefined && (
+                    <p class="asset-fact">
+                      <b>No Data:</b> <span class="mono">{asset.nodata}</span>
+                    </p>
+                  )}
+                  {asset.href_template && (
+                    <p class="asset-fact">
+                      <b>File pattern:</b>{" "}
+                      <span class="mono">{asset.href_template}</span>
+                    </p>
+                  )}
+                  {asset.href_template && templateDefaultUrl(asset) && (
+                      <div
+                        class="tpl-picker"
+                        data-file={templateDefaultFile(asset)}
+                        data-root={asset.locations.find((l) => l.url.startsWith("http"))?.url}
+                        data-template={asset.href_template}
+                      >
+                        <p class="label tpl-title">Select a specific file</p>
+                        <div class="tpl-fields">
+                          {(templateFields(asset.href_template) ?? []).map((f) => (
+                            <label class="tpl-field">
+                              <span class="label">{humanize(f.name)}</span>
+                              <select data-tpl-dim={f.name}>
+                                {f.values.map((v) => <option>{v}</option>)}
+                              </select>
+                            </label>
+                          ))}
+                        </div>
+                        <p class="asset-fact tpl-selected">
+                          <b>Selected file:</b>
+                          <span class="mono" data-tpl-file>
+                            {templateDefaultFile(asset)}
+                          </span>
+                          <CopyButton
+                            copy={templateDefaultUrl(asset) ?? ""}
+                            label="Copy file URL"
+                          />
+                          <a
+                            class="btn btn-ghost dl"
+                            download
+                            href={templateDefaultUrl(asset)}
+                          >
+                            Download
+                          </a>
+                        </p>
+                      </div>
+                    )}
+                  {splitLocations(asset).primary && (
                     <div class="endpoint">
-                      <span class="mono proto">{loc.title ?? "URL"}</span>
-                      <span class="mono url">{loc.url}</span>
-                      <CopyButton copy={loc.url} label="Copy URL" />
+                      <span class="mono proto">
+                        {splitLocations(asset).primary.title ?? "URL"}
+                      </span>
+                      <span class="mono url">
+                        {urlParts(splitLocations(asset).primary.url).map(
+                          (part) => (
+                            <>
+                              {part}
+                              <wbr />
+                            </>
+                          ),
+                        )}
+                      </span>
+                      <CopyButton
+                        copy={splitLocations(asset).primary.url}
+                        label="Copy URL"
+                      />
                     </div>
-                  ))}
-                  {example && (
-                    <details class="asset-example" open={i === firstExample}>
-                      <summary>Example use</summary>
-                      <SnippetTabs python={example.python} r={example.r} />
+                  )}
+                  {splitLocations(asset).others.length > 0 && (
+                    <details class="alt-access">
+                      <summary>Other access methods</summary>
+                      {splitLocations(asset).others.map((loc) => (
+                        <div class="endpoint">
+                          <span class="mono proto">{loc.title ?? "URL"}</span>
+                          <span class="mono url">
+                            {urlParts(loc.url).map((part) => (
+                              <>
+                                {part}
+                                <wbr />
+                              </>
+                            ))}
+                          </span>
+                          <CopyButton copy={loc.url} label="Copy URL" />
+                        </div>
+                      ))}
                     </details>
+                  )}
+                  {example && (
+                    <div class="example-row">
+                      <button class="example-btn" data-example-open type="button">
+                        <span aria-hidden="true" class="mono">&lt;/&gt;</span>
+                        View usage examples
+                      </button>
+                      <dialog class="example-modal">
+                        <div class="example-head">
+                          <h4>
+                            <span class="mono">{asset.name}</span> — usage
+                            examples
+                          </h4>
+                          <button
+                            aria-label="Close"
+                            class="example-close"
+                            data-example-close
+                            type="button"
+                          >
+                            ×
+                          </button>
+                        </div>
+                        <SnippetTabs python={example.python} r={example.r} />
+                      </dialog>
+                    </div>
                   )}
                 </div>
               ))}
             </div>
+            </div>
+            ))}
           </section>
         )}
 
@@ -777,7 +955,15 @@ const jsonLd = datasetJsonLd(
                     )}
                     {step.code && (
                       <p class="step-meta mono">
-                        code: <a href={step.code.url} rel="noreferrer">{step.code.url}</a>
+                        code:{" "}
+                        <a href={step.code.url} rel="noreferrer">
+                          {urlParts(step.code.url).map((part) => (
+                            <>
+                              {part}
+                              <wbr />
+                            </>
+                          ))}
+                        </a>
                         {step.code.version && <span> @ {step.code.version}</span>}
                       </p>
                     )}
@@ -1017,6 +1203,17 @@ const jsonLd = datasetJsonLd(
 </Layout>
 
 <script>
+// Usage-example modals: native <dialog> handles backdrop/Esc/focus; this
+// wires the open and close buttons plus backdrop-click dismiss.
+document.addEventListener("click", (e) => {
+  const target = e.target as HTMLElement;
+  if (target.closest("[data-example-open]"))
+    target.closest(".example-row")?.querySelector("dialog")?.showModal();
+  if (target.closest("[data-example-close]")) target.closest("dialog")?.close();
+  // A click on the dialog element itself is the backdrop, not its content
+  if (target instanceof HTMLDialogElement) target.close();
+});
+
 // Dropdowns (version switcher, metadata menu): <details> handles open/toggle
 // natively; this only adds light-dismiss on outside clicks.
 const menus =
@@ -1025,6 +1222,41 @@ document.addEventListener("click", (e) => {
   for (const menu of menus)
     if (menu.open && !menu.contains(e.target as Node)) menu.open = false;
 });
+
+// Template pickers: the selects fill the asset's href_template; the built
+// URL feeds the row's copy button and download link
+for (const picker of document.querySelectorAll<HTMLElement>(".tpl-picker")) {
+  const update = () => {
+    let file = picker.dataset.template ?? "";
+    for (const sel of picker.querySelectorAll<HTMLSelectElement>(
+      "select[data-tpl-dim]",
+    ))
+      file = file.replaceAll(`{${sel.dataset.tplDim}}`, sel.value);
+    const url = (picker.dataset.root ?? "") + file;
+    const fileEl = picker.querySelector<HTMLElement>("[data-tpl-file]");
+    if (fileEl) fileEl.textContent = file;
+    const copyBtn =
+      picker.querySelector<HTMLButtonElement>("button[data-copy]");
+    if (copyBtn) copyBtn.dataset.copy = url;
+    const dl = picker.querySelector<HTMLAnchorElement>("a[download]");
+    if (dl) dl.href = url;
+    // The usage example bakes in the previous selection's filename — swap it
+    // wherever it appears in the dialog's code so the example stays live
+    const prev = picker.dataset.file;
+    const dialog = picker.closest(".asset")?.querySelector("dialog");
+    if (dialog && prev && prev !== file) {
+      const walker = document.createTreeWalker(dialog, NodeFilter.SHOW_TEXT);
+      while (walker.nextNode()) {
+        const node = walker.currentNode;
+        if (node.nodeValue?.includes(prev))
+          node.nodeValue = node.nodeValue.replaceAll(prev, file);
+      }
+    }
+    picker.dataset.file = file;
+  };
+  picker.addEventListener("change", update);
+  update();
+}
 
 // Citation formats are prerendered panels; the select swaps them and the
 // choice persists like the snippet language does
@@ -1102,7 +1334,6 @@ document.addEventListener("click", async (e) => {
 .header {
   padding: 18px 0 24px;
   background: var(--surface);
-  border-bottom: 1px solid var(--border);
 }
 
 /* Outline only: a caution tag that doesn't outweigh the version beside it */
@@ -1587,8 +1818,10 @@ td.mono {
   margin-top: 8px;
 }
 
+/* The card's border is the only box line — inside, whitespace separates.
+   Visual weight: name → download → selectors → URL → technical facts */
 .asset {
-  padding: 14px;
+  padding: 16px 18px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -1596,7 +1829,7 @@ td.mono {
 
 .asset p {
   margin-top: 6px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-soft);
 }
 
@@ -1607,26 +1840,140 @@ td.mono {
   align-items: baseline;
 }
 
+.asset-head {
+  margin-bottom: 0;
+}
+
+/* Name + description read as one unit; the breathing room sits below them */
+.asset-head + p {
+  margin-top: 4px;
+  margin-bottom: 14px;
+}
+
 .asset-name {
+  font-size: 16px;
   font-weight: 700;
-  color: var(--cdh-blue-700);
+  color: var(--cdh-blue-950);
 }
 
 .asset-size {
-  margin-left: auto;
   font-size: 11px;
   color: var(--text-mute);
 }
 
-.pattern {
-  font-size: 11.5px;
+/* One download style everywhere, height-matched to the copy buttons; sits
+   beside the size so the "how big" context precedes the click */
+.dl {
+  height: 26px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+/* Whichever of size/download comes first carries the row's right edge */
+.asset-size,
+.dl {
+  margin-left: auto;
+}
+
+.asset-size ~ .dl {
+  margin-left: 0;
+}
+
+/* Per-asset facts — light labels, darker values; mono only on literals.
+   Qualified to outrank the .asset p description sizing after scoping */
+.asset p.asset-fact {
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+.asset-fact b {
+  font-weight: 500;
   color: var(--text-mute);
 }
 
-/* Misreading nodata as real values corrupts analyses — bold label, quiet value */
-.nodata {
+.asset-fact .mono {
+  font-size: 12px;
+}
+
+.best-for {
+  font-family: var(--sans);
+  color: var(--text-mute);
+}
+
+.tpl-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 10px;
+}
+
+.tpl-field {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.tpl-field .label {
+  font-size: 10px;
+}
+
+.tpl-field select {
+  padding: 2px 6px;
+  font-size: 12px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--btn-radius);
+}
+
+/* Quieter than the asset name — it labels a control group, not content.
+   Qualified to outrank .asset p sizing after scoping */
+.asset p.tpl-title {
+  font-size: 10px;
+  color: var(--text-mute);
+}
+
+/* The picker is one interactive unit — a tinted inset panel groups its
+   label, controls, and result against the card's white surface */
+.tpl-picker {
+  padding: 12px 14px 10px;
+  margin-top: 12px;
+  background: var(--bg);
+  border-radius: 8px;
+}
+
+/* Baseline-align the label and mono filename; buttons self-centre */
+.tpl-selected {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  margin-top: 10px;
+}
+
+.tpl-selected :global(.code-copy) {
+  align-self: center;
+  margin-left: auto;
+}
+
+.tpl-selected .dl {
+  align-self: center;
+  margin-left: 0;
+}
+
+.alt-access {
+  margin-top: 8px;
+}
+
+.alt-access summary {
   font-size: 11.5px;
-  color: var(--text-soft);
+  color: var(--text-mute);
+  cursor: pointer;
+  user-select: none;
+}
+
+.alt-access summary:hover {
+  color: var(--cdh-blue-700);
 }
 
 .endpoint {
@@ -1634,34 +1981,90 @@ td.mono {
   grid-template-columns: 56px 1fr auto;
   gap: 10px;
   align-items: center;
-  padding: 7px 0;
-  margin-top: 8px;
-  border-top: 1px solid var(--border);
+  padding: 3px 0;
+  margin-top: 6px;
 }
 
 .proto {
   font-size: 11px;
-  font-weight: 700;
-  color: var(--cdh-blue-700);
+  font-weight: 600;
+  color: var(--text-mute);
 }
 
+/* <wbr> hints break URLs at slashes; break-word is the last resort for a
+   single segment wider than the column — never mid-token orphans */
 .url {
   font-size: 11.5px;
   color: var(--text-soft);
-  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
-.asset-example {
-  margin-top: 10px;
-  border-top: 1px solid var(--border);
+.example-row {
+  margin-top: 14px;
 }
 
-.asset-example summary {
-  padding: 8px 0 2px;
-  font-size: 12px;
+/* A quiet text affordance — the Download button stays the card's one button */
+.example-btn {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 0;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--cdh-blue-700);
   cursor: pointer;
+  background: none;
+  border: 0;
+}
+
+.example-btn:hover {
+  color: var(--cdh-blue-950);
+}
+
+.example-btn .mono {
+  font-size: 11px;
+  color: var(--cdh-blue-700);
+}
+
+.example-modal {
+  width: min(760px, 92vw);
+  max-height: 84vh;
+  padding: 20px 22px;
+  margin: auto;
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+}
+
+.example-modal::backdrop {
+  background: rgb(12 20 30 / 45%);
+}
+
+.example-head {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.example-head h4 {
+  font-size: 15px;
+}
+
+.example-close {
+  padding: 0 6px;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text-mute);
+  cursor: pointer;
+  background: none;
+  border: 0;
+}
+
+.example-close:hover {
+  color: var(--text);
 }
 
 .lineage {
@@ -1729,7 +2132,7 @@ td.mono {
 
 .step-meta {
   font-size: 12.5px;
-  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .cite-head {

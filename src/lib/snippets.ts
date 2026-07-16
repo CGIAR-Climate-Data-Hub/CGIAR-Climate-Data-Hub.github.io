@@ -22,6 +22,10 @@ const concept = (mediaType?: string) =>
 export const formatLabel = (mediaType?: string) =>
   concept(mediaType)?.label ?? mediaType?.split(";")[0];
 
+// One-line guidance per format ("best for …"), from the same vocab
+export const formatBestFor = (mediaType?: string) =>
+  concept(mediaType)?.best_for;
+
 const TEMPLATES = Object.entries(FILES).flatMap(([path, code]) => {
   const m = path.match(/(quickstart|subset)-(\w+)\.(\w+)$/);
   return m ? [{ kind: m[1], format: m[2], lang: m[3], code }] : [];

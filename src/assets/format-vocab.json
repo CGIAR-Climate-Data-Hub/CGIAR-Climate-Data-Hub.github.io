@@ -8,17 +8,20 @@
     {
       "id": "zarr",
       "label": "Zarr",
-      "media_type": "application/vnd.zarr"
+      "media_type": "application/vnd.zarr",
+      "best_for": "cloud-native analysis, reading just the slices you need from the full cube"
     },
     {
       "id": "cogs",
       "label": "Cloud-Optimized GeoTIFF",
-      "media_type": "image/tiff; application=geotiff; profile=cloud-optimized"
+      "media_type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "best_for": "single-file downloads, visualisation, and traditional GIS tools"
     },
     {
       "id": "parquet",
       "label": "Apache Parquet",
-      "media_type": "application/vnd.apache.parquet"
+      "media_type": "application/vnd.apache.parquet",
+      "best_for": "tabular analysis, with fast filtered reads in pandas, R, or DuckDB"
     }
   ]
 }

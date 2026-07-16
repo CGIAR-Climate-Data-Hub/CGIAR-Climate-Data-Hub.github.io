@@ -562,6 +562,7 @@ hr {
 .code-copy {
   display: inline-flex;
   align-items: center;
+  height: 26px; /* matches the .dl download buttons wherever they pair up */
   padding: 4px 6px;
   color: var(--text-soft);
   background: var(--surface);
