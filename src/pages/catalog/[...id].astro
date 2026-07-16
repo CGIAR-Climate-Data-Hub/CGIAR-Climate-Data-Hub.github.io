@@ -178,7 +178,9 @@ const quickstart = {
 //   fills the disclosure — everything on templated assets, where the picker
 //   stands in for the access panel and no root URL shows above
 // - download: only where one click yields one file — an http(s) URL to a
-//   single object, never templated collections, Zarr stores, or prefixes
+//   single object, never templated collections, Zarr stores, or prefixes.
+//   Restricted records get no Download buttons at all (the click would just
+//   be refused); URLs and copy stay for users who hold credentials
 const assets = [...d.data, ...d.additional_assets].map((asset) => {
   const httpUrl = asset.locations.find((l) => l.url.startsWith("http"))?.url;
   const primary =
@@ -218,7 +220,8 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
     tplFile,
     tplUrl: tplFile && httpUrl ? httpUrl + tplFile : undefined,
     download:
-      !asset.href_template
+      !restricted
+      && !asset.href_template
       && httpUrl
       && !httpUrl.endsWith("/")
       && lastSegment.includes(".")
@@ -235,9 +238,10 @@ const assetGroups = [
 
 const SECTIONS = [
   ["overview", "Overview"],
+  // Access & use first after Overview — it's the tab most visits are for
+  d.data.length > 0 && ["access", "Access & use"],
   hasSchema && ["schema", "Schema"],
   (d.climate || d.spatial || d.temporal) && ["technical", "Technical metadata"],
-  d.data.length > 0 && ["access", "Access & use"],
   d.processing.length > 0 && ["provenance", "Provenance"],
   (citation || d.contact.length > 0) && [
     "citation",
@@ -648,7 +652,20 @@ const jsonLd = datasetJsonLd(
                         data-root={primary.url}
                         data-template={asset.href_template}
                       >
-                        <p class="label tpl-title">Access a specific file</p>
+                        <p class="panel-head">
+                          <span class="label tpl-title">
+                            Access a specific file
+                          </span>
+                          <CopyButton
+                            copy={tplUrl}
+                            label="Copy selected file URL"
+                          />
+                          {!restricted && (
+                            <a class="btn btn-ghost dl" download href={tplUrl}>
+                              Download
+                            </a>
+                          )}
+                        </p>
                         <div class="tpl-fields">
                           {(tplFields ?? []).map((f) => (
                             <label class="tpl-field">
@@ -659,22 +676,16 @@ const jsonLd = datasetJsonLd(
                             </label>
                           ))}
                         </div>
-                        <p class="asset-fact tpl-selected">
-                          <span class="mono selected-url" data-tpl-url>{tplUrl}</span>
-                          <CopyButton
-                            copy={tplUrl}
-                            label="Copy selected file URL"
-                          />
-                          <a class="btn btn-ghost dl" download href={tplUrl}>
-                            Download
-                          </a>
-                        </p>
+                        <p class="mono selected-url" data-tpl-url>{tplUrl}</p>
                       </div>
                     )}
                   {!asset.href_template && primary && (
                     <div class="access-panel">
-                      <p class="label tpl-title">Access the data</p>
-                      <p class="asset-fact access-row">
+                      <p class="panel-head">
+                        <span class="label tpl-title">Access the data</span>
+                        <CopyButton copy={primary.url} label="Copy URL" />
+                      </p>
+                      <p class="asset-fact">
                         <span class="mono url">
                           {urlParts(primary.url).map((part) => (
                             <>
@@ -683,7 +694,6 @@ const jsonLd = datasetJsonLd(
                             </>
                           ))}
                         </span>
-                        <CopyButton copy={primary.url} label="Copy URL" />
                       </p>
                     </div>
                   )}
@@ -718,8 +728,7 @@ const jsonLd = datasetJsonLd(
                   {example && (
                     <div class="example-row">
                       <button class="example-btn" data-example-open type="button">
-                        <span aria-hidden="true" class="mono">&lt;/&gt;</span>
-                        View usage examples
+                        &lt;/&gt; View usage examples
                       </button>
                       <dialog class="example-modal">
                         <div class="example-head">
@@ -1592,6 +1601,13 @@ h1 {
   padding-top: 32px;
 }
 
+/* The rail follows the reader; align-self keeps sticky alive in the grid */
+.body > aside {
+  position: sticky;
+  top: calc(var(--nav-height) + 58px);
+  align-self: start;
+}
+
 article section {
   display: flex;
   flex-direction: column;
@@ -1905,41 +1921,34 @@ td.mono {
   border-radius: 8px;
 }
 
-/* Plain URL, wrapping normally; the actions keep the right edge. Same
-   voice as every other URL on the card */
+/* Plain URL line, wrapping normally — same voice as every card URL */
 .selected-url {
-  flex: 1 1 0;
-  min-width: 160px;
+  margin-top: 8px;
   font-size: 12px;
   color: var(--text-soft);
   word-break: normal;
   overflow-wrap: anywhere;
 }
 
-/* Slight hanging indent: continuation lines of a wrapped URL tuck in,
-   marking them as the same value */
+/* Every URL starts with the same slight inset, whatever its container */
 .selected-url,
 .url {
   padding-left: 5px;
-  text-indent: -5px;
 }
 
-/* One flex row for both action lines: URL/label left, buttons right */
-.access-row,
-.tpl-selected {
+/* Panel head: quiet title left, the panel's actions right */
+.panel-head {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  margin-top: 10px;
 }
 
-.access-row :global(.code-copy),
-.tpl-selected :global(.code-copy) {
+.panel-head :global(.code-copy) {
   margin-left: auto;
 }
 
-.tpl-selected .dl {
+.panel-head .dl {
   margin-left: 0;
 }
 
@@ -1988,9 +1997,6 @@ td.mono {
 
 /* A quiet text affordance — the Download button stays the card's one button */
 .example-btn {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
   padding: 0;
   font-size: 12.5px;
   font-weight: 600;
@@ -2002,11 +2008,6 @@ td.mono {
 
 .example-btn:hover {
   color: var(--cdh-blue-950);
-}
-
-.example-btn .mono {
-  font-size: 11px;
-  color: var(--cdh-blue-700);
 }
 
 .example-modal {

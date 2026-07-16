@@ -83,7 +83,7 @@ const catalogSchema = {
 
   <PageHead
     breadcrumb={[{ label: "Hub", href: "/" }, { label: "Catalog" }]}
-    kicker="The catalogue"
+    kicker="The catalog"
     sub="Browse the Hub's harmonised datasets — all with consistent metadata, licensing, and cloud-native access."
     title="Catalog"
   >
@@ -656,6 +656,13 @@ apply();
   grid-template-columns: 240px 1fr;
   gap: 32px;
   padding-top: 32px;
+}
+
+/* Filters follow the results; align-self keeps sticky alive in the grid */
+.facets {
+  position: sticky;
+  top: calc(var(--nav-height) + 16px);
+  align-self: start;
 }
 
 /* ---- Spatial search ---- */
