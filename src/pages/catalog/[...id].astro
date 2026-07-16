@@ -1924,19 +1924,8 @@ td.mono {
   text-indent: -5px;
 }
 
-.access-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  margin-top: 8px;
-}
-
-.access-row :global(.code-copy) {
-  margin-left: auto;
-}
-
-/* Label + actions on one centred row; the URL lives on the line below */
+/* One flex row for both action lines: URL/label left, buttons right */
+.access-row,
 .tpl-selected {
   display: flex;
   flex-wrap: wrap;
@@ -1945,6 +1934,7 @@ td.mono {
   margin-top: 10px;
 }
 
+.access-row :global(.code-copy),
 .tpl-selected :global(.code-copy) {
   margin-left: auto;
 }
