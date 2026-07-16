@@ -752,6 +752,11 @@ apply();
   border-radius: 6px;
 }
 
+/* The display property would defeat the hidden attribute without this */
+.series-tag[hidden] {
+  display: none;
+}
+
 .series-tag {
   display: inline-flex;
   gap: 6px;
