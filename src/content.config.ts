@@ -205,6 +205,7 @@ const catalog = defineCollection({
                 unit: z.string().optional(),
                 value: z.number().optional(),
                 label: z.string().optional(),
+                note: z.string().optional(),
               }),
             )
             .default([]),

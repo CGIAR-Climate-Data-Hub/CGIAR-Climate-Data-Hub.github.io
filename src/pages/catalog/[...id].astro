@@ -157,7 +157,7 @@ const firstExample = assets.findIndex((a) => a.example);
 const SECTIONS = [
   ["overview", "Overview"],
   dimensions.length + d.variables.length > 0 && ["schema", "Schema"],
-  d.climate && ["climate", "Climate"],
+  (d.climate || d.spatial || d.temporal) && ["technical", "Technical metadata"],
   d.data.length > 0 && ["access", "Access & use"],
   d.processing.length > 0 && ["provenance", "Provenance"],
   (citation || d.contact.length > 0) && [
@@ -547,6 +547,11 @@ const jsonLd = datasetJsonLd(
                   </div>
                   {asset.description && <p>{asset.description}</p>}
                   {asset.href_template && <p class="mono pattern">pattern: {asset.href_template}</p>}
+                  {asset.nodata !== undefined && (
+                    <p class="mono nodata">
+                      <b>No Data:</b> {asset.nodata}
+                    </p>
+                  )}
                   {asset.locations.map((loc) => (
                     <div class="endpoint">
                       <span class="mono proto">{loc.title ?? "URL"}</span>
@@ -566,14 +571,96 @@ const jsonLd = datasetJsonLd(
           </section>
         )}
 
-      {d.climate && (
-          <section id="climate">
-            <h3>Climate methods</h3>
+      {(d.climate || d.spatial || d.temporal) && (
+          <section id="technical">
+            <h3>Technical metadata</h3>
             <p class="section-sub">
-              The modelling setup behind the projections — era, models,
-              scenarios, and adjustments.
+              The full spatial, temporal, and modelling detail behind the
+              summaries elsewhere on this page.
             </p>
-            <div class="climate-card">
+
+            {d.spatial && (
+              <div>
+                <h4 class="tech-title">Spatial</h4>
+                <dl class="kv">
+                  {d.spatial.crs && (
+                    <>
+                      <dt>CRS</dt>
+                      <dd>
+                        {/^EPSG:\d+$/.test(d.spatial.crs) ? (
+                          <a href={`https://epsg.io/${d.spatial.crs.split(":")[1]}`} rel="noreferrer">
+                            {d.spatial.crs}
+                          </a>
+                        ) : (
+                          d.spatial.crs
+                        )}
+                      </dd>
+                    </>
+                  )}
+                  {bboxes && (
+                    <>
+                      <dt>Extent (W S E N)</dt>
+                      <dd class="mono">
+                        {bboxes.map((b) => `[${b.join(", ")}]`).join("  ")}
+                      </dd>
+                    </>
+                  )}
+                  {coverage && (
+                    <>
+                      <dt>Coverage</dt>
+                      <dd>{coverage}</dd>
+                    </>
+                  )}
+                  {d.spatial.resolution.map((r) => (
+                    <>
+                      <dt>Resolution{r.type ? ` (${r.type})` : ""}</dt>
+                      <dd>
+                        {r.label
+                          ?? [r.value, r.unit].filter(Boolean).join(" ")}
+                        {r.note && <div class="fact-sub">{r.note}</div>}
+                      </dd>
+                    </>
+                  ))}
+                </dl>
+              </div>
+            )}
+
+            {d.temporal && (
+              <div>
+                <h4 class="tech-title">Temporal</h4>
+                <dl class="kv">
+                  <dt>Start</dt>
+                  <dd class="mono">{d.temporal.start_date}</dd>
+                  <dt>End</dt>
+                  <dd class="mono">{d.temporal.end_date ?? "open (present)"}</dd>
+                  {d.temporal.resolution?.step && (
+                    <>
+                      <dt>Step</dt>
+                      <dd class="mono">{d.temporal.resolution.step}</dd>
+                    </>
+                  )}
+                  {d.temporal.resolution
+                    && d.temporal.resolution.values.length > 0 && (
+                    <>
+                      <dt>Slices</dt>
+                      <dd class="mono">
+                        {d.temporal.resolution.values.join(", ")}
+                      </dd>
+                    </>
+                  )}
+                  {d.temporal.resolution?.note && (
+                    <>
+                      <dt>Note</dt>
+                      <dd>{d.temporal.resolution.note}</dd>
+                    </>
+                  )}
+                </dl>
+              </div>
+            )}
+
+            {d.climate && (
+            <div>
+              <h4 class="tech-title">Climate methods</h4>
               <dl class="kv">
                   {d.climate.mip_era && (
                     <>
@@ -629,6 +716,27 @@ const jsonLd = datasetJsonLd(
                       </dd>
                     </>
                   )}
+              </dl>
+            </div>
+            )}
+
+            <div>
+              <h4 class="tech-title">Record</h4>
+              <dl class="kv">
+                <dt>Resource type</dt>
+                <dd>{d.resource_type}</dd>
+                {d.created && (
+                  <>
+                    <dt>Created</dt>
+                    <dd class="mono">{d.created}</dd>
+                  </>
+                )}
+                {d.updated && (
+                  <>
+                    <dt>Updated</dt>
+                    <dd class="mono">{d.updated}</dd>
+                  </>
+                )}
               </dl>
             </div>
           </section>
@@ -1006,16 +1114,9 @@ document.addEventListener("click", async (e) => {
   border-radius: var(--pill-radius);
 }
 
-.climate-card {
-  padding: 16px 18px;
-  margin-bottom: 22px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-}
-
-.climate-card h4 {
+.tech-title {
   margin-bottom: 12px;
+  font-size: 15px;
 }
 
 .class-list {
@@ -1520,6 +1621,12 @@ td.mono {
 .pattern {
   font-size: 11.5px;
   color: var(--text-mute);
+}
+
+/* Misreading nodata as real values corrupts analyses — bold label, quiet value */
+.nodata {
+  font-size: 11.5px;
+  color: var(--text-soft);
 }
 
 .endpoint {
