@@ -24,14 +24,18 @@ const year = new Date().getFullYear();
   <div class="container top">
     <div class="brand">
       <LogoBlock size={30} variant="dark" />
-      <span class="casp">
+      <a
+        class="casp"
+        href="https://www.cgiar.org/cgiar-research-portfolio-2025-2030/climate-action"
+        rel="noreferrer"
+      >
         <img
           alt="CGIAR Climate Action"
           height="46"
           src={caspLogoWhite.src}
           width="96"
         >
-      </span>
+      </a>
     </div>
     <nav aria-label="Footer">
       {LINKS.map(([label, href]) => <a href={href}>{label}</a>)}
