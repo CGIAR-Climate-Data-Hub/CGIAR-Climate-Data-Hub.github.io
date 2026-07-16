@@ -163,6 +163,10 @@ const catalog = defineCollection({
       // deprecated; the chain links backward via previous_version ids
       previous_version: z.string().optional(),
       deprecated: z.boolean().default(false),
+      // Cross-dataset family (e.g. MapSPAM), distinct from the version chain
+      series: z
+        .object({ name: z.string(), url: z.string().optional() })
+        .optional(),
       license: z.string(),
       resource_type: z.string(),
       // Absent means open; anything else flags the header + Access section

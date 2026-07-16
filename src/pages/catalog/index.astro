@@ -278,6 +278,16 @@ const catalogSchema = {
           ><b id="match-count">{datasets.length}</b>{" "}
           <span id="match-label">datasets</span></span
         >
+        <span class="mono series-tag" hidden id="series-active">
+          Series: <b id="series-name"></b>
+          <button
+            aria-label="Clear series filter"
+            id="series-clear"
+            type="button"
+          >
+            ×
+          </button>
+        </span>
         <button hidden id="clear-filters" type="button">
           Clear all filters
         </button>
@@ -299,6 +309,7 @@ const catalogSchema = {
               data-domain={d.domains.join(" ")}
               data-geography={d.geographies.join(" ")}
               data-search={[d.title, d.description, ...d.keywords, ...d.geographies.map(geoLabel), ...d.commodities.map(commodityLabel)].join(" ").toLowerCase()}
+              data-series={d.series}
             >
               <DatasetCard dataset={d} />
               <a class="row-compact" href={`/catalog/${d.id}/`}>
@@ -367,10 +378,21 @@ const matchLabel = document.querySelector("#match-label");
 const empty = document.querySelector<HTMLElement>("#empty-state");
 
 const facetKeys = ["domain", "geography", "commodity"] as const;
-const state: { q: string; bbox: number[] | null; [key: string]: unknown } = {
+const state: {
+  q: string;
+  bbox: number[] | null;
+  series: string;
+  [key: string]: unknown;
+} = {
   q: "",
   bbox: null,
+  series: "",
 };
+
+// Series filter is deep-link only (record pages' "Part of" link)
+const seriesTag = document.querySelector<HTMLElement>("#series-active");
+const seriesName = document.querySelector<HTMLElement>("#series-name");
+const seriesClear = document.querySelector<HTMLButtonElement>("#series-clear");
 
 const bboxIntersects = (a: number[], b: number[]) =>
   !(a[2] < b[0] || a[0] > b[2] || a[3] < b[1] || a[1] > b[3]);
@@ -399,6 +421,7 @@ function apply() {
         return values.includes(state[k] as string);
       })
       && (!state.q || (card.dataset.search ?? "").includes(state.q))
+      && (!state.series || card.dataset.series === state.series)
       && matchesBbox(card);
     card.hidden = !show;
     if (show) matched++;
@@ -414,13 +437,20 @@ function apply() {
     );
   }
   if (clear)
-    clear.hidden = !state.q && !state.bbox && facetKeys.every((k) => !state[k]);
+    clear.hidden =
+      !state.q
+      && !state.bbox
+      && !state.series
+      && facetKeys.every((k) => !state[k]);
+  if (seriesTag) seriesTag.hidden = !state.series;
+  if (seriesName) seriesName.textContent = state.series;
   syncBboxUi();
 
   // Keep filters shareable
   const params = new URLSearchParams();
   if (state.q) params.set("q", state.q);
   for (const k of facetKeys) if (state[k]) params.set(k, state[k] as string);
+  if (state.series) params.set("series", state.series);
   if (state.bbox)
     params.set("bbox", state.bbox.map((n) => n.toFixed(2)).join(","));
   history.replaceState(
@@ -444,7 +474,12 @@ clear?.addEventListener("click", () => {
   for (const k of facetKeys) state[k] = "";
   state.q = "";
   state.bbox = null;
+  state.series = "";
   if (search) search.value = "";
+  apply();
+});
+seriesClear?.addEventListener("click", () => {
+  state.series = "";
   apply();
 });
 
@@ -559,6 +594,7 @@ if (matchMedia("(max-width: 860px)").matches) {
 
 const params = new URLSearchParams(location.search);
 state.q = (params.get("q") ?? "").trim().toLowerCase();
+state.series = params.get("series") ?? "";
 if (search) search.value = params.get("q") ?? "";
 for (const k of facetKeys) state[k] = params.get(k) ?? "";
 const urlBbox = params.get("bbox")?.split(",").map(Number);
@@ -711,6 +747,27 @@ apply();
   background: transparent;
   border: 1px solid var(--border-strong);
   border-radius: 6px;
+}
+
+.series-tag {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11.5px;
+  color: var(--cdh-blue-800);
+  background: var(--cdh-blue-50);
+  border: 1px solid var(--cdh-blue-150);
+  border-radius: var(--pill-radius);
+}
+
+.series-tag button {
+  padding: 0 2px;
+  font-size: 13px;
+  color: inherit;
+  cursor: pointer;
+  background: none;
+  border: 0;
 }
 
 .results-meta {

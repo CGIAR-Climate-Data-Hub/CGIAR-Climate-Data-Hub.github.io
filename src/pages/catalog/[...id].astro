@@ -206,6 +206,14 @@ const jsonLd = datasetJsonLd(
         <div>
           <h1>{d.title}</h1>
           {source && <p class="source">{source}</p>}
+          {d.series && (
+            <p class="series-line">
+              Part of:{" "}
+              <a href={`/catalog/?series=${encodeURIComponent(d.series.name)}`}>
+                {d.series.name}
+              </a>
+            </p>
+          )}
 
           {(d.version || (d.access && d.access !== "open")) && (
             <div class="version-row">
@@ -1101,6 +1109,13 @@ h1 {
   margin-top: 8px;
   font-size: 14px;
   color: var(--text-soft);
+}
+
+/* "Part of: <series>" — links to the catalog filtered to the series */
+.series-line {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-mute);
 }
 
 .version-row {

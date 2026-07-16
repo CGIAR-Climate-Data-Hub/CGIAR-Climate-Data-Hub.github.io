@@ -123,6 +123,7 @@ export function summarize(entry: CollectionEntry<"catalog">) {
     bboxes:
       normalizeBboxes(d.spatial?.bbox)
       ?? geographyBboxes(d.spatial?.geography ?? []),
+    series: d.series?.name,
     updated: d.updated ?? d.created ?? "",
   };
 }
