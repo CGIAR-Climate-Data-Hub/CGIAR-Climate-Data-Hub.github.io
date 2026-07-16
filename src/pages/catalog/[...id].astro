@@ -4,11 +4,13 @@ import { getCollection } from "astro:content";
 import { satteri } from "@astrojs/markdown-satteri";
 import BboxMap from "@/components/BboxMap.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import CopyButton from "@/components/CopyButton.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import SnippetTabs from "@/components/SnippetTabs.astro";
 import Layout from "@/layouts/Layout.astro";
 import {
   bibtex,
+  citationFormats,
   citationText,
   datasetJsonLd,
   geoLabel,
@@ -118,6 +120,7 @@ const reportParams = new URLSearchParams({
 });
 const reportUrl = `https://github.com/${CATALOG_REPO}/issues/new?${reportParams}`;
 const citation = citationText(d, recordUrl);
+const citeFormats = citationFormats(d, recordUrl);
 const licenseHref = licenseUrl(d.license);
 const bibtexStr = bibtex(d, recordUrl);
 
@@ -157,8 +160,14 @@ const SECTIONS = [
   d.climate && ["climate", "Climate"],
   d.data.length > 0 && ["access", "Access & use"],
   d.processing.length > 0 && ["provenance", "Provenance"],
-  d.contact.length > 0 && ["contacts", "Contacts"],
-  citation && ["citation", "Citation"],
+  (citation || d.contact.length > 0) && [
+    "citation",
+    citation && d.contact.length > 0
+      ? "Citation & contacts"
+      : citation
+        ? "Citation"
+        : "Contacts",
+  ],
 ].filter(Boolean) as [string, string][];
 
 const jsonLd = datasetJsonLd(
@@ -198,11 +207,11 @@ const jsonLd = datasetJsonLd(
           <h1>{d.title}</h1>
           {source && <p class="source">{source}</p>}
 
-          {d.version && (
+          {(d.version || (d.access && d.access !== "open")) && (
             <div class="version-row">
-              <span class="label">Version</span>
-              {chain.length > 1 ? (
-                <details class="version-menu">
+              {d.version && <span class="label">Version</span>}
+              {d.version && chain.length > 1 ? (
+                <details class="drop-menu version-menu">
                   <summary>
                     {d.version ?? d.id}
                     {chain[0]?.data.id === d.id && (
@@ -220,7 +229,7 @@ const jsonLd = datasetJsonLd(
                       <path d="M6 9l6 6 6-6" />
                     </svg>
                   </summary>
-                  <div class="version-list">
+                  <div class="menu-list">
                     {chain.map((v, i) => (
                       <a
                         aria-current={v.data.id === d.id ? "page" : undefined}
@@ -233,15 +242,17 @@ const jsonLd = datasetJsonLd(
                   </div>
                 </details>
               ) : (
-                <span class="version-single">{d.version}</span>
+                d.version && <span class="version-single">{d.version}</span>
+              )}
+              {d.access && d.access !== "open" && (
+                <span class="mono access-flag">
+                  {humanize(d.access)} access
+                </span>
               )}
             </div>
           )}
 
           <div class="mono meta-row">
-            {d.access && d.access !== "open" && (
-              <span class="access-flag">{humanize(d.access)} access</span>
-            )}
             <span class="fact">
               <span class="fact-label">license</span>
               {licenseHref ? (
@@ -265,38 +276,54 @@ const jsonLd = datasetJsonLd(
           </div>
 
           <div class="ctas">
-            <a class="btn btn-primary" href="#access">Access the data</a>
-            <a class="btn btn-ghost" href={`/catalog/${d.id}.json`}
-              >View source</a
-            >
-            {entry.filePath && (
-              <a
-                class="edit-link"
-                href={`https://github.com/${CATALOG_REPO}/edit/main/${entry.filePath}`}
-                >Suggest an edit to this record</a
-              >
-            )}
-            <a class="edit-link" href={reportUrl} rel="noreferrer"
-              >Report a problem</a
-            >
+            <a class="btn btn-primary" href="#access">
+              {d.access && d.access !== "open"
+                ? "Request access"
+                : "Access the data"}
+            </a>
+            <details class="drop-menu meta-menu">
+              <summary class="btn btn-ghost">
+                Metadata
+                <svg
+                  aria-hidden="true"
+                  fill="none"
+                  height="10"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                  viewBox="0 0 24 24"
+                  width="10"
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </summary>
+              <div class="menu-list">
+                <a href={`/catalog/${d.id}.json`}>Raw record (JSON)</a>
+                {d.data.some((a) => a.href_template) && (
+                  <a href={stacCollectionUrl(d.id)} rel="noreferrer">
+                    STAC Collection ↗
+                  </a>
+                )}
+                {entry.filePath && (
+                  <a
+                    class="menu-split"
+                    href={`https://github.com/${CATALOG_REPO}/edit/main/${entry.filePath}`}
+                    >Suggest an edit ↗</a
+                  >
+                )}
+                <a
+                  class:list={[{ "menu-split": !entry.filePath }]}
+                  href={reportUrl}
+                  rel="noreferrer"
+                >
+                  Report a problem ↗
+                </a>
+              </div>
+            </details>
           </div>
         </div>
 
         <div>
           <BboxMap bboxes={bboxes} label={coverage} />
-          <div class="keywords">
-            {d.keywords.map((k) =>
-                typeof k === "string" ? (
-                  <a class="mono keyword" href={`/catalog/?q=${encodeURIComponent(k)}`}>
-                    #{k}
-                  </a>
-                ) : (
-                  <a class="mono keyword ontology" href={k.uri ?? k.scheme} rel="noreferrer" title={`${k.scheme ?? "ontology"} concept`}>
-                    {k.term} ↗
-                  </a>
-                ),
-              )}
-          </div>
         </div>
       </div>
     </div>
@@ -312,6 +339,22 @@ const jsonLd = datasetJsonLd(
     <article>
       <section id="overview">
         <div class="prose" set:html={descriptionHtml} />
+
+        {d.keywords.length > 0 && (
+            <div class="keywords">
+              {d.keywords.map((k) =>
+                typeof k === "string" ? (
+                  <a class="mono keyword" href={`/catalog/?q=${encodeURIComponent(k)}`}>
+                    #{k}
+                  </a>
+                ) : (
+                  <a class="mono keyword ontology" href={k.uri ?? k.scheme} rel="noreferrer" title={`${k.scheme ?? "ontology"} concept`}>
+                    {k.term} ↗
+                  </a>
+                ),
+              )}
+            </div>
+          )}
 
         {d.note && (
             <div class="note">
@@ -500,9 +543,7 @@ const jsonLd = datasetJsonLd(
                     <div class="endpoint">
                       <span class="mono proto">{loc.title ?? "URL"}</span>
                       <span class="mono url">{loc.url}</span>
-                      <button class="btn btn-ghost copy" data-copy={loc.url} type="button">
-                        Copy
-                      </button>
+                      <CopyButton copy={loc.url} label="Copy URL" />
                     </div>
                   ))}
                   {example && (
@@ -631,8 +672,68 @@ const jsonLd = datasetJsonLd(
           </section>
         )}
 
-      {d.contact.length > 0 && (
-          <section id="contacts">
+      {(citation || d.contact.length > 0) && (
+          <section id="citation">
+            {citation && (
+              <div class="cite-block">
+                <div class="cite-head">
+                  <h3>How to cite</h3>
+                  <label class="cite-format">
+                    <span class="label">Format</span>
+                    <select id="cite-format">
+                      {citeFormats.map((f) => (
+                        <option value={f.id}>{f.label}</option>
+                      ))}
+                      {bibtexStr && <option value="bibtex">BibTeX</option>}
+                    </select>
+                  </label>
+                </div>
+                <p class="cite-note">
+                  Please cite the dataset and any associated peer-reviewed
+                  publications.
+                </p>
+                {citeFormats.map((f, i) => (
+                  <blockquote
+                    class="cite"
+                    data-cite-panel={f.id}
+                    hidden={i !== 0}
+                  >
+                    {f.text}
+                    <span class="cite-copy">
+                      <CopyButton
+                        copy={f.text}
+                        label={`Copy ${f.label} citation`}
+                      />
+                    </span>
+                  </blockquote>
+                ))}
+                {bibtexStr && (
+                  <div data-cite-panel="bibtex" hidden>
+                    <Code
+                      code={bibtexStr}
+                      lang="bibtex"
+                      theme={shikiConfig.theme}
+                      transformers={[codeHeader("BibTeX")]}
+                    />
+                  </div>
+                )}
+                {d.related_publications.length > 0 && (
+                  <div>
+                    <h4>Related publications</h4>
+                    <ul>
+                      {d.related_publications.map((pub) => (
+                        <li>
+                          {pub.citation && `${pub.citation.authors.join(", ")} (${pub.citation.date}). ${pub.citation.title}. ${pub.citation.publisher}. `}
+                          {pub.doi && <a href={`https://doi.org/${pub.doi}`}>doi:{pub.doi}</a>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+            {d.contact.length > 0 && (
+            <div class="contacts-block">
             <h3>Contacts</h3>
             <p class="section-sub">
               Who produced this dataset, and who to reach about it.
@@ -677,40 +778,14 @@ const jsonLd = datasetJsonLd(
                 </div>
               ))}
             </div>
+            </div>
+            )}
           </section>
         )}
 
-      {citation && (
-          <section id="citation">
-            <h3>How to cite</h3>
-            <p class="cite-note">
-              Please cite the dataset and any associated peer-reviewed
-              publications.
-            </p>
-            <blockquote class="cite">{citation}</blockquote>
-            {bibtexStr && (
-              <Code
-                code={bibtexStr}
-                lang="bibtex"
-                theme={shikiConfig.theme}
-                transformers={[codeHeader("BibTeX")]}
-              />
-            )}
-            {d.related_publications.length > 0 && (
-              <div>
-                <h4>Related publications</h4>
-                <ul>
-                  {d.related_publications.map((pub) => (
-                    <li>
-                      {pub.citation && `${pub.citation.authors.join(", ")} (${pub.citation.date}). ${pub.citation.title}. ${pub.citation.publisher}. `}
-                      {pub.doi && <a href={`https://doi.org/${pub.doi}`}>doi:{pub.doi}</a>}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </section>
-        )}
+      <div class="footer-row">
+        <a class="back" href="/catalog/">← Back to the catalog</a>
+      </div>
     </article>
 
     <aside>
@@ -826,13 +901,32 @@ const jsonLd = datasetJsonLd(
 </Layout>
 
 <script>
-// Version dropdown: <details> handles open/toggle natively; this only adds
-// light-dismiss on outside clicks.
-const versionMenu = document.querySelector<HTMLDetailsElement>(".version-menu");
+// Dropdowns (version switcher, metadata menu): <details> handles open/toggle
+// natively; this only adds light-dismiss on outside clicks.
+const menus =
+  document.querySelectorAll<HTMLDetailsElement>("details.drop-menu");
 document.addEventListener("click", (e) => {
-  if (versionMenu?.open && !versionMenu.contains(e.target as Node))
-    versionMenu.open = false;
+  for (const menu of menus)
+    if (menu.open && !menu.contains(e.target as Node)) menu.open = false;
 });
+
+// Citation formats are prerendered panels; the select swaps them and the
+// choice persists like the snippet language does
+const citeSelect = document.querySelector<HTMLSelectElement>("#cite-format");
+const citePanels = [
+  ...document.querySelectorAll<HTMLElement>("[data-cite-panel]"),
+];
+const showCite = (fmt: string) => {
+  for (const p of citePanels) p.hidden = p.dataset.citePanel !== fmt;
+  if (citeSelect) citeSelect.value = fmt;
+};
+citeSelect?.addEventListener("change", () => {
+  showCite(citeSelect.value);
+  localStorage.setItem("cite-format", citeSelect.value);
+});
+const savedCite = localStorage.getItem("cite-format");
+if (savedCite && citePanels.some((p) => p.dataset.citePanel === savedCite))
+  showCite(savedCite);
 
 // Hash-driven tabs: all panels stay in the DOM (crawlers see everything);
 // the hash picks the visible one, so /catalog/<id>#access deep-links work.
@@ -873,32 +967,33 @@ if (tabs.length > 0) {
   showPanel(location.hash.slice(1));
 }
 
-// Copy-to-clipboard for asset endpoint URLs
+// Copy-to-clipboard for CopyButton instances (endpoint URLs, citation) —
+// .copied swaps the icons via the global .code-copy rules
 document.addEventListener("click", async (e) => {
   const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
     "button[data-copy]",
   );
   if (!btn?.dataset.copy) return;
   await navigator.clipboard.writeText(btn.dataset.copy);
-  const original = btn.textContent;
-  btn.textContent = "Copied";
+  btn.classList.add("copied");
   setTimeout(() => {
-    btn.textContent = original;
+    btn.classList.remove("copied");
   }, 1200);
 });
 </script>
 
 <style>
 .header {
-  padding: 24px 0 32px;
+  padding: 18px 0 24px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
 
+/* Outline only: a caution tag that doesn't outweigh the version beside it */
 .access-flag {
-  padding: 3px 9px;
-  color: var(--terra-900);
-  background: var(--terra-50);
+  padding: 2px 8px;
+  font-size: 12px;
+  color: var(--terra-700);
   border: 1px solid var(--terra-300);
   border-radius: var(--pill-radius);
 }
@@ -962,24 +1057,16 @@ document.addEventListener("click", async (e) => {
   margin-top: 16px;
 }
 
-/* Anchor keywords to the row bottom so they end flush with the CTAs */
-.header-grid > div:last-child {
-  display: flex;
-  flex-direction: column;
-}
-
 h1 {
   max-width: 760px;
-  margin-top: 14px;
-  font-size: clamp(28px, 3vw, 36px);
+  margin-top: 10px;
+  font-size: clamp(25px, 2.6vw, 31px);
 }
 
 .keywords {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  padding-top: 12px;
-  margin-top: auto;
 }
 
 .keyword {
@@ -1006,13 +1093,13 @@ h1 {
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
-  margin-top: 24px;
+  margin-top: 18px;
 }
 
 .source {
   max-width: 640px;
-  margin-top: 10px;
-  font-size: 15px;
+  margin-top: 8px;
+  font-size: 14px;
   color: var(--text-soft);
 }
 
@@ -1021,7 +1108,7 @@ h1 {
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
 .version-row .label {
@@ -1043,36 +1130,27 @@ h1 {
   border-radius: 6px;
 }
 
-.version-menu {
+/* Shared details-dropdown (version switcher, metadata menu) */
+.drop-menu {
   position: relative;
   display: inline-block;
 }
 
-.version-menu summary {
-  display: inline-flex;
-  gap: 7px;
-  align-items: center;
-  padding: 5px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--cdh-blue-950);
+.drop-menu summary {
   cursor: pointer;
   list-style: none;
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--btn-radius);
 }
 
-.version-menu summary svg {
+.drop-menu summary svg {
   color: var(--text-mute);
   transition: transform 0.15s;
 }
 
-.version-menu[open] summary svg {
+.drop-menu[open] summary svg {
   transform: rotate(180deg);
 }
 
-.version-list {
+.menu-list {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
@@ -1085,7 +1163,7 @@ h1 {
   box-shadow: 0 12px 30px rgb(20 16 8 / 12%);
 }
 
-.version-list a {
+.menu-list a {
   display: flex;
   gap: 12px;
   align-items: center;
@@ -1093,25 +1171,49 @@ h1 {
   padding: 7px 10px;
   font-size: 13px;
   color: var(--text);
+  white-space: nowrap;
   border-radius: 5px;
 }
 
-.version-list a:hover {
+.menu-list a:hover {
   text-decoration: none;
   background: var(--bg);
 }
 
-.version-list a[aria-current="page"] {
+.menu-list a[aria-current="page"] {
   font-weight: 700;
   color: var(--cdh-blue-950);
   background: var(--cdh-blue-50);
+}
+
+.version-menu summary {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cdh-blue-950);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--btn-radius);
+}
+
+.meta-menu summary {
+  gap: 8px;
+}
+
+/* Divider between the record's representations and its maintenance actions */
+.menu-list .menu-split {
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
 }
 
 .meta-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 14px;
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
 .fact {
@@ -1427,11 +1529,6 @@ td.mono {
   word-break: break-all;
 }
 
-.copy {
-  padding: 3px 10px;
-  font-size: 11px;
-}
-
 .asset-example {
   margin-top: 10px;
   border-top: 1px solid var(--border);
@@ -1513,6 +1610,29 @@ td.mono {
   word-break: break-all;
 }
 
+.cite-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cite-format {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.cite-format select {
+  padding: 5px 10px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--btn-radius);
+}
+
 .cite-note {
   margin-top: 6px;
   font-size: 14px;
@@ -1520,13 +1640,32 @@ td.mono {
 }
 
 .cite {
-  padding: 16px;
+  position: relative;
+  padding: 16px 56px 16px 16px;
   margin: 12px 0 0;
   font-size: 14.5px;
   line-height: 1.7;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
+}
+
+.cite-copy {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+/* The wrapper divs only carry the conditionals — contents puts their
+   children back into the section's flex layout (and its 24px gap) */
+.cite-block,
+.contacts-block {
+  display: contents;
+}
+
+/* Extra separation where the two blocks meet */
+.cite-block + .contacts-block h3 {
+  margin-top: 16px;
 }
 
 .rail-box {

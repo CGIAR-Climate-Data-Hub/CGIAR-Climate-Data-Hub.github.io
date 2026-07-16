@@ -163,12 +163,70 @@ export function citationText(d: CatalogRecord, recordUrl?: string) {
     authors,
     c.date && `(${c.date})`,
     `${c.title}.`,
+    // The version pins the citation: the current release's Hub URL rolls
+    // forward to newer releases, so the text must record what was used
+    d.version && `Version ${d.version}.`,
     c.publisher && `${c.publisher}.`,
     link,
     recordUrl && `${VIA}, ${recordUrl}.`,
   ]
     .filter(Boolean)
     .join(" ");
+}
+
+// One text citation per style — the same fields shuffled per convention.
+// citationText (above) stays the generic form used in JSON-LD.
+export function citationFormats(d: CatalogRecord, recordUrl?: string) {
+  const c = d.citation;
+  if (!c) return [];
+  const authors = c.authors.join(", ");
+  const year = (c.date ?? "").slice(0, 4);
+  const link = d.doi ? `https://doi.org/${d.doi}` : c.url;
+  const via = recordUrl ? `${VIA}, ${recordUrl}.` : undefined;
+  const join = (parts: (string | false | undefined)[]) =>
+    parts.filter(Boolean).join(" ");
+  return [
+    {
+      id: "apa",
+      label: "APA",
+      text: join([
+        authors && `${authors}`,
+        year && `(${year}).`,
+        `${c.title}`,
+        d.version ? `(Version ${d.version}) [Data set].` : "[Data set].",
+        c.publisher && `${c.publisher}.`,
+        link,
+        via,
+      ]),
+    },
+    {
+      id: "harvard",
+      label: "Harvard",
+      text: join([
+        authors && `${authors}`,
+        year && `(${year})`,
+        `${c.title} [Data set].`,
+        d.version && `Version ${d.version}.`,
+        c.publisher && `${c.publisher}.`,
+        link && `Available at: ${link}.`,
+        via,
+      ]),
+    },
+    {
+      id: "chicago",
+      label: "Chicago",
+      text: join([
+        // Initials already end with a period — don't double it
+        authors && (authors.endsWith(".") ? authors : `${authors}.`),
+        year && `${year}.`,
+        `“${c.title}.”`,
+        d.version && `Version ${d.version}.`,
+        c.publisher && `${c.publisher}.`,
+        link && `${link}.`,
+        via,
+      ]),
+    },
+  ];
 }
 
 export function bibtex(d: CatalogRecord, recordUrl?: string) {
@@ -179,6 +237,7 @@ export function bibtex(d: CatalogRecord, recordUrl?: string) {
     `  title     = {${c.title}}`,
     c.authors.length > 0 && `  author    = {${c.authors.join(" and ")}}`,
     c.date && `  year      = {${c.date.slice(0, 4)}}`,
+    d.version && `  version   = {${d.version}}`,
     c.publisher && `  publisher = {${c.publisher}}`,
     d.doi ? `  doi       = {${d.doi}}` : c.url && `  url       = {${c.url}}`,
     recordUrl && `  note      = {${VIA}, ${recordUrl}}`,
