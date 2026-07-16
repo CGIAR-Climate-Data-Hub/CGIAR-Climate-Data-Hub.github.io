@@ -104,8 +104,21 @@ const source = d.contact.find((c) =>
 // Contact order: custodians (hub-side stewards), then licensors, then the rest
 const roleRank = (c: (typeof d.contact)[number]) =>
   c.roles.includes("custodian") ? 2 : c.roles.includes("licensor") ? 1 : 0;
-const contacts = [...d.contact].sort((a, b) => roleRank(b) - roleRank(a));
+const contacts = [...d.contact]
+  .sort((a, b) => roleRank(b) - roleRank(a))
+  .map((c) => ({
+    ...c,
+    otherRoles: c.roles.filter((r) => r !== "custodian" && r !== "licensor"),
+  }));
 const recordUrl = new URL(`/catalog/${d.id}/`, Astro.site).href;
+const restricted = Boolean(d.access && d.access !== "open");
+const crsHref =
+  d.spatial?.crs && /^EPSG:\d+$/.test(d.spatial.crs)
+    ? `https://epsg.io/${d.spatial.crs.split(":")[1]}`
+    : undefined;
+const hasSchema = dimensions.length + d.variables.length > 0;
+const hasTemplated = d.data.some((a) => a.href_template);
+const stacUrl = stacCollectionUrl(d.id);
 // Record metadata lives in the catalog repo, so source + issue links point
 // there. Flat strings on purpose: Biome's Astro frontmatter parser trips on
 // template literals nested two deep.
@@ -145,59 +158,9 @@ const tutorialLinks = (await allTutorials())
     meta: `${t.data.level} · ${t.data.time}`,
   }));
 
-// Templated assets get a file picker: one select per placeholder, options
-// straight from the cube's dimensions (and variable names). Renders only
-// when every placeholder resolves.
-const templateFields = (template: string) => {
-  const fields = [
-    ...new Set([...template.matchAll(/\{(\w+)\}/g)].map((m) => m[1])),
-  ].map((name) => ({
-    name,
-    values:
-      dimensions.find((dim) => dim.name === name)?.values
-      ?? (name === "variable" ? d.variables.map((v) => v.name) : []),
-  }));
-  return fields.every((f) => f.values.length > 0) ? fields : undefined;
-};
-
 // Long URLs wrap at path boundaries, not mid-token: each segment gets a
 // <wbr> break hint (see also the picker's replaceChildren in the script)
 const urlParts = (url: string) => url.split(/(?<=\/)/);
-
-// The picker's initial state, prerendered: first value of every field
-const templateDefaultFile = (asset: (typeof d.data)[number]) => {
-  if (!asset.href_template) return undefined;
-  const fields = templateFields(asset.href_template);
-  if (!fields) return undefined;
-  let file = asset.href_template;
-  for (const f of fields) file = file.replaceAll(`{${f.name}}`, f.values[0]);
-  return file;
-};
-const templateDefaultUrl = (asset: (typeof d.data)[number]) => {
-  const file = templateDefaultFile(asset);
-  const root = asset.locations.find((l) => l.url.startsWith("http"))?.url;
-  return file && root ? root + file : undefined;
-};
-
-// The spotlighted access route (HTTPS when available). "Other access
-// methods" lists the rest — or everything on templated assets, where the
-// picker stands in for the panel and no root URL shows above
-const primaryLocation = (asset: (typeof d.data)[number]) =>
-  asset.locations.find((l) => l.url.startsWith("http")) ?? asset.locations[0];
-const otherLocations = (asset: (typeof d.data)[number]) =>
-  asset.href_template
-    ? asset.locations
-    : asset.locations.filter((l) => l !== primaryLocation(asset));
-
-// A download button only where one click yields one file: an http(s) URL to
-// a single object — never templated collections, Zarr stores, or prefixes.
-const downloadUrl = (asset: (typeof d.data)[number]) => {
-  if (asset.href_template) return undefined;
-  const url = asset.locations.find((l) => l.url.startsWith("http"))?.url;
-  if (!url || url.endsWith("/")) return undefined;
-  const file = url.split("/").pop() ?? "";
-  return file.includes(".") && !file.endsWith(".zarr") ? url : undefined;
-};
 
 // Example code, from the template files in src/snippets (see lib/snippets).
 // The quick start stacks one short block per format; each asset card in
@@ -206,10 +169,64 @@ const quickstart = {
   python: quickstarts(d, "py").join("\n\n"),
   r: quickstarts(d, "R").join("\n\n"),
 };
-const assets = [...d.data, ...d.additional_assets].map((asset) => ({
-  asset,
-  example: assetExample(d, asset),
-}));
+
+// Everything the asset card renders, derived once per asset:
+// - tplFields: one select per template placeholder, options from the cube's
+//   dimensions (and variable names); undefined unless every one resolves
+// - tplFile/tplUrl: the picker's prerendered default (first value per field)
+// - primary: the spotlighted access route (HTTPS when available); others
+//   fills the disclosure — everything on templated assets, where the picker
+//   stands in for the access panel and no root URL shows above
+// - download: only where one click yields one file — an http(s) URL to a
+//   single object, never templated collections, Zarr stores, or prefixes
+const assets = [...d.data, ...d.additional_assets].map((asset) => {
+  const httpUrl = asset.locations.find((l) => l.url.startsWith("http"))?.url;
+  const primary =
+    asset.locations.find((l) => l.url === httpUrl) ?? asset.locations[0];
+
+  let tplFields: { name: string; values: string[] }[] | undefined;
+  let tplFile: string | undefined;
+  if (asset.href_template) {
+    const fields = [
+      ...new Set(
+        [...asset.href_template.matchAll(/\{(\w+)\}/g)].map((m) => m[1]),
+      ),
+    ].map((name) => ({
+      name,
+      values:
+        dimensions.find((dim) => dim.name === name)?.values
+        ?? (name === "variable" ? d.variables.map((v) => v.name) : []),
+    }));
+    if (fields.every((f) => f.values.length > 0)) {
+      tplFields = fields;
+      tplFile = asset.href_template;
+      for (const f of fields)
+        tplFile = tplFile.replaceAll(`{${f.name}}`, f.values[0]);
+    }
+  }
+
+  const lastSegment = httpUrl?.split("/").pop() ?? "";
+  return {
+    asset,
+    example: assetExample(d, asset),
+    bestFor: formatBestFor(asset.media_type),
+    primary,
+    others: asset.href_template
+      ? asset.locations
+      : asset.locations.filter((l) => l !== primary),
+    tplFields,
+    tplFile,
+    tplUrl: tplFile && httpUrl ? httpUrl + tplFile : undefined,
+    download:
+      !asset.href_template
+      && httpUrl
+      && !httpUrl.endsWith("/")
+      && lastSegment.includes(".")
+      && !lastSegment.endsWith(".zarr")
+        ? httpUrl
+        : undefined,
+  };
+});
 // The standard separates the distributions from supporting material
 const assetGroups = [
   { title: "Data", items: assets.slice(0, d.data.length) },
@@ -218,7 +235,7 @@ const assetGroups = [
 
 const SECTIONS = [
   ["overview", "Overview"],
-  dimensions.length + d.variables.length > 0 && ["schema", "Schema"],
+  hasSchema && ["schema", "Schema"],
   (d.climate || d.spatial || d.temporal) && ["technical", "Technical metadata"],
   d.data.length > 0 && ["access", "Access & use"],
   d.processing.length > 0 && ["provenance", "Provenance"],
@@ -277,16 +294,14 @@ const jsonLd = datasetJsonLd(
             </p>
           )}
 
-          {(d.version || (d.access && d.access !== "open")) && (
+          {(d.version || restricted) && (
             <div class="version-row">
               {d.version && <span class="label">Version</span>}
               {d.version && chain.length > 1 ? (
                 <details class="drop-menu version-menu">
-                  <summary>
-                    {d.version ?? d.id}
-                    {chain[0]?.data.id === d.id && (
-                      <span class="latest">LATEST</span>
-                    )}
+                  <summary class="btn btn-ghost">
+                    {d.version}
+                    {!current && <span class="latest">LATEST</span>}
                     <svg
                       aria-hidden="true"
                       fill="none"
@@ -314,9 +329,9 @@ const jsonLd = datasetJsonLd(
               ) : (
                 d.version && <span class="version-single">{d.version}</span>
               )}
-              {d.access && d.access !== "open" && (
+              {restricted && (
                 <span class="mono access-flag">
-                  {humanize(d.access)} access
+                  {humanize(d.access ?? "")} access
                 </span>
               )}
             </div>
@@ -347,9 +362,7 @@ const jsonLd = datasetJsonLd(
 
           <div class="ctas">
             <a class="btn btn-primary" href="#access">
-              {d.access && d.access !== "open"
-                ? "Request access"
-                : "Access the data"}
+              {restricted ? "Request access" : "Access the data"}
             </a>
             <details class="drop-menu meta-menu">
               <summary class="btn btn-ghost">
@@ -368,8 +381,8 @@ const jsonLd = datasetJsonLd(
               </summary>
               <div class="menu-list">
                 <a href={`/catalog/${d.id}.json`}>Raw record (JSON)</a>
-                {d.data.some((a) => a.href_template) && (
-                  <a href={stacCollectionUrl(d.id)} rel="noreferrer">
+                {hasTemplated && (
+                  <a href={stacUrl} rel="noreferrer">
                     STAC Collection ↗
                   </a>
                 )}
@@ -496,7 +509,7 @@ const jsonLd = datasetJsonLd(
           )}
       </section>
 
-      {SECTIONS.some(([id]) => id === "schema") && (
+      {hasSchema && (
           <section id="schema">
             {d.variables.length > 0 && (
               <div>
@@ -592,10 +605,10 @@ const jsonLd = datasetJsonLd(
                 <p>{d.access_note}</p>
               </div>
             )}
-            {d.data.some((a) => a.href_template) && (
+            {hasTemplated && (
               <p class="digest">
                 Machine-readable file index:{" "}
-                <a href={stacCollectionUrl(d.id)} rel="noreferrer">STAC Collection</a>
+                <a href={stacUrl} rel="noreferrer">STAC Collection</a>
               </p>
             )}
 
@@ -603,30 +616,23 @@ const jsonLd = datasetJsonLd(
             <div>
               <h4 class="tech-title">{group.title}</h4>
             <div class="assets">
-              {group.items.map(({ asset, example }) => (
+              {group.items.map(({ asset, example, bestFor, primary, others, tplFields, tplFile, tplUrl, download }) => (
                 <div class="asset">
                   <div class="asset-head">
                     <span class="mono asset-name">{asset.name}</span>
                     {asset.file_size && <span class="mono asset-size">{asset.file_size}</span>}
-                    {downloadUrl(asset) && (
-                      <a
-                        class="btn btn-ghost dl"
-                        download
-                        href={downloadUrl(asset)}
-                      >
+                    {download && (
+                      <a class="btn btn-ghost dl" download href={download}>
                         Download
                       </a>
                     )}
                   </div>
-                  {asset.description && <p>{asset.description}</p>}
+                  {asset.description && <p class="asset-desc">{asset.description}</p>}
                   {asset.media_type && (
                     <p class="asset-fact">
                       <b>Format:</b> {formatLabel(asset.media_type)}
-                      {formatBestFor(asset.media_type) && (
-                        <span class="best-for">
-                          {" "}
-                          — best for {formatBestFor(asset.media_type)}
-                        </span>
+                      {bestFor && (
+                        <span class="best-for"> — best for {bestFor}</span>
                       )}
                     </p>
                   )}
@@ -635,16 +641,16 @@ const jsonLd = datasetJsonLd(
                       <b>No Data:</b> <span class="mono">{asset.nodata}</span>
                     </p>
                   )}
-                  {asset.href_template && templateDefaultUrl(asset) && (
+                  {tplUrl && (
                       <div
                         class="tpl-picker"
-                        data-file={templateDefaultFile(asset)}
-                        data-root={asset.locations.find((l) => l.url.startsWith("http"))?.url}
+                        data-file={tplFile}
+                        data-root={primary.url}
                         data-template={asset.href_template}
                       >
                         <p class="label tpl-title">Access a specific file</p>
                         <div class="tpl-fields">
-                          {(templateFields(asset.href_template) ?? []).map((f) => (
+                          {(tplFields ?? []).map((f) => (
                             <label class="tpl-field">
                               <span class="label">{humanize(f.name)}</span>
                               <select data-tpl-dim={f.name}>
@@ -654,41 +660,34 @@ const jsonLd = datasetJsonLd(
                           ))}
                         </div>
                         <p class="asset-fact tpl-selected">
-                          <span class="mono selected-url" data-tpl-url>{templateDefaultUrl(asset)}</span>
+                          <span class="mono selected-url" data-tpl-url>{tplUrl}</span>
                           <CopyButton
-                            copy={templateDefaultUrl(asset) ?? ""}
+                            copy={tplUrl}
                             label="Copy selected file URL"
                           />
-                          <a
-                            class="btn btn-ghost dl"
-                            download
-                            href={templateDefaultUrl(asset)}
-                          >
+                          <a class="btn btn-ghost dl" download href={tplUrl}>
                             Download
                           </a>
                         </p>
                       </div>
                     )}
-                  {!asset.href_template && primaryLocation(asset) && (
+                  {!asset.href_template && primary && (
                     <div class="access-panel">
                       <p class="label tpl-title">Access the data</p>
                       <p class="asset-fact access-row">
-                        <span class="mono access-url">
-                          {urlParts(primaryLocation(asset).url).map((part) => (
+                        <span class="mono url">
+                          {urlParts(primary.url).map((part) => (
                             <>
                               {part}
                               <wbr />
                             </>
                           ))}
                         </span>
-                        <CopyButton
-                          copy={primaryLocation(asset).url}
-                          label="Copy URL"
-                        />
+                        <CopyButton copy={primary.url} label="Copy URL" />
                       </p>
                     </div>
                   )}
-                  {otherLocations(asset).length > 0 && (
+                  {others.length > 0 && (
                     <details class="alt-access">
                       <summary>Other access methods</summary>
                       {asset.href_template && (
@@ -697,7 +696,7 @@ const jsonLd = datasetJsonLd(
                           <span class="mono">{asset.href_template}</span>
                         </p>
                       )}
-                      {otherLocations(asset).map((loc) => (
+                      {others.map((loc) => (
                         <div class="endpoint">
                           <span class="proto">
                             {loc.title ?? "URL"}
@@ -765,10 +764,8 @@ const jsonLd = datasetJsonLd(
                     <>
                       <dt>CRS</dt>
                       <dd>
-                        {/^EPSG:\d+$/.test(d.spatial.crs) ? (
-                          <a href={`https://epsg.io/${d.spatial.crs.split(":")[1]}`} rel="noreferrer">
-                            {d.spatial.crs}
-                          </a>
+                        {crsHref ? (
+                          <a href={crsHref} rel="noreferrer">{d.spatial.crs}</a>
                         ) : (
                           d.spatial.crs
                         )}
@@ -1057,14 +1054,11 @@ const jsonLd = datasetJsonLd(
                   {c.name && c.organization && (
                     <div class="contact-org">{c.organization}</div>
                   )}
-                  {c.roles.filter((r) => r !== "custodian" && r !== "licensor")
-                    .length > 0 && (
+                  {c.otherRoles.length > 0 && (
                     <div class="chips">
-                      {c.roles
-                        .filter((r) => r !== "custodian" && r !== "licensor")
-                        .map((r) => (
-                          <span class="chip">{humanize(r)}</span>
-                        ))}
+                      {c.otherRoles.map((r) => (
+                        <span class="chip">{humanize(r)}</span>
+                      ))}
                     </div>
                   )}
                   {(c.email || c.url) && (
@@ -1110,10 +1104,8 @@ const jsonLd = datasetJsonLd(
             <>
               <dt>CRS</dt>
               <dd>
-                {/^EPSG:\d+$/.test(d.spatial.crs) ? (
-                  <a href={`https://epsg.io/${d.spatial.crs.split(":")[1]}`} rel="noreferrer">
-                    {d.spatial.crs}
-                  </a>
+                {crsHref ? (
+                  <a href={crsHref} rel="noreferrer">{d.spatial.crs}</a>
                 ) : (
                   d.spatial.crs
                 )}
@@ -1314,20 +1306,6 @@ if (tabs.length > 0) {
   });
   showPanel(location.hash.slice(1));
 }
-
-// Copy-to-clipboard for CopyButton instances (endpoint URLs, citation) —
-// .copied swaps the icons via the global .code-copy rules
-document.addEventListener("click", async (e) => {
-  const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
-    "button[data-copy]",
-  );
-  if (!btn?.dataset.copy) return;
-  await navigator.clipboard.writeText(btn.dataset.copy);
-  btn.classList.add("copied");
-  setTimeout(() => {
-    btn.classList.remove("copied");
-  }, 1200);
-});
 </script>
 
 <style>
@@ -1533,17 +1511,11 @@ h1 {
   background: var(--cdh-blue-50);
 }
 
+/* Compact btn-ghost — the shared button recipe, sized down */
 .version-menu summary {
-  display: inline-flex;
   gap: 7px;
-  align-items: center;
   padding: 5px 12px;
   font-size: 13px;
-  font-weight: 600;
-  color: var(--cdh-blue-950);
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--btn-radius);
 }
 
 .meta-menu summary {
@@ -1613,10 +1585,6 @@ h1 {
 }
 
 /* Tabbed panels (script-driven; without JS all sections stay stacked) */
-article section[hidden] {
-  display: none;
-}
-
 .body {
   display: grid;
   grid-template-columns: 1fr 320px;
@@ -1829,8 +1797,6 @@ td.mono {
 
 .asset p {
   margin-top: 6px;
-  font-size: 14px;
-  color: var(--text-soft);
 }
 
 .asset-head {
@@ -1840,14 +1806,12 @@ td.mono {
   align-items: baseline;
 }
 
-.asset-head {
-  margin-bottom: 0;
-}
-
 /* Name + description read as one unit; the breathing room sits below them */
-.asset-head + p {
+.asset-desc {
   margin-top: 4px;
   margin-bottom: 14px;
+  font-size: 14px;
+  color: var(--text-soft);
 }
 
 .asset-name {
@@ -1879,9 +1843,8 @@ td.mono {
   margin-left: 0;
 }
 
-/* Per-asset facts — light labels, darker values; mono only on literals.
-   Qualified to outrank the .asset p description sizing after scoping */
-.asset p.asset-fact {
+/* Per-asset facts — light labels, darker values; mono only on literals */
+.asset-fact {
   font-size: 12.5px;
   color: var(--text);
 }
@@ -1926,9 +1889,8 @@ td.mono {
   border-radius: var(--btn-radius);
 }
 
-/* Quieter than the asset name — it labels a control group, not content.
-   Qualified to outrank .asset p sizing after scoping */
-.asset p.tpl-title {
+/* Quieter than the asset name — it labels a control group, not content */
+.tpl-title {
   font-size: 10px;
   color: var(--text-mute);
 }
@@ -1957,7 +1919,6 @@ td.mono {
 /* Slight hanging indent: continuation lines of a wrapped URL tuck in,
    marking them as the same value */
 .selected-url,
-.access-url,
 .url {
   padding-left: 5px;
   text-indent: -5px;
@@ -1969,12 +1930,6 @@ td.mono {
   gap: 8px;
   align-items: center;
   margin-top: 8px;
-}
-
-.access-url {
-  font-size: 12px;
-  color: var(--text-soft);
-  overflow-wrap: break-word;
 }
 
 .access-row :global(.code-copy) {

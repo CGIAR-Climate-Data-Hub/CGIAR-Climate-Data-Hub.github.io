@@ -4,6 +4,13 @@
   box-sizing: border-box;
 }
 
+/* The hidden attribute always wins — author display properties (flex, grid)
+   would otherwise silently defeat it */
+[hidden] {
+  /* biome-ignore lint/complexity/noImportantStyles: beating component display rules is the entire point */
+  display: none !important;
+}
+
 html,
 body {
   padding: 0;

@@ -111,15 +111,19 @@ const siteGraph = {
           ?.scrollIntoView();
     });
 
-    // Code-block chrome is baked in at build time (src/lib/code-block.ts);
-    // only the clipboard write needs JS.
+    // One copy handler for every copy button: CopyButton instances carry
+    // their text in data-copy; the build-time code-block chrome copies its
+    // block's contents. .copied swaps the icons via the global rules.
     document.addEventListener("click", async (e) => {
       const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
         "button.code-copy",
       );
-      const pre = btn?.closest(".code-block")?.querySelector("pre");
-      if (!btn || !pre) return;
-      await navigator.clipboard.writeText(pre.innerText);
+      if (!btn) return;
+      const text =
+        btn.dataset.copy
+        ?? btn.closest(".code-block")?.querySelector("pre")?.innerText;
+      if (!text) return;
+      await navigator.clipboard.writeText(text);
       btn.classList.add("copied");
       setTimeout(() => btn.classList.remove("copied"), 1200);
     });

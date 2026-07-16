@@ -86,6 +86,12 @@ export function versionChain(
   return chain;
 }
 
+// Current releases only: deprecated snapshots stay reachable through their
+// successor's version chain, never through indexes or feeds.
+export function currentReleases(entries: CollectionEntry<"catalog">[]) {
+  return entries.filter((e) => !e.data.deprecated);
+}
+
 // A URL that targets a Hub record page — relative or absolute — resolves to
 // its record id. Callers must check the id against the catalog; that lookup
 // is the real guard against false positives.
@@ -191,7 +197,7 @@ export function citationFormats(d: CatalogRecord, recordUrl?: string) {
       id: "apa",
       label: "APA",
       text: join([
-        authors && `${authors}`,
+        authors,
         year && `(${year}).`,
         `${c.title}`,
         d.version ? `(Version ${d.version}) [Data set].` : "[Data set].",
@@ -204,7 +210,7 @@ export function citationFormats(d: CatalogRecord, recordUrl?: string) {
       id: "harvard",
       label: "Harvard",
       text: join([
-        authors && `${authors}`,
+        authors,
         year && `(${year})`,
         `${c.title} [Data set].`,
         d.version && `Version ${d.version}.`,

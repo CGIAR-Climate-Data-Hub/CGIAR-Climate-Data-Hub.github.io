@@ -5,16 +5,18 @@ import DatasetCard from "@/components/DatasetCard.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
-import { commodityLabel, geoLabel, humanize, summarize } from "@/lib/catalog";
+import {
+  commodityLabel,
+  currentReleases,
+  geoLabel,
+  humanize,
+  summarize,
+} from "@/lib/catalog";
 import { BBOX_PRESETS } from "@/lib/geo";
 import { landPath } from "@/lib/map";
 import { SITE_NAME } from "@/site.config";
 
-// Deprecated snapshots stay reachable from their record's version switcher,
-// but only current releases list in the grid
-const entries = (await getCollection("catalog")).filter(
-  (e) => !e.data.deprecated,
-);
+const entries = currentReleases(await getCollection("catalog"));
 const datasets = entries
   .map(summarize)
   .sort((a, b) => b.updated.localeCompare(a.updated));
@@ -280,7 +282,7 @@ const catalogSchema = {
           ><b id="match-count">{datasets.length}</b>{" "}
           <span id="match-label">datasets</span></span
         >
-        <span class="mono series-tag" hidden id="series-active">
+        <span class="pill spatial mono series-tag" hidden id="series-active">
           Series: <b id="series-name"></b>
           <button
             aria-label="Clear series filter"
@@ -752,21 +754,10 @@ apply();
   border-radius: 6px;
 }
 
-/* The display property would defeat the hidden attribute without this */
-.series-tag[hidden] {
-  display: none;
-}
-
+/* Reuses the global .pill.spatial look; only the clear button is local */
 .series-tag {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  padding: 2px 8px;
   font-size: 11.5px;
-  color: var(--cdh-blue-800);
-  background: var(--cdh-blue-50);
   border: 1px solid var(--cdh-blue-150);
-  border-radius: var(--pill-radius);
 }
 
 .series-tag button {

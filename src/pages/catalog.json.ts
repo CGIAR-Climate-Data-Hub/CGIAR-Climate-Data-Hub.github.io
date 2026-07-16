@@ -5,16 +5,12 @@
 
 import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
-import { datasetJsonLd } from "@/lib/catalog";
+import { currentReleases, datasetJsonLd } from "@/lib/catalog";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/site.config";
 
 export const GET: APIRoute = async ({ site }) => {
   const catalogUrl = new URL("/catalog/", site).href;
-  // Current releases only — deprecated snapshots are reachable through their
-  // successor's version chain, not the index
-  const entries = (await getCollection("catalog")).filter(
-    (e) => !e.data.deprecated,
-  );
+  const entries = currentReleases(await getCollection("catalog"));
   const datasets = entries.map((entry) => {
     const { "@context": _, ...dataset } = datasetJsonLd(
       entry.data,

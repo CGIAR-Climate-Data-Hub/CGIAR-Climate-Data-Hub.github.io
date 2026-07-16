@@ -2,14 +2,13 @@
 
 import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
+import { currentReleases } from "@/lib/catalog";
 import { allTutorials } from "@/lib/collections";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/site.config";
 
 export const GET: APIRoute = async ({ site }) => {
   const abs = (path: string) => new URL(path, site).href;
-  const catalog = (await getCollection("catalog")).filter(
-    (e) => !e.data.deprecated,
-  );
+  const catalog = currentReleases(await getCollection("catalog"));
   const wikis = await getCollection("wikis");
   const tutorials = await allTutorials();
   const useCases = await getCollection("useCases");

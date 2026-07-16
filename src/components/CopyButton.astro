@@ -1,8 +1,8 @@
 ---
 // Icon copy button matching the code-block chrome (same icons as
-// src/lib/code-block.ts). Pages copy `copy` via their delegated
-// button[data-copy] handler; .copied (toggled there) swaps the icons
-// through the global .code-copy rules.
+// src/lib/code-block.ts). Layout's delegated handler copies data-copy on
+// click and toggles .copied, which swaps the icons via the global rules —
+// works on every page with no extra wiring.
 interface Props {
   copy: string;
   label?: string;
