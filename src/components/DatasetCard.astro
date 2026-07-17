@@ -18,7 +18,7 @@ const facts = [
 <article class="ds-card">
   <span class="label type">
     <DataGlyph size={13} type={d.type} />
-    {d.type === "spatial" ? "Spatial" : "Non-spatial"}
+    {d.type === "spatial" ? "Spatial" : "Tabular"}
   </span>
   <h3><a href={`/catalog/${d.id}/`} title={d.title}>{d.title}</a></h3>
   {d.source && <p class="source" title={d.source}>By {d.source}</p>}
