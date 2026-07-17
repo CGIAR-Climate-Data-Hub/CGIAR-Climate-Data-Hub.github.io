@@ -44,7 +44,6 @@ site-wide constants live in `src/site.config.ts`.
 - Site is served at the GitHub Pages **root**, so there's no `base` (defaults to
   `/`). The canonical domain is hardcoded as `site` in `astro.config.mjs` — to
   move to a custom domain, change that one value and add `public/CNAME`.
-- Style with the design tokens in `src/styles/tokens.css`.
 - Record-page example code lives in `src/snippets/` as
   `(quickstart|subset)-<format>.{py,R}` templates with a `__URL__`
   placeholder, where `<format>` is a concept id from
@@ -52,3 +51,17 @@ site-wide constants live in `src/site.config.ts`.
   new data format: add a vocab entry + template files, nothing else.
 - Deployed to GitHub Pages via `.github/workflows/astroDeploy.yml` on push to
   `main` (or manual dispatch).
+
+## CSS
+
+- Plain CSS: scoped `<style>` blocks per component plus shared
+  `src/styles/tokens.css`. No Tailwind/Sass/CSS Modules — Astro's scoping and
+  native CSS already cover what they'd add.
+- Tokens are the only source of magic values: colors, spacing, radii, and
+  shadows come from `var(--…)`, never raw hex/px values in components
+  (`grep -rn '#[0-9a-f]\{3,6\}' src/components src/pages` should stay
+  near-empty).
+- Rule of three: the same styles duplicated in two components are fine; on the
+  third repetition, promote to a shared component or class.
+- Prune at the end of each feature: merge style blocks that have converged,
+  delete selectors nothing uses. Component styles die with their component.
