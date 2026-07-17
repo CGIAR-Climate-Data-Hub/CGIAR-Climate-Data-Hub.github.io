@@ -7,6 +7,7 @@ import Layout from "@/layouts/Layout.astro";
 import {
   commodityLabel,
   currentReleases,
+  formatIdLabel,
   geoLabel,
   humanize,
   summarize,
@@ -42,6 +43,14 @@ const facets = [
   facetOf("domain", "Domain", (d) => d.domains),
   facetOf("geography", "Geography", (d) => d.geographies, geoLabel),
   facetOf("commodity", "Commodity", (d) => d.commodityGroups, commodityLabel),
+  facetOf("format", "Format", (d) => d.formats, formatIdLabel),
+  facetOf(
+    "license",
+    "License",
+    (d) => [d.license],
+    (v) => v,
+  ),
+  facetOf("access", "Access", (d) => [d.access]),
 ];
 
 // Filter panels expanded by default — add/remove keys to taste
@@ -293,19 +302,22 @@ const catalogSchema = {
       <ul class="grid" data-pagefind-ignore id="results">
         {datasets.map((d) => (
             <li
+              data-access={d.access}
               data-bbox={d.bboxes?.map((b) => b.join(" ")).join(";")}
               data-commodity={d.commodities.join(" ")}
               data-dataset
               data-domain={d.domains.join(" ")}
+              data-format={d.formats.join(" ")}
               data-geography={d.geographies.join(" ")}
-              data-search={[d.title, d.source ?? "", d.description, ...d.keywords, ...d.geographies.map(geoLabel), ...d.commodities.map(commodityLabel)].join(" ").toLowerCase()}
+              data-license={d.license}
+              data-search={[d.title, d.source ?? "", d.description, d.license, ...d.formats.flatMap((f) => [f, formatIdLabel(f)]), ...d.keywords, ...d.geographies.map(geoLabel), ...d.commodities.map(commodityLabel)].join(" ").toLowerCase()}
               data-series={d.series}
             >
               <DatasetCard dataset={d} />
               <a class="row-table" href={`/catalog/${d.id}/`}>
                 <span>
                   <span class:list={["pill", "dot", d.type]}
-                    >{d.type === "spatial" ? "Spatial" : "Non-spatial"}</span
+                    >{d.type === "spatial" ? "Spatial" : "Tabular"}</span
                   >
                 </span>
                 <span class="row-text">
@@ -354,7 +366,14 @@ const count = document.querySelector("#match-count");
 const matchLabel = document.querySelector("#match-label");
 const empty = document.querySelector<HTMLElement>("#empty-state");
 
-const facetKeys = ["domain", "geography", "commodity"] as const;
+const facetKeys = [
+  "domain",
+  "geography",
+  "commodity",
+  "format",
+  "license",
+  "access",
+] as const;
 const state: {
   q: string;
   bbox: number[] | null;

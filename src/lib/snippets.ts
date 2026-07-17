@@ -3,28 +3,14 @@
 // a format-vocab concept id. The __URL__ placeholder gets the asset's root
 // URL, or one real file URL for templated assets. Supporting a new format =
 // a vocab entry + template files, nothing else.
-import formatVocab from "@/assets/format-vocab.json";
 import type { CatalogRecord } from "@/lib/catalog";
-import { exampleTemplateFile } from "@/lib/catalog";
+import { formatConcept as concept, exampleTemplateFile } from "@/lib/catalog";
 
 const FILES = import.meta.glob("/src/snippets/*", {
   eager: true,
   import: "default",
   query: "?raw",
 }) as Record<string, string>;
-
-// Prefix match, so parameterised types ("…vnd.zarr; version=3") resolve
-const concept = (mediaType?: string) =>
-  formatVocab.concepts.find((f) => mediaType?.startsWith(f.media_type));
-
-// Human label for an asset's format ("Cloud-Optimized GeoTIFF"), falling
-// back to the bare media type for formats outside the vocab
-export const formatLabel = (mediaType?: string) =>
-  concept(mediaType)?.label ?? mediaType?.split(";")[0];
-
-// One-line guidance per format ("best for …"), from the same vocab
-export const formatBestFor = (mediaType?: string) =>
-  concept(mediaType)?.best_for;
 
 const TEMPLATES = Object.entries(FILES).flatMap(([path, code]) => {
   const m = path.match(/(quickstart|subset)-(\w+)\.(\w+)$/);

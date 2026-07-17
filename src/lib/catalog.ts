@@ -1,5 +1,6 @@
 // Shared shaping of CDH catalog records for cards, facets, and JSON-LD.
 import type { CollectionEntry } from "astro:content";
+import formatVocab from "@/assets/format-vocab.json";
 import {
   commodity,
   commodityWithParents,
@@ -40,6 +41,26 @@ export function exampleTemplateFile(d: CatalogRecord, template: string) {
 export function humanize(slug: string) {
   return slug.charAt(0).toUpperCase() + slug.slice(1).replaceAll("-", " ");
 }
+
+// Prefix match, so parameterised types ("…vnd.zarr; version=3") resolve
+export const formatConcept = (mediaType?: string) =>
+  formatVocab.concepts.find((f) => mediaType?.startsWith(f.media_type));
+
+// Human label for an asset's format ("Cloud-Optimized GeoTIFF"), falling
+// back to the bare media type for formats outside the vocab
+export const formatLabel = (mediaType?: string) =>
+  formatConcept(mediaType)?.label ?? mediaType?.split(";")[0];
+
+// One-line guidance per format ("best for …"), from the same vocab
+export const formatBestFor = (mediaType?: string) =>
+  formatConcept(mediaType)?.best_for;
+
+// Stable facet token: vocab id, else the bare media subtype ("csv")
+export const formatId = (mediaType?: string) =>
+  formatConcept(mediaType)?.id ?? mediaType?.split(";")[0]?.split("/").pop();
+
+export const formatIdLabel = (id: string) =>
+  formatVocab.concepts.find((f) => f.id === id)?.label ?? id.toUpperCase();
 
 // Canonical UN M49 label ("Sub-Saharan Africa"), falling back for unknown ids
 export function geoLabel(id: string) {
@@ -109,6 +130,9 @@ export function summarize(entry: CollectionEntry<"catalog">) {
     license: d.license,
     // The licensor is the card's "source" byline (a required role)
     source: d.contact.find((c) => c.roles.includes("licensor"))?.organization,
+    // Distribution formats of the data assets, as facet tokens
+    formats: [...new Set(d.data.flatMap((a) => formatId(a.media_type) ?? []))],
+    access: d.access && d.access !== "open" ? "restricted" : "open",
     keywords: d.keywords.map((k) => (typeof k === "string" ? k : k.term)),
     coverage: d.spatial?.geography.map(geoLabel).join(", ") || undefined,
     // Short form for card meta rows — full label lives on the detail page
