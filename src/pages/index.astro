@@ -25,7 +25,7 @@ const essentials = [
   ...datasets.map((d) => ({
     href: `/catalog/${d.id}/`,
     name: d.title,
-    badge: d.type === "spatial" ? "Spatial" : "Tabular",
+    badge: "Dataset",
     badgeClass: d.type,
     meta: [d.coverage, d.temporal].filter(Boolean).join(" · "),
     glyph: d.type,
