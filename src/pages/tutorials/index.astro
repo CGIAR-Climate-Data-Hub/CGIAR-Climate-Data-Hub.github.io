@@ -2,6 +2,7 @@
 import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
 import { allTutorials } from "@/lib/collections";
+import { treeUrl } from "@/lib/github";
 import { SITE_NAME, SITE_REPO } from "@/site.config";
 
 const AUDIENCES = ["Anyone", "Python & R", "GIS"];
@@ -161,9 +162,7 @@ const description =
       >Tutorials are Markdown &amp; notebooks in the open — improvements
       welcome.</span
     >
-    <a
-      class="edit-link"
-      href={`https://github.com/${SITE_REPO}/tree/main/src/content/tutorials`}
+    <a class="edit-link" href={treeUrl(SITE_REPO, "src/content/tutorials")}
       >Edit tutorials on GitHub</a
     >
   </section>

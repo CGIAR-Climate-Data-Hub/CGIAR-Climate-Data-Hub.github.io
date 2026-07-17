@@ -2,6 +2,7 @@
 // Book-like "Contents" nav shared by the wiki landing and articles.
 import { getCollection } from "astro:content";
 import { groupWikis, WIKI_SECTIONS } from "@/lib/collections";
+import { treeUrl } from "@/lib/github";
 import { SITE_REPO } from "@/site.config";
 
 interface Props {
@@ -68,7 +69,7 @@ const nav = WIKI_SECTIONS.map((section) => {
       Open a pull request against the <span class="mono">wikis</span> folder.
       Articles are reviewed by two stewards.
     </p>
-    <a href={`https://github.com/${SITE_REPO}/tree/main/src/content/wikis`}>
+    <a href={treeUrl(SITE_REPO, "src/content/wikis")}>
       <svg
         aria-hidden="true"
         fill="currentColor"

@@ -1,13 +1,15 @@
 ---
 import { getCollection } from "astro:content";
 import PageHead from "@/components/PageHead.astro";
+import SectionHeader from "@/components/SectionHeader.astro";
 import Layout from "@/layouts/Layout.astro";
+import { githubUrl } from "@/lib/github";
 import { SITE_NAME, SKILLS_REPO, SKILLS_SITE } from "@/site.config";
 
 const skills = (await getCollection("skills")).sort((a, b) =>
   a.data.name.localeCompare(b.data.name),
 );
-const SKILLS_GITHUB = `https://github.com/${SKILLS_REPO}`;
+const SKILLS_GITHUB = githubUrl(SKILLS_REPO);
 
 const description =
   "Use the Hub with AI assistants and agents — ready-made skills, plus machine-readable endpoints for every dataset and page.";
@@ -47,11 +49,7 @@ const ENDPOINTS = [
   <div class="container"><hr class="head-rule"></div>
 
   <section class="container block">
-    <div class="label kicker">
-      <span class="rule"></span>
-      Skills
-    </div>
-    <h2>Skills for your assistant</h2>
+    <SectionHeader kicker="Skills" title="Skills for your assistant" />
     <p class="section-sub">
       A skill is a small folder of plain-text instructions — the open{" "}
       <a href="https://agentskills.io/specification" rel="noreferrer"
@@ -96,15 +94,11 @@ const ENDPOINTS = [
   </section>
 
   <section class="container block">
-    <div class="label kicker">
-      <span class="rule"></span>
-      Machine access
-    </div>
-    <h2>Machine-readable endpoints</h2>
-    <p class="section-sub">
-      Everything on the site has a stable, documented machine counterpart — no
-      scraping required.
-    </p>
+    <SectionHeader
+      kicker="Machine access"
+      sub="Everything on the site has a stable, documented machine counterpart — no scraping required."
+      title="Machine-readable endpoints"
+    />
     <ul class="grid">
       {ENDPOINTS.map((e) => (
           <li class="skill-card">
@@ -133,10 +127,6 @@ const ENDPOINTS = [
 
 .block {
   padding-top: 44px;
-}
-
-.block h2 {
-  margin-top: 14px;
 }
 
 .section-sub {

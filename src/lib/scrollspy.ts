@@ -15,6 +15,9 @@ export function scrollSpy(nav: HTMLElement) {
     .filter((el): el is HTMLElement => el !== null);
   if (targets.length === 0) return;
 
+  // Writes only when the active section changes — scroll fires every frame,
+  // and per-frame attribute writes force layout thrash with the reads above
+  let currentId: string | undefined;
   const render = () => {
     // Within a couple of px of the page bottom the last target wins — a
     // short final section may never reach the reading line.
@@ -27,8 +30,10 @@ export function scrollSpy(nav: HTMLElement) {
       ? targets.at(-1)
       : (targets.findLast((t) => t.getBoundingClientRect().top < LINE)
         ?? targets[0]);
+    if (current?.id === currentId) return;
+    currentId = current?.id;
     for (const a of links)
-      a.setAttribute("aria-current", String(a.hash === `#${current?.id}`));
+      a.setAttribute("aria-current", String(a.hash === `#${currentId}`));
   };
 
   addEventListener("scroll", render, { passive: true });

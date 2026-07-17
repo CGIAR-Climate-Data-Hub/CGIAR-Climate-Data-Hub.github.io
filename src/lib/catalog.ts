@@ -120,6 +120,11 @@ export function hubRecordId(url: string) {
   return url.match(/^(?:https?:\/\/[^/]+)?\/catalog\/([^/]+)\/?$/)?.[1];
 }
 
+// The licensor's organization (a required role in the standard) is
+// credited as the record's "source" — cards, page header, and rail alike
+export const licensor = (d: CatalogRecord) =>
+  d.contact.find((c) => c.roles.includes("licensor"))?.organization;
+
 // M49 chain depth of the most specific tag (kenya → 5, africa → 2) to a
 // coverage scale; sub-regions at depths 3-4 both read as regional
 function scaleOf(tags: string[]) {
@@ -138,8 +143,7 @@ export function summarize(entry: CollectionEntry<"catalog">) {
     description: d.description,
     type: d.spatial ? ("spatial" as const) : ("tabular" as const),
     license: d.license,
-    // The licensor is the card's "source" byline (a required role)
-    source: d.contact.find((c) => c.roles.includes("licensor"))?.organization,
+    source: licensor(d),
     // Distribution formats of the data assets, as facet tokens
     formats: [...new Set(d.data.flatMap((a) => formatId(a.media_type) ?? []))],
     access: d.access && d.access !== "open" ? "restricted" : "open",

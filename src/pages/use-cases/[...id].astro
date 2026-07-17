@@ -6,6 +6,7 @@ import DataGlyph from "@/components/DataGlyph.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import Takeaways from "@/components/Takeaways.astro";
 import Layout from "@/layouts/Layout.astro";
+import { editUrl } from "@/lib/github";
 import { SITE_NAME, SITE_REPO } from "@/site.config";
 
 export async function getStaticPaths() {
@@ -90,9 +91,7 @@ const jsonLd = {
 
       <div class="footer-row">
         <a class="back" href="/use-cases/">← Back to In use</a>
-        <a
-          class="edit-link"
-          href={`https://github.com/${SITE_REPO}/edit/main/${entry.filePath}`}
+        <a class="edit-link" href={editUrl(SITE_REPO, entry.filePath)}
           >Suggest an edit on GitHub</a
         >
       </div>

@@ -4,6 +4,7 @@ import { getCollection } from "astro:content";
 import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
 import { codeHeader, shikiConfig } from "@/lib/code-block";
+import { issueUrl } from "@/lib/github";
 import { CATALOG_REPO, SITE_NAME, SITE_REPO } from "@/site.config";
 
 const guides = (await getCollection("contributionGuides"))
@@ -20,8 +21,6 @@ const STANDARDS_LINKS = [
 
 // Each kind opens a prefilled issue on the repo that owns the problem:
 // dataset issues live with the records, everything else with the site.
-const issueUrl = (repo: string, prefix: string) =>
-  `https://github.com/${repo}/issues/new?title=${encodeURIComponent(prefix)}`;
 const REPORT_KINDS = [
   [
     "Dataset issue",
@@ -38,11 +37,7 @@ const REPORT_KINDS = [
     "Outdated, incorrect, or missing documentation",
     issueUrl(SITE_REPO, "[docs] "),
   ],
-  [
-    "Something else",
-    "Doesn't fit any of the above",
-    `https://github.com/${SITE_REPO}/issues/new`,
-  ],
+  ["Something else", "Doesn't fit any of the above", issueUrl(SITE_REPO)],
 ];
 
 const description =
@@ -59,9 +54,7 @@ const description =
       <div class="label">Need help?</div>
       <p>
         Unsure where to start, or stuck partway?{" "}
-        <a href={`https://github.com/${SITE_REPO}/issues/new`}
-          >Open an issue on GitHub</a
-        >{" "}
+        <a href={issueUrl(SITE_REPO)}>Open an issue on GitHub</a>{" "}
         with your question and the Hub team will pick it up.
       </p>
     </div>

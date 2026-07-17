@@ -1,5 +1,6 @@
 ---
 import caspLogoWhite from "@/assets/CASP_logo_white.svg";
+import { issueUrl } from "@/lib/github";
 import { GITHUB_URL, SITE_REPO } from "@/site.config";
 import LogoBlock from "./LogoBlock.astro";
 
@@ -11,7 +12,7 @@ const LINKS = [
   ["FAQ", "/faq/"],
   ["About", "/about/"],
   ["Contribute", "/contribute/"],
-  ["Report an issue", `https://github.com/${SITE_REPO}/issues/new`],
+  ["Report an issue", issueUrl(SITE_REPO)],
   ["GitHub", GITHUB_URL],
 ] as const;
 

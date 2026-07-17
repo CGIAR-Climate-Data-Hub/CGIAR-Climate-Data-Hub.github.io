@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import Takeaways from "@/components/Takeaways.astro";
 import Layout from "@/layouts/Layout.astro";
+import { issueUrl } from "@/lib/github";
 import { SITE_NAME, SITE_REPO } from "@/site.config";
 
 const all = (await getCollection("useCases")).sort(
@@ -61,9 +62,7 @@ const monthOf = (d: Date) => d.toISOString().slice(0, 7);
       <span class="caption"
         >Have a story to add, or spotted something to fix?</span
       >
-      <a
-        class="edit-link"
-        href={`https://github.com/${SITE_REPO}/issues/new?title=${encodeURIComponent("[story] ")}`}
+      <a class="edit-link" href={issueUrl(SITE_REPO, "[story] ")}
         >Suggest a story on GitHub</a
       >
     </div>

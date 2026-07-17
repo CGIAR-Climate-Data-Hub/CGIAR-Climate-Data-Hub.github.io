@@ -19,6 +19,7 @@ import {
   hubRecordId,
   humanize,
   licenseUrl,
+  licensor,
   normalizeBboxes,
   stacCollectionUrl,
   temporalText,
@@ -26,6 +27,7 @@ import {
 } from "@/lib/catalog";
 import { codeHeader, shikiConfig } from "@/lib/code-block";
 import { allTutorials } from "@/lib/collections";
+import { blobUrl, editUrl, githubUrl } from "@/lib/github";
 import { assetExample, quickstarts } from "@/lib/snippets";
 import { commodity } from "@/lib/vocab";
 import { CATALOG_REPO, SITE_NAME } from "@/site.config";
@@ -83,10 +85,7 @@ const temporal = temporalText(
   d.temporal,
   d.dimensions.find((dim) => dim.type === "temporal")?.step,
 );
-// The header's source line: the licensor (a required role in the standard)
-const source = d.contact.find((c) =>
-  c.roles.includes("licensor"),
-)?.organization;
+const source = licensor(d);
 // Contact order: custodians (hub-side stewards), then licensors, then the rest
 const roleRank = (c: (typeof d.contact)[number]) =>
   c.roles.includes("custodian") ? 2 : c.roles.includes("licensor") ? 1 : 0;
@@ -108,9 +107,7 @@ const stacUrl = stacCollectionUrl(d.id);
 // Record metadata lives in the catalog repo, so source + issue links point
 // there. Flat strings on purpose: Biome's Astro frontmatter parser trips on
 // template literals nested two deep.
-const sourceUrl = entry.filePath
-  ? `https://github.com/${CATALOG_REPO}/blob/main/${entry.filePath}`
-  : undefined;
+const sourceUrl = blobUrl(CATALOG_REPO, entry.filePath);
 const reportBody = [
   `Record page: ${recordUrl}`,
   sourceUrl ? `Source: ${sourceUrl}` : "",
@@ -122,7 +119,7 @@ const reportParams = new URLSearchParams({
   title: `[record] ${d.id}: `,
   body: reportBody,
 });
-const reportUrl = `https://github.com/${CATALOG_REPO}/issues/new?${reportParams}`;
+const reportUrl = `${githubUrl(CATALOG_REPO)}/issues/new?${reportParams}`;
 const citation = citationText(d, recordUrl);
 const citeFormats = citationFormats(d, recordUrl);
 const licenseHref = licenseUrl(d.license);
@@ -379,7 +376,7 @@ const jsonLd = datasetJsonLd(
                 {entry.filePath && (
                   <a
                     class="menu-split"
-                    href={`https://github.com/${CATALOG_REPO}/edit/main/${entry.filePath}`}
+                    href={editUrl(CATALOG_REPO, entry.filePath)}
                     >Suggest an edit ↗</a
                   >
                 )}

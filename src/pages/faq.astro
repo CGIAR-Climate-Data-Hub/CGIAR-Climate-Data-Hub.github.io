@@ -3,6 +3,7 @@ import { getCollection, render } from "astro:content";
 import JsonLd from "@/components/JsonLd.astro";
 import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
+import { issueUrl } from "@/lib/github";
 import { SITE_NAME, SITE_REPO } from "@/site.config";
 
 const faqs = await Promise.all(
@@ -54,7 +55,7 @@ const jsonLd = {
 
     <p class="more">
       Something missing?{" "}
-      <a href={`https://github.com/${SITE_REPO}/issues/new`}>Ask on GitHub</a>
+      <a href={issueUrl(SITE_REPO)}>Ask on GitHub</a>
       {" "}or read the
       <a href="/wikis/"> wikis</a>.
     </p>

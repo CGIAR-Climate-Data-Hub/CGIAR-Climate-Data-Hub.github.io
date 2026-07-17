@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import WikiSidebar from "@/components/WikiSidebar.astro";
 import Layout from "@/layouts/Layout.astro";
 import { groupWikis } from "@/lib/collections";
+import { treeUrl } from "@/lib/github";
 import { SITE_NAME, SITE_REPO } from "@/site.config";
 
 const GROUP_LABELS: Record<string, string> = { Standards: "Data standards" };
@@ -34,7 +35,7 @@ const description =
           >
           <a
             class="btn btn-ghost"
-            href={`https://github.com/${SITE_REPO}/tree/main/src/content/wikis`}
+            href={treeUrl(SITE_REPO, "src/content/wikis")}
             >Contribute an article</a
           >
         </div>
