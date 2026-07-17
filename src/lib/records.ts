@@ -13,11 +13,11 @@ interface RecordsSource {
   dir: string;
 }
 
-async function fromLocal(dir: string) {
+export async function fromLocal(dir: string, match: RegExp) {
   const files = await readdir(dir, { recursive: true });
   return Promise.all(
     files
-      .filter((f) => /\.ya?ml$/.test(f))
+      .filter((f) => match.test(f))
       .map(async (f) => ({
         path: f,
         body: await readFile(join(dir, f), "utf8"),
@@ -25,7 +25,11 @@ async function fromLocal(dir: string) {
   );
 }
 
-async function fromGitHub({ repo, dir }: RecordsSource, ref: string) {
+export async function fromGitHub(
+  { repo, dir }: RecordsSource,
+  ref: string,
+  match: RegExp,
+) {
   const headers: Record<string, string> = process.env.GITHUB_TOKEN
     ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
     : {};
@@ -38,7 +42,7 @@ async function fromGitHub({ repo, dir }: RecordsSource, ref: string) {
   const paths = tree.tree
     .filter((t) => t.type === "blob" && t.path.startsWith(`${dir}/`))
     .map((t) => t.path)
-    .filter((p) => /\.ya?ml$/.test(p));
+    .filter((p) => match.test(p));
   return Promise.all(
     paths.map(async (p) => {
       const raw = await fetch(
@@ -57,10 +61,11 @@ export function records(source: RecordsSource): Loader {
       let files: { path: string; body: string }[];
       try {
         files = process.env.RECORDS_DIR
-          ? await fromLocal(process.env.RECORDS_DIR)
+          ? await fromLocal(process.env.RECORDS_DIR, /\.ya?ml$/)
           : await fromGitHub(
               { ...source, repo: process.env.RECORDS_REPO ?? source.repo },
               process.env.RECORDS_REF ?? "main",
+              /\.ya?ml$/,
             );
       } catch (err) {
         // With REQUIRE_RECORDS set (deploy workflow), an unavailable catalog

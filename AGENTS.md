@@ -12,8 +12,11 @@ collection (CDH YAML metadata records) is fetched at build time from the
 `RECORDS_DIR` local checkout, `RECORDS_REF` branch, `RECORDS_REPO` fork), and
 that repo
 triggers a site rebuild via `repository_dispatch` when records change.
-Dev fixtures live in `examples/records/` — `bun run dev:example` builds the
-catalog from them (see that folder's README).
+The `skills` collection (agent skills for `/ai/`) is fetched the same way
+from the `skills` repo's `.agents/skills/` (`src/lib/skills.ts`; overrides:
+`SKILLS_DIR`, `SKILLS_REF`, `SKILLS_REPO`).
+Dev fixtures live in `examples/records/` and `examples/skills/` —
+`bun run dev:example` builds from them (see each folder's README).
 Content collections are defined in `src/content.config.ts`;
 site-wide constants live in `src/site.config.ts`.
 

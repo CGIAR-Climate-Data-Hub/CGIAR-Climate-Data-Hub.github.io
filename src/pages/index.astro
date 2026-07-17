@@ -21,7 +21,7 @@ const essentials = [
   ...datasets.map((d) => ({
     href: `/catalog/${d.id}/`,
     name: d.title,
-    badge: d.type === "spatial" ? "Spatial" : "Non-spatial",
+    badge: d.type === "spatial" ? "Spatial" : "Tabular",
     badgeClass: d.type,
     meta: [d.coverage, d.temporal].filter(Boolean).join(" · "),
     glyph: d.type,
@@ -69,6 +69,12 @@ const PATHS = [
     label: "Contribute data or docs",
     cue: "Add to the Hub",
   },
+  {
+    href: "/ai/",
+    glyph: "spark",
+    label: "Use the Hub with AI",
+    cue: "Skills & agent access",
+  },
 ];
 
 const TRY_CHIPS = ["livestock", "crop production", "gridded", "exposure"];
@@ -97,6 +103,8 @@ const GLYPHS: Record<string, string> = {
   book: "M4 5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2V5Zm2 14h14M8 7h8",
   layers: "m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5",
   upload: "M12 16V4m0 0L7 9m5-5 5 5M5 20h14",
+  spark:
+    "M12 3c.7 4.2 2.8 6.3 7 7-4.2.7-6.3 2.8-7 7-.7-4.2-2.8-6.3-7-7 4.2-.7 6.3-2.8 7-7Z",
 };
 ---
 

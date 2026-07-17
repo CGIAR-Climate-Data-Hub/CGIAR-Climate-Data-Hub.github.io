@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "dev:example": "RECORDS_DIR=examples/records astro dev",
+    "dev:example": "RECORDS_DIR=examples/records SKILLS_DIR=examples/skills astro dev",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",

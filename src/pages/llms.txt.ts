@@ -4,7 +4,7 @@ import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
 import { currentReleases } from "@/lib/catalog";
 import { allTutorials } from "@/lib/collections";
-import { SITE_DESCRIPTION, SITE_NAME } from "@/site.config";
+import { SITE_DESCRIPTION, SITE_NAME, SKILLS_SITE } from "@/site.config";
 
 export const GET: APIRoute = async ({ site }) => {
   const abs = (path: string) => new URL(path, site).href;
@@ -42,6 +42,8 @@ ${useCases.map((u) => line(u.data.title, `/use-cases/${u.id}/`, u.data.descripti
 
 - [Catalog](${abs("/catalog/")}): Browse and filter all datasets
 - [Catalog index](${abs("/catalog.json")}): Machine-readable schema.org DataCatalog of every record (per-record raw metadata at /catalog/<id>.json)
+- [For AI & agents](${abs("/ai/")}): Agent skills and every machine-readable endpoint, documented
+- [Agent skills docs](${SKILLS_SITE}): Ready-made skills (open Agent Skills format) that teach assistants Hub workflows, with install guides
 - [FAQ](${abs("/faq/")}): Access, licensing, formats, and contributing
 - [About](${abs("/about/")}): What the Hub is and who runs it
 - [Contribute](${abs("/contribute/")}): How to submit a dataset

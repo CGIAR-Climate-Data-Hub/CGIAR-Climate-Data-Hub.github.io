@@ -4,7 +4,8 @@ import { z } from "astro/zod";
 import { WIKI_SECTIONS } from "./lib/collections";
 import { notebooks } from "./lib/notebooks";
 import { records } from "./lib/records";
-import { CATALOG_REPO } from "./site.config";
+import { skills as skillsLoader } from "./lib/skills";
+import { CATALOG_REPO, SKILLS_REPO } from "./site.config";
 
 const tutorialSchema = z.object({
   title: z.string(),
@@ -333,6 +334,17 @@ const catalog = defineCollection({
     .loose(),
 });
 
+// Agent skills for the /ai/ page: one folder per skill, Claude-style
+// SKILL.md with name/description frontmatter, fetched from the skills repo
+// (SKILLS_DIR=examples/skills for the dev fixtures — see src/lib/skills.ts)
+const skills = defineCollection({
+  loader: skillsLoader({ repo: SKILLS_REPO, dir: ".agents/skills" }),
+  schema: z.object({
+    name: z.string(),
+    description: z.string(),
+  }),
+});
+
 export const collections = {
   tutorials,
   notebookTutorials,
@@ -342,4 +354,5 @@ export const collections = {
   catalog,
   faq,
   pages,
+  skills,
 };
