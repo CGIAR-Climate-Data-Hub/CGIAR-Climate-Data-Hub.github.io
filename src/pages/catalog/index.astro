@@ -760,6 +760,20 @@ apply();
   list-style: none;
 }
 
+/* Off-screen cards skip layout and paint, so the page stays responsive
+   as the catalog grows; the size hint keeps the scrollbar stable */
+.grid > li {
+  contain-intrinsic-size: auto 340px;
+  content-visibility: auto;
+}
+
+/* Containment clips the hover lift and shadow at the li box — release it
+   on the card being interacted with */
+.grid > li:hover,
+.grid > li:focus-within {
+  content-visibility: visible;
+}
+
 /* ---- Layout switcher ---- */
 .layout-wrap {
   display: flex;

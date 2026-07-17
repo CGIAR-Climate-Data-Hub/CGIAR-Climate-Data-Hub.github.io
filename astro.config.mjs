@@ -41,7 +41,8 @@ export default defineConfig({
       cssVariable: "--font-sans",
       provider: fontProviders.fontsource(),
       weights: [300, 400, 500, 600, 700],
-      styles: ["normal", "italic"],
+      // Italic is unused in the site CSS; prose <em> synthesizes (rare)
+      styles: ["normal"],
       subsets: ["latin"],
     },
     {
@@ -50,7 +51,8 @@ export default defineConfig({
       cssVariable: "--font-serif",
       provider: fontProviders.fontsource(),
       weights: [300, 400, 500, 600, 700],
-      styles: ["normal", "italic"],
+      // Italic is unused in the site CSS; prose <em> synthesizes (rare)
+      styles: ["normal"],
       subsets: ["latin"],
       fallbacks: ["serif"],
     },
