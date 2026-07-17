@@ -13,6 +13,9 @@ import {
 import { SITE_NAME } from "@/site.config";
 
 const VIA = `Accessed through the CGIAR ${SITE_NAME}`;
+const formatsById = new Map(
+  formatVocab.concepts.map((format) => [format.id, format]),
+);
 
 // STAC catalogs are derived from these records by the publishing pipeline,
 // so records never store STAC URLs — the site assumes this layout instead.
@@ -23,19 +26,31 @@ export function stacCollectionUrl(id: string) {
   return `${STAC_ROOT}/${id}/collection.json`;
 }
 
-// Fill an asset's href_template ("glw4-2020-{species}.tif") with the first
-// value of each dimension ({variable} maps to the first variable name) to
-// name one real file for example snippets. Undefined when unresolvable.
+// Resolve an asset template's placeholders to their valid dimension values.
+// {variable} is the one special placeholder backed by variable names.
+export function resolveTemplate(d: CatalogRecord, template: string) {
+  const fields = [
+    ...new Set([...template.matchAll(/\{(\w+)\}/g)].map((match) => match[1])),
+  ].map((name) => ({
+    name,
+    values:
+      d.dimensions.find((dimension) => dimension.name === name)?.values
+      ?? (name === "variable"
+        ? d.variables.map((variable) => variable.name)
+        : []),
+  }));
+  if (!fields.every((field) => field.values.length > 0)) return undefined;
+  const file = fields.reduce(
+    (resolved, field) =>
+      resolved.replaceAll(`{${field.name}}`, field.values[0]),
+    template,
+  );
+  return { fields, file };
+}
+
+// Fill every placeholder with its first valid value to name one real file.
 export function exampleTemplateFile(d: CatalogRecord, template: string) {
-  let file = template;
-  for (const [, name] of template.matchAll(/\{(\w+)\}/g)) {
-    const value =
-      d.dimensions.find((dim) => dim.name === name)?.values[0]
-      ?? (name === "variable" ? d.variables[0]?.name : undefined);
-    if (!value) return undefined;
-    file = file.replaceAll(`{${name}}`, value);
-  }
-  return file;
+  return resolveTemplate(d, template)?.file;
 }
 
 export function humanize(slug: string) {
@@ -60,7 +75,7 @@ export const formatId = (mediaType?: string) =>
   formatConcept(mediaType)?.id ?? mediaType?.split(";")[0]?.split("/").pop();
 
 export const formatIdLabel = (id: string) =>
-  formatVocab.concepts.find((f) => f.id === id)?.label ?? id.toUpperCase();
+  formatsById.get(id)?.label ?? id.toUpperCase();
 
 // Canonical UN M49 label ("Sub-Saharan Africa"), falling back for unknown ids
 export function geoLabel(id: string) {

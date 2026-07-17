@@ -21,6 +21,7 @@ import {
   licenseUrl,
   licensor,
   normalizeBboxes,
+  resolveTemplate,
   stacCollectionUrl,
   temporalText,
   versionChain,
@@ -172,22 +173,9 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
   let tplFields: { name: string; values: string[] }[] | undefined;
   let tplFile: string | undefined;
   if (asset.href_template) {
-    const fields = [
-      ...new Set(
-        [...asset.href_template.matchAll(/\{(\w+)\}/g)].map((m) => m[1]),
-      ),
-    ].map((name) => ({
-      name,
-      values:
-        d.dimensions.find((dim) => dim.name === name)?.values
-        ?? (name === "variable" ? d.variables.map((v) => v.name) : []),
-    }));
-    if (fields.every((f) => f.values.length > 0)) {
-      tplFields = fields;
-      tplFile = asset.href_template;
-      for (const f of fields)
-        tplFile = tplFile.replaceAll(`{${f.name}}`, f.values[0]);
-    }
+    const resolved = resolveTemplate(d, asset.href_template);
+    tplFields = resolved?.fields;
+    tplFile = resolved?.file;
   }
 
   const lastSegment = httpUrl?.split("/").pop() ?? "";
