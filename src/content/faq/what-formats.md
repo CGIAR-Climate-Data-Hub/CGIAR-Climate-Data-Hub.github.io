@@ -1,5 +1,5 @@
 ---
-question: What formats does the Commons use?
+question: What formats does the Hub use?
 order: 4
 ---
 

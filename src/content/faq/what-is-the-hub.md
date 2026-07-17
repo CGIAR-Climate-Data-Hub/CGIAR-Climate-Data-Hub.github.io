@@ -1,5 +1,5 @@
 ---
-question: What is the Climate Commons?
+question: What is the Climate Data Hub?
 order: 1
 ---
 

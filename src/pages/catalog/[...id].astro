@@ -56,7 +56,7 @@ const catalog = await getCollection("catalog");
 const chain = versionChain(d.id, catalog);
 const current = chain[0]?.data.id !== d.id ? chain[0] : undefined;
 
-// Provenance cross-links: derived_from urls that resolve to Commons records
+// Provenance cross-links: derived_from urls that resolve to Hub records
 // render as internal links, and records derived from this one list in the
 // rail. The links carry the graph; there is no drawn DAG.
 const hubSource = (url: string) => {
@@ -255,7 +255,7 @@ const jsonLd = datasetJsonLd(
   <section class="header">
     <div class="container">
       <Breadcrumbs
-        items={[{ label: "Commons", href: "/" }, { label: "Catalog", href: "/catalog/" }, { label: d.title }]}
+        items={[{ label: "Hub", href: "/" }, { label: "Catalog", href: "/catalog/" }, { label: d.title }]}
       />
       {d.deprecated && (
         <div class="deprecated-note">
@@ -1029,7 +1029,7 @@ const jsonLd = datasetJsonLd(
                     <b>{c.name ?? c.organization}</b>
                     <span class="badges">
                       {c.roles.includes("custodian") && (
-                        <span class="role-badge custodian-badge">Commons custodian</span>
+                        <span class="role-badge custodian-badge">Hub custodian</span>
                       )}
                       {c.roles.includes("licensor") && (
                         <span class="role-badge licensor-badge">Licensor</span>

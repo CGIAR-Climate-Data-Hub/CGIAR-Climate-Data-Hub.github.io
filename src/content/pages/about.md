@@ -1,7 +1,7 @@
 ---
 title: One backbone for climate evidence across CGIAR.
 lede: >
-  The Climate Commons increases the visibility, accessibility and usability of climate-related
+  The Climate Data Hub increases the visibility, accessibility and usability of climate-related
   data, methods and tools — so researchers, programme designers and partner countries can get to
   trustworthy evidence fast, and build on each other's work instead of starting over.
 missions:
@@ -27,10 +27,10 @@ principles:
     body: Centers, programmes and partners contribute data, tools and stories.
 ---
 
-The Commons is a product of the CGIAR Climate Action Program, maintained by a small
+The Hub is a product of the CGIAR Climate Action Program, maintained by a small
 engineering and data-stewardship team at the [Alliance of Bioversity
 International and CIAT](https://alliancebioversityciat.org), working across
-CGIAR Centers. Datasets are reviewed against the Commons' metadata and STAC
+CGIAR Centers. Datasets are reviewed against the Hub's metadata and STAC
 profile before publication; contributions are triaged by the stewardship team
 and versioned in the open on
 [GitHub](https://github.com/CGIAR-Climate-Data-Hub).

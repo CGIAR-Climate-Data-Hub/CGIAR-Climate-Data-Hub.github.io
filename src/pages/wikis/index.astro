@@ -8,7 +8,7 @@ import { SITE_NAME, SITE_REPO } from "@/site.config";
 const GROUP_LABELS: Record<string, string> = { Standards: "Data standards" };
 const groups = groupWikis(await getCollection("wikis"));
 const description =
-  "Long-form reference for how the Climate Commons works — standards, methods, and governance.";
+  "Long-form reference for how the Climate Data Hub works — standards, methods, and governance.";
 ---
 
 <Layout description={description} title={`Wikis — ${SITE_NAME}`}>
@@ -18,9 +18,9 @@ const description =
     <div class="main">
       <div class="hero">
         <div class="label kicker">The CDH Wiki</div>
-        <h1>Read the Commons, like a book.</h1>
+        <h1>Read the Hub, like a book.</h1>
         <p class="lede">
-          Long-form reference for how the Climate Commons works — the standards
+          Long-form reference for how the Climate Data Hub works — the standards
           data must meet, the methods behind the layers, and the concepts that
           frame them. Pick a topic from the left, or start with the essentials
           below.

@@ -43,9 +43,9 @@ ${useCases.map((u) => line(u.data.title, `/use-cases/${u.id}/`, u.data.descripti
 - [Catalog](${abs("/catalog/")}): Browse and filter all datasets
 - [Catalog index](${abs("/catalog.json")}): Machine-readable schema.org DataCatalog of every record (per-record raw metadata at /catalog/<id>.json)
 - [For AI & agents](${abs("/ai/")}): Agent skills and every machine-readable endpoint, documented
-- [Agent skills docs](${SKILLS_SITE}): Ready-made skills (open Agent Skills format) that teach assistants Commons workflows, with install guides
+- [Agent skills docs](${SKILLS_SITE}): Ready-made skills (open Agent Skills format) that teach assistants Hub workflows, with install guides
 - [FAQ](${abs("/faq/")}): Access, licensing, formats, and contributing
-- [About](${abs("/about/")}): What the Commons is and who runs it
+- [About](${abs("/about/")}): What the Hub is and who runs it
 - [Contribute](${abs("/contribute/")}): How to submit a dataset
 `;
 

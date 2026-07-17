@@ -10,7 +10,7 @@ const skills = (await getCollection("skills")).sort((a, b) =>
 const SKILLS_GITHUB = `https://github.com/${SKILLS_REPO}`;
 
 const description =
-  "Use the Commons with AI assistants and agents — ready-made skills, plus machine-readable endpoints for every dataset and page.";
+  "Use the Hub with AI assistants and agents — ready-made skills, plus machine-readable endpoints for every dataset and page.";
 
 // The machine-readable surface, one card per entry point
 const ENDPOINTS = [
@@ -38,7 +38,7 @@ const ENDPOINTS = [
 <Layout description={description} title={`For AI & agents — ${SITE_NAME}`}>
   <PageHead
     kicker="Learn"
-    sub="The Commons is built to be read by machines as much as by people — ready-made agent skills, and stable machine-readable endpoints for every dataset and page."
+    sub="The Hub is built to be read by machines as much as by people — ready-made agent skills, and stable machine-readable endpoints for every dataset and page."
     title="For AI & agents"
   >
     <a class="btn btn-primary" href="/llms.txt" slot="right">llms.txt →</a>
@@ -57,11 +57,11 @@ const ENDPOINTS = [
       <a href="https://agentskills.io/specification" rel="noreferrer"
         >Agent Skills format</a
       >{" "}
-      — that teaches an assistant a Commons workflow it wouldn't know cold:
-      which endpoint answers a question, how to subset a data cube without
-      downloading it, what a valid metadata record looks like. Install one once
-      and it loads whenever a task calls for it, instead of you re-explaining
-      the Commons every session.
+      — that teaches an assistant a Hub workflow it wouldn't know cold: which
+      endpoint answers a question, how to subset a data cube without downloading
+      it, what a valid metadata record looks like. Install one once and it loads
+      whenever a task calls for it, instead of you re-explaining the Hub every
+      session.
     </p>
     <details class="how-to">
       <summary>How do I use a skill?</summary>

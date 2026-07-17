@@ -113,7 +113,7 @@ export function currentReleases(entries: CollectionEntry<"catalog">[]) {
   return entries.filter((e) => !e.data.deprecated);
 }
 
-// A URL that targets a Commons record page — relative or absolute — resolves to
+// A URL that targets a Hub record page — relative or absolute — resolves to
 // its record id. Callers must check the id against the catalog; that lookup
 // is the real guard against false positives.
 export function hubRecordId(url: string) {
@@ -200,7 +200,7 @@ export function citationText(d: CatalogRecord, recordUrl?: string) {
     authors,
     c.date && `(${c.date})`,
     `${c.title}.`,
-    // The version pins the citation: the current release's Commons URL rolls
+    // The version pins the citation: the current release's Hub URL rolls
     // forward to newer releases, so the text must record what was used
     d.version && `Version ${d.version}.`,
     c.publisher && `${c.publisher}.`,

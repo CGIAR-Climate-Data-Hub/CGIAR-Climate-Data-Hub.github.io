@@ -1,5 +1,5 @@
 ---
-title: Getting started with the Climate Commons
+title: Getting started with the Climate Data Hub
 description: Find a dataset, read its metadata, and pull a layer into Python in twenty minutes.
 level: Beginner
 topic: Onboarding
@@ -56,7 +56,7 @@ cattle = rioxarray.open_rasterio(url, masked=True)
 ## Cite what you use
 
 Every dataset page has a copy-ready citation and licence. Cite the original
-producers — for GLW4 that's FAO — alongside the Commons record.
+producers — for GLW4 that's FAO — alongside the Hub record.
 
 ## Next steps
 
