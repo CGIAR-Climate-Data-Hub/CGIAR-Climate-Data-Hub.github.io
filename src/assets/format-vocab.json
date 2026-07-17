@@ -1,0 +1,27 @@
+{
+  "scheme": {
+    "id": "cdh-formats",
+    "title": "Climate Data Hub Format Vocabulary",
+    "description": "Data distribution formats used by CDH assets. Concept ids name the site's snippet templates; media_type is matched as a prefix of the asset's media_type. Site-local for now — replace with the standard's published vocabulary when it exists."
+  },
+  "concepts": [
+    {
+      "id": "zarr",
+      "label": "Zarr",
+      "media_type": "application/vnd.zarr",
+      "best_for": "cloud-native analysis, reading just the slices you need from the full cube"
+    },
+    {
+      "id": "cogs",
+      "label": "Cloud-Optimized GeoTIFF",
+      "media_type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "best_for": "single-file downloads, visualisation, and traditional GIS tools"
+    },
+    {
+      "id": "parquet",
+      "label": "Apache Parquet",
+      "media_type": "application/vnd.apache.parquet",
+      "best_for": "tabular analysis, with fast filtered reads in pandas, R, or DuckDB"
+    }
+  ]
+}

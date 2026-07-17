@@ -1,0 +1,65 @@
+---
+// Editorial page header: breadcrumb slot, terracotta kicker, h1, serif-light sub.
+import Breadcrumbs from "./Breadcrumbs.astro";
+
+interface Props {
+  kicker?: string;
+  title: string;
+  sub?: string;
+  breadcrumb?: { label: string; href?: string }[];
+}
+
+const { kicker, title, sub, breadcrumb } = Astro.props;
+---
+
+<div class="container head">
+  {breadcrumb && <Breadcrumbs items={breadcrumb} />}
+  <div class="row">
+    <div class="main">
+      {kicker && (
+          <div class="label kicker">
+            {kicker}
+          </div>
+        )}
+      <h1>{title}</h1>
+      {sub && <p class="sub">{sub}</p>}
+    </div>
+    <slot name="right" />
+  </div>
+  <slot />
+</div>
+
+<style>
+.head {
+  padding-top: 30px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 22px;
+}
+
+.main {
+  max-width: 720px;
+}
+
+h1 {
+  font-size: clamp(32px, 3.6vw, 48px);
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+}
+
+.sub {
+  max-width: 660px;
+  margin-top: 16px;
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--text-soft);
+}
+</style>

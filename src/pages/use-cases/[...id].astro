@@ -1,0 +1,232 @@
+---
+import { getCollection, render } from "astro:content";
+import ArticleToc from "@/components/ArticleToc.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import DataGlyph from "@/components/DataGlyph.astro";
+import JsonLd from "@/components/JsonLd.astro";
+import Takeaways from "@/components/Takeaways.astro";
+import Layout from "@/layouts/Layout.astro";
+import { editUrl } from "@/lib/github";
+import { SITE_NAME, SITE_REPO } from "@/site.config";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("useCases");
+  return entries.map((entry) => ({
+    params: { id: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+const date = entry.data.date.toISOString().slice(0, 10);
+
+// Resolve dataset ids to catalog entries for the "Built with" chips
+const datasets = (
+  await getCollection("catalog", (c) => entry.data.datasets.includes(c.data.id))
+).map((c) => ({
+  href: `/catalog/${c.data.id}/`,
+  title: c.data.title,
+  type: c.data.spatial ? ("spatial" as const) : ("tabular" as const),
+}));
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: entry.data.title,
+  description: entry.data.description,
+  datePublished: date,
+  url: new URL(`/use-cases/${entry.id}/`, Astro.site).href,
+  author: { "@type": "Organization", name: `CGIAR ${SITE_NAME}` },
+  about: entry.data.sector,
+  contentLocation: { "@type": "Place", name: entry.data.country },
+  isPartOf: { "@type": "WebSite", "@id": `${Astro.site}#website` },
+};
+---
+
+<Layout
+  description={entry.data.description}
+  title={`${entry.data.title} — ${SITE_NAME}`}
+>
+  <JsonLd data={jsonLd} slot="head" />
+
+  <div class="container head">
+    <Breadcrumbs
+      items={[{ label: "Hub", href: "/" }, { label: "In use", href: "/use-cases/" }, { label: entry.data.title }]}
+    />
+  </div>
+
+  <div class="container narrow-grid">
+    <article>
+      <div class="meta">
+        <span class="label kind">{entry.data.kind}</span>
+        <span aria-hidden="true" class="sep"></span>
+        <span class="mono">{entry.data.country}</span>
+        <span aria-hidden="true" class="sep"></span>
+        <span class="mono">{date.slice(0, 7)}</span>
+      </div>
+      <h1>{entry.data.title}</h1>
+      <div class="partner">{entry.data.partner}</div>
+      <p class="lede">{entry.data.description}</p>
+
+      <Takeaways items={entry.data.impact} />
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      {datasets.length > 0 && (
+          <div class="built-with">
+            <div class="label">Built with</div>
+            <div class="chips">
+              {datasets.map((d) => (
+                <a class="ref-chip" href={d.href}>
+                  <DataGlyph size={14} type={d.type} />
+                  {d.title}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+      <div class="footer-row">
+        <a class="back" href="/use-cases/">← Back to In use</a>
+        <a class="edit-link" href={editUrl(SITE_REPO, entry.filePath)}
+          >Suggest an edit on GitHub</a
+        >
+      </div>
+    </article>
+
+    <aside data-pagefind-ignore>
+      <ArticleToc headings={headings} />
+    </aside>
+  </div>
+</Layout>
+
+<style>
+.head {
+  padding-top: 30px;
+}
+
+.narrow-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 236px;
+  gap: 68px;
+  align-items: start;
+  margin-top: 26px;
+}
+
+article {
+  min-width: 0;
+  max-width: 720px;
+}
+
+/* The grid is start-aligned; the TOC wrapper must span the column for sticky to travel */
+.narrow-grid > aside {
+  align-self: stretch;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.kind {
+  font-size: 10.5px;
+  color: var(--terra-700);
+}
+
+.sep {
+  width: 3px;
+  height: 3px;
+  background: var(--grey-3);
+  border-radius: 50%;
+}
+
+.meta .mono {
+  font-size: 11.5px;
+  color: var(--text-mute);
+}
+
+h1 {
+  margin-top: 16px;
+  font-size: clamp(32px, 4vw, 50px);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+.partner {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-mute);
+}
+
+.lede {
+  padding-bottom: 26px;
+  margin-top: 22px;
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--text-soft);
+  border-bottom: 1px solid var(--border);
+}
+
+.prose {
+  margin-top: 24px;
+}
+
+.built-with {
+  padding-top: 24px;
+  margin-top: 40px;
+  border-top: 1px solid var(--border);
+}
+
+.built-with .label {
+  margin-bottom: 14px;
+  font-size: 10px;
+  color: var(--text-mute);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ref-chip {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  padding: 7px 12px;
+  font-size: 12.5px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--chip-radius);
+}
+
+.ref-chip:hover {
+  text-decoration: none;
+  border-color: var(--cdh-blue-300);
+}
+
+/* Shrink the glyph chip inside ref chips */
+.ref-chip :global(.glyph) {
+  width: auto;
+  height: auto;
+  background: transparent;
+}
+
+@media (width <= 960px) {
+  .narrow-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .narrow-grid > aside {
+    display: none;
+  }
+}
+</style>

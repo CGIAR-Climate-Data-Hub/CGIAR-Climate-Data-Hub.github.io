@@ -1,0 +1,54 @@
+---
+// The mark itself is a shareable static asset — public/cdh-mark.svg (navy
+// baseline, canonical) and public/cdh-mark-dark.svg (white baseline).
+interface Props {
+  variant?: "light" | "dark";
+  size?: number;
+}
+
+const { variant = "light", size = 24 } = Astro.props;
+const onDark = variant === "dark";
+---
+
+<a
+  aria-label="CGIAR Climate Data Hub home"
+  class:list={["logo-block", { dark: onDark }]}
+  href="/"
+>
+  <img
+    alt=""
+    height={size}
+    src={onDark ? "/cdh-mark-dark.svg" : "/cdh-mark.svg"}
+    width={Math.round((size * 965) / 379)}
+  >
+  <span class="wordmark" style={`font-size: ${size * 0.8}px`}
+    >Climate&nbsp;Data&nbsp;Hub</span
+  >
+</a>
+
+<style>
+.logo-block {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 12px;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logo-block:hover {
+  text-decoration: none;
+}
+
+.wordmark {
+  font-family: var(--serif);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--cdh-blue-950);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.dark .wordmark {
+  color: var(--text-inverse);
+}
+</style>

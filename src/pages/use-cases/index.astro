@@ -1,0 +1,218 @@
+---
+import { getCollection } from "astro:content";
+import Takeaways from "@/components/Takeaways.astro";
+import Layout from "@/layouts/Layout.astro";
+import { issueUrl } from "@/lib/github";
+import { SITE_NAME, SITE_REPO } from "@/site.config";
+
+const all = (await getCollection("useCases")).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+const lead = all.find((uc) => uc.data.featured) ?? all[0];
+const rest = all.filter((uc) => uc !== lead);
+const stories = lead ? [lead, ...rest] : [];
+const description =
+  "What people are doing with the Hub — impact from national planning and climate finance, and adoption of its data and standards.";
+
+const monthOf = (d: Date) => d.toISOString().slice(0, 7);
+---
+
+<Layout description={description} title={`In use — ${SITE_NAME}`}>
+  <div class="container head">
+    <div class="hero">
+      <div class="label kicker">In use</div>
+      <h1>From the field, and beyond.</h1>
+      <p class="lede">
+        What people are doing with the Hub — impact from national planning and
+        climate finance, and notes on how other programmes are adopting our data
+        and standards.
+      </p>
+    </div>
+  </div>
+
+  <div class="container"><hr class="head-rule"></div>
+
+  <div class="container stories">
+    {stories.length === 0 && (
+      <p class="empty">
+        No published stories yet — the first ones are on their way.
+      </p>
+    )}
+    {stories.map((uc, i) => (
+        <article class:list={["story", { lead: i === 0 }]}>
+          <div class="rail">
+            {i === 0 && <div class="label featured">Featured</div>}
+            <div class:list={["label", "kind", { muted: i === 0 }]}>{uc.data.kind}</div>
+            <div class="mono country">{uc.data.country}</div>
+            <div class="mono date">{monthOf(uc.data.date)}</div>
+            <div class="partner caption">{uc.data.partner}</div>
+          </div>
+          <div class="body">
+            <h2 class:list={[{ "lead-title": i === 0 }]}>
+              <a href={`/use-cases/${uc.id}/`}>{uc.data.title}</a>
+            </h2>
+            <p class="summary">{uc.data.description}</p>
+            <Takeaways items={uc.data.impact} />
+            <a class="read" href={`/use-cases/${uc.id}/`}>Read the full story →</a>
+          </div>
+        </article>
+      ))}
+
+    <div class="foot">
+      <span class="caption"
+        >Have a story to add, or spotted something to fix?</span
+      >
+      <a class="edit-link" href={issueUrl(SITE_REPO, "[story] ")}
+        >Suggest a story on GitHub</a
+      >
+    </div>
+  </div>
+</Layout>
+
+<style>
+.empty {
+  padding: 48px 0;
+  font-size: 15px;
+  color: var(--text-soft);
+}
+
+.head {
+  padding-top: 30px;
+}
+
+.hero {
+  margin-top: 24px;
+}
+
+/* The landing-hero type ramp, shared with the wikis and about heroes */
+h1 {
+  max-width: 820px;
+  font-size: clamp(34px, 4vw, 52px);
+  letter-spacing: -0.025em;
+}
+
+.lede {
+  max-width: 680px;
+  margin-top: 20px;
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--text-soft);
+}
+
+.head-rule {
+  margin-top: 34px;
+}
+
+.stories {
+  padding-top: 40px;
+}
+
+.story {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 56px;
+  padding: 38px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.story.lead {
+  padding-top: 0;
+  padding-bottom: 44px;
+}
+
+.featured {
+  margin-bottom: 14px;
+  font-size: 10px;
+  color: var(--terra-700);
+}
+
+.kind {
+  font-size: 10px;
+  color: var(--terra-700);
+}
+
+.kind.muted {
+  color: var(--text-mute);
+}
+
+.country {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+.date {
+  margin-top: 3px;
+  font-size: 11.5px;
+  color: var(--text-mute);
+}
+
+.partner {
+  margin-top: 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.body {
+  max-width: 680px;
+}
+
+.body h2 {
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.body h2.lead-title {
+  font-size: clamp(26px, 2.6vw, 34px);
+  letter-spacing: -0.015em;
+}
+
+.body h2 a {
+  color: inherit;
+}
+
+.body h2 a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.summary {
+  margin-top: 13px;
+  font-size: 16.5px;
+  line-height: 1.62;
+  color: var(--text-soft);
+}
+
+.read {
+  display: inline-block;
+  margin-top: 19px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 26px;
+  margin-top: 36px;
+}
+
+.foot .caption {
+  font-size: 13px;
+}
+
+@media (width <= 800px) {
+  .story {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+</style>

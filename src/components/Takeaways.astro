@@ -1,0 +1,65 @@
+---
+// Terracotta-notch takeaway list (2-up when there are more than two items).
+interface Props {
+  items: string[];
+  label?: string;
+}
+
+const { items, label = "Key takeaways" } = Astro.props;
+---
+
+{items.length > 0 && (
+    <div class="takeaways">
+      {label && <div class="label">{label}</div>}
+      <div class="grid" style={`--cols: ${items.length > 2 ? 2 : 1}`}>
+        {items.map((item) => (
+          <div class="item">
+            <span aria-hidden="true" class="notch" />
+            <span>{item}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+
+<style>
+.takeaways {
+  margin-top: 22px;
+}
+
+.label {
+  margin-bottom: 12px;
+  font-size: 10px;
+  color: var(--text-mute);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: 11px 32px;
+}
+
+.item {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.notch {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-top: 7px;
+  background: var(--terra-500);
+  clip-path: polygon(20% 0, 100% 0, 80% 100%, 0 100%);
+}
+
+@media (width <= 700px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

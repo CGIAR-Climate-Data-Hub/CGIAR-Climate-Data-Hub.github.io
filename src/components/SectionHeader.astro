@@ -1,0 +1,41 @@
+---
+interface Props {
+  kicker?: string;
+  title: string;
+  sub?: string;
+}
+
+const { kicker, title, sub } = Astro.props;
+---
+
+<div class="section-header">
+  <div>
+    {kicker && (
+        <div class="label kicker">
+          {kicker}
+        </div>
+      )}
+    <h2>{title}</h2>
+    {sub && <p class="sub">{sub}</p>}
+  </div>
+  <slot name="right" />
+</div>
+
+<style>
+.section-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.sub {
+  max-width: 680px;
+  margin-top: 12px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-soft);
+}
+</style>

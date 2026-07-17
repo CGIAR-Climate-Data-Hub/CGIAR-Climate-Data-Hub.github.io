@@ -1,0 +1,60 @@
+---
+// Breadcrumb trail + matching schema.org BreadcrumbList.
+import JsonLd from "./JsonLd.astro";
+
+interface Props {
+  items: { label: string; href?: string }[];
+}
+
+const { items } = Astro.props;
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: items.map((item, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: item.label,
+    ...(item.href && { item: new URL(item.href, Astro.site).href }),
+  })),
+};
+---
+
+<nav aria-label="Breadcrumb">
+  <ol>
+    {items.map((item, i) => (
+        <li>
+          {item.href ? <a href={item.href}>{item.label}</a> : <span aria-current="page">{item.label}</span>}
+          {i < items.length - 1 && <span aria-hidden="true">/</span>}
+        </li>
+      ))}
+  </ol>
+</nav>
+<JsonLd data={schema} />
+
+<style>
+ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  font-size: 12.5px;
+  list-style: none;
+}
+
+li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: var(--text-mute);
+}
+
+a {
+  color: var(--text-soft);
+}
+
+a:hover {
+  color: var(--cdh-blue-700);
+}
+</style>

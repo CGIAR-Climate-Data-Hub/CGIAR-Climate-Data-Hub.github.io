@@ -1,0 +1,141 @@
+---
+// Typographic dataset card: glyph, serif title, source byline, mono meta row.
+// Title/summary are line-clamped so cards in a row stay symmetrical.
+import type { DatasetSummary } from "@/lib/catalog";
+import DataGlyph from "./DataGlyph.astro";
+
+interface Props {
+  dataset: DatasetSummary;
+}
+
+const { dataset: d } = Astro.props;
+const facts = [
+  [d.coverage, d.resolution].filter(Boolean).join(" · "),
+  [d.license, d.temporal].filter(Boolean).join(" · "),
+];
+---
+
+<article class="ds-card">
+  <span class="label type">
+    <DataGlyph size={13} type={d.type} />
+    {d.type === "spatial" ? "Spatial" : "Tabular"}
+  </span>
+  <h3><a href={`/catalog/${d.id}/`} title={d.title}>{d.title}</a></h3>
+  {d.source && <p class="source" title={d.source}>By {d.source}</p>}
+  <p class="summary" title={d.description}>{d.description}</p>
+  <div class="meta mono">
+    {facts.map((f) => <span title={f || undefined}>{f}</span>)}
+  </div>
+</article>
+
+<style>
+.ds-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  padding: 22px 22px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: border-color 0.12s;
+}
+
+.ds-card:hover {
+  border-color: var(--border-strong);
+}
+
+.type {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Bare colored icon — the boxed chip look stays for other DataGlyph uses */
+.type :global(.glyph) {
+  width: auto;
+  height: auto;
+  background: none;
+  border-radius: 0;
+}
+
+h3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+
+  /* Reserve both lines so descriptions start level across the row */
+  min-height: 2lh;
+  margin-top: 4px;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 1.22;
+}
+
+/* Whole card is the click target for the title link */
+h3 a {
+  color: inherit;
+}
+
+h3 a::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+}
+
+/* The whole card is the link, so the whole card lights the title */
+.ds-card:hover h3 a {
+  color: var(--cdh-blue-700);
+  text-decoration: none;
+}
+
+/* Positioned text paints above the stretched-link overlay, so it stays
+   selectable; clicks on it read as text, clicks anywhere else navigate */
+.type,
+.source,
+.summary,
+.meta {
+  position: relative;
+}
+
+/* Licensor byline, snug under the title — darker than the summary so it
+   reads as attribution, not body text */
+.source {
+  margin-top: -6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11.5px;
+  color: var(--grey-7);
+  white-space: nowrap;
+}
+
+.summary {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 3;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+/* Strict two-line fact grid at the very bottom, identical on every card:
+   coverage · resolution, then license · year */
+.meta {
+  display: grid;
+  gap: 3px;
+  padding-top: 14px;
+  margin-top: auto;
+  font-size: 11.5px;
+  color: var(--text-mute);
+  border-top: 1px solid var(--border);
+}
+
+.meta span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

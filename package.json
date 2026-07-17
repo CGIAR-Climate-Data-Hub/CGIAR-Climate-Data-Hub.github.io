@@ -7,6 +7,7 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "dev:example": "RECORDS_DIR=examples/records SKILLS_DIR=examples/skills astro dev",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
@@ -16,7 +17,7 @@
   },
   "dependencies": {
     "@astrojs/check": "0.9.9",
-    "@astrojs/markdown-satteri": "0.3.1",
+    "@astrojs/markdown-satteri": "0.3.4",
     "@astrojs/mdx": "7.0.0",
     "@astrojs/sitemap": "^3.7.3",
     "astro": "7.0.0",
@@ -24,6 +25,12 @@
     "typescript": "6.0.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.16"
+    "@biomejs/biome": "^2.4.16",
+    "@types/d3-geo": "^3.1.0",
+    "@types/topojson-client": "^3.1.5",
+    "@types/topojson-specification": "^1.0.5",
+    "d3-geo": "^3.1.1",
+    "topojson-client": "^3.1.0",
+    "yaml": "^2.9.0"
   }
 }

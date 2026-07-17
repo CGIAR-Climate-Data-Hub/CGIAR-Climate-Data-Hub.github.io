@@ -1,0 +1,63 @@
+---
+// Program-blue reading-progress bar. Long-form pages only.
+---
+
+<div aria-hidden="true" class="scroll-progress">
+  <div class="fill"></div>
+</div>
+
+<script>
+// Firefox hasn't shipped scroll-driven animations — drive the bar the old way
+// there. Supporting browsers skip this entirely (the @supports CSS runs it).
+if (!CSS.supports("animation-timeline: scroll(root)")) {
+  const fill = document.querySelector<HTMLElement>(".scroll-progress .fill");
+  const onScroll = () => {
+    const el = document.documentElement;
+    const max = el.scrollHeight - el.clientHeight;
+    if (fill)
+      fill.style.transform = `scaleX(${max > 0 ? Math.min(1, el.scrollTop / max) : 0})`;
+  };
+  addEventListener("scroll", onScroll, { passive: true });
+  addEventListener("resize", onScroll, { passive: true });
+  onScroll();
+}
+</script>
+
+<style>
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 60;
+  height: 3px;
+  pointer-events: none;
+}
+
+.fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cdh-blue-700), var(--cdh-blue-300));
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+/* Gated: without the timeline these run as instant 0s animations instead */
+@supports (animation-timeline: scroll(root)) {
+  .fill {
+    /* longhands on purpose: the CSS minifier merges an `animation` shorthand
+       with `animation-timeline` into one invalid declaration browsers drop */
+    animation-name: scroll-progress-fill;
+    animation-timing-function: linear;
+    animation-timeline: scroll(root);
+  }
+}
+
+@keyframes scroll-progress-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+</style>

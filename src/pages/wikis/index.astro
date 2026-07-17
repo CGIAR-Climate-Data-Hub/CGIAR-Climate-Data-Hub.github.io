@@ -1,19 +1,167 @@
 ---
 import { getCollection } from "astro:content";
+import WikiSidebar from "@/components/WikiSidebar.astro";
 import Layout from "@/layouts/Layout.astro";
+import { groupWikis, WIKI_SECTION_LABELS } from "@/lib/collections";
+import { githubUrl, treeUrl } from "@/lib/github";
+import { SITE_NAME, SITE_REPO, STANDARD_REPO } from "@/site.config";
 
-const entries = await getCollection("wikis");
+const groups = groupWikis(await getCollection("wikis"));
+const description =
+  "Long-form reference for how the Climate Data Hub works — standards, methods, and governance.";
 ---
 
-<Layout title="Wikis">
-  <h1>Wikis</h1>
-  <ul>
-    {
-      entries.map((entry) => (
-        <li>
-          <a href={`/wikis/${entry.id}`}>{entry.data.title}</a>
-        </li>
-      ))
-    }
-  </ul>
+<Layout description={description} title={`Wikis — ${SITE_NAME}`}>
+  <div class="container docs">
+    <WikiSidebar />
+
+    <div class="main">
+      <div class="hero">
+        <div class="label kicker">The CDH Wiki</div>
+        <h1>Read the Hub, like a book.</h1>
+        <p class="lede">
+          Long-form reference for how the Climate Data Hub works — the standards
+          data must meet, the methods behind the layers, and the concepts that
+          frame them. Pick a topic from the left, or start with the essentials
+          below.
+        </p>
+        <div class="ctas">
+          <a
+            class="btn btn-primary"
+            href={githubUrl(STANDARD_REPO)}
+            rel="noreferrer"
+            >Read the metadata standard →</a
+          >
+          <a
+            class="btn btn-ghost"
+            href={treeUrl(SITE_REPO, "src/content/wikis")}
+            >Contribute an article</a
+          >
+        </div>
+      </div>
+
+      {groups.map((group) => (
+          <section>
+            <h2>{WIKI_SECTION_LABELS[group.section] ?? group.section}</h2>
+            <div class="rows">
+              {group.entries.map((wiki) => (
+                <a class="row" href={`/wikis/${wiki.id}/`}>
+                  <span class="row-text">
+                    <span class="row-title">{wiki.data.title}</span>
+                    <span class="row-summary">{wiki.data.description}</span>
+                  </span>
+                  <span class="mono row-date">{wiki.data.updated.toISOString().slice(0, 10)}</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        ))}
+    </div>
+  </div>
 </Layout>
+
+<style>
+.docs {
+  display: grid;
+  grid-template-columns: 208px minmax(0, 1fr);
+  gap: 44px;
+  align-items: start;
+  padding-top: 34px;
+}
+
+.main {
+  max-width: 760px;
+}
+
+.hero {
+  padding-bottom: 30px;
+  border-bottom: 1px solid var(--border);
+}
+
+h1 {
+  font-size: clamp(34px, 4vw, 52px);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+.lede {
+  margin-top: 18px;
+  font-family: var(--serif);
+  font-size: 18.5px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--text-soft);
+}
+
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+section {
+  margin-top: 34px;
+}
+
+h2 {
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
+.rows {
+  margin-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: baseline;
+  padding: 16px 6px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  transition:
+    padding-left 0.16s,
+    background 0.16s;
+}
+
+.row:hover {
+  padding-left: 14px;
+  text-decoration: none;
+  background: var(--surface);
+}
+
+.row-title {
+  display: block;
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--cdh-blue-950);
+}
+
+.row-summary {
+  display: block;
+  margin-top: 3px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.row-date {
+  font-size: 11px;
+  color: var(--text-mute);
+  white-space: nowrap;
+}
+
+@media (width <= 900px) {
+  .docs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .docs > :global(nav) {
+    display: none;
+  }
+}
+</style>

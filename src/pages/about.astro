@@ -1,0 +1,250 @@
+---
+import { getCollection, getEntry, render } from "astro:content";
+import JsonLd from "@/components/JsonLd.astro";
+import SectionHeader from "@/components/SectionHeader.astro";
+import Layout from "@/layouts/Layout.astro";
+import { SITE_NAME } from "@/site.config";
+
+// Copy lives in src/content/pages/about.md — sections in frontmatter, prose in the body
+const entry = await getEntry("pages", "about");
+if (!entry) throw new Error("Missing src/content/pages/about.md");
+const { Content } = await render(entry);
+const { title, lede, missions, principles } = entry.data;
+
+// Derived from the catalog records and skills at build time
+const catalogEntries = await getCollection("catalog");
+const datasetCount = catalogEntries.length;
+const skillCount = (await getCollection("skills")).length;
+
+const UNITS: Record<string, number> = { KB: 1e3, MB: 1e6, GB: 1e9, TB: 1e12 };
+const totalBytes = catalogEntries
+  .flatMap((e) => [...e.data.data, ...e.data.additional_assets])
+  .reduce((sum, a) => {
+    const m = a.file_size?.match(/([\d.]+)\s*(KB|MB|GB|TB)/i);
+    return m ? sum + Number(m[1]) * UNITS[m[2].toUpperCase()] : sum;
+  }, 0);
+// Floor to one significant figure — sizes are a known undercount (not every
+// asset lists file_size), so a clean "500+ MB" is more honest than 531.
+const floorClean = (n: number) => {
+  const p = 10 ** Math.floor(Math.log10(Math.max(n, 1)));
+  return Math.floor(n / p) * p;
+};
+const [volume, volumeUnit] =
+  totalBytes >= 1e12
+    ? [totalBytes / 1e12, "TB"]
+    : totalBytes >= 1e9
+      ? [totalBytes / 1e9, "GB"]
+      : [totalBytes / 1e6, "MB"];
+const dataVolume = `${floorClean(volume)}+ ${volumeUnit}`;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  name: `About the ${SITE_NAME}`,
+  description: lede,
+  url: new URL("/about/", Astro.site).href,
+  about: { "@id": `${Astro.site}#organization` },
+};
+---
+
+<Layout description={lede} title={`About — ${SITE_NAME}`}>
+  <JsonLd data={jsonLd} slot="head" />
+
+  <section class="hero">
+    <div class="container">
+      <div class="hero-grid">
+        <div class="hero-text">
+          <div class="label kicker">About the Hub</div>
+          <h1>{title}</h1>
+          <p>{lede}</p>
+        </div>
+        <aside class="glance">
+          <div class="label">At a glance</div>
+          <dl>
+            <dt>Program</dt>
+            <dd>CGIAR Climate Action</dd>
+            <dt>Datasets</dt>
+            <dd>{datasetCount}</dd>
+            <dt>Data volume</dt>
+            <dd>{dataVolume}</dd>
+            <dt>AI skills</dt>
+            <dd>{skillCount}</dd>
+          </dl>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="container missions">
+    {missions.map((mission) => (
+        <div class="mission">
+          <h3>{mission.title}</h3>
+          <p>{mission.body}</p>
+        </div>
+      ))}
+  </section>
+
+  <section class="container principles">
+    <SectionHeader kicker="How we work" title="Principles" />
+    <div class="principles-grid">
+      {principles.map((principle) => (
+          <div class="principle">
+            <div class="principle-title">{principle.title}</div>
+            <p>{principle.body}</p>
+          </div>
+        ))}
+    </div>
+  </section>
+
+  <section class="container governance">
+    <SectionHeader kicker="Governance" title="Who runs the Hub" />
+    <div class="prose gov-text">
+      <Content />
+    </div>
+  </section>
+</Layout>
+
+<style>
+.hero {
+  padding: 32px 0 40px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 48px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.hero-text {
+  max-width: 780px;
+}
+
+/* The landing-hero type ramp, shared with the wikis and in-use heroes */
+h1 {
+  font-size: clamp(34px, 4vw, 52px);
+  line-height: 1.08;
+}
+
+.hero-text p {
+  margin-top: 16px;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text-soft);
+}
+
+/* Editorial columns — a rule above each, whitespace does the separating */
+.missions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 32px;
+  padding-top: 48px;
+}
+
+.mission {
+  padding-top: 16px;
+  border-top: 2px solid var(--cdh-blue-950);
+}
+
+.mission h3 {
+  font-size: 20px;
+}
+
+.mission p {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-soft);
+}
+
+.principles {
+  padding-top: 48px;
+}
+
+/* Hairline rows, not a boxed grid */
+.principles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 56px;
+}
+
+.principle {
+  padding: 20px 0;
+  border-top: 1px solid var(--border);
+}
+
+.principle-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cdh-blue-950);
+}
+
+.principle p {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+/* Header left, prose right — the measure stays readable, the row fills */
+.governance {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 48px;
+  align-items: start;
+  padding-top: 56px;
+}
+
+.gov-text {
+  max-width: 640px;
+  font-size: 15px;
+}
+
+.glance {
+  padding: 20px;
+  background: var(--bg); /* the hero backdrop is --surface, so invert */
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.glance .label {
+  margin-bottom: 12px;
+  color: var(--terra-700);
+}
+
+dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  margin: 0;
+  font-size: 13px;
+}
+
+dt {
+  color: var(--text-mute);
+}
+
+dd {
+  margin: 0;
+  color: var(--text);
+}
+
+@media (width <= 860px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .principles-grid,
+  .governance {
+    grid-template-columns: 1fr;
+  }
+
+  .governance {
+    gap: 8px;
+  }
+}
+</style>

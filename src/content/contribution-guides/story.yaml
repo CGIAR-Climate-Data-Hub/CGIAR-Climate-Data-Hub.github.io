@@ -1,0 +1,26 @@
+order: 3
+label: Submit a use case
+icon: STORY
+title: Submit a use case story
+intro: >
+  Stories are short, factual write-ups of work that used the Hub. They help others understand
+  what the Hub enables in practice and become a body of evidence for impact reporting.
+audience: Project leads · Partners
+time: ~1 hour to draft
+steps:
+  - title: Use the story template
+    body: >
+      Title, partners, sector, country, summary (≤120 words), 2–4 measurable impacts,
+      and the datasets you used.
+  - title: Open a PR to the stories folder
+    body: >
+      Drop your filled-in template into src/content/use-cases/ as a Markdown file.
+      CI checks that referenced datasets exist.
+  - title: Review & publish
+    body: >
+      The Hub comms lead reviews for clarity and accuracy. Published stories appear in
+      the In use section.
+checklist:
+  - All referenced datasets exist on the Hub.
+  - Impacts are concrete (numbers, decisions, products).
+  - Partners and contact persons are listed.
