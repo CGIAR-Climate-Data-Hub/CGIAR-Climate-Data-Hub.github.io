@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-3 0 128 72" role="img" aria-label="Climate Data Hub">
+  <!-- The CDH logo IS a diverging anomaly bar chart — cool below baseline /
+       warm above, deeper colour = larger anomaly. Canonical asset; the white
+       -baseline variant for dark backgrounds is cdh-mark-dark.svg. -->
+  <rect fill="#4a7da6" height="28.8" rx="2.5" width="10" x="0" y="36"/>
+  <rect fill="#8fb4d2" height="16.2" rx="2.5" width="10" x="16" y="36"/>
+  <rect fill="#245a87" height="34.2" rx="2.5" width="10" x="32" y="36"/>
+  <rect fill="#e0a783" height="10.8" rx="2.5" width="10" x="48" y="25.2"/>
+  <rect fill="#8fb4d2" height="12.6" rx="2.5" width="10" x="64" y="36"/>
+  <rect fill="#cb6a3e" height="23.4" rx="2.5" width="10" x="80" y="12.6"/>
+  <rect fill="#e0a783" height="16.2" rx="2.5" width="10" x="96" y="19.8"/>
+  <rect fill="#b44a22" height="36" rx="2.5" width="10" x="112" y="0"/>
+  <rect fill="#0c2c57" height="3" rx="1.5" width="128" x="-3" y="34.5"/>
+</svg>

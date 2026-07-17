@@ -1,6 +1,6 @@
 ---
-import CdhMark from "./CdhMark.astro";
-
+// The mark itself is a shareable static asset — public/cdh-mark.svg (navy
+// baseline, canonical) and public/cdh-mark-dark.svg (white baseline).
 interface Props {
   variant?: "light" | "dark";
   size?: number;
@@ -15,7 +15,12 @@ const onDark = variant === "dark";
   class:list={["logo-block", { dark: onDark }]}
   href="/"
 >
-  <CdhMark baseline={onDark ? "#ffffff" : "var(--cdh-blue-950)"} size={size} />
+  <img
+    alt=""
+    height={size}
+    src={onDark ? "/cdh-mark-dark.svg" : "/cdh-mark.svg"}
+    width={Math.round((size * 128) / 72)}
+  >
   <span class="wordmark" style={`font-size: ${size * 0.8}px`}
     >Climate&nbsp;Data&nbsp;Hub</span
   >
