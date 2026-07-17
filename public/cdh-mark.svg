@@ -1,14 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-3 0 128 72" role="img" aria-label="CGIAR Climate Commons">
-  <!-- The CDH logo IS a diverging anomaly bar chart — cool below baseline /
-       warm above, deeper colour = larger anomaly. Canonical asset; the white
-       -baseline variant for dark backgrounds is cdh-mark-dark.svg. -->
-  <rect fill="#4a7da6" height="28.8" rx="2.5" width="10" x="0" y="36"/>
-  <rect fill="#8fb4d2" height="16.2" rx="2.5" width="10" x="16" y="36"/>
-  <rect fill="#245a87" height="34.2" rx="2.5" width="10" x="32" y="36"/>
-  <rect fill="#e0a783" height="10.8" rx="2.5" width="10" x="48" y="25.2"/>
-  <rect fill="#8fb4d2" height="12.6" rx="2.5" width="10" x="64" y="36"/>
-  <rect fill="#cb6a3e" height="23.4" rx="2.5" width="10" x="80" y="12.6"/>
-  <rect fill="#e0a783" height="16.2" rx="2.5" width="10" x="96" y="19.8"/>
-  <rect fill="#b44a22" height="36" rx="2.5" width="10" x="112" y="0"/>
-  <rect fill="#0c2c57" height="3" rx="1.5" width="128" x="-3" y="34.5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="37.44 57.288 965.12 378.891" role="img" aria-label="CGIAR Climate Commons">
+  <!-- Derived from cdh-hero-10yr.svg (Berkeley Earth land temperature
+       anomalies, 10-year epochs, 1950-2024) with the canvas padding cropped
+       for display use. Regenerate from that file's embedded settings.
+       White-baseline variant for dark backgrounds: cdh-mark-dark.svg. -->
+  <rect x="61.334" width="80.132" y="260" height="115.033" rx="4.0066" fill="#3b7ed4"/>
+  <rect x="180.934" width="80.132" y="260" height="133.806" rx="4.0066" fill="#3b7ed4"/>
+  <rect x="300.534" width="80.132" y="260" height="176.179" rx="4.0066" fill="#12417f"/>
+  <rect x="420.134" width="80.132" y="260" height="88.069" rx="4.0066" fill="#a9cdfe"/>
+  <rect x="539.734" width="80.132" y="244.175" height="15.825" rx="4.0066" fill="#ed9e5e"/>
+  <rect x="659.334" width="80.132" y="134.807" height="125.193" rx="4.0066" fill="#d97e4c"/>
+  <rect x="778.934" width="80.132" y="90.643" height="169.357" rx="4.0066" fill="#d97e4c"/>
+  <rect x="898.534" width="80.132" y="57.288" height="202.712" rx="4.0066" fill="#c2542b"/>
+  <line x1="41.6" x2="998.4" y1="260" y2="260" stroke="#0a2c55" stroke-width="8.32" stroke-linecap="round"/>
 </svg>
