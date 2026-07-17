@@ -73,6 +73,7 @@ export async function fromGitHub(
   return mapLimit(paths, 12, async (p) => {
     const raw = await fetch(
       `https://raw.githubusercontent.com/${repo}/${ref}/${p}`,
+      { headers },
     );
     if (!raw.ok) throw new Error(`${p}: ${raw.status}`);
     return { path: p.slice(dir.length + 1), body: await raw.text() };
