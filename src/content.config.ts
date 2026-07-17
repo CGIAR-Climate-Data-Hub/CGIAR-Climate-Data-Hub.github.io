@@ -211,20 +211,15 @@ const catalog = defineCollection({
             .default([]),
         })
         .optional(),
+      // Dates are ISO 8601, possibly reduced precision ("2020", "2020-06");
+      // a reduced-precision end_date is inclusive (through the period's end).
       temporal: z
-        .object({
-          start_date: z.string(),
-          end_date: z.string().optional(),
-          resolution: z
-            .object({
-              unit: z.string().optional(),
-              step: z.string().optional(),
-              note: z.string().optional(),
-              // Discrete slices (e.g. projection horizons) instead of a range
-              values: z.array(z.coerce.string()).default([]),
-            })
-            .optional(),
-        })
+        .union([
+          // Static reference date — "represents 2020", not "covers 2020"
+          z.object({ date: z.string() }),
+          // Coverage span; end_date is required but null when ongoing
+          z.object({ start_date: z.string(), end_date: z.string().nullable() }),
+        ])
         .optional(),
       dimensions: z
         .array(
@@ -234,6 +229,8 @@ const catalog = defineCollection({
             description: z.string().optional(),
             // The standard allows bare numbers (years); the site works in strings
             values: z.array(z.coerce.string()).default([]),
+            // ISO 8601 duration between slices, on temporal axes
+            step: z.string().optional(),
           }),
         )
         .default([]),

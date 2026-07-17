@@ -82,21 +82,10 @@ const resolution = d.spatial?.resolution
   .map((r) => r.label)
   .filter(Boolean)
   .join(" · ");
-const temporal = temporalText(d.temporal);
-// Time is an implicit axis: a temporal resolution means a time dimension,
-// which records never declare explicitly — the site appends it here.
-const timeDimension = d.temporal?.resolution && {
-  name: "time",
-  type: "temporal",
-  description: d.temporal.resolution.note,
-  values:
-    d.temporal.resolution.values.length > 0
-      ? d.temporal.resolution.values
-      : [temporal?.main ?? ""].filter(Boolean),
-};
-const dimensions = timeDimension
-  ? [...d.dimensions, timeDimension]
-  : d.dimensions;
+const temporal = temporalText(
+  d.temporal,
+  d.dimensions.find((dim) => dim.type === "temporal")?.step,
+);
 // The header's source line: the licensor (a required role in the standard)
 const source = d.contact.find((c) =>
   c.roles.includes("licensor"),
@@ -116,7 +105,7 @@ const crsHref =
   d.spatial?.crs && /^EPSG:\d+$/.test(d.spatial.crs)
     ? `https://epsg.io/${d.spatial.crs.split(":")[1]}`
     : undefined;
-const hasSchema = dimensions.length + d.variables.length > 0;
+const hasSchema = d.dimensions.length + d.variables.length > 0;
 const hasTemplated = d.data.some((a) => a.href_template);
 const stacUrl = stacCollectionUrl(d.id);
 // Record metadata lives in the catalog repo, so source + issue links point
@@ -196,7 +185,7 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
     ].map((name) => ({
       name,
       values:
-        dimensions.find((dim) => dim.name === name)?.values
+        d.dimensions.find((dim) => dim.name === name)?.values
         ?? (name === "variable" ? d.variables.map((v) => v.name) : []),
     }));
     if (fields.every((f) => f.values.length > 0)) {
@@ -569,12 +558,12 @@ const jsonLd = datasetJsonLd(
               </div>
             )}
 
-            {dimensions.length > 0 && (
+            {d.dimensions.length > 0 && (
               <div>
                 <h3>Dimensions</h3>
                 <p class="section-sub">Axes of the cube — spatial, temporal, and domain axes.</p>
                 <div class="dim-cards">
-                  {dimensions.map((dim) => (
+                  {d.dimensions.map((dim) => (
                     <div class="dim-card">
                       <div class="dim-head">
                         <span class="mono dim-name">{dim.name}</span>
@@ -813,29 +802,19 @@ const jsonLd = datasetJsonLd(
               <div>
                 <h4 class="tech-title">Temporal</h4>
                 <dl class="kv">
-                  <dt>Start</dt>
-                  <dd class="mono">{d.temporal.start_date}</dd>
-                  <dt>End</dt>
-                  <dd class="mono">{d.temporal.end_date ?? "open (present)"}</dd>
-                  {d.temporal.resolution?.step && (
+                  {"date" in d.temporal ? (
                     <>
-                      <dt>Step</dt>
-                      <dd class="mono">{d.temporal.resolution.step}</dd>
+                      <dt>Reference date</dt>
+                      <dd class="mono">{d.temporal.date}</dd>
                     </>
-                  )}
-                  {d.temporal.resolution
-                    && d.temporal.resolution.values.length > 0 && (
+                  ) : (
                     <>
-                      <dt>Slices</dt>
+                      <dt>Start</dt>
+                      <dd class="mono">{d.temporal.start_date}</dd>
+                      <dt>End</dt>
                       <dd class="mono">
-                        {d.temporal.resolution.values.join(", ")}
+                        {d.temporal.end_date ?? "open (present)"}
                       </dd>
-                    </>
-                  )}
-                  {d.temporal.resolution?.note && (
-                    <>
-                      <dt>Note</dt>
-                      <dd>{d.temporal.resolution.note}</dd>
                     </>
                   )}
                 </dl>

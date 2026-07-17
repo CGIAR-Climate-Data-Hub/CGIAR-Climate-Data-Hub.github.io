@@ -83,12 +83,7 @@ spatial:
       label: 5 arc-minutes (~10km at equator)
 
 temporal:
-  start_date: "2020-01-01"
-  end_date: "2020-12-31"
-  resolution:
-    unit: year
-    step: P1Y
-    note: Static data for 2020 reference year
+  date: "2020" # static 2020 reference year (year precision)
 
 dimensions:
   - name: crop

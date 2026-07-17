@@ -99,10 +99,11 @@ created: "2026-07-15"
 updated: "2026-07-15"
 
 spatial:
-  # Two boxes: the first is the overall extent, the second an inset sub-region.
+  # Disjoint coverage: two separate areas. No overall/union box is authored -
+  # the encoder derives the overall extent when serializing to STAC.
   bbox:
-    - [10, -5, 40, 20]
-    - [22, 2, 30, 10]
+    - [10, -5, 22, 8]
+    - [28, 6, 40, 20]
   geography:
     - africa
   crs: EPSG:4326
@@ -116,15 +117,19 @@ spatial:
       note: Regular lat/lon grid; cell ground area shrinks toward the poles.
 
 temporal:
-  start_date: "2030-01-01"
-  end_date: "2050-12-31"
-  resolution:
-    unit: year
-    step: P20Y
-    note: Two discrete projection horizons rather than a continuous series.
-    values: [2030, 2050]
+  # Coverage span (year precision). The two projection horizons are a temporal
+  # axis, so they are declared as a type: temporal dimension below - not here.
+  start_date: "2030"
+  end_date: "2050"
 
+# lat/lon come from spatial. Every other axis - the projection horizon (a temporal
+# dimension, with an ISO 8601 step) and the domain axes - is declared here.
 dimensions:
+  - name: time
+    type: temporal
+    description: Projection horizon (reference year).
+    values: [2030, 2050]
+    step: P20Y
   - name: crop
     type: crop
     description: Example crop code. Full labels are in the dimension codes asset.
@@ -135,8 +140,6 @@ dimensions:
     description: Emissions scenario label.
     reference_system: https://example.org/vocab/scenarios
     values: [ssp245, ssp585]
-  # No explicit time dimension: a temporal resolution implies the time axis;
-  # consumers append it themselves.
 
 variables:
   - name: suitability_index

@@ -70,20 +70,20 @@ spatial:
       label: 6 arc-minutes (~10 km at equator)
 
 temporal:
-  start_date: "2030-01-01"
-  end_date: "2050-12-31"
-  resolution:
-    unit: year
-    step: P20Y
-    values: [2030, 2050]
+  start_date: "2030"
+  end_date: "2050"
 
+# lat/lon come from spatial; the projection horizon and domain axes are declared here.
 dimensions:
+  - name: time
+    type: temporal
+    description: Projection horizon (reference year).
+    values: [2030, 2050]
+    step: P20Y
   - name: crop
     type: crop
     description: Example crop code.
     values: [maiz, rice]
-  # No explicit time dimension: a temporal resolution implies the time axis;
-  # consumers append it themselves.
 
 variables:
   - name: suitability_index

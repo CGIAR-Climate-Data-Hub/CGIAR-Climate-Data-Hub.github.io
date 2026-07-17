@@ -260,33 +260,25 @@ const STEP_LABELS: Record<string, string> = {
   PT1H: "hourly",
 };
 
-// ISO 8601 duration → approximate days, to size the extent against the step
-function stepDays(step: string) {
-  const m = step.match(/^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?(?:T(\d+)H)?$/);
-  if (!m) return undefined;
-  return (
-    +(m[1] ?? 0) * 365 + +(m[2] ?? 0) * 30 + +(m[3] ?? 0) + +(m[4] ?? 0) / 24
+// "P3M" → "every 3 months" (steps are pipeline-validated ISO 8601 durations)
+function stepLabel(step: string) {
+  if (STEP_LABELS[step]) return STEP_LABELS[step];
+  const m =
+    step.match(/^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?(?:T(\d+)H)?$/) ?? [];
+  const parts = ["year", "month", "day", "hour"].flatMap((unit, i) =>
+    m[i + 1] ? `${m[i + 1]} ${unit}${+m[i + 1] > 1 ? "s" : ""}` : [],
   );
+  return `every ${parts.join(" ")}`;
 }
 
-// An extent that fits inside one step is a single time slice — a static
-// snapshot, not a series — so render it as its reference year.
-export function temporalText(t: CatalogRecord["temporal"]) {
+// Snapshot (date) or span; `step` is the time dimension's, labels the cadence
+export function temporalText(t: CatalogRecord["temporal"], step?: string) {
   if (!t) return undefined;
-  const days =
-    (Date.parse(t.end_date ?? t.start_date) - Date.parse(t.start_date)) / 864e5;
-  const step = t.resolution?.step;
-  const single = step ? days <= (stepDays(step) ?? 0) : days <= 366;
   const year = (date: string) => date.slice(0, 4);
+  if ("date" in t) return { main: year(t.date), sub: "static snapshot" };
   return {
-    main: single
-      ? year(t.start_date)
-      : `${year(t.start_date)} – ${t.end_date ? year(t.end_date) : "present"}`,
-    sub: single
-      ? (t.resolution?.note ?? "static snapshot")
-      : [step && (STEP_LABELS[step] ?? step), t.resolution?.note]
-          .filter(Boolean)
-          .join(" · "),
+    main: `${year(t.start_date)} – ${t.end_date ? year(t.end_date) : "present"}`,
+    sub: step && stepLabel(step),
   };
 }
 
@@ -427,10 +419,12 @@ export function datasetJsonLd(
         });
       return places.length > 0 ? { spatialCoverage: places } : {};
     })(),
+    // schema.org accepts reduced-precision dates; ".." is its open-ended marker
     ...(d.temporal && {
-      temporalCoverage: d.temporal.end_date
-        ? `${d.temporal.start_date}/${d.temporal.end_date}`
-        : d.temporal.start_date,
+      temporalCoverage:
+        "date" in d.temporal
+          ? d.temporal.date
+          : `${d.temporal.start_date}/${d.temporal.end_date ?? ".."}`,
     }),
     ...(d.variables.length > 0 && {
       variableMeasured: d.variables.map((v) => ({
