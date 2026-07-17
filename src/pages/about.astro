@@ -99,15 +99,9 @@ const jsonLd = {
   </section>
 
   <section class="container governance">
-    <div>
-      <SectionHeader kicker="Governance" title="Who runs the Hub" />
-      <div class="prose gov-text">
-        <Content />
-      </div>
-      <div class="ctas">
-        <a class="btn btn-accent" href="/contribute/">Contribute to the Hub</a>
-        <a class="btn btn-ghost" href="/wikis/">Read the standards</a>
-      </div>
+    <SectionHeader kicker="Governance" title="Who runs the Hub" />
+    <div class="prose gov-text">
+      <Content />
     </div>
   </section>
 </Layout>
@@ -144,18 +138,17 @@ h1 {
   color: var(--text-soft);
 }
 
+/* Editorial columns — a rule above each, whitespace does the separating */
 .missions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
-  padding-top: 40px;
+  gap: 32px;
+  padding-top: 48px;
 }
 
 .mission {
-  padding: 22px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  padding-top: 16px;
+  border-top: 2px solid var(--cdh-blue-950);
 }
 
 .mission h3 {
@@ -173,24 +166,16 @@ h1 {
   padding-top: 48px;
 }
 
+/* Hairline rows, not a boxed grid */
 .principles-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  gap: 0 56px;
 }
 
 .principle {
-  padding: 22px;
-  border-bottom: 1px solid var(--border);
-}
-
-.principle:nth-child(odd) {
-  border-right: 1px solid var(--border);
-}
-
-.principle:nth-last-child(-n + 2) {
-  border-bottom: 0;
+  padding: 20px 0;
+  border-top: 1px solid var(--border);
 }
 
 .principle-title {
@@ -206,20 +191,18 @@ h1 {
   color: var(--text-soft);
 }
 
+/* Header left, prose right — the measure stays readable, the row fills */
 .governance {
-  padding-top: 48px;
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 48px;
+  align-items: start;
+  padding-top: 56px;
 }
 
 .gov-text {
   max-width: 640px;
   font-size: 15px;
-}
-
-.ctas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 20px;
 }
 
 .glance {
@@ -264,20 +247,13 @@ dd {
     gap: 28px;
   }
 
-  .principles-grid {
+  .principles-grid,
+  .governance {
     grid-template-columns: 1fr;
   }
 
-  .principle:nth-child(odd) {
-    border-right: 0;
-  }
-
-  .principle:nth-last-child(-n + 2) {
-    border-bottom: 1px solid var(--border);
-  }
-
-  .principle:last-child {
-    border-bottom: 0;
+  .governance {
+    gap: 8px;
   }
 }
 </style>
