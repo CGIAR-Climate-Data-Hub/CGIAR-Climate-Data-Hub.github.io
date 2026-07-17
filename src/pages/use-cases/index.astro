@@ -1,6 +1,5 @@
 ---
 import { getCollection } from "astro:content";
-import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import Takeaways from "@/components/Takeaways.astro";
 import Layout from "@/layouts/Layout.astro";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
@@ -19,7 +18,6 @@ const monthOf = (d: Date) => d.toISOString().slice(0, 7);
 
 <Layout description={description} title={`In use — ${SITE_NAME}`}>
   <div class="container head">
-    <Breadcrumbs items={[{ label: "Hub", href: "/" }, { label: "In use" }]} />
     <div class="hero">
       <div class="label kicker">In use</div>
       <h1>From the field, and beyond.</h1>

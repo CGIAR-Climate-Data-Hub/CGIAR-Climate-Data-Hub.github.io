@@ -1,6 +1,5 @@
 ---
 import { getCollection, getEntry, render } from "astro:content";
-import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import SectionHeader from "@/components/SectionHeader.astro";
 import Layout from "@/layouts/Layout.astro";
@@ -52,10 +51,9 @@ const jsonLd = {
 
   <section class="hero">
     <div class="container">
-      <Breadcrumbs items={[{ label: "Hub", href: "/" }, { label: "About" }]} />
       <div class="hero-grid">
         <div class="hero-text">
-          <div class="label about-kicker">About the Hub</div>
+          <div class="label kicker">About the Hub</div>
           <h1>{title}</h1>
           <p>{lede}</p>
         </div>
@@ -131,11 +129,6 @@ const jsonLd = {
 
 .hero-text {
   max-width: 780px;
-}
-
-.about-kicker {
-  margin-bottom: 12px;
-  color: var(--cdh-blue-700);
 }
 
 h1 {

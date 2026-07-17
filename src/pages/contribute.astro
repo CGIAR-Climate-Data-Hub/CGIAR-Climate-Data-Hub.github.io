@@ -1,6 +1,5 @@
 ---
 import { getCollection } from "astro:content";
-import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import Layout from "@/layouts/Layout.astro";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
 
@@ -30,9 +29,6 @@ const description =
 <Layout description={description} title={`Contribute — ${SITE_NAME}`}>
   <section class="hero">
     <div class="container">
-      <Breadcrumbs
-        items={[{ label: "Hub", href: "/" }, { label: "Contribute" }]}
-      />
       <div class="hero-grid">
         <div>
           <h1>Contribute to the Hub.</h1>
