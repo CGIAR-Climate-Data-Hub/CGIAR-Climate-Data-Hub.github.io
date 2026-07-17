@@ -2,7 +2,7 @@
 import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
 import { allTutorials } from "@/lib/collections";
-import { SITE_NAME } from "@/site.config";
+import { SITE_NAME, SITE_REPO } from "@/site.config";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
 const LEVEL_COLORS: Record<string, string> = {
@@ -161,7 +161,9 @@ const description =
       >Tutorials are Markdown &amp; notebooks in the open — improvements
       welcome.</span
     >
-    <a class="edit-link" href="https://github.com/CGIAR-Climate-Data-Hub"
+    <a
+      class="edit-link"
+      href={`https://github.com/${SITE_REPO}/tree/main/src/content/tutorials`}
       >Edit tutorials on GitHub</a
     >
   </section>

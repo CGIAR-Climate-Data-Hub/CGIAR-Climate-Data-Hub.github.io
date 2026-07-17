@@ -5,7 +5,7 @@ import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import Layout from "@/layouts/Layout.astro";
 import { allTutorials } from "@/lib/collections";
-import { GITHUB_REPO, SITE_NAME } from "@/site.config";
+import { SITE_NAME, SITE_REPO } from "@/site.config";
 
 export async function getStaticPaths() {
   const entries = await allTutorials();
@@ -88,7 +88,7 @@ const jsonLd = {
           </a>
           <a
             class="btn btn-ghost"
-            href={`https://colab.research.google.com/github/${GITHUB_REPO}/blob/main/${notebookPath}`}
+            href={`https://colab.research.google.com/github/${SITE_REPO}/blob/main/${notebookPath}`}
             rel="noreferrer"
           >
             Open in Colab
@@ -102,7 +102,7 @@ const jsonLd = {
         <a class="back" href="/tutorials/">← All tutorials</a>
         <a
           class="edit-link"
-          href={`https://github.com/${GITHUB_REPO}/edit/main/${entry.filePath}`}
+          href={`https://github.com/${SITE_REPO}/edit/main/${entry.filePath}`}
           >Edit this page on GitHub</a
         >
       </div>

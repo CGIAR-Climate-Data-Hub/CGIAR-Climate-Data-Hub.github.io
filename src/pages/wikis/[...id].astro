@@ -5,7 +5,7 @@ import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import WikiSidebar from "@/components/WikiSidebar.astro";
 import Layout from "@/layouts/Layout.astro";
-import { GITHUB_REPO, SITE_NAME } from "@/site.config";
+import { SITE_NAME, SITE_REPO } from "@/site.config";
 
 export async function getStaticPaths() {
   const entries = await getCollection("wikis");
@@ -59,7 +59,7 @@ const jsonLd = {
         <a class="back" href="/wikis/">← Back to the wiki</a>
         <a
           class="edit-link"
-          href={`https://github.com/${GITHUB_REPO}/edit/main/${entry.filePath}`}
+          href={`https://github.com/${SITE_REPO}/edit/main/${entry.filePath}`}
           >Edit this page on GitHub</a
         >
       </div>

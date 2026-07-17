@@ -3,7 +3,7 @@ import { getCollection } from "astro:content";
 import WikiSidebar from "@/components/WikiSidebar.astro";
 import Layout from "@/layouts/Layout.astro";
 import { groupWikis } from "@/lib/collections";
-import { GITHUB_URL, SITE_NAME } from "@/site.config";
+import { SITE_NAME, SITE_REPO } from "@/site.config";
 
 const GROUP_LABELS: Record<string, string> = { Standards: "Data standards" };
 const groups = groupWikis(await getCollection("wikis"));
@@ -32,7 +32,11 @@ const description =
             rel="noreferrer"
             >Read the metadata standard →</a
           >
-          <a class="btn btn-ghost" href={GITHUB_URL}>Contribute an article</a>
+          <a
+            class="btn btn-ghost"
+            href={`https://github.com/${SITE_REPO}/tree/main/src/content/wikis`}
+            >Contribute an article</a
+          >
         </div>
       </div>
 

@@ -3,12 +3,10 @@ export const SITE_NAME = "Climate Data Hub";
 export const SITE_DESCRIPTION =
   "A catalog and documentation hub for climate action datasets.";
 export const GITHUB_URL = "https://github.com/CGIAR-Climate-Data-Hub";
-// This site's own repo (owner/name), for website/docs issue links
+// This site's own repo (owner/name): edit/source/Colab links, site issues
 export const SITE_REPO = "CGIAR-Climate-Data-Hub/climate-data-hub";
 // Agent skills: source repo (owner/name) and their Starlight docs site
 export const SKILLS_REPO = "CGIAR-Climate-Data-Hub/skills";
 export const SKILLS_SITE = "https://cgiar-climate-data-hub.github.io/skills/";
-// org/repo slug of this site's repository (Colab links, source links)
-export const GITHUB_REPO = "CGIAR-Climate-Data-Hub/climate-data-hub";
 // org/repo slug of the catalog metadata repo (record source + data issues)
 export const CATALOG_REPO = "CGIAR-Climate-Data-Hub/cdh-catalog";
