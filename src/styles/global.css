@@ -220,7 +220,7 @@ hr {
 }
 
 .btn-primary {
-  color: #fff;
+  color: var(--text-inverse);
   background: var(--cdh-blue-950);
 }
 
@@ -230,7 +230,7 @@ hr {
 }
 
 .btn-accent {
-  color: #fff;
+  color: var(--text-inverse);
   background: var(--terra-700);
 }
 
@@ -246,7 +246,7 @@ hr {
 }
 
 .btn-ghost:hover {
-  color: #fff;
+  color: var(--text-inverse);
   text-decoration: none;
   background: var(--cdh-blue-950);
   border-color: var(--cdh-blue-950);
@@ -254,7 +254,7 @@ hr {
 
 /* True CTA — fills with the accent on hover. Reserved for notable actions. */
 .btn-cta:hover {
-  color: #fff;
+  color: var(--text-inverse);
   background: var(--terra-700);
   border-color: var(--terra-700);
 }
@@ -292,7 +292,7 @@ hr {
 .seg > [aria-pressed="true"],
 .seg > [aria-current="page"] {
   font-weight: 600;
-  color: #fff;
+  color: var(--text-inverse);
   background: var(--cdh-blue-950);
 }
 

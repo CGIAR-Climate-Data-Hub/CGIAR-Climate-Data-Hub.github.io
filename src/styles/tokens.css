@@ -43,6 +43,7 @@
   --text: var(--grey-8);
   --text-soft: var(--grey-6);
   --text-mute: var(--grey-5);
+  --text-inverse: #fff;
   --link: var(--cdh-blue-700);
 
   --radius-lg: 12px;
