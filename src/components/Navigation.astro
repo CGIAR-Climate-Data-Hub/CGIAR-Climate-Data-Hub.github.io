@@ -7,8 +7,8 @@ const CATALOG = { href: "/catalog/", label: "Catalog" };
 const IN_USE = { href: "/use-cases/", label: "In use" };
 
 const LEARN = [
-  { href: "/tutorials/", label: "Tutorials", desc: "Runnable, step-by-step" },
   { href: "/wikis/", label: "Wikis", desc: "Reference & standards" },
+  { href: "/tutorials/", label: "Tutorials", desc: "Runnable, step-by-step" },
   { href: "/faq/", label: "FAQ", desc: "Common questions, answered" },
   { href: "/ai/", label: "For AI & agents", desc: "Skills & machine access" },
 ];
@@ -37,7 +37,7 @@ const learnActive = LEARN.some((l) => isActive(l.href));
       <div class="dropdown">
         <a
           class:list={["nav-item", { "is-active": learnActive }]}
-          href="/tutorials/"
+          href="/wikis/"
         >
           Learn
           <svg
