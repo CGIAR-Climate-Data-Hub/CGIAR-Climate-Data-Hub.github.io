@@ -12,6 +12,7 @@ import {
   humanize,
   summarize,
 } from "@/lib/catalog";
+import { projectLonLat } from "@/lib/coordinates";
 import { landPath } from "@/lib/map";
 import { SITE_NAME } from "@/site.config";
 
@@ -76,10 +77,6 @@ const OPEN_FILTERS = ["spatial", "domain", "geography"];
 // Spatial-search minimap (equirectangular; lon/lat → svg coords)
 const W = 220;
 const H = 110;
-const toSvg = (lon: number, lat: number) => [
-  ((lon + 180) / 360) * W,
-  ((90 - lat) / 180) * H,
-];
 const land = landPath(W, H);
 
 const description =
@@ -242,8 +239,8 @@ const catalogSchema = {
               x="0"
               y="0"
             ></rect>
-            {[-120, -60, 0, 60, 120].map((lon) => <line stroke="rgb(101 127 114 / 18%)" stroke-width="0.4" x1={toSvg(lon, 0)[0]} x2={toSvg(lon, 0)[0]} y1="0" y2={H}></line>)}
-            {[-60, -30, 30, 60].map((lat) => <line stroke="rgb(101 127 114 / 18%)" stroke-width="0.4" x1="0" x2={W} y1={toSvg(0, lat)[1]} y2={toSvg(0, lat)[1]}></line>)}
+            {[-120, -60, 0, 60, 120].map((lon) => <line stroke="rgb(101 127 114 / 18%)" stroke-width="0.4" x1={projectLonLat(lon, 0, W, H)[0]} x2={projectLonLat(lon, 0, W, H)[0]} y1="0" y2={H}></line>)}
+            {[-60, -30, 30, 60].map((lat) => <line stroke="rgb(101 127 114 / 18%)" stroke-width="0.4" x1="0" x2={W} y1={projectLonLat(0, lat, W, H)[1]} y2={projectLonLat(0, lat, W, H)[1]}></line>)}
             <line
               stroke="rgb(101 127 114 / 32%)"
               stroke-dasharray="1 1"
@@ -357,6 +354,8 @@ const catalogSchema = {
 </Layout>
 
 <script>
+import { projectLonLat, unprojectPoint } from "@/lib/coordinates";
+
 // Layout switcher — a display preference, so it persists locally, not in the URL
 const layoutButtons = [
   ...document.querySelectorAll<HTMLButtonElement>("[data-layout]"),
@@ -502,23 +501,17 @@ const rect = document.querySelector<SVGRectElement>("#bbox-rect");
 const activeTag = document.querySelector<HTMLElement>("#bbox-active");
 const bboxClear = document.querySelector<HTMLButtonElement>("#bbox-clear");
 
-const MAP_W = 220;
-const MAP_H = 110;
-const toLonLat = (x: number, y: number) => [
-  -180 + (x / MAP_W) * 360,
-  90 - (y / MAP_H) * 180,
-];
-const toSvgPt = (lon: number, lat: number) => [
-  ((lon + 180) / 360) * MAP_W,
-  ((90 - lat) / 180) * MAP_H,
-];
-
 function svgPoint(e: PointerEvent) {
-  if (!map) return [0, 0];
-  const r = map.getBoundingClientRect();
-  const x = ((e.clientX - r.left) / r.width) * MAP_W;
-  const y = ((e.clientY - r.top) / r.height) * MAP_H;
-  return [Math.max(0, Math.min(MAP_W, x)), Math.max(0, Math.min(MAP_H, y))];
+  const matrix = map?.getScreenCTM();
+  if (!map || !matrix) return [0, 0];
+  const point = new DOMPoint(e.clientX, e.clientY).matrixTransform(
+    matrix.inverse(),
+  );
+  const box = map.viewBox.baseVal;
+  return [
+    Math.max(box.x, Math.min(box.x + box.width, point.x)),
+    Math.max(box.y, Math.min(box.y + box.height, point.y)),
+  ];
 }
 
 function drawRect(x: number, y: number, w: number, h: number) {
@@ -534,10 +527,11 @@ function syncBboxUi() {
   const active = state.bbox !== null;
   if (activeTag) activeTag.hidden = !active;
   if (bboxClear) bboxClear.hidden = !active;
-  if (state.bbox) {
+  if (state.bbox && map) {
     const [w, s, e, n] = state.bbox;
-    const [x1, y1] = toSvgPt(w, n);
-    const [x2, y2] = toSvgPt(e, s);
+    const { width, height } = map.viewBox.baseVal;
+    const [x1, y1] = projectLonLat(w, n, width, height);
+    const [x2, y2] = projectLonLat(e, s, width, height);
     drawRect(x1, y1, x2 - x1, y2 - y1);
   } else if (rect) {
     rect.style.display = "none";
@@ -566,13 +560,18 @@ map?.addEventListener("pointerup", (e) => {
   const dx = Math.abs(dragStart[0] - p[0]);
   const dy = Math.abs(dragStart[1] - p[1]);
   if (dx > 2 && dy > 2) {
-    const [w, n] = toLonLat(
+    const { width, height } = map.viewBox.baseVal;
+    const [w, n] = unprojectPoint(
       Math.min(dragStart[0], p[0]),
       Math.min(dragStart[1], p[1]),
+      width,
+      height,
     );
-    const [e2, s] = toLonLat(
+    const [e2, s] = unprojectPoint(
       Math.max(dragStart[0], p[0]),
       Math.max(dragStart[1], p[1]),
+      width,
+      height,
     );
     state.bbox = [w, s, e2, n];
   }

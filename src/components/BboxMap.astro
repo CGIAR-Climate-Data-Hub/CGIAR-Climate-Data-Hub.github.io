@@ -1,5 +1,7 @@
 ---
 // Spatial-extent preview: Natural Earth land + the record's bbox(es). No JS.
+
+import { projectLonLat } from "@/lib/coordinates";
 import { landPath } from "@/lib/map";
 
 interface Props {
@@ -11,14 +13,9 @@ const { bboxes = [], label } = Astro.props;
 
 const W = 300;
 const H = 150;
-const toSvg = (lon: number, lat: number) => [
-  ((lon + 180) / 360) * W,
-  ((90 - lat) / 180) * H,
-];
-
 const rects = bboxes.map((b) => {
-  const [x1, y1] = toSvg(b[0], b[3]);
-  const [x2, y2] = toSvg(b[2], b[1]);
+  const [x1, y1] = projectLonLat(b[0], b[3], W, H);
+  const [x2, y2] = projectLonLat(b[2], b[1], W, H);
   return { x: x1, y: y1, w: Math.max(2, x2 - x1), h: Math.max(2, y2 - y1) };
 });
 ---
