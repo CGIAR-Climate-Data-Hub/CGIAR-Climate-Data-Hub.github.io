@@ -38,12 +38,19 @@ export function scrollSpy(nav: HTMLElement) {
   );
   for (const t of targets) band.observe(t);
 
-  // A short final section may never reach the band — when the page bottom
-  // (zero-height sentinel) scrolls into view, the last target wins.
-  const sentinel = document.createElement("div");
-  document.body.append(sentinel);
-  new IntersectionObserver((entries) => {
-    atBottom = entries[0]?.isIntersecting ?? false;
-    render();
-  }).observe(sentinel);
+  // A short final section may never reach the band — within a couple of px
+  // of the page bottom, the last target wins. Plain scroll math: a zero-area
+  // sentinel at the exact document edge is an IntersectionObserver boundary
+  // case browsers report inconsistently.
+  const onScroll = () => {
+    const bottom =
+      window.innerHeight + window.scrollY
+      >= document.documentElement.scrollHeight - 2;
+    if (bottom !== atBottom) {
+      atBottom = bottom;
+      render();
+    }
+  };
+  addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
 }
