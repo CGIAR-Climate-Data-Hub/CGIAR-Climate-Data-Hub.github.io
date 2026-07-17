@@ -1,6 +1,9 @@
-// IntersectionObserver scroll-spy shared by the article TOC and the
-// contribute page's "I want to…" list: marks the nav link whose target
-// the reader is in with aria-current="true".
+// Scroll-spy shared by the article TOC and the contribute page's
+// "I want to…" list: marks the nav link whose target the reader is in with
+// aria-current="true". Stateless on purpose — the current section is
+// recomputed from live geometry every scroll, so instant anchor jumps can't
+// leave stale state behind (IntersectionObserver only reports *changes*, so
+// sections skipped over in a jump kept their old flags).
 
 // Reading line, px from viewport top — clears the sticky header.
 const LINE = 140;
@@ -12,45 +15,23 @@ export function scrollSpy(nav: HTMLElement) {
     .filter((el): el is HTMLElement => el !== null);
   if (targets.length === 0) return;
 
-  // A target is "passed" once it crosses up through the reading band;
-  // the last passed target is the one being read.
-  const passed = targets.map(() => false);
-  let atBottom = false;
-
   const render = () => {
+    // Within a couple of px of the page bottom the last target wins — a
+    // short final section may never reach the reading line.
+    const atBottom =
+      window.innerHeight + window.scrollY
+      >= document.documentElement.scrollHeight - 2;
+    // Otherwise: the last target whose top has crossed up through the line
+    // is the one being read; before any has, the first target stands in.
     const current = atBottom
       ? targets.at(-1)
-      : targets[Math.max(0, passed.lastIndexOf(true))];
+      : (targets.findLast((t) => t.getBoundingClientRect().top < LINE)
+        ?? targets[0]);
     for (const a of links)
       a.setAttribute("aria-current", String(a.hash === `#${current?.id}`));
   };
 
-  const band = new IntersectionObserver(
-    (entries) => {
-      for (const e of entries) {
-        const i = targets.indexOf(e.target as HTMLElement);
-        passed[i] = e.isIntersecting || e.boundingClientRect.top < LINE;
-      }
-      render();
-    },
-    // Band from the reading line down to 25% of the viewport
-    { rootMargin: `-${LINE}px 0px -75% 0px` },
-  );
-  for (const t of targets) band.observe(t);
-
-  // A short final section may never reach the band — within a couple of px
-  // of the page bottom, the last target wins. Plain scroll math: a zero-area
-  // sentinel at the exact document edge is an IntersectionObserver boundary
-  // case browsers report inconsistently.
-  const onScroll = () => {
-    const bottom =
-      window.innerHeight + window.scrollY
-      >= document.documentElement.scrollHeight - 2;
-    if (bottom !== atBottom) {
-      atBottom = bottom;
-      render();
-    }
-  };
-  addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
+  addEventListener("scroll", render, { passive: true });
+  addEventListener("resize", render, { passive: true });
+  render();
 }
