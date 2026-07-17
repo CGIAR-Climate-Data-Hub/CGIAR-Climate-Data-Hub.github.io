@@ -64,18 +64,21 @@ const ENDPOINTS = [
       whenever a task calls for it, instead of you re-explaining the Hub every
       session.
     </p>
-    <p class="section-sub">
-      To use one, grab its folder from{" "}
-      <a href={SKILLS_GITHUB}>the skills repository</a>{" "}
-      and drop it where your agent discovers skills —{" "}
-      <code>.claude/skills/</code>{" "}
-      in a project for{" "}
-      <a href={`${SKILLS_SITE}usage/claude-code/`}>Claude Code</a>; Gemini CLI,
-      Codex, OpenCode, and others read the same format (see{" "}
-      <a href={`${SKILLS_SITE}getting-started/`}>getting started</a>) — or paste
-      a skill's <code>SKILL.md</code>{" "}
-      into any assistant's conversation.
-    </p>
+    <details class="how-to">
+      <summary>How do I use a skill?</summary>
+      <p class="section-sub">
+        Grab the skill's folder from{" "}
+        <a href={SKILLS_GITHUB}>the skills repository</a>{" "}
+        and drop it where your agent discovers skills —{" "}
+        <code>.claude/skills/</code>{" "}
+        in a project for{" "}
+        <a href={`${SKILLS_SITE}usage/claude-code/`}>Claude Code</a>; Gemini
+        CLI, Codex, OpenCode, and others read the same format (see{" "}
+        <a href={`${SKILLS_SITE}getting-started/`}>getting started</a>) — or
+        paste a skill's <code>SKILL.md</code>{" "}
+        into any assistant's conversation.
+      </p>
+    </details>
     <ul class="grid">
       {skills.map((s) => (
           <li>
@@ -142,6 +145,23 @@ const ENDPOINTS = [
   margin-top: 10px;
   font-size: 15px;
   color: var(--text-soft);
+}
+
+/* Same type as the surrounding prose, just disclosed on demand */
+.how-to {
+  max-width: 640px;
+  margin-top: 12px;
+}
+
+.how-to summary {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cdh-blue-950);
+  cursor: pointer;
+}
+
+.how-to .section-sub {
+  margin-top: 8px;
 }
 
 .grid {
