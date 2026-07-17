@@ -164,16 +164,20 @@ export type DatasetSummary = ReturnType<typeof summarize>;
 
 export type CatalogRecord = CollectionEntry<"catalog">["data"];
 
+// Canonical deeds for the common licenses — friendlier than the spdx.org
+// legal text, and the identifiers schema.org consumers recognize
 const LICENSE_URLS: Record<string, string> = {
   "CC-BY-4.0": "https://creativecommons.org/licenses/by/4.0/",
   "CC-BY-SA-4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
   CC0: "https://creativecommons.org/publicdomain/zero/1.0/",
 };
 
-// Simple SPDX ids resolve to a canonical page. Submission also accepts
+// One rule for page links and JSON-LD alike: the canonical deed when known,
+// else the spdx.org page for simple SPDX ids. Submission also accepts
 // compound expressions ("Apache-2.0 OR MIT", "… WITH …") and custom
-// LicenseRef-* — neither has an spdx.org page, so those render as plain text.
+// LicenseRef-* — neither has a page, so those render as plain text.
 export function licenseUrl(license: string) {
+  if (LICENSE_URLS[license]) return LICENSE_URLS[license];
   return /^(?!LicenseRef-)[A-Za-z0-9.+-]+$/.test(license)
     ? `https://spdx.org/licenses/${license}.html`
     : undefined;
@@ -373,7 +377,7 @@ export function datasetJsonLd(
     url,
     identifier: d.doi ? [`https://doi.org/${d.doi}`, d.id] : [d.id],
     ...(d.doi && { sameAs: `https://doi.org/${d.doi}` }),
-    license: LICENSE_URLS[d.license] ?? d.license,
+    license: licenseUrl(d.license) ?? d.license,
     // "Free" in the Dataset Search sense: openly retrievable, no gate
     isAccessibleForFree: (d.access ?? "open") === "open",
     ...(d.access_note && { conditionsOfAccess: d.access_note }),
