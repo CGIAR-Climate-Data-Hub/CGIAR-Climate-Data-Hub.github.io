@@ -101,6 +101,8 @@ const contributionGuides = defineCollection({
         title: z.string(),
         body: z.string(),
         code: z.string().optional(),
+        // Shiki language for the code snippet; extend as guides need
+        lang: z.enum(["sh", "json", "yaml"]).default("sh"),
       }),
     ),
     checklist: z.array(z.string()),

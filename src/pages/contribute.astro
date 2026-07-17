@@ -1,7 +1,9 @@
 ---
+import { Code } from "astro:components";
 import { getCollection } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
-import { GITHUB_URL, SITE_NAME } from "@/site.config";
+import { codeHeader, shikiConfig } from "@/lib/code-block";
+import { CATALOG_REPO, GITHUB_URL, SITE_NAME, SITE_REPO } from "@/site.config";
 
 const guides = (await getCollection("contributionGuides"))
   .sort((a, b) => a.data.order - b.data.order)
@@ -15,11 +17,31 @@ const STANDARDS_LINKS = [
   ["Licensing & attribution", "/wikis/licensing-and-attribution/"],
 ];
 
+// Each kind opens a prefilled issue on the repo that owns the problem:
+// dataset issues live with the records, everything else with the site.
+const issueUrl = (repo: string, prefix: string) =>
+  `https://github.com/${repo}/issues/new?title=${encodeURIComponent(prefix)}`;
 const REPORT_KINDS = [
-  ["Dataset issue", "Wrong values, broken access, metadata error"],
-  ["Website / UX bug", "Broken link, layout, search, accessibility"],
-  ["Wiki / docs error", "Outdated, incorrect, or missing documentation"],
-  ["Something else", "Doesn't fit any of the above"],
+  [
+    "Dataset issue",
+    "Wrong values, broken access, metadata error",
+    issueUrl(CATALOG_REPO, "[record] "),
+  ],
+  [
+    "Website / UX bug",
+    "Broken link, layout, search, accessibility",
+    issueUrl(SITE_REPO, "[site] "),
+  ],
+  [
+    "Wiki / docs error",
+    "Outdated, incorrect, or missing documentation",
+    issueUrl(SITE_REPO, "[docs] "),
+  ],
+  [
+    "Something else",
+    "Doesn't fit any of the above",
+    `https://github.com/${SITE_REPO}/issues/new`,
+  ],
 ];
 
 const description =
@@ -90,10 +112,23 @@ const description =
                     <div class="step-n mono">{i + 1}</div>
                     {i < guide.steps.length - 1 && <div class="step-line" />}
                   </div>
-                  <div>
+                  <div class="step-body">
                     <h3>{step.title}</h3>
                     <p>{step.body}</p>
-                    {step.code && <pre class="mono">{step.code}</pre>}
+                    {step.code && (
+                      <Code
+                        code={step.code.trim()}
+                        lang={step.lang}
+                        theme={shikiConfig.theme}
+                        transformers={[
+                          codeHeader(
+                            step.lang === "sh"
+                              ? "Shell"
+                              : step.lang.toUpperCase(),
+                          ),
+                        ]}
+                      />
+                    )}
                   </div>
                 </div>
               ))}
@@ -117,19 +152,20 @@ const description =
         <div class="guide-meta">
           <span class="pill warn">Report</span>
           <span class="label">Anyone</span>
-          <span class="label">· ~3 minutes</span>
         </div>
         <h2>Report a bug or issue</h2>
         <p class="intro">
           Spotted something off in a dataset, a broken link, or a glitch on this
-          site? Tell us. Reports are tracked as GitHub issues and routed to the
-          relevant maintainer.
+          site? Tell us. Pick what you're reporting — each opens a prefilled
+          GitHub issue on the right repository.
         </p>
         <ul class="kinds">
-          {REPORT_KINDS.map(([label, hint]) => (
+          {REPORT_KINDS.map(([label, hint, href]) => (
               <li>
-                <b>{label}</b>
-                <span>{hint}</span>
+                <a class="kind" href={href} rel="noreferrer">
+                  <b>{label}</b>
+                  <span>{hint}</span>
+                </a>
               </li>
             ))}
         </ul>
@@ -138,9 +174,6 @@ const description =
           steps where possible. For data-quality issues, include the dataset id
           from its catalog page.
         </p>
-        <a class="btn btn-accent" href={`${GITHUB_URL}/issues`}
-          >Open an issue on GitHub</a
-        >
       </article>
     </div>
   </section>
@@ -354,11 +387,6 @@ aside {
   grid-template-columns: 44px 1fr;
   gap: 16px;
   padding: 16px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.step:first-child {
-  border-top: 1px solid var(--border);
 }
 
 .step-rail {
@@ -373,15 +401,16 @@ aside {
   height: 32px;
   font-size: 13px;
   font-weight: 700;
-  color: var(--cdh-blue-300);
+  color: #fff;
   background: var(--cdh-blue-950);
   border-radius: 50%;
 }
 
+/* Runs from this step's number to the next one — a continuous thread */
 .step-line {
   position: absolute;
-  top: 36px;
-  bottom: -16px;
+  top: 32px;
+  bottom: -32px;
   left: 15px;
   width: 2px;
   background: var(--border-strong);
@@ -400,15 +429,13 @@ aside {
   color: var(--text-soft);
 }
 
-.step pre {
-  padding: 12px;
-  margin-top: 10px;
-  overflow-x: auto;
-  font-size: 12px;
-  line-height: 1.55;
-  color: var(--cdh-blue-300);
-  background: var(--cdh-blue-950);
-  border-radius: 6px;
+/* Code blocks must be able to shrink inside the grid column */
+.step-body {
+  min-width: 0;
+}
+
+.step-body :global(.code-block) {
+  margin-top: 12px;
 }
 
 .checklist {
@@ -459,14 +486,20 @@ aside {
   list-style: none;
 }
 
-.kinds li {
+.kind {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  height: 100%;
   padding: 12px 14px;
   background: var(--bg);
   border: 1px solid var(--border-strong);
   border-radius: 6px;
+}
+
+.kind:hover {
+  text-decoration: none;
+  border-color: var(--cdh-blue-950);
 }
 
 .kinds b {

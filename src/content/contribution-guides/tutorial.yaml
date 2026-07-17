@@ -20,6 +20,7 @@ steps:
       Markdown files take YAML front-matter. Notebooks carry the same fields in
       their notebook metadata under a "cdh" key (in Jupyter, edit it via the
       Property Inspector → Advanced Tools).
+    lang: json
     code: |
       {
         "cdh": {
