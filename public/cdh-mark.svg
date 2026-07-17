@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="37.44 57.288 965.12 378.891" role="img" aria-label="CGIAR Climate Commons">
   <!-- Derived from cdh-hero-10yr.svg (Berkeley Earth land temperature
        anomalies, 10-year epochs, 1950-2024) with the canvas padding cropped
-       for display use. Regenerate from that file's embedded settings.
+       for display use. One legibility exception: the 1990s bar (true height 15.8) is floored to 40 so it stays visible at logo sizes — all other bars are exact. Regenerate from that file's embedded settings.
        White-baseline variant for dark backgrounds: cdh-mark-dark.svg. -->
   <rect x="61.334" width="80.132" y="260" height="115.033" rx="4.0066" fill="#3b7ed4"/>
   <rect x="180.934" width="80.132" y="260" height="133.806" rx="4.0066" fill="#3b7ed4"/>
   <rect x="300.534" width="80.132" y="260" height="176.179" rx="4.0066" fill="#12417f"/>
   <rect x="420.134" width="80.132" y="260" height="88.069" rx="4.0066" fill="#a9cdfe"/>
-  <rect x="539.734" width="80.132" y="244.175" height="15.825" rx="4.0066" fill="#ed9e5e"/>
+  <rect x="539.734" width="80.132" y="220" height="40" rx="4.0066" fill="#ed9e5e"/>
   <rect x="659.334" width="80.132" y="134.807" height="125.193" rx="4.0066" fill="#d97e4c"/>
   <rect x="778.934" width="80.132" y="90.643" height="169.357" rx="4.0066" fill="#d97e4c"/>
   <rect x="898.534" width="80.132" y="57.288" height="202.712" rx="4.0066" fill="#c2542b"/>
