@@ -625,7 +625,7 @@ apply();
   }
 }
 
-/* Hairlines sit inside the container's padding, flush with the content */
+/* The hairline sits inside the container's padding, flush with the content */
 .toolbar-row {
   display: flex;
   flex-wrap: wrap;
@@ -633,7 +633,6 @@ apply();
   align-items: center;
   padding-top: 16px;
   padding-bottom: 16px;
-  border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
 
@@ -785,9 +784,8 @@ apply();
   content-visibility: auto;
 }
 
-/* Containment clips the hover lift and shadow at the li box — release it
-   on the card being interacted with */
-.grid > li:hover,
+/* Containment clips the keyboard focus ring (outline sits outside the li
+   box) — release it on the focused card */
 .grid > li:focus-within {
   content-visibility: visible;
 }

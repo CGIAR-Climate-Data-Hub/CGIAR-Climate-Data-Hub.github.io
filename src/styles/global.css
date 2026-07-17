@@ -392,7 +392,6 @@ hr {
   text-align: left;
   background: transparent;
   border: 0;
-  border-left: 2px solid transparent;
   border-radius: 6px;
 }
 
@@ -404,7 +403,6 @@ hr {
   font-weight: 600;
   color: var(--cdh-blue-950);
   background: var(--grey-1);
-  border-left-color: var(--cdh-blue-700);
 }
 
 .facet-option .count {
