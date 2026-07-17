@@ -3,7 +3,7 @@ import { getCollection, getEntry, render } from "astro:content";
 import JsonLd from "@/components/JsonLd.astro";
 import SectionHeader from "@/components/SectionHeader.astro";
 import Layout from "@/layouts/Layout.astro";
-import { GITHUB_URL, SITE_NAME } from "@/site.config";
+import { SITE_NAME } from "@/site.config";
 
 // Copy lives in src/content/pages/about.md — sections in frontmatter, prose in the body
 const entry = await getEntry("pages", "about");
@@ -11,9 +11,10 @@ if (!entry) throw new Error("Missing src/content/pages/about.md");
 const { Content } = await render(entry);
 const { title, lede, missions, principles } = entry.data;
 
-// Derived from the catalog records at build time
+// Derived from the catalog records and skills at build time
 const catalogEntries = await getCollection("catalog");
 const datasetCount = catalogEntries.length;
+const skillCount = (await getCollection("skills")).length;
 
 const UNITS: Record<string, number> = { KB: 1e3, MB: 1e6, GB: 1e9, TB: 1e12 };
 const totalBytes = catalogEntries
@@ -62,16 +63,13 @@ const jsonLd = {
           <dl>
             <dt>Program</dt>
             <dd>CGIAR Climate Action</dd>
-            <dt>Maintainer</dt>
-            <dd>Alliance of Bioversity International and CIAT</dd>
             <dt>Datasets</dt>
             <dd>{datasetCount}</dd>
             <dt>Data volume</dt>
             <dd>{dataVolume}</dd>
-            <dt>License</dt>
-            <dd>CC-BY-4.0</dd>
+            <dt>AI skills</dt>
+            <dd>{skillCount}</dd>
           </dl>
-          <a class="glance-link" href={GITHUB_URL}>Hub on GitHub →</a>
         </aside>
       </div>
     </div>
@@ -232,13 +230,6 @@ dt {
 dd {
   margin: 0;
   color: var(--text);
-}
-
-.glance-link {
-  display: inline-block;
-  margin-top: 14px;
-  font-size: 13px;
-  font-weight: 600;
 }
 
 @media (width <= 860px) {
