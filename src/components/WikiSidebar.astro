@@ -1,7 +1,11 @@
 ---
 // Book-like "Contents" nav shared by the wiki landing and articles.
 import { getCollection } from "astro:content";
-import { groupWikis, WIKI_SECTIONS } from "@/lib/collections";
+import {
+  groupWikis,
+  WIKI_SECTION_LABELS,
+  WIKI_SECTIONS,
+} from "@/lib/collections";
 import { treeUrl } from "@/lib/github";
 import { SITE_REPO } from "@/site.config";
 
@@ -10,8 +14,6 @@ interface Props {
 }
 
 const { activeId } = Astro.props;
-
-const GROUP_LABELS: Record<string, string> = { Standards: "Data standards" };
 
 // Sections open by default — remove one to start it collapsed. The section
 // holding the current page always opens regardless.
@@ -37,7 +39,7 @@ const nav = WIKI_SECTIONS.map((section) => {
     ...(SOON[section] ?? []).map((title) => ({ title, soon: true })),
   ];
   return {
-    label: GROUP_LABELS[section] ?? section,
+    label: WIKI_SECTION_LABELS[section] ?? section,
     items,
     open: DEFAULT_OPEN.has(section) || entries.some((e) => e.id === activeId),
   };

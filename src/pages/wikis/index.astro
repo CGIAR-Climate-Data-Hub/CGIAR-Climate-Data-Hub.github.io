@@ -2,11 +2,10 @@
 import { getCollection } from "astro:content";
 import WikiSidebar from "@/components/WikiSidebar.astro";
 import Layout from "@/layouts/Layout.astro";
-import { groupWikis } from "@/lib/collections";
-import { treeUrl } from "@/lib/github";
-import { SITE_NAME, SITE_REPO } from "@/site.config";
+import { groupWikis, WIKI_SECTION_LABELS } from "@/lib/collections";
+import { githubUrl, treeUrl } from "@/lib/github";
+import { SITE_NAME, SITE_REPO, STANDARD_REPO } from "@/site.config";
 
-const GROUP_LABELS: Record<string, string> = { Standards: "Data standards" };
 const groups = groupWikis(await getCollection("wikis"));
 const description =
   "Long-form reference for how the Climate Data Hub works — standards, methods, and governance.";
@@ -29,7 +28,7 @@ const description =
         <div class="ctas">
           <a
             class="btn btn-primary"
-            href="https://github.com/CGIAR-Climate-Data-Hub/cdh-metadata-standard"
+            href={githubUrl(STANDARD_REPO)}
             rel="noreferrer"
             >Read the metadata standard →</a
           >
@@ -43,7 +42,7 @@ const description =
 
       {groups.map((group) => (
           <section>
-            <h2>{GROUP_LABELS[group.section] ?? group.section}</h2>
+            <h2>{WIKI_SECTION_LABELS[group.section] ?? group.section}</h2>
             <div class="rows">
               {group.entries.map((wiki) => (
                 <a class="row" href={`/wikis/${wiki.id}/`}>

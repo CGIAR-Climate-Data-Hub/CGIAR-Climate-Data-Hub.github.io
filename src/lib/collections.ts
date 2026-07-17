@@ -18,6 +18,10 @@ export const WIKI_SECTIONS = [
   "Reference",
 ] as const;
 
+export const WIKI_SECTION_LABELS: Partial<
+  Record<(typeof WIKI_SECTIONS)[number], string>
+> = { Standards: "Data standards" };
+
 export function groupWikis(entries: CollectionEntry<"wikis">[]) {
   return WIKI_SECTIONS.map((section) => ({
     section,

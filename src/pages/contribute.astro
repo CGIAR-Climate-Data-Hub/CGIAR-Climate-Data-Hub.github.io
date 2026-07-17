@@ -4,18 +4,20 @@ import { getCollection } from "astro:content";
 import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
 import { codeHeader, shikiConfig } from "@/lib/code-block";
-import { issueUrl } from "@/lib/github";
-import { CATALOG_REPO, SITE_NAME, SITE_REPO } from "@/site.config";
+import { githubUrl, issueUrl } from "@/lib/github";
+import {
+  CATALOG_REPO,
+  SITE_NAME,
+  SITE_REPO,
+  STANDARD_REPO,
+} from "@/site.config";
 
 const guides = (await getCollection("contributionGuides"))
   .sort((a, b) => a.data.order - b.data.order)
   .map(({ id, data }) => ({ id, ...data }));
 
 const STANDARDS_LINKS = [
-  [
-    "Metadata standard",
-    "https://github.com/CGIAR-Climate-Data-Hub/cdh-metadata-standard",
-  ],
+  ["Metadata standard", githubUrl(STANDARD_REPO)],
   ["Licensing & attribution", "/wikis/licensing-and-attribution/"],
 ];
 
