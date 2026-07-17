@@ -1,7 +1,7 @@
 // Site-wide settings. One source of truth for values that appear across pages/components.
-export const SITE_NAME = "Climate Data Hub";
+export const SITE_NAME = "Climate Commons";
 export const SITE_DESCRIPTION =
-  "A catalog and documentation hub for climate action datasets.";
+  "The CGIAR commons for climate action data, tools, and documentation.";
 export const GITHUB_URL = "https://github.com/CGIAR-Climate-Data-Hub";
 // This site's own repo (owner/name): edit/source/Colab links, site issues
 export const SITE_REPO = "CGIAR-Climate-Data-Hub/climate-data-hub";

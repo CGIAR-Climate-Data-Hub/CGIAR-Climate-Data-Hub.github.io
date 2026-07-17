@@ -46,14 +46,14 @@ const REPORT_KINDS = [
 ];
 
 const description =
-  "How to contribute a dataset, edit the docs, submit a use case, or report an issue on the Climate Data Hub.";
+  "How to contribute a dataset, edit the docs, submit a use case, or report an issue on the Climate Commons.";
 ---
 
 <Layout description={description} title={`Contribute — ${SITE_NAME}`}>
   <PageHead
     kicker="Get involved"
-    sub="The Hub grows because Centers, programmes and partners contribute — datasets, docs, tutorials, and the stories of how they get used. Pick a guide below."
-    title="Contribute to the Hub"
+    sub="The Commons grows because Centers, programmes and partners contribute — datasets, docs, tutorials, and the stories of how they get used. Pick a guide below."
+    title="Contribute to the Commons"
   >
     <div class="help-box" slot="right">
       <div class="label">Need help?</div>
@@ -62,7 +62,7 @@ const description =
         <a href={`https://github.com/${SITE_REPO}/issues/new`}
           >Open an issue on GitHub</a
         >{" "}
-        with your question and the Hub team will pick it up.
+        with your question and the Commons team will pick it up.
       </p>
     </div>
   </PageHead>
@@ -86,7 +86,7 @@ const description =
       </nav>
 
       <div class="rail-box">
-        <div class="label">Hub standards</div>
+        <div class="label">Commons standards</div>
         {STANDARDS_LINKS.map(([label, href]) => <a class="rail-link" href={href}>{label}</a>)}
       </div>
     </aside>

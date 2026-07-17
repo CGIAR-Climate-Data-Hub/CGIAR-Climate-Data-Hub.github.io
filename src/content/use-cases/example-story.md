@@ -3,7 +3,7 @@
 # ── this comment block. Impact bullets render as the story's takeaways;
 # ── datasets takes catalog record ids and cross-links the story on those
 # ── dataset pages.
-title: "[Example — replace me] How [partner] used Hub data in [country]"
+title: "[Example — replace me] How [partner] used Commons data in [country]"
 kind: Impact # Impact | Adoption
 partner: "[Partner or programme name]"
 sector: "[Sector, e.g. Livestock]"
@@ -24,7 +24,7 @@ path wasn't working.]
 
 ## What they did
 
-[Two or three paragraphs: which Hub datasets and tools were used, how they
+[Two or three paragraphs: which Commons datasets and tools were used, how they
 were combined, and what the analysis looked like. Code or maps welcome.]
 
 ## What changed
