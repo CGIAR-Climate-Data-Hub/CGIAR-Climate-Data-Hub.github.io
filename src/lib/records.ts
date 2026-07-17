@@ -25,6 +25,25 @@ export async function fromLocal(dir: string, match: RegExp) {
   );
 }
 
+// Bounded-concurrency map — hundreds of truly parallel GETs trip CI sockets
+async function mapLimit<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+) {
+  const results: R[] = Array(items.length);
+  let next = 0;
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, async () => {
+      while (next < items.length) {
+        const i = next++;
+        results[i] = await fn(items[i]);
+      }
+    }),
+  );
+  return results;
+}
+
 export async function fromGitHub(
   { repo, dir }: RecordsSource,
   ref: string,
@@ -38,20 +57,26 @@ export async function fromGitHub(
     { headers },
   );
   if (!res.ok) throw new Error(`tree listing failed: ${res.status}`);
-  const tree = (await res.json()) as { tree: { path: string; type: string }[] };
+  const tree = (await res.json()) as {
+    truncated: boolean;
+    tree: { path: string; type: string }[];
+  };
+  // A truncated listing would silently drop records — fail loudly instead.
+  // If a repo ever legitimately outgrows the trees API, switch this loader
+  // to fetching the repo tarball in one request.
+  if (tree.truncated)
+    throw new Error(`tree listing for ${repo} was truncated by GitHub`);
   const paths = tree.tree
     .filter((t) => t.type === "blob" && t.path.startsWith(`${dir}/`))
     .map((t) => t.path)
     .filter((p) => match.test(p));
-  return Promise.all(
-    paths.map(async (p) => {
-      const raw = await fetch(
-        `https://raw.githubusercontent.com/${repo}/${ref}/${p}`,
-      );
-      if (!raw.ok) throw new Error(`${p}: ${raw.status}`);
-      return { path: p.slice(dir.length + 1), body: await raw.text() };
-    }),
-  );
+  return mapLimit(paths, 12, async (p) => {
+    const raw = await fetch(
+      `https://raw.githubusercontent.com/${repo}/${ref}/${p}`,
+    );
+    if (!raw.ok) throw new Error(`${p}: ${raw.status}`);
+    return { path: p.slice(dir.length + 1), body: await raw.text() };
+  });
 }
 
 export function records(source: RecordsSource): Loader {
