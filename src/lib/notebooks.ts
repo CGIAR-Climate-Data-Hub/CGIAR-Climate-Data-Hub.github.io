@@ -39,9 +39,9 @@ function cellToMd(cell: Cell) {
     // Rich reprs (pandas, xarray) save html + a png snapshot: prefer the
     // real markup. Script-bearing html (Plotly …) falls through to the png.
     // Blank lines are collapsed so markdown treats the chunk as one raw
-    // HTML block instead of re-parsing (and mangling) its tail. Kept out of
-    // the search index — machine dumps full of one-letter tokens make
-    // pagefind's typo-slicing match any gibberish to this page.
+    // HTML block instead of re-parsing (and mangling) its tail. Rich machine
+    // representations stay out of search; prose and source code remain
+    // indexed.
     if (html && !text(html).includes("<script")) {
       const repr = text(html)
         .trim()

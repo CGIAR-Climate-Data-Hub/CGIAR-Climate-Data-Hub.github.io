@@ -76,6 +76,10 @@ const siteGraph = {
     <meta name="twitter:title" content={title}>
     {description && <meta content={description} name="twitter:description" />}
 
+    <!-- Prevent content images (including embedded notebook figures) from
+         becoming searchable Pagefind metadata. -->
+    <meta data-pagefind-meta="image:">
+
     <Font cssVariable="--font-sans" preload />
     <Font cssVariable="--font-serif" preload />
 
