@@ -147,10 +147,15 @@ export function summarize(entry: CollectionEntry<"catalog">) {
         d.commodities.flatMap(commodityWithParents).filter(isCommodityGroup),
       ),
     ],
-    // Tags plus their M49 ancestors, so filtering by a region rolls up
+    // Tags plus their M49 ancestors, so filtering by a region rolls up —
+    // except the "world" root, which stays only when explicitly tagged:
+    // the catalog filter reads world as "global, matches every region",
+    // and every chain of ancestors ends at world
     geographies: [
       ...new Set((d.spatial?.geography ?? []).flatMap(geographyWithParents)),
-    ],
+    ].filter(
+      (g) => g !== "world" || (d.spatial?.geography ?? []).includes("world"),
+    ),
     // Explicit extent, else derived from geography tags for spatial search
     bboxes:
       normalizeBboxes(d.spatial?.bbox)

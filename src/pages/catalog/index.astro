@@ -39,9 +39,24 @@ function facetOf(
   return { key, title, values };
 }
 
+// The filter treats global datasets as covering every geography (see
+// apply()); counts must apply the same rule or they disagree with the
+// results a click produces.
+const geography = facetOf(
+  "geography",
+  "Geography",
+  (d) => d.geographies,
+  geoLabel,
+);
+for (const v of geography.values) {
+  v.count = datasets.filter(
+    (d) => d.geographies.includes(v.value) || d.geographies.includes("world"),
+  ).length;
+}
+
 const facets = [
   facetOf("domain", "Domain", (d) => d.domains),
-  facetOf("geography", "Geography", (d) => d.geographies, geoLabel),
+  geography,
   facetOf("commodity", "Commodity", (d) => d.commodityGroups, commodityLabel),
   facetOf("format", "Format", (d) => d.formats, formatIdLabel),
   facetOf(
