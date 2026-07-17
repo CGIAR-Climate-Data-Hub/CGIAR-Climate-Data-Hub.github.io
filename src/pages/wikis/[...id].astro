@@ -31,7 +31,9 @@ const jsonLd = {
   description: entry.data.description,
   dateModified: updated,
   url: new URL(`/wikis/${entry.id}/`, Astro.site).href,
-  author: { "@type": "Organization", name: `CGIAR ${SITE_NAME}` },
+  author: entry.data.author
+    ? { "@type": "Person", name: entry.data.author }
+    : { "@type": "Organization", name: `CGIAR ${SITE_NAME}` },
   isPartOf: { "@type": "WebSite", "@id": `${Astro.site}#website` },
 };
 ---
@@ -50,7 +52,9 @@ const jsonLd = {
         items={[{ label: "Hub", href: "/" }, { label: "Wikis", href: "/wikis/" }, { label: entry.data.title }]}
       />
       <h1>{entry.data.title}</h1>
-      <div class="meta">Updated {updatedLong}</div>
+      <div class="meta">
+        {entry.data.author && `By ${entry.data.author} · `}Updated {updatedLong}
+      </div>
       <p class="lede">{entry.data.description}</p>
       <div class="prose">
         <Content />

@@ -10,6 +10,7 @@ import { CATALOG_REPO, SKILLS_REPO } from "./site.config";
 const tutorialSchema = z.object({
   title: z.string(),
   description: z.string(),
+  author: z.string().optional(),
   level: z.enum(["Beginner", "Intermediate", "Advanced"]),
   topic: z.string(),
   time: z.string(),
@@ -39,6 +40,7 @@ const wikis = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
+    author: z.string().optional(),
     section: z.enum(WIKI_SECTIONS),
     updated: z.coerce.date(),
     // Sidebar position within a section; unordered entries sort alphabetically after

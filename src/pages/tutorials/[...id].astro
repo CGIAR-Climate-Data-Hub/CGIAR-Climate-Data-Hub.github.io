@@ -43,7 +43,9 @@ const jsonLd = {
   educationalLevel: entry.data.level,
   ...(timeRequired && { timeRequired }),
   dateModified: entry.data.updated.toISOString().slice(0, 10),
-  author: { "@type": "Organization", name: `CGIAR ${SITE_NAME}` },
+  author: entry.data.author
+    ? { "@type": "Person", name: entry.data.author }
+    : { "@type": "Organization", name: `CGIAR ${SITE_NAME}` },
   isPartOf: { "@type": "WebSite", "@id": `${Astro.site}#website` },
 };
 ---
@@ -66,7 +68,15 @@ const jsonLd = {
           {entry.data.level}
         </span>
         <span class="pill">{entry.data.topic}</span>
-        <span class="mono meta">{entry.data.time} · {entry.data.format}</span>
+        <span class="mono meta">
+          {[
+            entry.data.time,
+            entry.data.format,
+            entry.data.author && `by ${entry.data.author}`,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </span>
       </div>
       <h1>{entry.data.title}</h1>
       <p class="sub">{entry.data.description}</p>
