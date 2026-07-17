@@ -36,7 +36,7 @@ ${tutorials.map((t) => line(t.data.title, `/tutorials/${t.id}/`, t.data.descript
 
 ## Use cases
 
-${useCases.map((u) => line(u.data.title, `/use-cases/${u.id}/`, u.data.description)).join("\n")}
+${useCases.map((u) => line(u.data.title, `/in-use/${u.id}/`, u.data.description)).join("\n")}
 
 ## Reference
 

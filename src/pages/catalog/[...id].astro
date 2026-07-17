@@ -130,7 +130,7 @@ const bibtexStr = bibtex(d, recordUrl);
 const seenIn = (
   await getCollection("useCases", (uc) => uc.data.datasets.includes(d.id))
 ).map((uc) => ({
-  href: `/use-cases/${uc.id}/`,
+  href: `/in-use/${uc.id}/`,
   title: uc.data.title,
   partner: uc.data.partner,
 }));
