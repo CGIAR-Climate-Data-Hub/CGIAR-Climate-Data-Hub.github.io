@@ -1,5 +1,6 @@
 ---
-// Typographic dataset card: glyph chip, pills, serif title, keyword chips, mono meta row.
+// Typographic dataset card: glyph, serif title, tags line, mono meta row.
+// Title/summary/tags are line-clamped so cards in a row stay symmetrical.
 import type { DatasetSummary } from "@/lib/catalog";
 import DataGlyph from "./DataGlyph.astro";
 
@@ -11,28 +12,16 @@ const { dataset: d } = Astro.props;
 ---
 
 <article class="ds-card">
-  <div class="top">
-    <DataGlyph type={d.type} />
-    <div class="pills">
-      <span class:list={["pill", "dot", d.type]}
-        >{d.type === "spatial" ? "Spatial" : "Non-spatial"}</span
-      >
-      <span class="pill">{d.license}</span>
-    </div>
-  </div>
+  <span class="label type">
+    <DataGlyph size={13} type={d.type} />
+    {d.type === "spatial" ? "Spatial" : "Non-spatial"}
+  </span>
   <h3><a href={`/catalog/${d.id}/`}>{d.title}</a></h3>
   <p class="summary">{d.description}</p>
-  {d.keywords.length > 0 && (
-      <div class="chips">
-        {d.keywords.slice(0, 4).map((k) => (
-          <span class="chip">{k}</span>
-        ))}
-        {d.keywords.length > 4 && <span class="more">+{d.keywords.length - 4}</span>}
-      </div>
-    )}
+  {d.keywords.length > 0 && <p class="tags">tags: {d.keywords.join(", ")}</p>}
   <div class="meta mono">
     <span>{[d.coverage, d.resolution].filter(Boolean).join(" · ")}</span>
-    {d.temporal && <span>{d.temporal}</span>}
+    <span>{[d.license, d.temporal].filter(Boolean).join(" · ")}</span>
   </div>
 </article>
 
@@ -59,21 +48,26 @@ const { dataset: d } = Astro.props;
   transform: translateY(-2px);
 }
 
-.top {
-  display: flex;
-  gap: 10px;
+.type {
+  display: inline-flex;
+  gap: 6px;
   align-items: center;
-  justify-content: space-between;
 }
 
-.pills {
-  display: flex;
-  gap: 7px;
-  align-items: center;
+/* Bare colored icon — the boxed chip look stays for other DataGlyph uses */
+.type :global(.glyph) {
+  width: auto;
+  height: auto;
+  background: none;
+  border-radius: 0;
 }
 
 h3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
   margin-top: 4px;
+  overflow: hidden;
+  -webkit-line-clamp: 3;
   font-size: 21px;
   font-weight: 500;
   line-height: 1.22;
@@ -105,36 +99,37 @@ h3 a:hover {
   color: var(--text-soft);
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.chip {
-  padding: 3px 9px;
-  font-size: 11px;
-  color: var(--text-soft);
-  white-space: nowrap;
-  background: var(--grey-1);
-  border-radius: var(--chip-radius);
-}
-
-.more {
-  padding: 3px 4px;
-  font-size: 11px;
+/* Tags sit at the bottom, flush against the meta row */
+.tags {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  margin-top: auto;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  font-size: 11.5px;
+  line-height: 1.5;
   color: var(--text-mute);
 }
 
 .meta {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 3px 8px;
   align-items: center;
   justify-content: space-between;
   padding-top: 14px;
-  margin-top: auto;
   font-size: 11.5px;
   color: var(--text-mute);
   border-top: 1px solid var(--border);
+}
+
+/* No tags line? The meta row anchors to the bottom itself */
+.summary + .meta {
+  margin-top: auto;
+}
+
+/* Facts wrap as whole lines, never mid-token */
+.meta span {
+  white-space: nowrap;
 }
 </style>

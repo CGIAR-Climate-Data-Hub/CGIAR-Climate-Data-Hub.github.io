@@ -6,9 +6,10 @@ interface Props {
 }
 
 const { type, size = 19 } = Astro.props;
+const label = type === "spatial" ? "Spatial dataset" : "Non-spatial dataset";
 ---
 
-<span class:list={["glyph", type]}>
+<span aria-label={label} class:list={["glyph", type]} role="img" title={label}>
   {type === "spatial" ? (
       <svg
         aria-hidden="true"

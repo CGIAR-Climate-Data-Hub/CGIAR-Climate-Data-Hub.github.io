@@ -1,6 +1,5 @@
 ---
 import { getCollection } from "astro:content";
-import DataGlyph from "@/components/DataGlyph.astro";
 import DatasetCard from "@/components/DatasetCard.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import PageHead from "@/components/PageHead.astro";
@@ -12,7 +11,6 @@ import {
   humanize,
   summarize,
 } from "@/lib/catalog";
-import { BBOX_PRESETS } from "@/lib/geo";
 import { landPath } from "@/lib/map";
 import { SITE_NAME } from "@/site.config";
 
@@ -115,12 +113,29 @@ const catalogSchema = {
             type="search"
           >
         </div>
+        <div class="results-meta">
+          <span
+            ><b id="match-count">{datasets.length}</b>{" "}
+            <span id="match-label">datasets</span></span
+          >
+          <span class="pill spatial mono series-tag" hidden id="series-active">
+            Series: <b id="series-name"></b>
+            <button
+              aria-label="Clear series filter"
+              id="series-clear"
+              type="button"
+            >
+              ×
+            </button>
+          </span>
+          <button hidden id="clear-filters" type="button">
+            Clear all filters
+          </button>
+        </div>
         <div class="layout-wrap">
-          <span class="label">Layout</span>
           <div aria-label="Result layout" class="seg" role="group">
             {[
             ["grid", "Cards"],
-            ["compact", "Compact"],
             ["table", "Table"],
           ].map(([key, label]) => (
             <button
@@ -190,9 +205,6 @@ const catalogSchema = {
           </svg>
         </summary>
         <div class="bbox-body">
-          <p class="bbox-hint">
-            Click and drag on the map to draw a bounding box.
-          </p>
           <svg
             aria-label="World map — drag to draw a bounding box"
             id="bbox-map"
@@ -236,13 +248,6 @@ const catalogSchema = {
               y="0"
             ></rect>
           </svg>
-          <div class="bbox-presets">
-            {BBOX_PRESETS.map((p) => (
-                <button class="mono preset" data-bbox={p.bbox.join(" ")} type="button">
-                  {p.name}
-                </button>
-              ))}
-          </div>
           <div class="bbox-actions">
             <span class="bbox-count">Draw to filter</span>
             <button class="mono" hidden id="bbox-clear" type="button">
@@ -277,25 +282,6 @@ const catalogSchema = {
     </aside>
 
     <div>
-      <div class="results-meta">
-        <span
-          ><b id="match-count">{datasets.length}</b>{" "}
-          <span id="match-label">datasets</span></span
-        >
-        <span class="pill spatial mono series-tag" hidden id="series-active">
-          Series: <b id="series-name"></b>
-          <button
-            aria-label="Clear series filter"
-            id="series-clear"
-            type="button"
-          >
-            ×
-          </button>
-        </span>
-        <button hidden id="clear-filters" type="button">
-          Clear all filters
-        </button>
-      </div>
       <div class="mono table-head">
         <span>Type</span>
         <span>Name</span>
@@ -316,17 +302,6 @@ const catalogSchema = {
               data-series={d.series}
             >
               <DatasetCard dataset={d} />
-              <a class="row-compact" href={`/catalog/${d.id}/`}>
-                <DataGlyph type={d.type} />
-                <span class="row-text">
-                  <span class="row-title">{d.title}</span>
-                  <span class="row-desc">{d.description}</span>
-                </span>
-                <span class="mono row-meta">
-                  <span>{d.coverage ?? "—"}</span>
-                  <span>{d.temporal ?? "—"}</span>
-                </span>
-              </a>
               <a class="row-table" href={`/catalog/${d.id}/`}>
                 <span>
                   <span class:list={["pill", "dot", d.type]}
@@ -360,7 +335,6 @@ const layoutButtons = [
 ];
 const results = document.querySelector("#results");
 function setLayout(layout: string) {
-  results?.classList.toggle("layout-compact", layout === "compact");
   results?.classList.toggle("layout-table", layout === "table");
   for (const b of layoutButtons)
     b.setAttribute("aria-pressed", String(b.dataset.layout === layout));
@@ -368,8 +342,7 @@ function setLayout(layout: string) {
 }
 for (const b of layoutButtons)
   b.addEventListener("click", () => setLayout(b.dataset.layout ?? "grid"));
-const savedLayout = localStorage.getItem("catalog-layout");
-if (savedLayout && savedLayout !== "grid") setLayout(savedLayout);
+if (localStorage.getItem("catalog-layout") === "table") setLayout("table");
 
 const cards = [...document.querySelectorAll<HTMLElement>("li[data-dataset]")];
 const buttons = [
@@ -492,7 +465,6 @@ const map = document.querySelector<SVGSVGElement>("#bbox-map");
 const rect = document.querySelector<SVGRectElement>("#bbox-rect");
 const activeTag = document.querySelector<HTMLElement>("#bbox-active");
 const bboxClear = document.querySelector<HTMLButtonElement>("#bbox-clear");
-const hint = document.querySelector<HTMLElement>(".bbox-hint");
 
 const MAP_W = 220;
 const MAP_H = 110;
@@ -526,11 +498,6 @@ function syncBboxUi() {
   const active = state.bbox !== null;
   if (activeTag) activeTag.hidden = !active;
   if (bboxClear) bboxClear.hidden = !active;
-  if (hint) {
-    hint.textContent = active
-      ? "Datasets whose coverage intersects your box."
-      : "Click and drag on the map to draw a bounding box.";
-  }
   if (state.bbox) {
     const [w, s, e, n] = state.bbox;
     const [x1, y1] = toSvgPt(w, n);
@@ -577,12 +544,6 @@ map?.addEventListener("pointerup", (e) => {
   apply();
 });
 
-for (const preset of document.querySelectorAll<HTMLButtonElement>(".preset")) {
-  preset.addEventListener("click", () => {
-    state.bbox = (preset.dataset.bbox ?? "").split(" ").map(Number);
-    apply();
-  });
-}
 bboxClear?.addEventListener("click", () => {
   state.bbox = null;
   apply();
@@ -615,6 +576,17 @@ apply();
 
 .toolbar {
   margin-top: 28px;
+}
+
+/* Search, count, and clear-all stay reachable while browsing results.
+   Static on small screens — the wrapped toolbar is too tall to pin. */
+@media (width > 860px) {
+  .toolbar {
+    position: sticky;
+    top: var(--nav-height);
+    z-index: 20;
+    background: var(--bg);
+  }
 }
 
 /* Hairlines sit inside the container's padding, flush with the content */
@@ -658,10 +630,11 @@ apply();
   padding-top: 32px;
 }
 
-/* Filters follow the results; align-self keeps sticky alive in the grid */
+/* Filters follow the results; align-self keeps sticky alive in the grid.
+   The offset clears the nav plus the stuck toolbar (~74px). */
 .facets {
   position: sticky;
-  top: calc(var(--nav-height) + 16px);
+  top: calc(var(--nav-height) + 90px);
   align-self: start;
 }
 
@@ -698,13 +671,6 @@ apply();
   padding: 0 12px 12px;
 }
 
-.bbox-hint {
-  margin-bottom: 8px;
-  font-size: 11px;
-  line-height: 1.45;
-  color: var(--text-mute);
-}
-
 #bbox-map {
   display: block;
   width: 100%;
@@ -714,27 +680,6 @@ apply();
   user-select: none;
   background: var(--bg);
   border: 1px solid var(--border);
-}
-
-.bbox-presets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 8px;
-}
-
-.preset {
-  padding: 3px 7px;
-  font-size: 10px;
-  color: var(--text-soft);
-  background: transparent;
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-}
-
-.preset:hover {
-  color: var(--cdh-blue-800);
-  border-color: var(--cdh-blue-300);
 }
 
 .bbox-actions {
@@ -777,10 +722,9 @@ apply();
 
 .results-meta {
   display: flex;
-  gap: 14px;
+  flex-wrap: wrap;
+  gap: 6px 14px;
   align-items: center;
-  min-height: 28px; /* reserve the clear button's height — no shift when it appears */
-  margin-bottom: 16px;
   font-size: 13px;
   color: var(--text-soft);
 }
@@ -806,56 +750,30 @@ apply();
   margin-left: auto;
 }
 
-.layout-wrap .label {
-  color: var(--text-mute);
-}
-
-/* ---- Compact & table layouts ---- */
-/* Cards render all three variants; the list's class picks one. */
-.row-compact,
+/* ---- Table layout ---- */
+/* Cards render both variants; the list's class picks one. */
 .row-table,
 .table-head {
   display: none;
 }
 
-.grid.layout-compact,
 .grid.layout-table {
   display: block;
   overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
-}
-
-.grid.layout-table {
   border-top: 0;
   border-radius: 0 0 6px 6px;
 }
 
-:is(.grid.layout-compact, .grid.layout-table) :global(.ds-card) {
+.grid.layout-table :global(.ds-card) {
   display: none;
 }
 
-.grid.layout-compact li + li,
 .grid.layout-table li + li {
   border-top: 1px solid var(--border);
 }
 
-.row-compact {
-  display: none;
-  grid-template-columns: 38px 1fr auto;
-  gap: 16px;
-  align-items: center;
-  padding: 14px 18px;
-  color: inherit;
-  transition: background 0.12s;
-}
-
-.grid.layout-compact .row-compact {
-  display: grid;
-}
-
-.row-compact:hover,
 .row-table:hover {
   text-decoration: none;
   background: var(--grey-1);
@@ -881,15 +799,6 @@ apply();
   font-size: 13px;
   color: var(--text-soft);
   white-space: nowrap;
-}
-
-.row-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  align-items: flex-end;
-  font-size: 11px;
-  color: var(--text-mute);
 }
 
 .table-head,
@@ -944,6 +853,18 @@ apply();
 @media (width <= 860px) {
   .body {
     grid-template-columns: 1fr;
+  }
+
+  /* Stacked above the results, the rail must scroll away with them —
+     mobile browsers mishandle sticky grid items in a single column */
+  .facets {
+    position: static;
+  }
+
+  /* Search takes the first line; count + layout switcher wrap below it */
+  .searchbox {
+    flex-basis: 100%;
+    max-width: none;
   }
 }
 </style>
