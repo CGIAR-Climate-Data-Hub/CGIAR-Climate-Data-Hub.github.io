@@ -14,7 +14,9 @@ const LEARN = [
 ];
 
 const path = Astro.url.pathname;
-const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
+// Hrefs end in "/", so prefix matching marks the whole section active —
+// a record page keeps Catalog underlined, a tutorial keeps Learn underlined
+const isActive = (href: string) => path.startsWith(href);
 const learnActive = LEARN.some((l) => isActive(l.href));
 ---
 
