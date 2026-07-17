@@ -1,63 +1,74 @@
 ---
 title: Getting started with the Climate Data Hub
-description: Find a dataset, read its metadata, and pull a layer into Python in twenty minutes.
-level: Beginner
+description: What the Hub is, how to find the right dataset, and how to get data into your tool — Python, R, a desktop GIS, or none of the above.
+audience: Anyone
 topic: Onboarding
-time: 20 min
+time: 10 min
 format: Guide
 datasets: [glw4-2020]
 outcomes:
-  - Find a dataset
-  - Read a CDH metadata record
-  - Stream a layer with Python
-updated: 2026-06-01
+  - Find and evaluate a dataset in the catalog
+  - Read a metadata record with confidence
+  - Get data into Python, R, or a desktop GIS
+updated: 2026-07-17
 ---
 
-This tutorial walks the shortest path from "I need climate data" to a raster
-in memory. You'll use the catalog to find a dataset, read its record, and open
-a distribution with standard Python tools.
+The Hub is one quality-assured home for climate data across CGIAR: every
+dataset is harmonised to the same metadata standard, openly licensed, and
+published in cloud-native formats. In practice that means you find data one
+way, judge it one way, and access it one way — whatever the dataset, whatever
+your tools. This guide walks that path once, without assuming you write code.
 
 ## Find a dataset
 
-Browse the [catalog](/catalog/) or search from any page. Each result is backed
-by a metadata record that tells you what the data is, where it comes from, and
-— just as important — what it should *not* be used for. Read the
-"Not recommended for" block before committing to a dataset.
+Start at the [catalog](/catalog/). Three ways in:
+
+- **Search** — names, sources, variables, and keywords all match, so
+  "livestock", "FAO", or "zarr" each work.
+- **Filters** — narrow by domain, geography, commodity, file format,
+  license, or access.
+- **Spatial search** — draw a box on the map and only datasets whose
+  coverage intersects it remain.
+
+Every card states the essentials up front: what the data is, who publishes
+it, its coverage and resolution, and its license.
 
 ## Read the record
 
-Open the [GLW4 livestock density](/catalog/glw4-2020/) page. The record tells
-you the data is a Zarr store and a set of COGs, gridded at 5 arc-minutes,
-with one array per species for six livestock species.
+Click through to a dataset's page — say [GLW4 livestock
+density](/catalog/glw4-2020/) — and give it two minutes before committing:
 
-## Open it in Python
+- **Quick facts** summarise coverage, resolution, and the time span.
+- **Schema** lists the variables and dimensions — what's actually in the
+  cube.
+- **Appropriate use** notes, where present, tell you what the dataset should
+  *not* be used for. Read them; they're written from experience.
+- **Access & use** lists every distribution with its format and a worked
+  code example.
 
-The Zarr distribution streams directly — no download needed:
+## Get the data into your tool
 
-```python
-import xarray as xr
-
-ds = xr.open_zarr(
-    "https://digital-atlas.s3.amazonaws.com/cdh/data/glw4-2020/glw4-2020.zarr"
-)
-cattle = ds["cattle"]
-cattle.plot()
-```
-
-Single GeoTIFFs work with rasterio or rioxarray:
-
-```python
-import rioxarray
-
-url = "https://digital-atlas.s3.amazonaws.com/cdh/data/glw4-2020/cog/glw4-2020-cattle.tif"
-cattle = rioxarray.open_rasterio(url, masked=True)
-```
+- **Python or R** — every asset on a record page carries a copy-paste
+  snippet tailored to its format, streaming just the window you need. No
+  boilerplate to write; start from the record page, or see a full worked
+  analysis in the [TLU notebook](/tutorials/tlu_glw4/).
+- **Desktop GIS** — Cloud-Optimized GeoTIFF URLs load directly in QGIS or
+  ArcGIS as raster layers: copy the asset URL from the record page and add
+  it as a data source. No download required.
+- **Just the files** — assets that are single files carry a Download
+  button.
+- **AI assistants** — the Hub is machine-readable end to end; point your
+  assistant at the [AI & agents page](/ai/) for skills and endpoints.
 
 ## Cite what you use
 
-Every dataset page has a copy-ready citation and licence. Cite the original
-producers — for GLW4 that's FAO — alongside the Hub record.
+Every record page has a copy-ready citation (APA, BibTeX, and more) and,
+where one exists, a DOI. Cite the original producers — for GLW4 that's FAO —
+alongside the Hub record; the prepared citations do this for you.
 
-## Next steps
+## Where next
 
-- [Tropical Livestock Units from GLW4](/tutorials/tlu_glw4/)
+- [Tutorials](/tutorials/) — runnable, worked analyses.
+- [Wikis](/wikis/) — the standards and methods behind the data.
+- [FAQ](/faq/) — licensing, formats, and contribution questions.
+- Stuck? [Open an issue](/contribute/#report) and the team will pick it up.

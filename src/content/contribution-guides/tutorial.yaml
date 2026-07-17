@@ -26,7 +26,7 @@ steps:
         "cdh": {
           "title": "Tropical Livestock Units from GLW4",
           "description": "Compute TLU from GLW4 species densities.",
-          "level": "Intermediate",
+          "audience": "Python & R",
           "topic": "Livestock",
           "time": "15 min",
           "updated": "2026-07-10",
@@ -49,7 +49,7 @@ steps:
       renders your tutorial so you can check it reads well.
 checklist:
   - Filename is lowercase (it becomes the URL, and the notebook download link).
-  - Metadata is complete (title, description, level, topic, time, updated).
+  - Metadata is complete (title, description, audience, topic, time, updated).
   - Data is streamed from Hub endpoints, not bundled or downloaded ahead.
   - The notebook is committed executed, with only the outputs that teach.
   - Section headings (##) are present so the page gets a table of contents.

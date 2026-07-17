@@ -11,7 +11,8 @@ const tutorialSchema = z.object({
   title: z.string(),
   description: z.string(),
   author: z.string().optional(),
-  level: z.enum(["Beginner", "Intermediate", "Advanced"]),
+  // Who the tutorial is for — the card/facet axis ("is this for me?")
+  audience: z.enum(["Anyone", "Python & R", "GIS"]),
   topic: z.string(),
   time: z.string(),
   format: z.string().default("Guide"),

@@ -4,30 +4,30 @@ import Layout from "@/layouts/Layout.astro";
 import { allTutorials } from "@/lib/collections";
 import { SITE_NAME, SITE_REPO } from "@/site.config";
 
-const LEVELS = ["Beginner", "Intermediate", "Advanced"];
-const LEVEL_COLORS: Record<string, string> = {
-  Beginner: "var(--cdh-blue-800)",
-  Intermediate: "var(--cdh-blue-700)",
-  Advanced: "var(--cdh-blue-950)",
+const AUDIENCES = ["Anyone", "Python & R", "GIS"];
+const AUDIENCE_COLORS: Record<string, string> = {
+  Anyone: "var(--cdh-blue-800)",
+  "Python & R": "var(--cdh-blue-700)",
+  GIS: "var(--cdh-blue-950)",
 };
 
 const tutorials = (await allTutorials()).sort(
   (a, b) =>
-    LEVELS.indexOf(a.data.level) - LEVELS.indexOf(b.data.level)
+    AUDIENCES.indexOf(a.data.audience) - AUDIENCES.indexOf(b.data.audience)
     || a.data.title.localeCompare(b.data.title),
 );
 const topics = [...new Set(tutorials.map((t) => t.data.topic))].sort();
 
 const facets = [
   {
-    key: "level",
-    title: "Level",
-    values: LEVELS.filter((l) => tutorials.some((t) => t.data.level === l)).map(
-      (l) => ({
-        value: l,
-        count: tutorials.filter((t) => t.data.level === l).length,
-      }),
-    ),
+    key: "audience",
+    title: "For",
+    values: AUDIENCES.filter((a) =>
+      tutorials.some((t) => t.data.audience === a),
+    ).map((a) => ({
+      value: a,
+      count: tutorials.filter((t) => t.data.audience === a).length,
+    })),
   },
   {
     key: "topic",
@@ -101,10 +101,10 @@ const description =
       </div>
       <ul class="grid">
         {tutorials.map((t) => (
-            <li data-level={t.data.level} data-topic={t.data.topic} data-tutorial>
-              <a class="card" href={`/tutorials/${t.id}/`} style={`--level-color: ${LEVEL_COLORS[t.data.level]}`}>
+            <li data-audience={t.data.audience} data-topic={t.data.topic} data-tutorial>
+              <a class="card" href={`/tutorials/${t.id}/`} style={`--level-color: ${AUDIENCE_COLORS[t.data.audience]}`}>
                 <span class="card-top">
-                  <span class="pill level">{t.data.level}</span>
+                  <span class="pill level">{t.data.audience}</span>
                   <span class="mono time">{t.data.time}</span>
                 </span>
                 <span class="card-title">{t.data.title}</span>
@@ -147,7 +147,7 @@ const description =
         <div class="path-strip" style={`--cols: ${learningPath.length}`}>
           {learningPath.map((t, i) => (
             <a href={`/tutorials/${t.id}/`}>
-              <span class="mono step-n">0{i + 1} · {t.data.level}</span>
+              <span class="mono step-n">0{i + 1} · {t.data.audience}</span>
               <span class="step-title">{t.data.title}</span>
               <span class="mono step-time">{t.data.time}</span>
             </a>
@@ -178,7 +178,7 @@ const clear = document.querySelector<HTMLButtonElement>("#clear-filters");
 const count = document.querySelector("#match-count");
 const empty = document.querySelector<HTMLElement>("#empty-state");
 
-const facetKeys = ["level", "topic"] as const;
+const facetKeys = ["audience", "topic"] as const;
 const state: Record<string, string> = {};
 
 function apply() {

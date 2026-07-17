@@ -141,7 +141,7 @@ const tutorialLinks = (await allTutorials())
   .map((t) => ({
     href: `/tutorials/${t.id}/`,
     title: t.data.title,
-    meta: `${t.data.level} · ${t.data.time}`,
+    meta: `${t.data.audience} · ${t.data.time}`,
   }));
 
 // Long URLs wrap at path boundaries, not mid-token: each segment gets a

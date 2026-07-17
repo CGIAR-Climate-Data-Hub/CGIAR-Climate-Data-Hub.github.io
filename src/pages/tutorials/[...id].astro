@@ -40,7 +40,7 @@ const jsonLd = {
   headline: entry.data.title,
   description: entry.data.description,
   url: new URL(`/tutorials/${entry.id}/`, Astro.site).href,
-  educationalLevel: entry.data.level,
+  audience: { "@type": "Audience", audienceType: entry.data.audience },
   ...(timeRequired && { timeRequired }),
   dateModified: entry.data.updated.toISOString().slice(0, 10),
   author: entry.data.author
@@ -63,9 +63,9 @@ const jsonLd = {
       />
       <div class="head">
         <span
-          class:list={["pill", "dot", entry.data.level === "Beginner" ? "spatial" : "warn"]}
+          class:list={["pill", "dot", entry.data.audience === "Anyone" ? "spatial" : "warn"]}
         >
-          {entry.data.level}
+          {entry.data.audience}
         </span>
         <span class="pill">{entry.data.topic}</span>
         <span class="mono meta">
