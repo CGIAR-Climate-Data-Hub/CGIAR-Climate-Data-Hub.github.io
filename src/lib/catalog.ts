@@ -107,6 +107,8 @@ export function summarize(entry: CollectionEntry<"catalog">) {
     description: d.description,
     type: d.spatial ? ("spatial" as const) : ("tabular" as const),
     license: d.license,
+    // The licensor is the card's "source" byline (a required role)
+    source: d.contact.find((c) => c.roles.includes("licensor"))?.organization,
     keywords: d.keywords.map((k) => (typeof k === "string" ? k : k.term)),
     coverage: d.spatial?.geography.map(geoLabel).join(", ") || undefined,
     // Short form for card meta rows — full label lives on the detail page

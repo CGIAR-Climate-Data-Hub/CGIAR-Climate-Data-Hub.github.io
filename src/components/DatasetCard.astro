@@ -1,6 +1,6 @@
 ---
-// Typographic dataset card: glyph, serif title, tags line, mono meta row.
-// Title/summary/tags are line-clamped so cards in a row stay symmetrical.
+// Typographic dataset card: glyph, serif title, source byline, mono meta row.
+// Title/summary are line-clamped so cards in a row stay symmetrical.
 import type { DatasetSummary } from "@/lib/catalog";
 import DataGlyph from "./DataGlyph.astro";
 
@@ -9,6 +9,10 @@ interface Props {
 }
 
 const { dataset: d } = Astro.props;
+const facts = [
+  [d.coverage, d.resolution].filter(Boolean).join(" · "),
+  [d.license, d.temporal].filter(Boolean).join(" · "),
+];
 ---
 
 <article class="ds-card">
@@ -16,12 +20,11 @@ const { dataset: d } = Astro.props;
     <DataGlyph size={13} type={d.type} />
     {d.type === "spatial" ? "Spatial" : "Non-spatial"}
   </span>
-  <h3><a href={`/catalog/${d.id}/`}>{d.title}</a></h3>
-  <p class="summary">{d.description}</p>
-  {d.keywords.length > 0 && <p class="tags">tags: {d.keywords.join(", ")}</p>}
+  <h3><a href={`/catalog/${d.id}/`} title={d.title}>{d.title}</a></h3>
+  {d.source && <p class="source" title={d.source}>By {d.source}</p>}
+  <p class="summary" title={d.description}>{d.description}</p>
   <div class="meta mono">
-    <span>{[d.coverage, d.resolution].filter(Boolean).join(" · ")}</span>
-    <span>{[d.license, d.temporal].filter(Boolean).join(" · ")}</span>
+    {facts.map((f) => <span title={f || undefined}>{f}</span>)}
   </div>
 </article>
 
@@ -65,9 +68,12 @@ const { dataset: d } = Astro.props;
 h3 {
   display: -webkit-box;
   -webkit-box-orient: vertical;
+
+  /* Reserve both lines so descriptions start level across the row */
+  min-height: 2lh;
   margin-top: 4px;
   overflow: hidden;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   font-size: 21px;
   font-weight: 500;
   line-height: 1.22;
@@ -89,6 +95,26 @@ h3 a:hover {
   text-decoration: none;
 }
 
+/* Positioned text paints above the stretched-link overlay, so it stays
+   selectable; clicks on it read as text, clicks anywhere else navigate */
+.type,
+.source,
+.summary,
+.meta {
+  position: relative;
+}
+
+/* Licensor byline, snug under the title — darker than the summary so it
+   reads as attribution, not body text */
+.source {
+  margin-top: -6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11.5px;
+  color: var(--grey-7);
+  white-space: nowrap;
+}
+
 .summary {
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -99,37 +125,21 @@ h3 a:hover {
   color: var(--text-soft);
 }
 
-/* Tags sit at the bottom, flush against the meta row */
-.tags {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  margin-top: auto;
-  overflow: hidden;
-  -webkit-line-clamp: 2;
-  font-size: 11.5px;
-  line-height: 1.5;
-  color: var(--text-mute);
-}
-
+/* Strict two-line fact grid at the very bottom, identical on every card:
+   coverage · resolution, then license · year */
 .meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px 8px;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  gap: 3px;
   padding-top: 14px;
+  margin-top: auto;
   font-size: 11.5px;
   color: var(--text-mute);
   border-top: 1px solid var(--border);
 }
 
-/* No tags line? The meta row anchors to the bottom itself */
-.summary + .meta {
-  margin-top: auto;
-}
-
-/* Facts wrap as whole lines, never mid-token */
 .meta span {
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 </style>

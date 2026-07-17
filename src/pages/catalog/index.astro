@@ -298,7 +298,7 @@ const catalogSchema = {
               data-dataset
               data-domain={d.domains.join(" ")}
               data-geography={d.geographies.join(" ")}
-              data-search={[d.title, d.description, ...d.keywords, ...d.geographies.map(geoLabel), ...d.commodities.map(commodityLabel)].join(" ").toLowerCase()}
+              data-search={[d.title, d.source ?? "", d.description, ...d.keywords, ...d.geographies.map(geoLabel), ...d.commodities.map(commodityLabel)].join(" ").toLowerCase()}
               data-series={d.series}
             >
               <DatasetCard dataset={d} />
