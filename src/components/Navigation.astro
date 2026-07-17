@@ -3,10 +3,8 @@ import PagefindConfig from "astro-pagefind/components/PagefindConfig.astro";
 import { GITHUB_URL } from "@/site.config";
 import LogoBlock from "./LogoBlock.astro";
 
-const LINKS = [
-  { href: "/catalog/", label: "Catalog" },
-  { href: "/use-cases/", label: "In use" },
-];
+const CATALOG = { href: "/catalog/", label: "Catalog" };
+const IN_USE = { href: "/use-cases/", label: "In use" };
 
 const LEARN = [
   { href: "/tutorials/", label: "Tutorials", desc: "Runnable, step-by-step" },
@@ -27,11 +25,12 @@ const learnActive = LEARN.some((l) => isActive(l.href));
     <LogoBlock />
 
     <nav aria-label="Main">
-      {LINKS.map((link) => (
-          <a href={link.href} class:list={["nav-item", { "is-active": isActive(link.href) }]}>
-            {link.label}
-          </a>
-        ))}
+      <a
+        href={CATALOG.href}
+        class:list={["nav-item", { "is-active": isActive(CATALOG.href) }]}
+      >
+        {CATALOG.label}
+      </a>
 
       <div class="dropdown">
         <a
@@ -60,6 +59,13 @@ const learnActive = LEARN.some((l) => isActive(l.href));
             ))}
         </div>
       </div>
+
+      <a
+        href={IN_USE.href}
+        class:list={["nav-item", { "is-active": isActive(IN_USE.href) }]}
+      >
+        {IN_USE.label}
+      </a>
 
       <a
         class:list={["nav-item", { "is-active": isActive("/about/") }]}
@@ -125,7 +131,7 @@ const learnActive = LEARN.some((l) => isActive(l.href));
 
   <div class="mobile-menu" id="mobile-menu" popover>
     <nav aria-label="Mobile">
-      {[...LINKS, ...LEARN, { href: "/about/", label: "About" }].map((link) => (
+      {[CATALOG, ...LEARN, IN_USE, { href: "/about/", label: "About" }].map((link) => (
           <a href={link.href} class:list={[{ "is-active": isActive(link.href) }]}>
             {link.label}
           </a>
