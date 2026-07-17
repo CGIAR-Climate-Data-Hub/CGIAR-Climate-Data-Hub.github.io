@@ -1,7 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="37.44 57.288 965.12 378.891" role="img" aria-label="CGIAR Climate Data Hub">
-  <!-- Derived from cdh-hero-10yr.svg (Berkeley Earth land temperature
-       anomalies, 10-year epochs, 1950-2024) with the canvas padding cropped
-       for display use. One legibility exception: the 1990s bar (true height 15.8) is floored to 40 so it stays visible at logo sizes — all other bars are exact. Regenerate from that file's embedded settings.
+  <!-- Berkeley Earth land temperature anomalies, 10-year epochs, 1950-2024,
+       cropped for display use. One legibility exception: the 1990s bar (true
+       height 15.8) is floored to 40 so it stays visible at logo sizes — all
+       other bars are exact.
        White-baseline variant for dark backgrounds: cdh-mark-dark.svg. -->
   <rect x="61.334" width="80.132" y="260" height="115.033" rx="4.0066" fill="#3b7ed4"/>
   <rect x="180.934" width="80.132" y="260" height="133.806" rx="4.0066" fill="#3b7ed4"/>
