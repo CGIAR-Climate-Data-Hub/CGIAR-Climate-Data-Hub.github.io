@@ -8,7 +8,11 @@ import { currentReleases, summarize } from "@/lib/catalog";
 import { allTutorials } from "@/lib/collections";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
 
-const datasets = currentReleases(await getCollection("catalog")).map(summarize);
+// The two most recently updated releases represent the catalog here
+const datasets = currentReleases(await getCollection("catalog"))
+  .map(summarize)
+  .sort((a, b) => b.updated.localeCompare(a.updated))
+  .slice(0, 2);
 const tutorials = (await allTutorials()).sort(
   (a, b) => b.data.updated.valueOf() - a.data.updated.valueOf(),
 );
