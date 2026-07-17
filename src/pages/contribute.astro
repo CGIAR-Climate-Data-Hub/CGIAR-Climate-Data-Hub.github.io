@@ -1,9 +1,10 @@
 ---
 import { Code } from "astro:components";
 import { getCollection } from "astro:content";
+import PageHead from "@/components/PageHead.astro";
 import Layout from "@/layouts/Layout.astro";
 import { codeHeader, shikiConfig } from "@/lib/code-block";
-import { CATALOG_REPO, GITHUB_URL, SITE_NAME, SITE_REPO } from "@/site.config";
+import { CATALOG_REPO, SITE_NAME, SITE_REPO } from "@/site.config";
 
 const guides = (await getCollection("contributionGuides"))
   .sort((a, b) => a.data.order - b.data.order)
@@ -49,28 +50,24 @@ const description =
 ---
 
 <Layout description={description} title={`Contribute — ${SITE_NAME}`}>
-  <section class="hero">
-    <div class="container">
-      <div class="hero-grid">
-        <div>
-          <h1>Contribute to the Hub.</h1>
-          <p class="hero-lede">
-            The Hub grows because Centers, programmes and partners contribute —
-            datasets, docs, tutorials, and the stories of how they get used.
-            Pick a guide below.
-          </p>
-        </div>
-        <div class="help-box">
-          <div class="label">Need help?</div>
-          <p>
-            Reach the Hub stewardship team on the #cdh-stewardship Teams
-            channel, or
-            <a href={`${GITHUB_URL}/issues`}> open an issue on GitHub</a>.
-          </p>
-        </div>
-      </div>
+  <PageHead
+    kicker="Get involved"
+    sub="The Hub grows because Centers, programmes and partners contribute — datasets, docs, tutorials, and the stories of how they get used. Pick a guide below."
+    title="Contribute to the Hub"
+  >
+    <div class="help-box" slot="right">
+      <div class="label">Need help?</div>
+      <p>
+        Unsure where to start, or stuck partway?{" "}
+        <a href={`https://github.com/${SITE_REPO}/issues/new`}
+          >Open an issue on GitHub</a
+        >{" "}
+        with your question and the Hub team will pick it up.
+      </p>
     </div>
-  </section>
+  </PageHead>
+
+  <div class="container"><hr class="head-rule"></div>
 
   <section class="container body">
     <aside data-pagefind-ignore>
@@ -188,62 +185,23 @@ if (nav) scrollSpy(nav);
 </script>
 
 <style>
-/* Navy hero — on navy, text is white or #63A9FE only */
-.hero {
-  padding: 48px 0;
-  color: #fff;
-  background: var(--cdh-blue-950);
-}
-
-.hero :global(nav a),
-.hero :global(nav li) {
-  color: rgb(255 255 255 / 60%);
-}
-
-.hero :global(nav span[aria-current]) {
-  color: #fff;
-}
-
-.hero-grid {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 40px;
-  align-items: center;
-  margin-top: 12px;
-}
-
-h1 {
-  color: #fff;
-}
-
-.hero-lede {
-  max-width: 640px;
-  margin-top: 12px;
-  font-size: 17px;
-  line-height: 1.6;
-  color: rgb(255 255 255 / 82%);
+.head-rule {
+  margin-top: 28px;
 }
 
 .help-box {
-  padding: 18px;
-  background: rgb(0 0 0 / 18%);
-  border: 1px solid rgb(99 169 254 / 35%);
-  border-radius: 6px;
-}
-
-.help-box .label {
-  color: var(--cdh-blue-300);
+  max-width: 320px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
 }
 
 .help-box p {
   margin-top: 8px;
   font-size: 13px;
   line-height: 1.6;
-  color: rgb(255 255 255 / 86%);
-}
-
-.help-box a {
-  color: var(--cdh-blue-300);
+  color: var(--text-soft);
 }
 
 .body {
