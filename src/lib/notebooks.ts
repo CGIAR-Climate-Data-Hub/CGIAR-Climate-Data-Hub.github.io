@@ -39,13 +39,14 @@ function cellToMd(cell: Cell) {
     // Rich reprs (pandas, xarray) save html + a png snapshot: prefer the
     // real markup. Script-bearing html (Plotly …) falls through to the png.
     // Blank lines are collapsed so markdown treats the chunk as one raw
-    // HTML block instead of re-parsing (and mangling) its tail.
+    // HTML block instead of re-parsing (and mangling) its tail. Kept out of
+    // the search index — machine dumps full of one-letter tokens make
+    // pagefind's typo-slicing match any gibberish to this page.
     if (html && !text(html).includes("<script")) {
-      parts.push(
-        text(html)
-          .trim()
-          .replace(/\n\s*\n/g, "\n"),
-      );
+      const repr = text(html)
+        .trim()
+        .replace(/\n\s*\n/g, "\n");
+      parts.push(`<div data-pagefind-ignore>\n${repr}\n</div>`);
     } else if (png) {
       parts.push(
         `![Cell output](data:image/png;base64,${text(png).replaceAll("\n", "")})`,

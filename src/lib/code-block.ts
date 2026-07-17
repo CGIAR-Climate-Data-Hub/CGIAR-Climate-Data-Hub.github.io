@@ -56,7 +56,9 @@ export function codeHeader(label?: string): ShikiTransformer {
         ),
       ]);
       root.children = [
-        el("div", { className: ["code-block"] }, [
+        // Code is for copying, not searching: single-letter identifiers feed
+        // pagefind's typo-slicing, matching gibberish queries to code pages
+        el("div", { className: ["code-block"], dataPagefindIgnore: "" }, [
           head,
           ...(root.children as ElementContent[]),
         ]),
