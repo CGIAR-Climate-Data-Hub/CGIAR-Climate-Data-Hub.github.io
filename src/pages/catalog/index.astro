@@ -57,6 +57,7 @@ for (const v of geography.values) {
 const facets = [
   facetOf("domain", "Domain", (d) => d.domains),
   geography,
+  facetOf("scale", "Coverage", (d) => (d.scale ? [d.scale] : [])),
   facetOf("commodity", "Commodity", (d) => d.commodityGroups, commodityLabel),
   facetOf("format", "Format", (d) => d.formats, formatIdLabel),
   facetOf(
@@ -324,6 +325,7 @@ const catalogSchema = {
               data-format={d.formats.join(" ")}
               data-geography={d.geographies.join(" ")}
               data-license={d.license}
+              data-scale={d.scale}
               data-search={[d.title, d.source ?? "", d.description, d.license, ...d.formats.flatMap((f) => [f, formatIdLabel(f)]), ...d.keywords, ...d.geographies.map(geoLabel), ...d.commodities.map(commodityLabel)].join(" ").toLowerCase()}
               data-series={d.series}
             >
@@ -383,6 +385,7 @@ const empty = document.querySelector<HTMLElement>("#empty-state");
 const facetKeys = [
   "domain",
   "geography",
+  "scale",
   "commodity",
   "format",
   "license",
