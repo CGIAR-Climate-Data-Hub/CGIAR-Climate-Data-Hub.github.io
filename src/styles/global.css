@@ -17,6 +17,14 @@ body {
   margin: 0;
 }
 
+/* TOC and anchor jumps glide (scrollIntoView's default behavior defers to
+   this); reduced-motion users keep instant jumps */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 body {
   display: flex;
   flex-direction: column;
