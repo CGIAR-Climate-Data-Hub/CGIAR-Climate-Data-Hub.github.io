@@ -418,6 +418,10 @@ hr {
   color: var(--text-mute);
 }
 
+.facet-option[aria-pressed="true"] .count {
+  color: var(--text-soft);
+}
+
 /* Sits in the results-meta row (fixed height, so no layout shift), visible
    only while filters are active */
 #clear-filters {

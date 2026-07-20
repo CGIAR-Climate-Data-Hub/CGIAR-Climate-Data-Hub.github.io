@@ -24,6 +24,9 @@
   --cgiar-primary: #033529;
   --cgiar-accent: #17f1bd;
   --cgiar-primary-dark: #010d09;
+  --cgiar-text: #c3d2cc;
+  --cgiar-text-link: #9db4ab;
+  --cgiar-text-muted: #93a89f;
 
   /* Brand neutral ramp */
   --grey-1: #e2e0df;
@@ -42,7 +45,7 @@
   --border-strong: #cfcecb;
   --text: var(--grey-8);
   --text-soft: var(--grey-6);
-  --text-mute: var(--grey-5);
+  --text-mute: #676665;
   --text-inverse: #fff;
   --link: var(--cdh-blue-700);
 
