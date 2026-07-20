@@ -1,7 +1,6 @@
 // Agent Skills discovery index (draft v0.2.0).
 
 import { getCollection } from "astro:content";
-import { createHash } from "node:crypto";
 import type { APIRoute } from "astro";
 
 export const GET: APIRoute = async () => {
@@ -11,12 +10,13 @@ export const GET: APIRoute = async () => {
     $schema: "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
     skills: skills.map((s) => ({
       name: s.data.name,
-      type: "skill-md",
+      type: s.data.artifact.type,
       description: s.data.description,
-      url: `/.well-known/agent-skills/${s.id}/SKILL.md`,
-      digest: `sha256:${createHash("sha256")
-        .update(s.body ?? "")
-        .digest("hex")}`,
+      url:
+        s.data.artifact.type === "skill-md"
+          ? `/.well-known/agent-skills/${s.id}/SKILL.md`
+          : `/.well-known/agent-skills/${s.id}.tar.gz`,
+      digest: s.data.artifact.digest,
     })),
   };
 

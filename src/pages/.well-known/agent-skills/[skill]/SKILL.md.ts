@@ -7,8 +7,8 @@ import { markdownResponse } from "@/lib/markdown";
 export const getStaticPaths: GetStaticPaths = async () =>
   (await getCollection("skills")).map((s) => ({
     params: { skill: s.id },
-    props: { body: s.body ?? "" },
+    props: { base64: s.data.skillBase64 },
   }));
 
-export const GET: APIRoute<{ body: string }> = ({ props }) =>
-  markdownResponse(props.body);
+export const GET: APIRoute<{ base64: string }> = ({ props }) =>
+  markdownResponse(Buffer.from(props.base64, "base64"));

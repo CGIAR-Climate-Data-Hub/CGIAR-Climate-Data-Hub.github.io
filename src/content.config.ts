@@ -346,6 +346,12 @@ const skills = defineCollection({
   schema: z.object({
     name: z.string(),
     description: z.string(),
+    skillBase64: z.string(),
+    artifact: z.object({
+      type: z.enum(["skill-md", "archive"]),
+      digest: z.string(),
+      base64: z.string(),
+    }),
   }),
 });
 

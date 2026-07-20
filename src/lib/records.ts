@@ -3,8 +3,8 @@
 // workflow on merge. Shell-env overrides (RECORDS_DIR, RECORDS_REF,
 // RECORDS_REPO — see README) redirect a session; on fetch failure the
 // previously loaded records are kept, so offline dev keeps working.
-import { readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { readdir, readFile, stat } from "node:fs/promises";
+import { join, relative, sep } from "node:path";
 import type { Loader } from "astro/loaders";
 import { parse } from "yaml";
 
@@ -13,15 +13,29 @@ interface RecordsSource {
   dir: string;
 }
 
-export async function fromLocal(dir: string, match: RegExp) {
-  const files = await readdir(dir, { recursive: true });
+export interface SourceFile {
+  path: string;
+  bytes: Uint8Array;
+  mode: number;
+}
+
+export async function fromLocal(dir: string, match = /./) {
+  const entries = await readdir(dir, { recursive: true, withFileTypes: true });
   return Promise.all(
-    files
+    entries
+      .filter((e) => e.isFile())
+      .map((e) =>
+        relative(dir, join(e.parentPath, e.name)).split(sep).join("/"),
+      )
       .filter((f) => match.test(f))
-      .map(async (f) => ({
-        path: f,
-        body: await readFile(join(dir, f), "utf8"),
-      })),
+      .map(async (f): Promise<SourceFile> => {
+        const full = join(dir, f);
+        return {
+          path: f,
+          bytes: await readFile(full),
+          mode: (await stat(full)).mode & 0o7777,
+        };
+      }),
   );
 }
 
@@ -47,7 +61,7 @@ async function mapLimit<T, R>(
 export async function fromGitHub(
   { repo, dir }: RecordsSource,
   ref: string,
-  match: RegExp,
+  match = /./,
 ) {
   const headers: Record<string, string> = process.env.GITHUB_TOKEN
     ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
@@ -58,25 +72,27 @@ export async function fromGitHub(
   );
   if (!res.ok) throw new Error(`tree listing failed: ${res.status}`);
   const tree = (await res.json()) as {
+    sha: string;
     truncated: boolean;
-    tree: { path: string; type: string }[];
+    tree: { path: string; type: string; mode: string }[];
   };
-  // A truncated listing would silently drop records — fail loudly instead.
-  // If a repo ever legitimately outgrows the trees API, switch this loader
-  // to fetching the repo tarball in one request.
   if (tree.truncated)
     throw new Error(`tree listing for ${repo} was truncated by GitHub`);
-  const paths = tree.tree
-    .filter((t) => t.type === "blob" && t.path.startsWith(`${dir}/`))
-    .map((t) => t.path)
-    .filter((p) => match.test(p));
-  return mapLimit(paths, 12, async (p) => {
+  const blobs = tree.tree.filter(
+    (t) =>
+      t.type === "blob" && t.path.startsWith(`${dir}/`) && match.test(t.path),
+  );
+  return mapLimit(blobs, 12, async (t): Promise<SourceFile> => {
     const raw = await fetch(
-      `https://raw.githubusercontent.com/${repo}/${ref}/${p}`,
+      `https://raw.githubusercontent.com/${repo}/${tree.sha}/${t.path}`,
       { headers },
     );
-    if (!raw.ok) throw new Error(`${p}: ${raw.status}`);
-    return { path: p.slice(dir.length + 1), body: await raw.text() };
+    if (!raw.ok) throw new Error(`${t.path}: ${raw.status}`);
+    return {
+      path: t.path.slice(dir.length + 1),
+      bytes: new Uint8Array(await raw.arrayBuffer()),
+      mode: Number.parseInt(t.mode, 8),
+    };
   });
 }
 
@@ -84,7 +100,7 @@ export function records(source: RecordsSource): Loader {
   return {
     name: "records",
     async load({ store, parseData, logger }) {
-      let files: { path: string; body: string }[];
+      let files: SourceFile[];
       try {
         files = process.env.RECORDS_DIR
           ? await fromLocal(process.env.RECORDS_DIR, /\.ya?ml$/)
@@ -105,9 +121,13 @@ export function records(source: RecordsSource): Loader {
       if (files.length === 0 && process.env.REQUIRE_RECORDS)
         throw new Error("REQUIRE_RECORDS is set but zero records were loaded");
       store.clear();
+      const decoder = new TextDecoder();
       for (const f of files) {
         const id = f.path.replace(/\.ya?ml$/, "");
-        const data = await parseData({ id, data: parse(f.body) });
+        const data = await parseData({
+          id,
+          data: parse(decoder.decode(f.bytes)),
+        });
         // filePath is repo-relative, for "view source" links on record pages
         store.set({ id, data, filePath: `${source.dir}/${f.path}` });
       }
