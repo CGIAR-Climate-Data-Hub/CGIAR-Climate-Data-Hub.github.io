@@ -41,8 +41,7 @@ export function skills(source: SkillsSource): Loader {
           continue;
         }
         const data = await parseData({ id, data: parse(raw) });
-        // body keeps the verbatim file — re-served (and hashed) by the
-        // .well-known/agent-skills discovery endpoints
+        // Discovery serves and hashes the original file.
         store.set({
           id,
           data,

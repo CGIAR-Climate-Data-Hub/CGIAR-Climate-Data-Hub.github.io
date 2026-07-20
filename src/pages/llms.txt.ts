@@ -22,7 +22,7 @@ export const GET: APIRoute = async ({ site }) => {
 
 When citing a dataset, use the citation on its record page ("How to cite"), which credits the original publisher and includes an "Accessed through the CGIAR ${SITE_NAME}" clause with the record URL.
 
-Doc, tutorial, use-case, and dataset pages below are also served as plain markdown: append index.md to the page URL.
+Markdown-sourced doc, tutorial, and use-case pages below, plus dataset pages, are also served as plain markdown: append index.md to the page URL.
 
 ## Datasets
 

@@ -1,9 +1,5 @@
-// Markdown twins: content pages are also served as <page URL> + index.md —
-// the append-index.md pattern agents use to skip HTML parsing. Only
-// .md-sourced entries qualify: MDX and notebook bodies would leak
-// imports/JSX/base64 figures, so those pages have no twin (llms-full.txt
-// and, post-Cloudflare, edge HTML→markdown conversion cover them).
-// Dataset twins are generated from record data in GET, where `site` exists.
+// Markdown twins live at <page URL>/index.md. MDX and notebooks are excluded
+// because their source bodies can contain JSX, imports, or base64 figures.
 
 import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
@@ -37,5 +33,5 @@ export const GET: APIRoute<Props> = ({ props, site }) =>
   markdownResponse(
     "md" in props
       ? props.md
-      : `# ${props.dataset.title}\n\n${datasetMd(props.dataset, site)}`,
+      : `# ${props.dataset.title}\n\n${datasetMd(props.dataset, site, 2)}`,
   );

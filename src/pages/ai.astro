@@ -14,7 +14,6 @@ const SKILLS_GITHUB = githubUrl(SKILLS_REPO);
 const description =
   "Use the Hub with AI assistants and agents — ready-made skills, plus machine-readable endpoints for every dataset and page.";
 
-// The machine-readable surface, one card per entry point
 const ENDPOINTS = [
   {
     path: "/llms.txt",
@@ -44,7 +43,7 @@ const ENDPOINTS = [
     path: "<page>/index.md",
     href: undefined,
     title: "Markdown twins",
-    desc: "Every doc, tutorial, use-case, and dataset page served as plain markdown — append index.md to the page URL, no HTML parsing.",
+    desc: "Markdown-sourced docs, tutorials, and use cases — plus every dataset page — served as plain markdown. Append index.md to the page URL.",
   },
   {
     path: "/.well-known/api-catalog",
@@ -59,7 +58,7 @@ const ENDPOINTS = [
     desc: "The skills above, published for automatic discovery — each entry carries a download URL and a sha256 digest agents verify before installing.",
   },
   {
-    path: "navigator.modelContext",
+    path: "document.modelContext",
     href: undefined,
     title: "WebMCP tools",
     desc: "Every page registers in-browser agent tools (WebMCP draft): search the catalog, fetch record metadata, and list skills — right from an open tab.",

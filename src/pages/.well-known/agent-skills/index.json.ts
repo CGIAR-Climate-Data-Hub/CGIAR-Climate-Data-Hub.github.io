@@ -1,6 +1,4 @@
-// Agent Skills discovery index (cloudflare/agent-skills-discovery-rfc v0.2.0).
-// Digests are hashed from the same bytes the SKILL.md route serves, so they
-// can never drift from the artifacts.
+// Agent Skills discovery index (draft v0.2.0).
 
 import { getCollection } from "astro:content";
 import { createHash } from "node:crypto";

@@ -1,5 +1,4 @@
-// Verbatim SKILL.md artifacts referenced by the discovery index — served
-// from the site so the index digests always match what clients download.
+// Serve the exact bytes hashed by the discovery index.
 
 import { getCollection } from "astro:content";
 import type { APIRoute, GetStaticPaths } from "astro";

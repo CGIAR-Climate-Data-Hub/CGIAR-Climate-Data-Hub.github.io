@@ -1,7 +1,5 @@
-// llms-full.txt — the expanded companion to llms.txt: the Hub's docs and
-// catalog metadata inlined in one file, for agents that fetch once and
-// don't crawl. Notebook tutorials have no markdown body (their rendered
-// form embeds base64 figures) — those entries fall back to a link.
+// Expanded llms.txt companion. Notebook tutorials fall back to their link and
+// description because their rendered source embeds base64 figures.
 
 import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";

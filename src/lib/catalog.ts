@@ -339,13 +339,13 @@ function stepLabel(step: string) {
   return `every ${parts.join(" ")}`;
 }
 
-// One dataset as agent-readable markdown — facts, description, variables,
-// dimensions, and the guidance blocks (cdh, climate, classes). Shared by
-// llms-full.txt and the /catalog/<id>/index.md twins; everything else is in
-// the record JSON.
-export function datasetMd(d: CatalogRecord, site: URL | undefined) {
+// Shared dataset Markdown for llms-full.txt and record twins.
+export function datasetMd(
+  d: CatalogRecord,
+  site: URL | undefined,
+  sectionDepth = 4,
+) {
   const abs = (path: string) => new URL(path, site).href;
-  // Long dimension axes (e.g. yearly slices) summarize instead of listing
   const values = (v: string[]) =>
     v.length > 8
       ? `${v[0]} … ${v[v.length - 1]} (${v.length} values)`
@@ -380,21 +380,22 @@ export function datasetMd(d: CatalogRecord, site: URL | undefined) {
         .filter(Boolean)
         .join(" · ")}`,
     ...d.additional_links.map((l) =>
-      dash("Link: " + (l.name ?? l.url), l.name && l.url, l.description),
+      dash(`Link: ${l.name ?? l.url}`, l.name && l.url, l.description),
     ),
   ].filter(Boolean);
 
-  // Bullet content must be single-line — multi-line YAML fields (notes,
-  // descriptions) would otherwise break the markdown list
+  // Keep multiline record fields inside a single Markdown bullet.
   const bullets = (items: unknown[]) =>
     items
       .filter(Boolean)
       .map((i) => `- ${String(i).replace(/\s+/g, " ").trim()}`)
       .join("\n");
-  const section = (title: string, items: unknown[]) =>
-    items.filter(Boolean).length
-      ? `#### ${title}\n\n${bullets(items)}`
+  const section = (title: string, items: unknown[]) => {
+    const content = bullets(items);
+    return content
+      ? `${"#".repeat(sectionDepth)} ${title}\n\n${content}`
       : undefined;
+  };
 
   const c = d.climate;
   const blocks = [
@@ -403,7 +404,7 @@ export function datasetMd(d: CatalogRecord, site: URL | undefined) {
     section(
       "Variables",
       d.variables.map((v) =>
-        dash(v.name + (v.unit ? ` (${v.unit})` : ""), v.description, v.note),
+        dash(`${v.name}${v.unit ? ` (${v.unit})` : ""}`, v.description, v.note),
       ),
     ),
     section(
