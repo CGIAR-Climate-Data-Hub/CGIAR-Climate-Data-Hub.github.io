@@ -23,6 +23,12 @@ const ENDPOINTS = [
     desc: "A compact, AI-readable map of the site: every dataset, doc, tutorial, and use case with one-line descriptions. Point an agent here first.",
   },
   {
+    path: "/llms-full.txt",
+    href: "/llms-full.txt",
+    title: "llms-full.txt",
+    desc: "The whole Hub in one file — docs, tutorials, FAQ, and per-dataset metadata inlined, for agents that fetch once and don't crawl.",
+  },
+  {
     path: "/catalog.json",
     href: "/catalog.json",
     title: "Catalog index",
@@ -33,6 +39,30 @@ const ENDPOINTS = [
     href: undefined,
     title: "Record metadata",
     desc: "Each record's full CDH metadata as JSON at a stable URL beside its page — variables, dimensions, assets, licensing.",
+  },
+  {
+    path: "<page>/index.md",
+    href: undefined,
+    title: "Markdown twins",
+    desc: "Every doc, tutorial, use-case, and dataset page served as plain markdown — append index.md to the page URL, no HTML parsing.",
+  },
+  {
+    path: "/.well-known/api-catalog",
+    href: "/.well-known/api-catalog",
+    title: "API catalog",
+    desc: "RFC 9727 linkset advertising the Hub's machine endpoints — the standard place for automated API discovery to start.",
+  },
+  {
+    path: "/.well-known/agent-skills/index.json",
+    href: "/.well-known/agent-skills/index.json",
+    title: "Skills discovery index",
+    desc: "The skills above, published for automatic discovery — each entry carries a download URL and a sha256 digest agents verify before installing.",
+  },
+  {
+    path: "navigator.modelContext",
+    href: undefined,
+    title: "WebMCP tools",
+    desc: "Every page registers in-browser agent tools (WebMCP draft): search the catalog, fetch record metadata, and list skills — right from an open tab.",
   },
 ];
 ---
@@ -113,9 +143,11 @@ const ENDPOINTS = [
     <p class="caption">
       Also there: schema.org JSON-LD embedded in every dataset page, BibTeX
       citations per record,{" "}
-      <a href="/sitemap-index.xml">a sitemap</a>, and cloud-native assets (Zarr,
-      COG, Parquet) readable straight from object storage over HTTPS — with
-      worked Python and R snippets on each record page.
+      <a href="/sitemap-index.xml">a sitemap</a>, Content Signals in{" "}
+      <a href="/robots.txt">robots.txt</a>{" "}
+      welcoming AI use (search, ai-input, and ai-train), and cloud-native assets
+      (Zarr, COG, Parquet) readable straight from object storage over HTTPS —
+      with worked Python and R snippets on each record page.
     </p>
   </section>
 </Layout>

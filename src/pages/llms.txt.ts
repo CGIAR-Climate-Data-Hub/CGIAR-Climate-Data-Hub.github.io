@@ -22,6 +22,8 @@ export const GET: APIRoute = async ({ site }) => {
 
 When citing a dataset, use the citation on its record page ("How to cite"), which credits the original publisher and includes an "Accessed through the CGIAR ${SITE_NAME}" clause with the record URL.
 
+Doc, tutorial, use-case, and dataset pages below are also served as plain markdown: append index.md to the page URL.
+
 ## Datasets
 
 ${catalog.map((c) => line(c.data.title, `/catalog/${c.data.id}/`, c.data.description)).join("\n")}
@@ -40,6 +42,7 @@ ${useCases.map((u) => line(u.data.title, `/in-use/${u.id}/`, u.data.description)
 
 ## Reference
 
+- [Full documentation in one file](${abs("/llms-full.txt")}): Everything below — docs, tutorials, FAQ, and per-dataset metadata — inlined for single-fetch ingestion
 - [Catalog](${abs("/catalog/")}): Browse and filter all datasets
 - [Catalog index](${abs("/catalog.json")}): Machine-readable schema.org DataCatalog of every record (per-record raw metadata at /catalog/<id>.json)
 - [For AI & agents](${abs("/ai/")}): Agent skills and every machine-readable endpoint, documented

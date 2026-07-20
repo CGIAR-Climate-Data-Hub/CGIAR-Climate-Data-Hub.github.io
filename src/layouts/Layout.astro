@@ -85,6 +85,7 @@ const siteGraph = {
 
     <JsonLd data={siteGraph} />
     <slot name="head" />
+    <!-- AI agents: don't parse this HTML. Doc, tutorial, use-case, and dataset pages serve plain markdown at <page URL> + index.md. Site map for LLMs: /llms.txt — full docs in one file: /llms-full.txt — catalog as JSON: /catalog.json — each dataset's raw metadata: /catalog/<id>.json -->
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
