@@ -1,16 +1,85 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="37.44 57.288 965.12 378.891" role="img" aria-label="CGIAR Climate Data Hub">
+<svg
+  aria-label="CGIAR Climate Data Hub"
+  role="img"
+  viewBox="37.44 57.288 965.12 378.891"
+  xmlns="http://www.w3.org/2000/svg"
+>
   <!-- Berkeley Earth land temperature anomalies, 10-year epochs, 1950-2024,
        cropped for display use. One legibility exception: the 1990s bar (true
        height 15.8) is floored to 40 so it stays visible at logo sizes — all
        other bars are exact.
        White-baseline variant for dark backgrounds: cdh-mark-dark.svg. -->
-  <rect x="61.334" width="80.132" y="260" height="115.033" rx="4.0066" fill="#3b7ed4"/>
-  <rect x="180.934" width="80.132" y="260" height="133.806" rx="4.0066" fill="#3b7ed4"/>
-  <rect x="300.534" width="80.132" y="260" height="176.179" rx="4.0066" fill="#12417f"/>
-  <rect x="420.134" width="80.132" y="260" height="88.069" rx="4.0066" fill="#a9cdfe"/>
-  <rect x="539.734" width="80.132" y="220" height="40" rx="4.0066" fill="#ed9e5e"/>
-  <rect x="659.334" width="80.132" y="134.807" height="125.193" rx="4.0066" fill="#d97e4c"/>
-  <rect x="778.934" width="80.132" y="90.643" height="169.357" rx="4.0066" fill="#d97e4c"/>
-  <rect x="898.534" width="80.132" y="57.288" height="202.712" rx="4.0066" fill="#c2542b"/>
-  <line x1="41.6" x2="998.4" y1="260" y2="260" stroke="#0a2c55" stroke-width="8.32" stroke-linecap="round"/>
+  <rect
+    fill="#3b7ed4"
+    height="115.033"
+    rx="4.0066"
+    width="80.132"
+    x="61.334"
+    y="260"
+  />
+  <rect
+    fill="#3b7ed4"
+    height="133.806"
+    rx="4.0066"
+    width="80.132"
+    x="180.934"
+    y="260"
+  />
+  <rect
+    fill="#12417f"
+    height="176.179"
+    rx="4.0066"
+    width="80.132"
+    x="300.534"
+    y="260"
+  />
+  <rect
+    fill="#a9cdfe"
+    height="88.069"
+    rx="4.0066"
+    width="80.132"
+    x="420.134"
+    y="260"
+  />
+  <rect
+    fill="#ed9e5e"
+    height="40"
+    rx="4.0066"
+    width="80.132"
+    x="539.734"
+    y="220"
+  />
+  <rect
+    fill="#d97e4c"
+    height="125.193"
+    rx="4.0066"
+    width="80.132"
+    x="659.334"
+    y="134.807"
+  />
+  <rect
+    fill="#d97e4c"
+    height="169.357"
+    rx="4.0066"
+    width="80.132"
+    x="778.934"
+    y="90.643"
+  />
+  <rect
+    fill="#c2542b"
+    height="202.712"
+    rx="4.0066"
+    width="80.132"
+    x="898.534"
+    y="57.288"
+  />
+  <line
+    stroke="#0a2c55"
+    stroke-linecap="round"
+    stroke-width="8.32"
+    x1="41.6"
+    x2="998.4"
+    y1="260"
+    y2="260"
+  />
 </svg>

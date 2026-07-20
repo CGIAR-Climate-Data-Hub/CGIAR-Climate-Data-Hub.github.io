@@ -1,1 +1,74 @@
-<svg id="fav-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256"><desc>Climate Data Hub logo. Berkeley Earth land temperature anomaly, 29-year epochs, 1900-2024, annual means; baseline: 1971-2000.</desc><rect x="7.68" y="7.68" width="240.64" height="240.64" rx="46.08" fill="#f1edea"/><g transform="translate(128 128) scale(1.3) translate(-128 -115.407)"><g><rect x="48.44544" width="19.845119999999994" y="135.90314769975788" height="40.67452468496453" rx="5.556633599999999" fill="#12417f"/><rect x="83.26144" width="19.845119999999994" y="135.90314769975788" height="21.334661924895666" rx="5.556633599999999" fill="#3b7ed4"/><rect x="118.07744" width="19.845119999999994" y="135.90314769975788" height="16.520745945653427" rx="5.556633599999999" fill="#a9cdfe"/><rect x="152.89343999999997" width="19.845119999999994" y="81.49746062975476" height="38.599391670487385" rx="5.556633599999999" fill="#d97e4c"/><rect x="187.70943999999997" width="19.845119999999994" y="54.23728813559322" height="65.85956416464892" rx="5.556633599999999" fill="#c2542b"/></g><line x1="40.96" x2="215.04" y1="128" y2="128" stroke="#0a2c55" stroke-width="5.12" stroke-linecap="round"/></g></svg>
+<svg
+  height="256"
+  id="fav-svg"
+  viewBox="0 0 256 256"
+  width="256"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <title>Climate Data Hub</title>
+  <desc>
+    Climate Data Hub logo. Berkeley Earth land temperature anomaly, 29-year
+    epochs, 1900-2024, annual means; baseline: 1971-2000.
+  </desc>
+  <rect
+    fill="#f1edea"
+    height="240.64"
+    rx="46.08"
+    width="240.64"
+    x="7.68"
+    y="7.68"
+  />
+  <g transform="translate(128 128) scale(1.3) translate(-128 -115.407)">
+    <g>
+      <rect
+        fill="#12417f"
+        height="40.67452468496453"
+        rx="5.556633599999999"
+        width="19.845119999999994"
+        x="48.44544"
+        y="135.90314769975788"
+      />
+      <rect
+        fill="#3b7ed4"
+        height="21.334661924895666"
+        rx="5.556633599999999"
+        width="19.845119999999994"
+        x="83.26144"
+        y="135.90314769975788"
+      />
+      <rect
+        fill="#a9cdfe"
+        height="16.520745945653427"
+        rx="5.556633599999999"
+        width="19.845119999999994"
+        x="118.07744"
+        y="135.90314769975788"
+      />
+      <rect
+        fill="#d97e4c"
+        height="38.599391670487385"
+        rx="5.556633599999999"
+        width="19.845119999999994"
+        x="152.89343999999997"
+        y="81.49746062975476"
+      />
+      <rect
+        fill="#c2542b"
+        height="65.85956416464892"
+        rx="5.556633599999999"
+        width="19.845119999999994"
+        x="187.70943999999997"
+        y="54.23728813559322"
+      />
+    </g>
+    <line
+      stroke="#0a2c55"
+      stroke-linecap="round"
+      stroke-width="5.12"
+      x1="40.96"
+      x2="215.04"
+      y1="128"
+      y2="128"
+    />
+  </g>
+</svg>

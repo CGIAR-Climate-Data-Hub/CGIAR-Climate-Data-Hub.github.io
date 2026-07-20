@@ -57,23 +57,23 @@ const siteGraph = {
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
     <!-- --bg paper tone, for mobile browser chrome -->
-    <meta name="theme-color" content="#f5f4f1">
-    <link rel="icon" type="image/svg+xml" href="/cdh-favicon-29yr.svg">
-    <link rel="icon" href="/CDH_favicon_29yr.ico">
-    <meta name="generator" content={Astro.generator}>
+    <meta content="#f5f4f1" name="theme-color">
+    <link href="/cdh-favicon-29yr.svg" rel="icon" type="image/svg+xml">
+    <link href="/CDH_favicon_29yr.ico" rel="icon">
+    <meta content={Astro.generator} name="generator">
 
     <title>{title}</title>
     {description && <meta content={description} name="description" />}
-    <link rel="canonical" href={canonical}>
-    <meta property="og:title" content={title}>
+    <link href={canonical} rel="canonical">
+    <meta content={title} property="og:title">
     {description && <meta content={description} property="og:description" />}
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content={SITE_NAME}>
-    <meta property="og:url" content={canonical}>
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content={title}>
+    <meta content="website" property="og:type">
+    <meta content={SITE_NAME} property="og:site_name">
+    <meta content={canonical} property="og:url">
+    <meta content="summary" name="twitter:card">
+    <meta content={title} name="twitter:title">
     {description && <meta content={description} name="twitter:description" />}
 
     <!-- Prevent content images (including embedded notebook figures) from
