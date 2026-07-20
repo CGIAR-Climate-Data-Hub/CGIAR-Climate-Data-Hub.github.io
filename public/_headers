@@ -1,16 +1,13 @@
-# Cloudflare Pages response headers — inert on GitHub Pages (served as a
-# plain file), active as soon as this build output is served by CF Pages.
+# Cloudflare Pages only; GitHub Pages serves this as a plain file.
 
-# RFC 8288 Link headers for agent discovery (rels registered via RFC 9727)
+# Agent discovery (RFC 9727 and RFC 8631)
 /*
   Link: </.well-known/api-catalog>; rel="api-catalog", </ai/>; rel="service-doc"
 
-# RFC 9727 requires linkset+json; extensionless files otherwise default to octet-stream
+# The extensionless route needs the RFC 9727 media type.
 /.well-known/api-catalog
-  Content-Type: application/linkset+json
+  Content-Type: application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"
 
-# Astro's /_astro/ assets (JS, CSS, fonts) are content-hashed — a new deploy
-# gets new filenames, so these can cache forever. Pagefind's stable-named
-# files stay on default caching.
+# Astro assets are content-hashed; Pagefind's stable files keep default caching.
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
