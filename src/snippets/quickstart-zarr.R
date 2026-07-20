@@ -1,6 +1,4 @@
 library(stars)
 
-ds <- read_mdim(
-  'ZARR:"/vsicurl/__URL__"',
-  proxy = TRUE
-)
+url <- 'ZARR:"/vsicurl/__URL__"'
+ds <- read_mdim(url, proxy = TRUE)
