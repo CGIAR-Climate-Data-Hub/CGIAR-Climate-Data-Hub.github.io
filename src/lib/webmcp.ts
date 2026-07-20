@@ -1,0 +1,74 @@
+// WebMCP (navigator.modelContext, WICG draft): expose the site's
+// machine-readable endpoints as tools for in-browser agents. Client-side —
+// imported by the Layout script; runs on load and is inert (feature-detected)
+// in browsers without the API.
+
+const text = (t: string) => ({ content: [{ type: "text", text: t }] });
+
+const fetchText = async (url: string) => {
+  const res = await fetch(url);
+  return text(
+    res.ok ? await res.text() : `Error ${res.status} fetching ${url}`,
+  );
+};
+
+(
+  navigator as { modelContext?: { provideContext(ctx: unknown): void } }
+).modelContext?.provideContext({
+  tools: [
+    {
+      name: "search_datasets",
+      description:
+        "Search the Climate Data Hub catalog for datasets matching a query. Returns matching datasets as JSON with id, name, description, and url.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "Search terms, e.g. a variable, region, or topic",
+          },
+        },
+        required: ["query"],
+      },
+      execute: async ({ query }: { query: string }) => {
+        const res = await fetch("/catalog.json");
+        const { dataset } = (await res.json()) as {
+          dataset: { name: string; description: string; url: string }[];
+        };
+        const words = query.toLowerCase().split(/\s+/);
+        const hits = dataset
+          .filter((d) => {
+            const blob = JSON.stringify(d).toLowerCase();
+            return words.every((w) => blob.includes(w));
+          })
+          .slice(0, 10)
+          .map((d) => ({
+            id: d.url.split("/").filter(Boolean).pop(),
+            name: d.name,
+            description: d.description,
+            url: d.url,
+          }));
+        return text(JSON.stringify(hits, null, 2));
+      },
+    },
+    {
+      name: "get_dataset_metadata",
+      description:
+        "Fetch a dataset's full CDH metadata record as JSON — variables, dimensions, assets, licensing — by its catalog id (from search_datasets).",
+      inputSchema: {
+        type: "object",
+        properties: { id: { type: "string" } },
+        required: ["id"],
+      },
+      execute: ({ id }: { id: string }) =>
+        fetchText(`/catalog/${encodeURIComponent(id)}.json`),
+    },
+    {
+      name: "list_agent_skills",
+      description:
+        "List the Hub's installable agent skills (Agent Skills format) with descriptions, download URLs, and digests.",
+      inputSchema: { type: "object", properties: {} },
+      execute: () => fetchText("/.well-known/agent-skills/index.json"),
+    },
+  ],
+});
