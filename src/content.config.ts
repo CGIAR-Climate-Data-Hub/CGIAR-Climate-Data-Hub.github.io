@@ -254,7 +254,6 @@ const catalog = defineCollection({
       cdh: z
         .object({
           domain: z.array(z.string()).default([]),
-          use_cases: z.array(z.string()).default([]),
           not_recommended_for: z
             .array(
               z.object({
@@ -347,6 +346,12 @@ const skills = defineCollection({
   schema: z.object({
     name: z.string(),
     description: z.string(),
+    skillBase64: z.string(),
+    artifact: z.object({
+      type: z.enum(["skill-md", "archive"]),
+      digest: z.string(),
+      base64: z.string(),
+    }),
   }),
 });
 

@@ -12,3 +12,5 @@ contacts (a licensor is required), assets with media types, and the
 spatial/temporal blocks — a snapshot uses `date`, a span uses `start_date`
 plus a nullable `end_date`, and the time axis is declared as a
 `type: temporal` dimension. Validate against the standard before submitting.
+
+Start from [the record template](references/record-template.md).

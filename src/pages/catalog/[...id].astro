@@ -431,17 +431,6 @@ const jsonLd = datasetJsonLd(
             </div>
           )}
 
-        {d.cdh && d.cdh.use_cases.length > 0 && (
-            <div>
-              <h3>Good for</h3>
-              <ul>
-                {d.cdh.use_cases.map((u) => (
-                  <li>{humanize(u)}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
         {d.cdh && d.cdh.not_recommended_for.length > 0 && (
             <div>
               <h3>Not recommended for</h3>

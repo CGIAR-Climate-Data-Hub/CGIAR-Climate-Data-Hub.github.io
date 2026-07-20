@@ -1,0 +1,13 @@
+# Cloudflare Pages only; GitHub Pages serves this as a plain file.
+
+# Agent discovery (RFC 9727 and RFC 8631)
+/*
+  Link: </.well-known/api-catalog>; rel="api-catalog", </ai/>; rel="service-doc"
+
+# The extensionless route needs the RFC 9727 media type.
+/.well-known/api-catalog
+  Content-Type: application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"
+
+# Astro assets are content-hashed; Pagefind's stable files keep default caching.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable

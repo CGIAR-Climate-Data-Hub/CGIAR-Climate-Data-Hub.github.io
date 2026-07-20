@@ -339,6 +339,116 @@ function stepLabel(step: string) {
   return `every ${parts.join(" ")}`;
 }
 
+// Shared dataset Markdown for llms-full.txt and record twins.
+export function datasetMd(
+  d: CatalogRecord,
+  site: URL | undefined,
+  sectionDepth = 4,
+) {
+  const abs = (path: string) => new URL(path, site).href;
+  const values = (v: string[]) =>
+    v.length > 8
+      ? `${v[0]} … ${v[v.length - 1]} (${v.length} values)`
+      : v.join(", ");
+  const dash = (...parts: (string | undefined)[]) =>
+    parts.filter(Boolean).join(" — ");
+  const temporal =
+    d.temporal
+    && ("date" in d.temporal
+      ? d.temporal.date
+      : `${d.temporal.start_date} to ${d.temporal.end_date ?? "ongoing"}`);
+
+  const facts = [
+    `URL: ${abs(`/catalog/${d.id}/`)}`,
+    `Metadata (JSON): ${abs(`/catalog/${d.id}.json`)}`,
+    d.data.length && `STAC collection: ${stacCollectionUrl(d.id)}`,
+    `Resource type: ${d.resource_type}`,
+    `License: ${d.license}`,
+    d.access && dash(`Access: ${d.access}`, d.access_note),
+    d.doi && `DOI: ${d.doi}`,
+    temporal && `Temporal coverage: ${temporal}`,
+    d.spatial?.geography.length
+      && `Geography: ${d.spatial.geography.join(", ")}`,
+    d.commodities.length && `Commodities: ${d.commodities.join(", ")}`,
+    d.keywords.length
+      && `Keywords: ${d.keywords
+        .map((k) => (typeof k === "string" ? k : k.term))
+        .join(", ")}`,
+    d.data.length
+      && `Data: ${d.data
+        .map((a) => a.locations[0]?.url)
+        .filter(Boolean)
+        .join(" · ")}`,
+    ...d.additional_links.map((l) =>
+      dash(`Link: ${l.name ?? l.url}`, l.name && l.url, l.description),
+    ),
+  ].filter(Boolean);
+
+  // Keep multiline record fields inside a single Markdown bullet.
+  const bullets = (items: unknown[]) =>
+    items
+      .filter(Boolean)
+      .map((i) => `- ${String(i).replace(/\s+/g, " ").trim()}`)
+      .join("\n");
+  const section = (title: string, items: unknown[]) => {
+    const content = bullets(items);
+    return content
+      ? `${"#".repeat(sectionDepth)} ${title}\n\n${content}`
+      : undefined;
+  };
+
+  const c = d.climate;
+  const blocks = [
+    bullets(facts),
+    d.description.trim(),
+    section(
+      "Variables",
+      d.variables.map((v) =>
+        dash(`${v.name}${v.unit ? ` (${v.unit})` : ""}`, v.description, v.note),
+      ),
+    ),
+    section(
+      "Dimensions",
+      d.dimensions.map((dim) =>
+        dash(
+          `${dim.name}: ${values(dim.values)}`,
+          dim.step && `step ${dim.step}`,
+          dim.description,
+        ),
+      ),
+    ),
+    section(
+      "Classes",
+      d.classes.map(
+        (cl) =>
+          `${cl.variable}: ${cl.values.map((v) => `${v.value} = ${v.label}`).join("; ")}`,
+      ),
+    ),
+    d.cdh
+      && section("Intended use", [
+        d.cdh.domain.length && `Domains: ${d.cdh.domain.join(", ")}`,
+        ...d.cdh.not_recommended_for.map((n) =>
+          dash(
+            `Not recommended: ${n.use}`,
+            n.reason,
+            n.use_instead && `use instead: ${n.use_instead}`,
+          ),
+        ),
+      ]),
+    c
+      && section("Climate modelling", [
+        c.mip_era && `MIP era: ${c.mip_era}`,
+        c.models.length && `Models: ${c.models.join(", ")}`,
+        c.scenarios.length && `Scenarios: ${c.scenarios.join(", ")}`,
+        c.baseline
+          && `Baseline: ${c.baseline.start_date}${c.baseline.end_date ? ` to ${c.baseline.end_date}` : ""}`,
+      ]),
+    d.citation && `Cite: ${citationText(d, abs(`/catalog/${d.id}/`))}`,
+  ].filter(Boolean);
+
+  return blocks.join("\n\n");
+}
+
 // Snapshot (date) or span; `step` is the time dimension's, labels the cadence
 export function temporalText(t: CatalogRecord["temporal"], step?: string) {
   if (!t) return undefined;
