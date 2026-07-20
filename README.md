@@ -9,6 +9,20 @@ bun run build   # static build to dist/
 bun run check   # lint + format (Biome)
 ```
 
+### Commit hooks
+
+Lint/format checks run as git hooks via
+[prek](https://github.com/j178/prek) — a drop-in
+[pre-commit](https://pre-commit.com) replacement; both read the same
+`.pre-commit-config.yaml`, so use whichever you have:
+
+```sh
+prek install          # or: pre-commit install
+```
+
+On commit this runs Biome (JS/TS/Astro/CSS), ruff (Python snippets and
+notebooks), air (R snippets), and basic file hygiene checks.
+
 ## Catalog records
 
 Dataset records are **not** in this repo — the `catalog` collection is

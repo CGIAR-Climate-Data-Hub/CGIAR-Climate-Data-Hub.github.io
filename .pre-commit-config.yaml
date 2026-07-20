@@ -1,0 +1,32 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-added-large-files
+      - id: end-of-file-fixer
+      - id: check-json
+      - id: check-yaml
+      - id: check-merge-conflict
+
+  # Ruff and Air to check/format code examples/tutorials
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.22
+    hooks:
+      - id: ruff-check
+        args: [--fix, "--extend-select=I,UP,B"]
+      - id: ruff-format
+        args: [--line-length=60]
+  - repo: https://github.com/posit-dev/air-pre-commit
+    rev: 0.10.0
+    hooks:
+      - id: air-format
+
+  - repo: local
+    hooks:
+      - id: local-biome-check
+        name: biome check
+        entry: bunx biome check --write --files-ignore-unknown=true --no-errors-on-unmatched
+        language: system
+        types: [text]
+        files: "\\.(jsx?|tsx?|c(js|ts)|m(js|ts)|d\\.(ts|cts|mts)|jsonc?|css|svelte|vue|astro|graphql|gql)$"

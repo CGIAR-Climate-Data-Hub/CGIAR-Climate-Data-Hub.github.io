@@ -1,8 +1,7 @@
 library(terra)
 
-r <- rast(
-  "/vsicurl/__URL__"
-)
+url <- "/vsicurl/__URL__"
+r <- rast(url)
 
 # Clip a window (East Africa)
 window <- crop(r, ext(28, 52, -12, 18))

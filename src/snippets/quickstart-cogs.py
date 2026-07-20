@@ -1,5 +1,4 @@
 import rioxarray
 
-da = rioxarray.open_rasterio(
-    "__URL__", masked=True
-)
+url = "__URL__"
+da = rioxarray.open_rasterio(url, masked=True)
