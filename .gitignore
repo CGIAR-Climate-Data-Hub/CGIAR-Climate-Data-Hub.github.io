@@ -1,0 +1,31 @@
+# build output
+dist/
+
+# catalog records live in the cdh-catalog repo (fetched at build time) —
+# never commit them here; use RECORDS_DIR to preview a local checkout
+src/content/catalog/
+
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment variables
+.env
+.env.production
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+
+# local assistant settings
+.claude/settings.local.json

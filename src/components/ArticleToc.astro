@@ -1,0 +1,95 @@
+---
+// Sticky on-this-page nav with a light scroll-spy (terracotta active rule).
+import type { MarkdownHeading } from "astro";
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const headings = Astro.props.headings.filter((h) => h.depth <= 3);
+
+// h3s group under their preceding h2 so CSS can reveal them per-section
+const groups: { heading: MarkdownHeading; children: MarkdownHeading[] }[] = [];
+for (const h of headings) {
+  if (h.depth <= 2 || groups.length === 0) {
+    groups.push({ heading: h, children: [] });
+  } else {
+    groups[groups.length - 1].children.push(h);
+  }
+}
+---
+
+{headings.length > 1 && (
+    <nav aria-label="Table of contents" data-toc>
+      <div class="label">On this page</div>
+      {groups.map((g) => (
+        <div class="sec">
+          <a href={`#${g.heading.slug}`} class:list={[`depth-${g.heading.depth}`]}>
+            {g.heading.text}
+          </a>
+          {g.children.map((h) => (
+            <a href={`#${h.slug}`} class:list={[`depth-${h.depth}`]}>
+              {h.text}
+            </a>
+          ))}
+        </div>
+      ))}
+    </nav>
+  )}
+
+<script>
+import { scrollSpy } from "@/lib/scrollspy";
+
+const toc = document.querySelector<HTMLElement>("[data-toc]");
+if (toc) scrollSpy(toc);
+</script>
+
+<style>
+nav {
+  position: sticky;
+  top: calc(var(--nav-height) + 24px);
+}
+
+.label {
+  margin-bottom: 14px;
+  font-size: 10px;
+  color: var(--text-mute);
+}
+
+a {
+  display: block;
+  padding: 8px 0 8px 16px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-soft);
+  border-left: 2px solid var(--border);
+  transition:
+    color 0.14s,
+    border-color 0.14s;
+}
+
+a.depth-3 {
+  padding-left: 28px;
+  font-size: 12.5px;
+}
+
+/* Sub-headings appear only while reading their section */
+.sec a.depth-3 {
+  display: none;
+}
+
+.sec:has(a[aria-current="true"]) a.depth-3 {
+  display: block;
+}
+
+a:hover {
+  color: var(--cdh-blue-950);
+  text-decoration: none;
+}
+
+a[aria-current="true"] {
+  font-weight: 600;
+  color: var(--cdh-blue-950);
+  border-left-color: var(--terra-700);
+}
+</style>

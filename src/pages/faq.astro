@@ -1,0 +1,129 @@
+---
+import { getCollection, render } from "astro:content";
+import JsonLd from "@/components/JsonLd.astro";
+import PageHead from "@/components/PageHead.astro";
+import Layout from "@/layouts/Layout.astro";
+import { issueUrl } from "@/lib/github";
+import { SITE_NAME, SITE_REPO } from "@/site.config";
+
+const faqs = await Promise.all(
+  (await getCollection("faq"))
+    .sort((a, b) => a.data.order - b.data.order)
+    .map(async (entry) => ({ entry, Content: (await render(entry)).Content })),
+);
+
+// JSON-LD answers come from the markdown source, with link syntax flattened
+const plain = (md: string) => md.trim().replace(/\[([^\]]+)\]\([^)]*\)/g, "$1");
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map(({ entry }) => ({
+    "@type": "Question",
+    name: entry.data.question,
+    acceptedAnswer: { "@type": "Answer", text: plain(entry.body ?? "") },
+  })),
+};
+---
+
+<Layout
+  description="Short answers to the questions we get asked most — access, licensing, formats, and contributing."
+  title={`FAQ — ${SITE_NAME}`}
+>
+  <JsonLd data={jsonLd} slot="head" />
+
+  <PageHead
+    kicker="Learn"
+    sub="Short answers to the questions we get asked most — access, licensing, formats, and contributing."
+    title="Frequently asked questions"
+  />
+
+  <div class="container narrow faqs">
+    {faqs.map(({ entry, Content }) => (
+        <details>
+          <summary>
+            <h3>{entry.data.question}</h3>
+            <svg aria-hidden="true" class="chev" fill="none" height="14" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" width="14">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </summary>
+          <div class="answer">
+            <Content />
+          </div>
+        </details>
+      ))}
+
+    <p class="more">
+      Something missing?{" "}
+      <a href={issueUrl(SITE_REPO)}>Ask on GitHub</a>
+      {" "}or read the
+      <a href="/wikis/"> wikis</a>.
+    </p>
+  </div>
+</Layout>
+
+<style>
+.faqs {
+  margin-top: 40px;
+}
+
+details {
+  margin-bottom: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: border-color 0.14s;
+}
+
+details[open],
+details:hover {
+  border-color: var(--cdh-blue-300);
+}
+
+summary {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  cursor: pointer;
+  list-style: none;
+}
+
+summary h3 {
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.chev {
+  flex-shrink: 0;
+  color: var(--text-mute);
+  transition: transform 0.16s;
+}
+
+details[open] .chev {
+  transform: rotate(180deg);
+}
+
+.answer {
+  max-width: 720px;
+  padding: 0 22px 18px;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--text-soft);
+}
+
+.answer :global(p) {
+  margin-bottom: 10px;
+}
+
+.answer :global(p:last-child) {
+  margin-bottom: 0;
+}
+
+.more {
+  margin-top: 28px;
+  font-size: 14px;
+  color: var(--text-soft);
+}
+</style>

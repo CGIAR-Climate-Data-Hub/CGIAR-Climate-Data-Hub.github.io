@@ -1,0 +1,132 @@
+---
+import caspLogoWhite from "@/assets/CASP_logo_white.svg";
+import { issueUrl } from "@/lib/github";
+import { GITHUB_URL, SITE_REPO } from "@/site.config";
+import LogoBlock from "./LogoBlock.astro";
+
+const LINKS = [
+  ["Catalog", "/catalog/"],
+  ["In use", "/in-use/"],
+  ["Tutorials", "/tutorials/"],
+  ["Wikis", "/wikis/"],
+  ["FAQ", "/faq/"],
+  ["About", "/about/"],
+  ["Contribute", "/contribute/"],
+  ["Report an issue", issueUrl(SITE_REPO)],
+  ["GitHub", GITHUB_URL],
+] as const;
+
+const year = new Date().getFullYear();
+
+// The ONE sanctioned CGIAR-green band — green never appears beside program blue elsewhere.
+---
+
+<footer>
+  <div class="container top">
+    <div class="brand">
+      <LogoBlock size={30} variant="dark" />
+      <a
+        class="casp"
+        href="https://www.cgiar.org/cgiar-research-portfolio-2025-2030/climate-action"
+        rel="noreferrer"
+      >
+        <img
+          alt="CGIAR Climate Action"
+          height="46"
+          src={caspLogoWhite.src}
+          width="96"
+        >
+      </a>
+    </div>
+    <nav aria-label="Footer">
+      {LINKS.map(([label, href]) => <a href={href}>{label}</a>)}
+    </nav>
+  </div>
+  <div class="container bottom">
+    <span>&copy; {year} CGIAR.</span>
+    <span>
+      Website content licensed under{" "}
+      <a href="https://creativecommons.org/licenses/by/4.0/" rel="noreferrer"
+        >CC BY 4.0</a
+      >, source code under{" "}
+      <a href="https://spdx.org/licenses/MIT.html" rel="noreferrer">MIT</a>.
+      Datasets carry their own licenses.
+    </span>
+  </div>
+</footer>
+
+<style>
+footer {
+  padding: 28px 0 22px;
+  margin-top: 96px;
+  color: #c3d2cc;
+  background: var(--cgiar-primary);
+  border-top: 3px solid var(--cgiar-accent);
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  align-items: center;
+}
+
+.casp {
+  display: inline-flex;
+  align-items: center;
+  padding-left: 22px;
+  border-left: 1px solid rgb(255 255 255 / 20%);
+}
+
+.casp img {
+  display: block;
+  width: auto;
+  height: 46px;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  align-items: center;
+}
+
+nav a {
+  font-size: 13.5px;
+  color: #c3d2cc;
+}
+
+nav a:hover {
+  color: var(--text-inverse);
+}
+
+.bottom a {
+  color: #9db4ab;
+  text-decoration: underline;
+}
+
+.bottom a:hover {
+  color: var(--text-inverse);
+}
+
+.bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  margin-top: 20px;
+  font-size: 12px;
+  color: #758b83;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+</style>

@@ -1,0 +1,50 @@
+---
+// Icon copy button matching the code-block chrome (same icons as
+// src/lib/code-block.ts). Layout's delegated handler copies data-copy on
+// click and toggles .copied, which swaps the icons via the global rules —
+// works on every page with no extra wiring.
+interface Props {
+  copy: string;
+  label?: string;
+}
+
+const { copy, label = "Copy" } = Astro.props;
+---
+
+<button
+  aria-label={label}
+  class="code-copy"
+  data-copy={copy}
+  title={label}
+  type="button"
+>
+  <svg
+    aria-hidden="true"
+    class="ic-copy"
+    fill="none"
+    height="13"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="13"
+  >
+    <rect height="12" rx="2" width="12" x="9" y="9"></rect>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+  </svg>
+  <svg
+    aria-hidden="true"
+    class="ic-check"
+    fill="none"
+    height="13"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    width="13"
+  >
+    <path d="M20 6 9 17l-5-5"></path>
+  </svg>
+</button>

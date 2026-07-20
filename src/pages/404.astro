@@ -1,0 +1,48 @@
+---
+import Layout from "@/layouts/Layout.astro";
+---
+
+<Layout title="Page not found">
+  <div class="container wrap">
+    <div class="label kicker">404</div>
+    <h1>That page doesn't exist.</h1>
+    <p>It may have moved, or the link may be wrong.</p>
+    <div class="ctas">
+      <a class="btn btn-primary" href="/">Back to home</a>
+      <a class="btn btn-ghost" href="/catalog/">Browse the catalog</a>
+    </div>
+    <div class="search">
+      <pagefind-modal-trigger
+        placeholder="Search for what you were after"
+      ></pagefind-modal-trigger>
+    </div>
+  </div>
+</Layout>
+
+<style>
+.wrap {
+  padding-top: 96px;
+  padding-bottom: 48px;
+}
+
+h1 {
+  font-size: clamp(32px, 4vw, 48px);
+}
+
+p {
+  margin-top: 16px;
+  font-size: 16px;
+  color: var(--text-soft);
+}
+
+.ctas {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.search {
+  max-width: 360px;
+  margin-top: 20px;
+}
+</style>

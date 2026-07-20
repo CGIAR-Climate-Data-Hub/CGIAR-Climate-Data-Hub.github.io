@@ -1,0 +1,484 @@
+---
+import PagefindConfig from "astro-pagefind/components/PagefindConfig.astro";
+import { GITHUB_URL } from "@/site.config";
+import LogoBlock from "./LogoBlock.astro";
+
+const CATALOG = { href: "/catalog/", label: "Catalog" };
+const IN_USE = { href: "/in-use/", label: "In use" };
+
+const LEARN = [
+  { href: "/wikis/", label: "Wikis", desc: "Reference & standards" },
+  { href: "/tutorials/", label: "Tutorials", desc: "Runnable, step-by-step" },
+  { href: "/faq/", label: "FAQ", desc: "Common questions, answered" },
+  { href: "/ai/", label: "For AI & agents", desc: "Skills & machine access" },
+];
+
+const path = Astro.url.pathname;
+// Hrefs end in "/", so prefix matching marks the whole section active —
+// a record page keeps Catalog underlined, a tutorial keeps Learn underlined
+const isActive = (href: string) => path.startsWith(href);
+const learnActive = LEARN.some((l) => isActive(l.href));
+---
+
+<PagefindConfig />
+
+<header>
+  <div class="container bar">
+    <LogoBlock />
+
+    <nav aria-label="Main">
+      <a
+        href={CATALOG.href}
+        class:list={["nav-item", { "is-active": isActive(CATALOG.href) }]}
+      >
+        {CATALOG.label}
+      </a>
+
+      <div class="dropdown">
+        <a
+          class:list={["nav-item", { "is-active": learnActive }]}
+          href="/wikis/"
+        >
+          Learn
+          <svg
+            aria-hidden="true"
+            fill="none"
+            height="10"
+            stroke="currentColor"
+            stroke-width="2.4"
+            viewBox="0 0 24 24"
+            width="10"
+          >
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </a>
+        <div class="menu">
+          {LEARN.map((link) => (
+              <a href={link.href} class:list={["menu-item", { "is-active": isActive(link.href) }]}>
+                <span class="menu-label">{link.label}</span>
+                <span class="menu-desc">{link.desc}</span>
+              </a>
+            ))}
+        </div>
+      </div>
+
+      <a
+        href={IN_USE.href}
+        class:list={["nav-item", { "is-active": isActive(IN_USE.href) }]}
+      >
+        {IN_USE.label}
+      </a>
+
+      <a
+        class:list={["nav-item", { "is-active": isActive("/about/") }]}
+        href="/about/"
+        >About</a
+      >
+    </nav>
+
+    <div class="search">
+      <pagefind-modal-trigger
+        class="trigger-full"
+        placeholder="Search the Hub"
+      ></pagefind-modal-trigger>
+      <pagefind-modal-trigger
+        class="trigger-compact"
+        compact
+        hide-shortcut
+      ></pagefind-modal-trigger>
+      <pagefind-modal></pagefind-modal>
+    </div>
+
+    <a class="btn btn-ghost btn-cta cta" href="/contribute/">Contribute</a>
+
+    <a
+      aria-label="CGIAR Climate Data Hub on GitHub"
+      class="gh"
+      href={GITHUB_URL}
+    >
+      <svg
+        aria-hidden="true"
+        fill="currentColor"
+        height="18"
+        viewBox="0 0 24 24"
+        width="18"
+      >
+        <path
+          d="M12 .5C5.7.5.5 5.7.5 12.1c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2 1-.3 2-.4 3-.4s2 .1 3 .4c2.3-1.6 3.3-1.2 3.3-1.2.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.1 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"
+        ></path>
+      </svg>
+    </a>
+
+    <button
+      aria-label="Menu"
+      class="menu-btn"
+      popovertarget="mobile-menu"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        fill="none"
+        height="20"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="20"
+      >
+        <path class="i-open" d="M4 7h16M4 12h16M4 17h16"></path>
+        <path class="i-close" d="M6 6l12 12M18 6L6 18"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div class="mobile-menu" id="mobile-menu" popover>
+    <nav aria-label="Mobile">
+      {[CATALOG, ...LEARN, IN_USE, { href: "/about/", label: "About" }].map((link) => (
+          <a href={link.href} class:list={[{ "is-active": isActive(link.href) }]}>
+            {link.label}
+          </a>
+        ))}
+      <a href="/contribute/">Contribute</a>
+      <a href={GITHUB_URL}>GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<script>
+// Firefox hasn't shipped scroll-driven animations — toggle the glass effect
+// the old way there. Supporting browsers skip this (the @supports CSS runs it).
+if (!CSS.supports("animation-timeline: scroll(root)")) {
+  const header = document.querySelector("header");
+  const onScroll = () =>
+    header?.toggleAttribute("data-scrolled", window.scrollY > 8);
+  addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+}
+</script>
+
+<style>
+header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--bg);
+  border-bottom: 1px solid transparent;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+/* Glassy once scrolled — data-scrolled is the JS fallback path */
+header[data-scrolled] {
+  background: rgb(252 250 245 / 86%);
+  border-color: var(--border);
+  backdrop-filter: blur(12px) saturate(160%);
+}
+
+/* Gated: without the timeline this runs as an instant 0s animation and
+   fill-mode pins the glass on permanently */
+@supports (animation-timeline: scroll(root)) {
+  header {
+    /* longhands on purpose: the CSS minifier merges an `animation` shorthand
+       with `animation-timeline` into one invalid declaration browsers drop */
+    animation-name: header-glass;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: scroll(root);
+    animation-range: 0 8px;
+  }
+}
+
+@keyframes header-glass {
+  to {
+    background: rgb(252 250 245 / 86%);
+    border-color: var(--border);
+    backdrop-filter: blur(12px) saturate(160%);
+  }
+}
+
+.bar {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  height: var(--nav-height);
+}
+
+nav {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.nav-item {
+  position: relative;
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  min-width: 88px;
+  padding: 6px 10px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--grey-6);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.nav-item:hover {
+  color: var(--cdh-blue-950);
+  text-decoration: none;
+}
+
+/* Hover: muted blue underline grows from centre — distinct from the terracotta active rule */
+.nav-item:not(.is-active)::after {
+  position: absolute;
+  right: 10px;
+  bottom: -3px;
+  left: 10px;
+  height: 2px;
+  content: "";
+  background: var(--cdh-blue-300);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.16s ease;
+}
+
+.nav-item:not(.is-active):hover::after {
+  transform: scaleX(1);
+}
+
+.nav-item.is-active {
+  color: var(--cdh-blue-950);
+}
+
+.nav-item.is-active::after {
+  position: absolute;
+  right: 10px;
+  bottom: -3px;
+  left: 10px;
+  height: 2px;
+  content: "";
+  background: var(--terra-700);
+  border-radius: 2px;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: -12px;
+  z-index: 40;
+  display: none;
+  flex-direction: column;
+  min-width: 250px;
+  padding: 7px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgb(20 16 8 / 14%);
+}
+
+/* Keep the hover gap bridged so the menu doesn't flicker closed */
+.dropdown::after {
+  position: absolute;
+  inset: 100% 0 -12px;
+  display: none;
+  content: "";
+}
+
+.dropdown:hover .menu,
+.dropdown:focus-within .menu,
+.dropdown:hover::after {
+  display: flex;
+}
+
+.menu-item {
+  display: block;
+  padding: 10px 12px;
+  text-decoration: none;
+  border-radius: 7px;
+}
+
+.menu-item:hover {
+  text-decoration: none;
+  background: var(--bg);
+}
+
+.menu-item.is-active {
+  background: var(--cdh-blue-50);
+}
+
+.menu-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.menu-item.is-active .menu-label {
+  color: var(--cdh-blue-700);
+}
+
+.menu-desc {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--text-mute);
+}
+
+.search {
+  /* Match the Contribute button's ~40px so the bar reads as one row */
+  --pf-input-height: 40px;
+
+  flex: 0 1 260px;
+  margin-left: auto;
+}
+
+/* Block, not pagefind's inline-block: the baseline descender gap under the
+   inline-block trigger nudged it ~2px off the flex row's centre */
+.search :global(pagefind-modal-trigger) {
+  display: block;
+}
+
+.search :global(.trigger-compact) {
+  display: none;
+}
+
+/* Below this the bar is too tight for the labelled trigger — swap to the
+   icon-only compact one Pagefind provides, same as the mobile treatment */
+@media (width <= 1200px) {
+  .search {
+    flex: 0 0 auto;
+  }
+
+  .search :global(.trigger-full) {
+    display: none;
+  }
+
+  .search :global(.trigger-compact) {
+    display: block;
+  }
+}
+
+.cta {
+  padding: 8px 16px;
+  font-size: 13.5px;
+}
+
+.gh {
+  display: inline-flex;
+  align-items: center;
+  color: var(--grey-5);
+}
+
+.gh:hover {
+  color: var(--cdh-blue-950);
+}
+
+.menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--cdh-blue-950);
+  background: transparent;
+  border: 0;
+}
+
+.menu-btn .i-close,
+header:has(#mobile-menu:popover-open) .i-open {
+  display: none;
+}
+
+header:has(#mobile-menu:popover-open) .i-close {
+  display: block;
+}
+
+/* Top-layer popover pinned just below the sticky header */
+.mobile-menu {
+  position: fixed;
+  inset: var(--nav-height) 0 auto;
+  width: auto;
+  padding: 0;
+  margin: 0;
+  background: var(--bg);
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+/* No popover support (pre-2024 browser): hide the menu entirely rather than
+   render it permanently expanded in the page flow */
+@supports not selector(:popover-open) {
+  .mobile-menu {
+    display: none;
+  }
+}
+
+/* Belt-and-braces: never show it at desktop widths, even if it was opened
+   just before a resize (author display beats the UA popover rule) */
+@media (width > 960px) {
+  .mobile-menu {
+    display: none;
+  }
+}
+
+@media (width <= 960px) {
+  .bar {
+    gap: 14px;
+  }
+
+  .bar > nav,
+  .cta,
+  .gh {
+    display: none;
+  }
+
+  .menu-btn {
+    display: inline-flex;
+    flex-shrink: 0;
+    margin-right: -8px;
+  }
+
+  .mobile-menu nav {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px 20px 16px;
+  }
+
+  .mobile-menu a {
+    padding: 13px 4px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mobile-menu a:hover {
+    text-decoration: none;
+  }
+
+  .mobile-menu a.is-active {
+    padding-left: 12px;
+    color: var(--cdh-blue-950);
+    box-shadow: inset 3px 0 0 var(--terra-700);
+  }
+
+  .mobile-menu a:last-child {
+    border-bottom: 0;
+  }
+}
+
+/* Narrow phones: the full wordmark pushes the menu button off-screen */
+@media (width <= 360px) {
+  .bar :global(.wordmark) {
+    display: none;
+  }
+}
+</style>

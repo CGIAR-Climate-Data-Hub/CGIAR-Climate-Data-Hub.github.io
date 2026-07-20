@@ -1,0 +1,55 @@
+---
+// Spatial-extent preview: Natural Earth land + the record's bbox(es). No JS.
+
+import { projectLonLat } from "@/lib/coordinates";
+import { landPath } from "@/lib/map";
+
+interface Props {
+  bboxes?: number[][];
+  label?: string;
+}
+
+const { bboxes = [], label } = Astro.props;
+
+const W = 300;
+const H = 150;
+const rects = bboxes.map((b) => {
+  const [x1, y1] = projectLonLat(b[0], b[3], W, H);
+  const [x2, y2] = projectLonLat(b[2], b[1], W, H);
+  return { x: x1, y: y1, w: Math.max(2, x2 - x1), h: Math.max(2, y2 - y1) };
+});
+---
+
+<figure>
+  <svg
+    aria-label={`Spatial extent${label ? `: ${label}` : ""}`}
+    role="img"
+    viewBox={`0 0 ${W} ${H}`}
+  >
+    <rect fill="rgb(99 169 254 / 6%)" height={H} width={W} x="0" y="0"></rect>
+    <path
+      d={landPath(W, H)}
+      fill="rgb(10 44 85 / 14%)"
+      stroke="rgb(10 44 85 / 35%)"
+      stroke-linejoin="round"
+      stroke-width="0.35"
+    ></path>
+    {rects.map((r) => <rect fill="rgb(99 169 254 / 14%)" height={r.h} stroke="var(--cdh-blue-700)" stroke-dasharray="4 2" stroke-width="1" width={r.w} x={r.x} y={r.y}></rect>)}
+  </svg>
+</figure>
+
+<style>
+figure {
+  margin: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--surface), var(--cdh-blue-50));
+  border: 1px solid var(--cdh-blue-150);
+  border-radius: 8px;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+</style>

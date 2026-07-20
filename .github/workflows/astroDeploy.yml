@@ -7,6 +7,9 @@ on:
     branches: [main]
   # Allows you to run this workflow manually from the Actions tab on GitHub.
   workflow_dispatch:
+  # Fired by the cdh-catalog repo when records change on its main branch
+  repository_dispatch:
+    types: [records-updated]
 
 # Allow this job to clone the repo and create a page deployment
 permissions:
@@ -17,22 +20,27 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Authenticates the catalog-records fetch (shared runner IPs exhaust
+      # the anonymous API rate limit)
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Set the REQUIRE_RECORDS repository variable (Settings → Secrets and
+      # variables → Variables) to 1 once the first records land: a build that
+      # loads zero records then fails instead of deploying an empty catalog.
+      REQUIRE_RECORDS: ${{ vars.REQUIRE_RECORDS }}
     steps:
       - name: Checkout your repository using git
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Install, build, and upload your site
         uses: withastro/action@v6
         with:
-          path: site
+          path: .
           # package-manager: bun
           # path: . # The root location of your Astro project inside the repository. (optional)
           # node-version: 24 # The specific version of Node that should be used to build your site. Defaults to 24. (optional)
           # package-manager: pnpm@latest # The Node package manager that should be used to install dependencies and build your site. Automatically detected based on your lockfile. (optional)
           # build-cmd: pnpm run build # The command to run to build your site. Runs the package build script/task by default. (optional)
           # out-dir: dist # The output directory created by the build command. Defaults to dist. (optional)
-        env:
-          SITE_URL: "https://cgiar-climate-data-hub.github.io"
-          BASE_PATH: "/climate-data-hub"
 
   deploy:
     needs: build

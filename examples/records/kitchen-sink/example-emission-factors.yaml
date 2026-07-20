@@ -1,0 +1,63 @@
+# Minimal non-spatial record: exercises the sparse-metadata rendering —
+# no spatial block (no coverage, no resolution), a single reference year,
+# one tabular asset. The card footer should show only "CC-BY-4.0 · 2021".
+id: example-emission-factors
+title: Example Crop Emission Factors (SAMPLE - NOT REAL DATA)
+description: >
+  FICTIONAL SAMPLE RECORD. Tier-1-style greenhouse-gas emission factors for
+  a handful of example crops as a single lookup table — values by crop and
+  gas, with no spatial dimension at all.
+version: "1.0"
+license: CC-BY-4.0
+resource_type: dataset
+
+keywords:
+  - emission factors
+  - greenhouse gases
+  - sample data
+
+contact:
+  - organization: Institute for Example Data
+    roles: [licensor]
+
+citation:
+  title: Example crop emission factors
+  authors: [Data, E. X.]
+  date: "2021-06-01"
+
+created: "2021-06-01"
+updated: "2021-06-01"
+
+temporal:
+  date: "2021" # reference year for the factors
+
+commodities:
+  - maiz
+  - rice
+
+cdh:
+  domain:
+    - mitigation
+
+variables:
+  - name: emission_factor
+    description: Example emission factor value.
+    data_type: float
+    unit: kg CO2e per kg product
+
+dimensions:
+  - name: crop
+    type: crop
+    description: Example crop code.
+    values: [maiz, rice]
+  - name: gas
+    description: Greenhouse gas.
+    values: [co2, ch4, n2o]
+
+data:
+  - name: emission-factors.csv
+    description: Emission factors by crop and gas.
+    media_type: text/csv
+    roles: [data]
+    locations:
+      - url: https://example.org/data/emission-factors.csv

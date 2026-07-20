@@ -1,0 +1,491 @@
+---
+import { Code } from "astro:components";
+import { getCollection } from "astro:content";
+import PageHead from "@/components/PageHead.astro";
+import Layout from "@/layouts/Layout.astro";
+import { codeHeader, shikiConfig } from "@/lib/code-block";
+import { githubUrl, issueUrl } from "@/lib/github";
+import {
+  CATALOG_REPO,
+  SITE_NAME,
+  SITE_REPO,
+  STANDARD_REPO,
+} from "@/site.config";
+
+const guides = (await getCollection("contributionGuides"))
+  .sort((a, b) => a.data.order - b.data.order)
+  .map(({ id, data }) => ({ id, ...data }));
+
+const STANDARDS_LINKS = [
+  ["Metadata standard", githubUrl(STANDARD_REPO)],
+  ["Licensing & attribution", "/wikis/licensing-and-attribution/"],
+];
+
+// Each kind opens a prefilled issue on the repo that owns the problem:
+// dataset issues live with the records, everything else with the site.
+const REPORT_KINDS = [
+  [
+    "Dataset issue",
+    "Wrong values, broken access, metadata error",
+    issueUrl(CATALOG_REPO, "[record] "),
+  ],
+  [
+    "Website / UX bug",
+    "Broken link, layout, search, accessibility",
+    issueUrl(SITE_REPO, "[site] "),
+  ],
+  [
+    "Wiki / docs error",
+    "Outdated, incorrect, or missing documentation",
+    issueUrl(SITE_REPO, "[docs] "),
+  ],
+  ["Something else", "Doesn't fit any of the above", issueUrl(SITE_REPO)],
+];
+
+const description =
+  "How to contribute a dataset, edit the docs, submit a use case, or report an issue on the Climate Data Hub.";
+---
+
+<Layout description={description} title={`Contribute — ${SITE_NAME}`}>
+  <PageHead
+    kicker="Get involved"
+    sub="The Hub grows because Centers, programmes and partners contribute — datasets, docs, tutorials, and the stories of how they get used. Pick a guide below."
+    title="Contribute to the Hub"
+  >
+    <div class="help-box" slot="right">
+      <div class="label">Need help?</div>
+      <p>
+        Unsure where to start, or stuck partway?{" "}
+        <a href={issueUrl(SITE_REPO)}>Open an issue on GitHub</a>{" "}
+        with your question and the Hub team will pick it up.
+      </p>
+    </div>
+  </PageHead>
+
+  <div class="container"><hr class="head-rule"></div>
+
+  <section class="container body">
+    <aside data-pagefind-ignore>
+      <nav aria-label="Contribution paths" class="intent" data-intent>
+        <div class="label">I want to…</div>
+        {guides.map((g) => (
+            <a href={`#${g.id}`}>
+              <span class="mono chip">{g.icon}</span>
+              {g.label}
+            </a>
+          ))}
+        <a href="#report">
+          <span class="mono chip">BUG</span>
+          Report a bug or issue
+        </a>
+      </nav>
+
+      <div class="rail-box">
+        <div class="label">Hub standards</div>
+        {STANDARDS_LINKS.map(([label, href]) => <a class="rail-link" href={href}>{label}</a>)}
+      </div>
+    </aside>
+
+    <div class="guides">
+      {guides.map((guide) => (
+          <article class="guide" id={guide.id}>
+            <div class="guide-meta">
+              <span class="pill warn">Guide</span>
+              <span class="label">{guide.audience}</span>
+              <span class="label">· {guide.time}</span>
+            </div>
+            <h2>{guide.title}</h2>
+            <p class="intro">{guide.intro}</p>
+
+            <div class="steps">
+              {guide.steps.map((step, i) => (
+                <div class="step">
+                  <div class="step-rail">
+                    <div class="step-n mono">{i + 1}</div>
+                    {i < guide.steps.length - 1 && <div class="step-line" />}
+                  </div>
+                  <div class="step-body">
+                    <h3>{step.title}</h3>
+                    <p>{step.body}</p>
+                    {step.code && (
+                      <Code
+                        code={step.code.trim()}
+                        lang={step.lang}
+                        theme={shikiConfig.theme}
+                        transformers={[
+                          codeHeader(
+                            step.lang === "sh"
+                              ? "Shell"
+                              : step.lang.toUpperCase(),
+                          ),
+                        ]}
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div class="checklist">
+              <h3>Pre-submission checklist</h3>
+              <ul>
+                {guide.checklist.map((item) => (
+                  <li>
+                    <span aria-hidden="true" class="check">✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </article>
+        ))}
+
+      <article class="guide" id="report">
+        <div class="guide-meta">
+          <span class="pill warn">Report</span>
+          <span class="label">Anyone</span>
+        </div>
+        <h2>Report a bug or issue</h2>
+        <p class="intro">
+          Spotted something off in a dataset, a broken link, or a glitch on this
+          site? Tell us. Pick what you're reporting — each opens a prefilled
+          GitHub issue on the right repository.
+        </p>
+        <ul class="kinds">
+          {REPORT_KINDS.map(([label, hint, href]) => (
+              <li>
+                <a class="kind" href={href} rel="noreferrer">
+                  <b>{label}</b>
+                  <span>{hint}</span>
+                </a>
+              </li>
+            ))}
+        </ul>
+        <p class="report-tip">
+          Be specific — what you expected vs what you got, with exact values and
+          steps where possible. For data-quality issues, include the dataset id
+          from its catalog page.
+        </p>
+      </article>
+    </div>
+  </section>
+</Layout>
+
+<script>
+import { scrollSpy } from "@/lib/scrollspy";
+
+// Highlight the guide currently in view in the "I want to…" list
+const nav = document.querySelector<HTMLElement>("[data-intent]");
+if (nav) scrollSpy(nav);
+</script>
+
+<style>
+.head-rule {
+  margin-top: 28px;
+}
+
+.help-box {
+  max-width: 320px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.help-box p {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-soft);
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 32px;
+  align-items: start;
+  padding-top: 32px;
+}
+
+aside {
+  position: sticky;
+  top: 96px;
+}
+
+.intent .label {
+  margin-bottom: 10px;
+  color: var(--text-soft);
+}
+
+.intent a {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.intent a:hover {
+  color: var(--cdh-blue-950);
+  text-decoration: none;
+  border-color: var(--cdh-blue-950);
+}
+
+.intent .chip {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  font-size: 10px;
+  color: var(--text-mute);
+  letter-spacing: 0.06em;
+  background: var(--grey-1);
+  border-radius: 6px;
+}
+
+.intent a[aria-current="true"] {
+  font-weight: 600;
+  color: var(--text-inverse);
+  background: var(--cdh-blue-950);
+  border-color: var(--cdh-blue-950);
+}
+
+.intent a[aria-current="true"] .chip {
+  color: var(--cdh-blue-300);
+  background: rgb(99 169 254 / 18%);
+}
+
+.rail-box {
+  padding: 16px;
+  margin-top: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.rail-box .label {
+  margin-bottom: 6px;
+  color: var(--text-mute);
+}
+
+.rail-link {
+  display: block;
+  padding: 8px 0;
+  font-size: 13px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+.rail-link:last-child {
+  border-bottom: 0;
+}
+
+.rail-link:hover {
+  color: var(--cdh-blue-700);
+  text-decoration: none;
+}
+
+.guides {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-width: 0;
+}
+
+.guide {
+  padding: 28px;
+  scroll-margin-top: 96px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.guide-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.guide-meta .label {
+  color: var(--text-mute);
+}
+
+.guide h2 {
+  max-width: 720px;
+  margin-top: 12px;
+  font-size: 30px;
+}
+
+.intro {
+  max-width: 720px;
+  margin-top: 10px;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text-soft);
+}
+
+.steps {
+  margin-top: 28px;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+.step-rail {
+  position: relative;
+}
+
+.step-n {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-inverse);
+  background: var(--cdh-blue-950);
+  border-radius: 50%;
+}
+
+/* Runs from this step's number to the next one — a continuous thread */
+.step-line {
+  position: absolute;
+  top: 32px;
+  bottom: -32px;
+  left: 15px;
+  width: 2px;
+  background: var(--border-strong);
+}
+
+.step h3 {
+  font-family: var(--sans);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.step p {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-soft);
+}
+
+/* Code blocks must be able to shrink inside the grid column */
+.step-body {
+  min-width: 0;
+}
+
+.step-body :global(.code-block) {
+  margin-top: 12px;
+}
+
+.checklist {
+  margin-top: 28px;
+}
+
+.checklist h3 {
+  font-size: 22px;
+}
+
+.checklist ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  margin: 12px 0 0;
+  list-style: none;
+}
+
+.checklist li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+}
+
+.check {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--cdh-blue-700);
+  border: 1.5px solid var(--cdh-blue-700);
+  border-radius: 6px;
+}
+
+.kinds {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  padding: 0;
+  margin: 24px 0 0;
+  list-style: none;
+}
+
+.kind {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+
+.kind:hover {
+  text-decoration: none;
+  border-color: var(--cdh-blue-950);
+}
+
+.kinds b {
+  font-size: 14px;
+  color: var(--cdh-blue-950);
+}
+
+.kinds span {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-mute);
+}
+
+.report-tip {
+  max-width: 720px;
+  margin-top: 18px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-soft);
+}
+
+.guide .btn {
+  margin-top: 20px;
+}
+
+@media (width <= 900px) {
+  .hero-grid,
+  .body {
+    grid-template-columns: 1fr;
+  }
+
+  aside {
+    position: static;
+  }
+}
+</style>

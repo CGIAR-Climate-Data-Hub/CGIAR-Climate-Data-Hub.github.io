@@ -1,0 +1,224 @@
+---
+import { getCollection } from "astro:content";
+import PageHead from "@/components/PageHead.astro";
+import SectionHeader from "@/components/SectionHeader.astro";
+import Layout from "@/layouts/Layout.astro";
+import { githubUrl } from "@/lib/github";
+import { SITE_NAME, SKILLS_REPO, SKILLS_SITE } from "@/site.config";
+
+const skills = (await getCollection("skills")).sort((a, b) =>
+  a.data.name.localeCompare(b.data.name),
+);
+const SKILLS_GITHUB = githubUrl(SKILLS_REPO);
+
+const description =
+  "Use the Hub with AI assistants and agents — ready-made skills, plus machine-readable endpoints for every dataset and page.";
+
+// The machine-readable surface, one card per entry point
+const ENDPOINTS = [
+  {
+    path: "/llms.txt",
+    href: "/llms.txt",
+    title: "llms.txt",
+    desc: "A compact, AI-readable map of the site: every dataset, doc, tutorial, and use case with one-line descriptions. Point an agent here first.",
+  },
+  {
+    path: "/catalog.json",
+    href: "/catalog.json",
+    title: "Catalog index",
+    desc: "The whole catalog as one schema.org DataCatalog document — every record as Dataset JSON-LD, the same markup Google Dataset Search reads.",
+  },
+  {
+    path: "/catalog/<id>.json",
+    href: undefined,
+    title: "Record metadata",
+    desc: "Each record's full CDH metadata as JSON at a stable URL beside its page — variables, dimensions, assets, licensing.",
+  },
+];
+---
+
+<Layout description={description} title={`For AI & agents — ${SITE_NAME}`}>
+  <PageHead
+    kicker="Learn"
+    sub="The Hub is built to be read by machines as much as by people — ready-made agent skills, and stable machine-readable endpoints for every dataset and page."
+    title="For AI & agents"
+  >
+    <a class="btn btn-primary" href="/llms.txt" slot="right">llms.txt →</a>
+  </PageHead>
+
+  <div class="container"><hr class="head-rule"></div>
+
+  <section class="container block">
+    <SectionHeader kicker="Skills" title="Skills for your assistant" />
+    <p class="section-sub">
+      A skill is a small folder of plain-text instructions — the open{" "}
+      <a href="https://agentskills.io/specification" rel="noreferrer"
+        >Agent Skills format</a
+      >{" "}
+      — that teaches an assistant a Hub workflow it wouldn't know cold: which
+      endpoint answers a question, how to subset a data cube without downloading
+      it, what a valid metadata record looks like. Install one once and it loads
+      whenever a task calls for it, instead of you re-explaining the Hub every
+      session.
+    </p>
+    <details class="how-to">
+      <summary>How do I use a skill?</summary>
+      <p class="section-sub">
+        Grab the skill's folder from{" "}
+        <a href={SKILLS_GITHUB}>the skills repository</a>{" "}
+        and drop it where your agent discovers skills —{" "}
+        <code>.claude/skills/</code>{" "}
+        in a project for{" "}
+        <a href={`${SKILLS_SITE}usage/claude-code/`}>Claude Code</a>; Gemini
+        CLI, Codex, OpenCode, and others read the same format (see{" "}
+        <a href={`${SKILLS_SITE}getting-started/`}>getting started</a>) — or
+        paste a skill's <code>SKILL.md</code>{" "}
+        into any assistant's conversation.
+      </p>
+    </details>
+    <ul class="grid">
+      {skills.map((s) => (
+          <li>
+            <a
+              class="skill-card"
+              href={`${SKILLS_SITE}skills/${s.id}/`}
+              title={s.data.description}
+            >
+              <span class="mono skill-name">{s.data.name}</span>
+              <p>{s.data.description}</p>
+              <span class="skill-docs">Docs →</span>
+            </a>
+          </li>
+        ))}
+    </ul>
+  </section>
+
+  <section class="container block">
+    <SectionHeader
+      kicker="Machine access"
+      sub="Everything on the site has a stable, documented machine counterpart — no scraping required."
+      title="Machine-readable endpoints"
+    />
+    <ul class="grid">
+      {ENDPOINTS.map((e) => (
+          <li class="skill-card">
+            <span class="mono skill-name">
+              {e.href ? <a href={e.href}>{e.path}</a> : e.path}
+            </span>
+            <b>{e.title}</b>
+            <p>{e.desc}</p>
+          </li>
+        ))}
+    </ul>
+    <p class="caption">
+      Also there: schema.org JSON-LD embedded in every dataset page, BibTeX
+      citations per record,{" "}
+      <a href="/sitemap-index.xml">a sitemap</a>, and cloud-native assets (Zarr,
+      COG, Parquet) readable straight from object storage over HTTPS — with
+      worked Python and R snippets on each record page.
+    </p>
+  </section>
+</Layout>
+
+<style>
+.head-rule {
+  margin-top: 28px;
+}
+
+.block {
+  padding-top: 44px;
+}
+
+.section-sub {
+  max-width: 640px;
+  margin-top: 10px;
+  font-size: 15px;
+  color: var(--text-soft);
+}
+
+/* Same type as the surrounding prose, just disclosed on demand */
+.how-to {
+  max-width: 640px;
+  margin-top: 12px;
+}
+
+.how-to summary {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cdh-blue-950);
+  cursor: pointer;
+}
+
+.how-to .section-sub {
+  margin-top: 8px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 0;
+  margin: 24px 0 0;
+  list-style: none;
+}
+
+.skill-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  padding: 20px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+a.skill-card {
+  transition: border-color 0.12s;
+}
+
+a.skill-card:hover {
+  text-decoration: none;
+  border-color: var(--cdh-blue-300);
+}
+
+.skill-docs {
+  padding-top: 10px;
+  margin-top: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cdh-blue-950);
+  border-top: 1px solid var(--border);
+}
+
+.skill-name {
+  font-size: 13px;
+  color: var(--cdh-blue-700);
+}
+
+.skill-card b {
+  font-size: 15px;
+  color: var(--cdh-blue-950);
+}
+
+.skill-card p {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+/* Skill descriptions are written for the agent and run long — clamp them;
+   the full text is one click (or a hover) away */
+a.skill-card p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 4;
+}
+
+.caption {
+  margin-top: 18px;
+  font-size: 13px;
+}
+</style>

@@ -1,0 +1,14 @@
+---
+// Serialized schema.org JSON-LD. is:inline keeps Astro from bundling it as JS.
+interface Props {
+  data: Record<string, unknown>;
+}
+
+const { data } = Astro.props;
+
+// Escape "<" (to backslash-u003c) so record text can never close the
+// script tag early; JSON parsers decode it back, payload unchanged.
+const json = JSON.stringify(data).replace(/</g, "\\u003c");
+---
+
+<script is:inline set:html={json} type="application/ld+json" />

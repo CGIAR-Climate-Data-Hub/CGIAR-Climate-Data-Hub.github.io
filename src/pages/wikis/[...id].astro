@@ -1,0 +1,134 @@
+---
+import { getCollection, render } from "astro:content";
+import ArticleToc from "@/components/ArticleToc.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import JsonLd from "@/components/JsonLd.astro";
+import WikiSidebar from "@/components/WikiSidebar.astro";
+import Layout from "@/layouts/Layout.astro";
+import { editUrl } from "@/lib/github";
+import { SITE_NAME, SITE_REPO } from "@/site.config";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("wikis");
+  return entries.map((entry) => ({
+    params: { id: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+const updated = entry.data.updated.toISOString().slice(0, 10);
+const updatedLong = entry.data.updated.toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  headline: entry.data.title,
+  description: entry.data.description,
+  dateModified: updated,
+  url: new URL(`/wikis/${entry.id}/`, Astro.site).href,
+  author: entry.data.author
+    ? { "@type": "Person", name: entry.data.author }
+    : { "@type": "Organization", name: `CGIAR ${SITE_NAME}` },
+  isPartOf: { "@type": "WebSite", "@id": `${Astro.site}#website` },
+};
+---
+
+<Layout
+  description={entry.data.description}
+  title={`${entry.data.title} — ${SITE_NAME}`}
+>
+  <JsonLd data={jsonLd} slot="head" />
+
+  <div class="container docs">
+    <WikiSidebar activeId={entry.id} />
+
+    <article>
+      <Breadcrumbs
+        items={[{ label: "Hub", href: "/" }, { label: "Wikis", href: "/wikis/" }, { label: entry.data.title }]}
+      />
+      <h1>{entry.data.title}</h1>
+      <div class="meta">
+        {entry.data.author && `By ${entry.data.author} · `}Updated {updatedLong}
+      </div>
+      <p class="lede">{entry.data.description}</p>
+      <div class="prose">
+        <Content />
+      </div>
+      <div class="footer-row">
+        <a class="back" href="/wikis/">← Back to the wiki</a>
+        <a class="edit-link" href={editUrl(SITE_REPO, entry.filePath)}
+          >Edit this page on GitHub</a
+        >
+      </div>
+    </article>
+
+    <aside data-pagefind-ignore>
+      <ArticleToc headings={headings} />
+    </aside>
+  </div>
+</Layout>
+
+<style>
+.docs {
+  display: grid;
+  grid-template-columns: 208px minmax(0, 1fr) 200px;
+  gap: 44px;
+  align-items: start;
+  padding-top: 34px;
+}
+
+/* The grid is start-aligned; the TOC wrapper must span the column for sticky to travel */
+.docs > aside {
+  align-self: stretch;
+}
+
+article {
+  min-width: 0;
+  max-width: 760px;
+}
+
+h1 {
+  margin-top: 18px;
+  font-size: clamp(30px, 3.6vw, 46px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.meta {
+  margin-top: 14px;
+  font-size: 13.5px;
+  color: var(--text-mute);
+}
+
+.lede {
+  padding-bottom: 26px;
+  margin-top: 22px;
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--text-soft);
+  border-bottom: 1px solid var(--border);
+}
+
+.prose {
+  margin-top: 8px;
+}
+
+@media (width <= 1080px) {
+  .docs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .docs > :global(nav),
+  .docs > aside {
+    display: none;
+  }
+}
+</style>

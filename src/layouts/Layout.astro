@@ -1,0 +1,136 @@
+---
+import "@/styles/global.css";
+import { Font } from "astro:assets";
+import Footer from "@/components/Footer.astro";
+import JsonLd from "@/components/JsonLd.astro";
+import Navigation from "@/components/Navigation.astro";
+import ScrollProgress from "@/components/ScrollProgress.astro";
+import { SITE_DESCRIPTION, SITE_NAME } from "@/site.config";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+// Default the description to the site-wide one so every page has SEO/OG copy.
+const { title, description = SITE_DESCRIPTION } = Astro.props;
+
+const site = String(Astro.site);
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+
+const siteGraph = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${site}#website`,
+      url: site,
+      name: SITE_NAME,
+      description: SITE_DESCRIPTION,
+      publisher: { "@id": `${site}#organization` },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: new URL("/search/?q={search_term_string}", Astro.site)
+            .href,
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "Organization",
+      "@id": `${site}#organization`,
+      name: `CGIAR ${SITE_NAME}`,
+      url: site,
+      parentOrganization: {
+        "@type": "Organization",
+        name: "CGIAR",
+        url: "https://www.cgiar.org",
+      },
+    },
+  ],
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- --bg paper tone, for mobile browser chrome -->
+    <meta name="theme-color" content="#f5f4f1">
+    <link rel="icon" type="image/svg+xml" href="/cdh-favicon-29yr.svg">
+    <link rel="icon" href="/CDH_favicon_29yr.ico">
+    <meta name="generator" content={Astro.generator}>
+
+    <title>{title}</title>
+    {description && <meta content={description} name="description" />}
+    <link rel="canonical" href={canonical}>
+    <meta property="og:title" content={title}>
+    {description && <meta content={description} property="og:description" />}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content={SITE_NAME}>
+    <meta property="og:url" content={canonical}>
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content={title}>
+    {description && <meta content={description} name="twitter:description" />}
+
+    <!-- Prevent content images (including embedded notebook figures) from
+         becoming searchable Pagefind metadata. -->
+    <meta data-pagefind-meta="image:">
+
+    <Font cssVariable="--font-sans" preload />
+    <Font cssVariable="--font-serif" preload />
+
+    <JsonLd data={siteGraph} />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <ScrollProgress />
+    <Navigation />
+    <main class="page" data-pagefind-body id="main">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+    // Section links (heading anchors, TOC, contribute's intent nav): swap the
+    // hash with replaceState so Back returns to the previous page, not a walk
+    // through every section clicked. The guard leaves other hash links (e.g.
+    // the catalog tabs, which manage their own) alone. Heading clicks don't
+    // scroll — the reader is already there; TOC clicks lose the native jump
+    // to preventDefault, so scroll explicitly.
+    document.addEventListener("click", (e) => {
+      const link = (e.target as HTMLElement).closest<HTMLAnchorElement>(
+        'a.section-link[href^="#"], [data-toc] a[href^="#"], [data-intent] a[href^="#"]',
+      );
+      if (!link) return;
+      e.preventDefault();
+      history.replaceState(null, "", link.hash);
+      if (!link.classList.contains("section-link"))
+        document
+          .getElementById(decodeURIComponent(link.hash.slice(1)))
+          ?.scrollIntoView();
+    });
+
+    // One copy handler for every copy button: CopyButton instances carry
+    // their text in data-copy; the build-time code-block chrome copies its
+    // block's contents. .copied swaps the icons via the global rules.
+    document.addEventListener("click", async (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
+        "button.code-copy",
+      );
+      if (!btn) return;
+      const text =
+        btn.dataset.copy
+        ?? btn.closest(".code-block")?.querySelector("pre")?.innerText;
+      if (!text) return;
+      await navigator.clipboard.writeText(text);
+      btn.classList.add("copied");
+      setTimeout(() => btn.classList.remove("copied"), 1200);
+    });
+    </script>
+  </body>
+</html>

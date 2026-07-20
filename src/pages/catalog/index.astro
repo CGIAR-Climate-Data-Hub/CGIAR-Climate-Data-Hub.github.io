@@ -1,0 +1,917 @@
+---
+import { getCollection } from "astro:content";
+import DatasetCard from "@/components/DatasetCard.astro";
+import JsonLd from "@/components/JsonLd.astro";
+import PageHead from "@/components/PageHead.astro";
+import Layout from "@/layouts/Layout.astro";
+import {
+  commodityLabel,
+  currentReleases,
+  formatIdLabel,
+  geoLabel,
+  humanize,
+  summarize,
+} from "@/lib/catalog";
+import { projectLonLat } from "@/lib/coordinates";
+import { landPath } from "@/lib/map";
+import { SITE_NAME } from "@/site.config";
+
+const entries = currentReleases(await getCollection("catalog"));
+const datasets = entries
+  .map(summarize)
+  .sort((a, b) => b.updated.localeCompare(a.updated));
+
+// Facets are compiled from the metadata actually present in the records.
+function facetOf(
+  key: string,
+  title: string,
+  get: (d: (typeof datasets)[number]) => string[],
+  label: (value: string) => string = humanize,
+) {
+  const counts = new Map<string, number>();
+  for (const d of datasets) {
+    for (const value of new Set(get(d))) {
+      counts.set(value, (counts.get(value) ?? 0) + 1);
+    }
+  }
+  const values = [...counts]
+    .map(([value, count]) => ({ value, label: label(value), count }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+  return { key, title, values };
+}
+
+// The filter treats global datasets as covering every geography (see
+// apply()); counts must apply the same rule or they disagree with the
+// results a click produces.
+const geography = facetOf(
+  "geography",
+  "Geography",
+  (d) => d.geographies,
+  geoLabel,
+);
+for (const v of geography.values) {
+  v.count = datasets.filter(
+    (d) => d.geographies.includes(v.value) || d.geographies.includes("world"),
+  ).length;
+}
+
+const facets = [
+  facetOf("domain", "Domain", (d) => d.domains),
+  geography,
+  facetOf("scale", "Coverage", (d) => (d.scale ? [d.scale] : [])),
+  facetOf("commodity", "Commodity", (d) => d.commodityGroups, commodityLabel),
+  facetOf("format", "Format", (d) => d.formats, formatIdLabel),
+  facetOf(
+    "license",
+    "License",
+    (d) => [d.license],
+    (v) => v,
+  ),
+  facetOf("access", "Access", (d) => [d.access]),
+];
+
+// Filter panels expanded by default — add/remove keys to taste
+// ("spatial" or any facet key above)
+const OPEN_FILTERS = ["spatial", "domain", "geography"];
+
+// Spatial-search minimap (equirectangular; lon/lat → svg coords)
+const W = 220;
+const H = 110;
+const land = landPath(W, H);
+
+const description =
+  "Browse the Hub's harmonised climate and agriculture datasets — consistent metadata, licensing, and cloud-native access.";
+
+const catalogSchema = {
+  "@context": "https://schema.org",
+  "@type": "DataCatalog",
+  "@id": new URL("/catalog/", Astro.site).href,
+  name: `${SITE_NAME} Catalog`,
+  description,
+  url: new URL("/catalog/", Astro.site).href,
+  dataset: datasets.map((d) => ({
+    "@type": "Dataset",
+    name: d.title,
+    description: d.description,
+    url: new URL(`/catalog/${d.id}/`, Astro.site).href,
+  })),
+};
+---
+
+<Layout description={description} title={`Catalog — ${SITE_NAME}`}>
+  <JsonLd data={catalogSchema} slot="head" />
+
+  <PageHead
+    kicker="Find & access data"
+    sub="Browse the Hub's harmonised datasets — all with consistent metadata, licensing, and cloud-native access."
+    title="Catalog"
+  >
+    <div class="head-actions" slot="right">
+      <a class="btn btn-ghost btn-cta" href="/contribute/">Contribute</a>
+      <a class="btn btn-primary" href="/wikis/">Standards</a>
+    </div>
+  </PageHead>
+
+  <section class="toolbar">
+    <div class="container">
+      <div class="toolbar-row">
+        <div class="searchbox">
+          <svg
+            aria-hidden="true"
+            fill="none"
+            height="14"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="14"
+          >
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m21 21-4.3-4.3"></path>
+          </svg>
+          <input
+            id="catalog-search"
+            placeholder="Search datasets — name, source, variable, keyword…"
+            type="search"
+          >
+        </div>
+        <div class="results-meta">
+          <span
+            ><b id="match-count">{datasets.length}</b>{" "}
+            <span id="match-label">datasets</span></span
+          >
+          <span class="pill spatial mono series-tag" hidden id="series-active">
+            Series: <b id="series-name"></b>
+            <button
+              aria-label="Clear series filter"
+              id="series-clear"
+              type="button"
+            >
+              ×
+            </button>
+          </span>
+          <button hidden id="clear-filters" type="button">
+            Clear all filters
+          </button>
+        </div>
+        <div class="layout-wrap">
+          <div aria-label="Result layout" class="seg" role="group">
+            {[
+            ["grid", "Cards"],
+            ["table", "Table"],
+          ].map(([key, label]) => (
+            <button
+              aria-pressed={key === "grid" ? "true" : "false"}
+              data-layout={key}
+              type="button"
+            >
+              {label}
+            </button>
+          ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container body">
+    <aside aria-label="Filters" class="facets">
+      <details class="bbox-box" open={OPEN_FILTERS.includes("spatial")}>
+        <summary>
+          <span class="bbox-title">
+            <svg
+              aria-hidden="true"
+              fill="none"
+              height="14"
+              stroke="currentColor"
+              stroke-width="1.4"
+              viewBox="0 0 16 16"
+              width="14"
+            >
+              <rect
+                height="9"
+                stroke-dasharray="2 1.4"
+                width="11"
+                x="2.5"
+                y="3.5"
+              ></rect>
+              <circle
+                cx="2.5"
+                cy="3.5"
+                fill="currentColor"
+                r="1"
+                stroke="none"
+              ></circle>
+              <circle
+                cx="13.5"
+                cy="12.5"
+                fill="currentColor"
+                r="1"
+                stroke="none"
+              ></circle>
+            </svg>
+            Spatial search
+            <span class="mono bbox-active" hidden id="bbox-active">active</span>
+          </span>
+          <svg
+            aria-hidden="true"
+            class="chev"
+            fill="none"
+            height="11"
+            stroke="currentColor"
+            stroke-width="2.4"
+            viewBox="0 0 24 24"
+            width="11"
+          >
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </summary>
+        <div class="bbox-body">
+          <svg
+            aria-label="World map — drag to draw a bounding box"
+            id="bbox-map"
+            role="img"
+            viewBox={`0 0 ${W} ${H}`}
+          >
+            <rect
+              fill="rgb(99 169 254 / 6%)"
+              height={H}
+              width={W}
+              x="0"
+              y="0"
+            ></rect>
+            {[-120, -60, 0, 60, 120].map((lon) => <line stroke="rgb(101 127 114 / 18%)" stroke-width="0.4" x1={projectLonLat(lon, 0, W, H)[0]} x2={projectLonLat(lon, 0, W, H)[0]} y1="0" y2={H}></line>)}
+            {[-60, -30, 30, 60].map((lat) => <line stroke="rgb(101 127 114 / 18%)" stroke-width="0.4" x1="0" x2={W} y1={projectLonLat(0, lat, W, H)[1]} y2={projectLonLat(0, lat, W, H)[1]}></line>)}
+            <line
+              stroke="rgb(101 127 114 / 32%)"
+              stroke-dasharray="1 1"
+              stroke-width="0.5"
+              x1="0"
+              x2={W}
+              y1={H / 2}
+              y2={H / 2}
+            ></line>
+            <path
+              d={land}
+              fill="rgb(10 44 85 / 16%)"
+              stroke="rgb(10 44 85 / 38%)"
+              stroke-linejoin="round"
+              stroke-width="0.35"
+            ></path>
+            <rect
+              fill="rgb(99 169 254 / 28%)"
+              height="0"
+              id="bbox-rect"
+              style="display: none"
+              stroke="var(--cdh-blue-700)"
+              stroke-width="0.8"
+              width="0"
+              x="0"
+              y="0"
+            ></rect>
+          </svg>
+          <div class="bbox-actions">
+            <span class="bbox-count">Draw to filter</span>
+            <button class="mono" hidden id="bbox-clear" type="button">
+              Clear
+            </button>
+          </div>
+        </div>
+      </details>
+
+      {facets.map((facet) => (
+          <details open={OPEN_FILTERS.includes(facet.key)}>
+            <summary>
+              <span class="label">{facet.title}</span>
+              <svg aria-hidden="true" class="chev" fill="none" height="11" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" width="11">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </summary>
+            <div class="options">
+              <button aria-pressed="true" class="facet-option" data-facet={facet.key} data-value="" type="button">
+                <span>All</span>
+                <span class="mono count">{datasets.length}</span>
+              </button>
+              {facet.values.map((v) => (
+                <button aria-pressed="false" class="facet-option" data-facet={facet.key} data-value={v.value} type="button">
+                  <span>{v.label}</span>
+                  <span class="mono count">{v.count}</span>
+                </button>
+              ))}
+            </div>
+          </details>
+        ))}
+    </aside>
+
+    <div>
+      <div class="mono table-head">
+        <span>Type</span>
+        <span>Name</span>
+        <span>Coverage</span>
+        <span>Resolution</span>
+        <span>Temporal</span>
+        <span>Updated</span>
+      </div>
+      <ul class="grid" data-pagefind-ignore id="results">
+        {datasets.map((d) => (
+            <li
+              data-access={d.access}
+              data-bbox={d.bboxes?.map((b) => b.join(" ")).join(";")}
+              data-commodity={d.commodities.join(" ")}
+              data-dataset
+              data-domain={d.domains.join(" ")}
+              data-format={d.formats.join(" ")}
+              data-geography={d.geographies.join(" ")}
+              data-license={d.license}
+              data-scale={d.scale}
+              data-search={[d.title, d.source ?? "", d.description, d.license, ...d.formats.flatMap((f) => [f, formatIdLabel(f)]), ...d.keywords, ...d.geographies.map(geoLabel), ...d.commodities.map(commodityLabel)].join(" ").toLowerCase()}
+              data-series={d.series}
+            >
+              <DatasetCard dataset={d} />
+              <a class="row-table" href={`/catalog/${d.id}/`}>
+                <span>
+                  <span class:list={["pill", "dot", d.type]}
+                    >{d.type === "spatial" ? "Spatial" : "Tabular"}</span
+                  >
+                </span>
+                <span class="row-text">
+                  <span class="row-title">{d.title}</span>
+                  <span class="row-desc">{d.description}</span>
+                </span>
+                <span class="mono">{d.coverage ?? "—"}</span>
+                <span class="mono">{d.resolution ?? "—"}</span>
+                <span class="mono">{d.temporal ?? "—"}</span>
+                <span class="mono">{d.updated.slice(0, 10) || "—"}</span>
+              </a>
+            </li>
+          ))}
+      </ul>
+      <div class="empty" hidden id="empty-state">
+        <h3>No matches.</h3>
+        <p>Try removing a filter, or broaden your search.</p>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+import { projectLonLat, unprojectPoint } from "@/lib/coordinates";
+
+// Layout switcher — a display preference, so it persists locally, not in the URL
+const layoutButtons = [
+  ...document.querySelectorAll<HTMLButtonElement>("[data-layout]"),
+];
+const results = document.querySelector("#results");
+function setLayout(layout: string) {
+  results?.classList.toggle("layout-table", layout === "table");
+  for (const b of layoutButtons)
+    b.setAttribute("aria-pressed", String(b.dataset.layout === layout));
+  localStorage.setItem("catalog-layout", layout);
+}
+for (const b of layoutButtons)
+  b.addEventListener("click", () => setLayout(b.dataset.layout ?? "grid"));
+if (localStorage.getItem("catalog-layout") === "table") setLayout("table");
+
+const cards = [...document.querySelectorAll<HTMLElement>("li[data-dataset]")];
+const buttons = [
+  ...document.querySelectorAll<HTMLButtonElement>(".facet-option"),
+];
+const search = document.querySelector<HTMLInputElement>("#catalog-search");
+const clear = document.querySelector<HTMLButtonElement>("#clear-filters");
+const count = document.querySelector("#match-count");
+const matchLabel = document.querySelector("#match-label");
+const empty = document.querySelector<HTMLElement>("#empty-state");
+
+const facetKeys = [
+  "domain",
+  "geography",
+  "scale",
+  "commodity",
+  "format",
+  "license",
+  "access",
+] as const;
+const state: {
+  q: string;
+  bbox: number[] | null;
+  series: string;
+  [key: string]: unknown;
+} = {
+  q: "",
+  bbox: null,
+  series: "",
+};
+
+// Series filter is deep-link only (record pages' "Part of" link)
+const seriesTag = document.querySelector<HTMLElement>("#series-active");
+const seriesName = document.querySelector<HTMLElement>("#series-name");
+const seriesClear = document.querySelector<HTMLButtonElement>("#series-clear");
+
+const bboxIntersects = (a: number[], b: number[]) =>
+  !(a[2] < b[0] || a[0] > b[2] || a[3] < b[1] || a[1] > b[3]);
+
+function matchesBbox(card: HTMLElement) {
+  const drawn = state.bbox;
+  if (!drawn) return true;
+  const raw = card.dataset.bbox;
+  // Datasets without a spatial extent can't intersect a drawn box
+  if (!raw) return false;
+  // A dataset may span several boxes (antimeridian splits, multi-region)
+  return raw
+    .split(";")
+    .some((b) => bboxIntersects(b.split(" ").map(Number), drawn));
+}
+
+function apply() {
+  let matched = 0;
+  for (const card of cards) {
+    const show =
+      facetKeys.every((k) => {
+        if (!state[k]) return true;
+        const values = (card.dataset[k] ?? "").split(" ");
+        // Global datasets cover every geography
+        if (k === "geography" && values.includes("world")) return true;
+        return values.includes(state[k] as string);
+      })
+      && (!state.q || (card.dataset.search ?? "").includes(state.q))
+      && (!state.series || card.dataset.series === state.series)
+      && matchesBbox(card);
+    card.hidden = !show;
+    if (show) matched++;
+  }
+  if (count) count.textContent = String(matched);
+  if (matchLabel)
+    matchLabel.textContent = matched === 1 ? "dataset" : "datasets";
+  if (empty) empty.hidden = matched > 0;
+  for (const b of buttons) {
+    b.setAttribute(
+      "aria-pressed",
+      String(state[b.dataset.facet ?? ""] === b.dataset.value),
+    );
+  }
+  if (clear)
+    clear.hidden =
+      !state.q
+      && !state.bbox
+      && !state.series
+      && facetKeys.every((k) => !state[k]);
+  if (seriesTag) seriesTag.hidden = !state.series;
+  if (seriesName) seriesName.textContent = state.series;
+  syncBboxUi();
+
+  // Keep filters shareable
+  const params = new URLSearchParams();
+  if (state.q) params.set("q", state.q);
+  for (const k of facetKeys) if (state[k]) params.set(k, state[k] as string);
+  if (state.series) params.set("series", state.series);
+  if (state.bbox)
+    params.set("bbox", state.bbox.map((n) => n.toFixed(2)).join(","));
+  history.replaceState(
+    null,
+    "",
+    params.size ? `?${params}` : location.pathname,
+  );
+}
+
+for (const b of buttons) {
+  b.addEventListener("click", () => {
+    state[b.dataset.facet ?? ""] = b.dataset.value ?? "";
+    apply();
+  });
+}
+search?.addEventListener("input", () => {
+  state.q = search.value.trim().toLowerCase();
+  apply();
+});
+clear?.addEventListener("click", () => {
+  for (const k of facetKeys) state[k] = "";
+  state.q = "";
+  state.bbox = null;
+  state.series = "";
+  if (search) search.value = "";
+  apply();
+});
+seriesClear?.addEventListener("click", () => {
+  state.series = "";
+  apply();
+});
+
+// ---- Spatial (bbox) search: drag a rectangle on the minimap ----
+const map = document.querySelector<SVGSVGElement>("#bbox-map");
+const rect = document.querySelector<SVGRectElement>("#bbox-rect");
+const activeTag = document.querySelector<HTMLElement>("#bbox-active");
+const bboxClear = document.querySelector<HTMLButtonElement>("#bbox-clear");
+
+function svgPoint(e: PointerEvent) {
+  const matrix = map?.getScreenCTM();
+  if (!map || !matrix) return [0, 0];
+  const point = new DOMPoint(e.clientX, e.clientY).matrixTransform(
+    matrix.inverse(),
+  );
+  const box = map.viewBox.baseVal;
+  return [
+    Math.max(box.x, Math.min(box.x + box.width, point.x)),
+    Math.max(box.y, Math.min(box.y + box.height, point.y)),
+  ];
+}
+
+function drawRect(x: number, y: number, w: number, h: number) {
+  if (!rect) return;
+  rect.style.display = "";
+  rect.setAttribute("x", String(x));
+  rect.setAttribute("y", String(y));
+  rect.setAttribute("width", String(w));
+  rect.setAttribute("height", String(h));
+}
+
+function syncBboxUi() {
+  const active = state.bbox !== null;
+  if (activeTag) activeTag.hidden = !active;
+  if (bboxClear) bboxClear.hidden = !active;
+  if (state.bbox && map) {
+    const [w, s, e, n] = state.bbox;
+    const { width, height } = map.viewBox.baseVal;
+    const [x1, y1] = projectLonLat(w, n, width, height);
+    const [x2, y2] = projectLonLat(e, s, width, height);
+    drawRect(x1, y1, x2 - x1, y2 - y1);
+  } else if (rect) {
+    rect.style.display = "none";
+  }
+}
+
+let dragStart: number[] | null = null;
+map?.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  map.setPointerCapture(e.pointerId);
+  dragStart = svgPoint(e);
+});
+map?.addEventListener("pointermove", (e) => {
+  if (!dragStart) return;
+  const p = svgPoint(e);
+  drawRect(
+    Math.min(dragStart[0], p[0]),
+    Math.min(dragStart[1], p[1]),
+    Math.abs(dragStart[0] - p[0]),
+    Math.abs(dragStart[1] - p[1]),
+  );
+});
+map?.addEventListener("pointerup", (e) => {
+  if (!dragStart) return;
+  const p = svgPoint(e);
+  const dx = Math.abs(dragStart[0] - p[0]);
+  const dy = Math.abs(dragStart[1] - p[1]);
+  if (dx > 2 && dy > 2) {
+    const { width, height } = map.viewBox.baseVal;
+    const [w, n] = unprojectPoint(
+      Math.min(dragStart[0], p[0]),
+      Math.min(dragStart[1], p[1]),
+      width,
+      height,
+    );
+    const [e2, s] = unprojectPoint(
+      Math.max(dragStart[0], p[0]),
+      Math.max(dragStart[1], p[1]),
+      width,
+      height,
+    );
+    state.bbox = [w, s, e2, n];
+  }
+  dragStart = null;
+  apply();
+});
+
+bboxClear?.addEventListener("click", () => {
+  state.bbox = null;
+  apply();
+});
+
+// ---- Init from URL ----
+// Filters start collapsed on small screens so results stay above the fold
+if (matchMedia("(max-width: 860px)").matches) {
+  for (const d of document.querySelectorAll("aside details[open]")) {
+    d.removeAttribute("open");
+  }
+}
+
+const params = new URLSearchParams(location.search);
+state.q = (params.get("q") ?? "").trim().toLowerCase();
+state.series = params.get("series") ?? "";
+if (search) search.value = params.get("q") ?? "";
+for (const k of facetKeys) state[k] = params.get(k) ?? "";
+const urlBbox = params.get("bbox")?.split(",").map(Number);
+if (urlBbox?.length === 4 && urlBbox.every((n) => !Number.isNaN(n)))
+  state.bbox = urlBbox;
+apply();
+</script>
+
+<style>
+.head-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.toolbar {
+  margin-top: 28px;
+}
+
+/* Search, count, and clear-all stay reachable while browsing results.
+   Static on small screens — the wrapped toolbar is too tall to pin. */
+@media (width > 860px) {
+  .toolbar {
+    position: sticky;
+    top: var(--nav-height);
+    z-index: 20;
+    background: var(--bg);
+  }
+}
+
+/* The hairline sits inside the container's padding, flush with the content */
+.toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.searchbox {
+  display: flex;
+  flex: 1 1 360px;
+  gap: 8px;
+  align-items: center;
+  min-width: 280px;
+  max-width: 560px;
+  padding: 8px 12px;
+  color: var(--grey-6);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+
+.searchbox input {
+  flex: 1;
+  font-size: 14px;
+  outline: 0;
+  background: transparent;
+  border: 0;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 32px;
+  padding-top: 32px;
+}
+
+/* Filters follow the results; align-self keeps sticky alive in the grid.
+   The offset clears the nav plus the stuck toolbar (~74px). */
+.facets {
+  position: sticky;
+  top: calc(var(--nav-height) + 90px);
+  align-self: start;
+}
+
+/* ---- Spatial search ---- */
+.bbox-box {
+  padding: 0;
+  margin-bottom: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.bbox-box summary {
+  padding: 10px 12px;
+}
+
+.bbox-title {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.bbox-active {
+  padding: 1px 6px;
+  font-size: 10px;
+  color: var(--text-inverse);
+  background: var(--cdh-blue-700);
+  border-radius: 6px;
+}
+
+.bbox-body {
+  padding: 0 12px 12px;
+}
+
+#bbox-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+  cursor: crosshair;
+  user-select: none;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.bbox-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+  margin-top: 10px;
+}
+
+.bbox-count {
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+#bbox-clear {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cdh-blue-700);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+
+/* Reuses the global .pill.spatial look; only the clear button is local */
+.series-tag {
+  border: 1px solid var(--cdh-blue-150);
+}
+
+.series-tag button {
+  padding: 0 2px;
+  font-size: 13px;
+  color: inherit;
+  cursor: pointer;
+  background: none;
+  border: 0;
+}
+
+.results-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.results-meta b {
+  color: var(--text);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+/* Off-screen cards skip layout and paint, so the page stays responsive
+   as the catalog grows; the size hint keeps the scrollbar stable */
+.grid > li {
+  contain-intrinsic-size: auto 340px;
+  content-visibility: auto;
+}
+
+/* Containment clips the keyboard focus ring (outline sits outside the li
+   box) — release it on the focused card */
+.grid > li:focus-within {
+  content-visibility: visible;
+}
+
+/* ---- Layout switcher ---- */
+.layout-wrap {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-left: auto;
+}
+
+/* ---- Table layout ---- */
+/* Cards render both variants; the list's class picks one. */
+.row-table,
+.table-head {
+  display: none;
+}
+
+.grid.layout-table {
+  display: block;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 0;
+  border-radius: 0 0 6px 6px;
+}
+
+.grid.layout-table :global(.ds-card) {
+  display: none;
+}
+
+.grid.layout-table li + li {
+  border-top: 1px solid var(--border);
+}
+
+.row-table:hover {
+  text-decoration: none;
+  background: var(--grey-1);
+}
+
+.row-text {
+  display: block;
+  min-width: 0;
+}
+
+.row-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cdh-blue-950);
+}
+
+.row-desc {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+.table-head,
+.row-table {
+  grid-template-columns: 108px 2fr 1fr 1fr 100px 96px;
+  gap: 14px;
+  align-items: center;
+  padding: 10px 14px;
+}
+
+.table-head {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--grey-1);
+  border: 1px solid var(--border);
+  border-radius: 6px 6px 0 0;
+}
+
+.table-head:has(+ .grid.layout-table) {
+  display: grid;
+}
+
+.row-table {
+  padding: 13px 14px;
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+.grid.layout-table .row-table {
+  display: grid;
+}
+
+.row-table .row-desc {
+  font-size: 12.5px;
+}
+
+@media (width <= 860px) {
+  .table-head,
+  .row-table {
+    grid-template-columns: 90px 2fr 1fr;
+  }
+
+  .table-head span:nth-child(n + 4),
+  .row-table > :nth-child(n + 4) {
+    display: none;
+  }
+}
+
+@media (width <= 860px) {
+  .body {
+    grid-template-columns: 1fr;
+  }
+
+  /* Stacked above the results, the rail must scroll away with them —
+     mobile browsers mishandle sticky grid items in a single column */
+  .facets {
+    position: static;
+  }
+
+  /* Search takes the first line; count + layout switcher wrap below it */
+  .searchbox {
+    flex-basis: 100%;
+    max-width: none;
+  }
+}
+</style>

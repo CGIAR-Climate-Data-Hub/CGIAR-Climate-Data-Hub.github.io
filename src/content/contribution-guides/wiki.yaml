@@ -1,0 +1,25 @@
+order: 2
+label: Edit a wiki page
+icon: WIKI
+title: Edit a wiki page
+intro: >
+  Wikis live as Markdown files in the site repo. Edits flow through normal pull requests,
+  so changes are reviewed, versioned and attributable.
+audience: Anyone
+time: ~30 minutes
+steps:
+  - title: Find the page in the repo
+    body: >
+      Each wiki page links to its source file on GitHub via the 'Edit on GitHub' link.
+  - title: Open a PR with your edit
+    body: >
+      Fork or branch, edit the Markdown, and open a pull request. A preview build renders
+      your change automatically.
+  - title: Request review
+    body: >
+      Tag the relevant section maintainer (Standards, Methods, Concepts or Governance) for review.
+checklist:
+  - Front-matter (title, section, description) is updated if needed.
+  - Internal links resolve and external links are correct.
+  - Code blocks specify a language for syntax highlighting.
+  - Images include alt text.
