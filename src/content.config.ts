@@ -254,7 +254,6 @@ const catalog = defineCollection({
       cdh: z
         .object({
           domain: z.array(z.string()).default([]),
-          use_cases: z.array(z.string()).default([]),
           not_recommended_for: z
             .array(
               z.object({
