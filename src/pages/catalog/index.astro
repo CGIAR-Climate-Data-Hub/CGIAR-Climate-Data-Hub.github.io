@@ -129,13 +129,14 @@ const catalogSchema = {
             <path d="m21 21-4.3-4.3"></path>
           </svg>
           <input
+            aria-label="Search datasets"
             id="catalog-search"
             placeholder="Search datasets — name, source, variable, keyword…"
             type="search"
           >
         </div>
         <div class="results-meta">
-          <span
+          <span role="status"
             ><b id="match-count">{datasets.length}</b>{" "}
             <span id="match-label">datasets</span></span
           >
@@ -647,6 +648,11 @@ apply();
   background: var(--surface);
   border: 1px solid var(--border-strong);
   border-radius: 6px;
+}
+
+.searchbox:focus-within {
+  border-color: var(--cdh-blue-700);
+  box-shadow: var(--shadow-focus);
 }
 
 .searchbox input {

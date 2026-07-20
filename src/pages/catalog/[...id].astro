@@ -690,7 +690,10 @@ const jsonLd = datasetJsonLd(
                       <button class="example-btn" data-example-open type="button">
                         &lt;/&gt; View usage examples
                       </button>
-                      <dialog class="example-modal">
+                      <dialog
+                        aria-label={`${asset.name} usage examples`}
+                        class="example-modal"
+                      >
                         <div class="example-head">
                           <h4>
                             <span class="mono">{asset.name}</span> — usage

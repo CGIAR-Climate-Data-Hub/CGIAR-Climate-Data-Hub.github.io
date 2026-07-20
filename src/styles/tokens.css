@@ -50,6 +50,7 @@
   --link: var(--cdh-blue-700);
 
   --radius-lg: 12px;
+  --shadow-focus: 0 8px 30px rgb(15 46 78 / 10%);
 
   /* Shape language — "editorial" (the shipped tweak choice): square 3px corners */
   --btn-radius: 3px;
