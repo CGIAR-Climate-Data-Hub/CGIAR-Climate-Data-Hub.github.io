@@ -20,7 +20,7 @@ const facts = [
     <DataGlyph size={13} type={d.type} />
     {d.type === "spatial" ? "Spatial" : "Tabular"}
   </span>
-  <h3><a href={`/catalog/${d.id}/`} title={d.title}>{d.title}</a></h3>
+  <h2><a href={`/catalog/${d.id}/`} title={d.title}>{d.title}</a></h2>
   {d.source && <p class="source" title={d.source}>By {d.source}</p>}
   <p class="summary" title={d.description}>{d.description}</p>
   <div class="meta mono">
@@ -60,7 +60,7 @@ const facts = [
   border-radius: 0;
 }
 
-h3 {
+h2 {
   display: -webkit-box;
   -webkit-box-orient: vertical;
 
@@ -72,21 +72,24 @@ h3 {
   font-size: 21px;
   font-weight: 500;
   line-height: 1.22;
+
+  /* Global h2 balance would re-break the clamped two-liner */
+  text-wrap: wrap;
 }
 
 /* Whole card is the click target for the title link */
-h3 a {
+h2 a {
   color: inherit;
 }
 
-h3 a::after {
+h2 a::after {
   position: absolute;
   inset: 0;
   content: "";
 }
 
 /* The whole card is the link, so the whole card lights the title */
-.ds-card:hover h3 a {
+.ds-card:hover h2 a {
   color: var(--cdh-blue-700);
   text-decoration: none;
 }

@@ -443,6 +443,11 @@ hr {
   border-radius: 6px;
 }
 
+/* Heading-order fix made these h2; keep the quieter h3 size */
+.empty h2 {
+  font-size: 21px;
+}
+
 .empty p {
   margin-top: 8px;
   font-size: 14px;
