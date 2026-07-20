@@ -4,7 +4,7 @@ import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
 import { currentReleases } from "@/lib/catalog";
 import { allTutorials } from "@/lib/collections";
-import { SITE_DESCRIPTION, SITE_NAME, SKILLS_SITE } from "@/site.config";
+import { SITE_NAME, SKILLS_SITE } from "@/site.config";
 
 export const GET: APIRoute = async ({ site }) => {
   const abs = (path: string) => new URL(path, site).href;
@@ -14,35 +14,38 @@ export const GET: APIRoute = async ({ site }) => {
   const useCases = await getCollection("useCases");
 
   const line = (title: string, url: string, desc: string) =>
-    `- [${title}](${abs(url)}): ${desc.trim().replace(/\s+/g, " ")}`;
+    `- [${title.replaceAll("[", "\\[").replaceAll("]", "\\]")}](${abs(url)}): ${desc.trim().replace(/\s+/g, " ")}`;
 
-  const md = `# ${SITE_NAME}
+  const md = `# CGIAR ${SITE_NAME}
 
-> ${SITE_DESCRIPTION} Datasets are harmonised to the CDH metadata standard, openly licensed, and distributed in cloud-native formats (Zarr, COG). Every dataset page embeds schema.org/Dataset JSON-LD.
+> A curated catalog of quality-assured climate and agricultural datasets, described consistently, openly licensed, and published in cloud-native formats. Use the catalog to discover datasets, inspect metadata, cite original publishers, and access Zarr, Cloud-Optimized GeoTIFF, and Parquet assets plus STAC metadata directly.
 
-When citing a dataset, use the citation on its record page ("How to cite"), which credits the original publisher and includes an "Accessed through the CGIAR ${SITE_NAME}" clause with the record URL.
+The Hub also provides practical tutorials and wiki documentation for finding, evaluating, accessing, and using its datasets.
 
-Markdown-sourced doc, tutorial, and use-case pages below, plus dataset pages, are also served as plain markdown: append index.md to the page URL.
+For an expanded, single-file representation of the Hub's documentation and dataset metadata, see [llms-full.txt](${abs("/llms-full.txt")}).
+
+Each dataset record has stable machine-readable JSON metadata and embedded schema.org/Dataset markup. Cite datasets using the citation on each record page, which preserves credit to the original publisher.
+
+Links below use plain Markdown where available. Dataset and Markdown-authored page twins live at the page URL plus index.md.
 
 ## Datasets
 
-${catalog.map((c) => line(c.data.title, `/catalog/${c.data.id}/`, c.data.description)).join("\n")}
+${catalog.map((c) => line(c.data.title, `/catalog/${c.data.id}/index.md`, c.data.description)).join("\n")}
 
 ## Documentation
 
-${wikis.map((w) => line(w.data.title, `/wikis/${w.id}/`, w.data.description)).join("\n")}
+${wikis.map((w) => line(w.data.title, `/wikis/${w.id}/${w.filePath?.endsWith(".md") ? "index.md" : ""}`, w.data.description)).join("\n")}
 
 ## Tutorials
 
-${tutorials.map((t) => line(t.data.title, `/tutorials/${t.id}/`, t.data.description)).join("\n")}
+${tutorials.map((t) => line(t.data.title, `/tutorials/${t.id}/${t.filePath?.endsWith(".md") ? "index.md" : ""}`, t.data.description)).join("\n")}
 
 ## Use cases
 
-${useCases.map((u) => line(u.data.title, `/in-use/${u.id}/`, u.data.description)).join("\n")}
+${useCases.map((u) => line(u.data.title, `/in-use/${u.id}/${u.filePath?.endsWith(".md") ? "index.md" : ""}`, u.data.description)).join("\n")}
 
 ## Reference
 
-- [Full documentation in one file](${abs("/llms-full.txt")}): Everything below — docs, tutorials, FAQ, and per-dataset metadata — inlined for single-fetch ingestion
 - [Catalog](${abs("/catalog/")}): Browse and filter all datasets
 - [Catalog index](${abs("/catalog.json")}): Machine-readable schema.org DataCatalog of every record (per-record raw metadata at /catalog/<id>.json)
 - [For AI & agents](${abs("/ai/")}): Agent skills and every machine-readable endpoint, documented

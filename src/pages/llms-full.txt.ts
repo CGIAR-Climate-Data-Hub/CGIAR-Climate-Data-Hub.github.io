@@ -21,8 +21,12 @@ export const GET: APIRoute = async ({ site }) => {
     (c) => `### ${c.data.title}\n\n${datasetMd(c.data, site)}`,
   );
 
+  const nestHeadings = (md: string) =>
+    md.replace(/^(#{1,6})(?= )/gm, (heading) =>
+      "#".repeat(Math.min(heading.length + 2, 6)),
+    );
   const doc = (title: string, url: string, body?: string, desc?: string) =>
-    `### ${title}\n\n${abs(url)}\n\n${(body ?? desc ?? "").trim()}`;
+    `### ${title}\n\n${abs(url)}\n\n${nestHeadings((body ?? desc ?? "").trim())}`;
 
   const md = `# ${SITE_NAME} — full documentation
 
