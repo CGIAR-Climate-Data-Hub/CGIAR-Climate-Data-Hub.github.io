@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # JS/TS deps (astro, biome, …) — bun reads package.json + bun.lock,
+  # packages come from the npm registry, so this covers everything npm would
+  - package-ecosystem: "bun"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

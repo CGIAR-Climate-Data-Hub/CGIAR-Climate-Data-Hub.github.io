@@ -278,6 +278,9 @@ hr {
 /* Segmented control — layout switcher, version toggle, snippet language tabs */
 .seg {
   display: inline-flex;
+  min-inline-size: 0;
+  padding: 0;
+  margin: 0;
   overflow: hidden;
   border: 1px solid var(--border-strong);
   border-radius: 6px;

@@ -155,7 +155,7 @@ const catalogSchema = {
           </button>
         </div>
         <div class="layout-wrap">
-          <div aria-label="Result layout" class="seg" role="group">
+          <fieldset aria-label="Result layout" class="seg">
             {[
             ["grid", "Cards"],
             ["table", "Table"],
@@ -168,7 +168,7 @@ const catalogSchema = {
               {label}
             </button>
           ))}
-          </div>
+          </fieldset>
         </div>
       </div>
     </div>
@@ -262,9 +262,9 @@ const catalogSchema = {
               fill="rgb(99 169 254 / 28%)"
               height="0"
               id="bbox-rect"
-              style="display: none"
               stroke="var(--cdh-blue-700)"
               stroke-width="0.8"
+              style="display: none"
               width="0"
               x="0"
               y="0"
