@@ -1,5 +1,3 @@
 import xarray as xr
 
-ds = xr.open_zarr(
-    "__URL__"
-)
+ds = xr.open_zarr("__URL__")

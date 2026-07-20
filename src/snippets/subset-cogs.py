@@ -1,8 +1,6 @@
 import rioxarray
 
-da = rioxarray.open_rasterio(
-    "__URL__", masked=True
-)
+da = rioxarray.open_rasterio("__URL__", masked=True)
 
 # Clip a window (East Africa)
 window = da.rio.clip_box(minx=28, miny=-12, maxx=52, maxy=18)
