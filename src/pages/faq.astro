@@ -42,7 +42,7 @@ const jsonLd = {
     {faqs.map(({ entry, Content }) => (
         <details>
           <summary>
-            <h3>{entry.data.question}</h3>
+            <h2>{entry.data.question}</h2>
             <svg aria-hidden="true" class="chev" fill="none" height="14" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" width="14">
               <path d="M6 9l6 6 6-6" />
             </svg>
@@ -90,9 +90,13 @@ summary {
   list-style: none;
 }
 
-summary h3 {
+summary h2 {
   font-size: 17px;
   font-weight: 500;
+  line-height: 1.3;
+
+  /* Long questions shouldn't re-wrap under the global h2 balance */
+  text-wrap: wrap;
 }
 
 .chev {

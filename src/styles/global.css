@@ -95,6 +95,14 @@ a:hover {
   text-underline-offset: 2px;
 }
 
+/* Inline links need a non-colour cue; standalone navigation and controls keep
+   their component treatments. */
+:where(p, :where(.prose, .answer) :where(li, td, dd), .cite-block li, .fact)
+  a:not(.btn, .pill, .chip) {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 button {
   font-family: inherit;
   cursor: pointer;
@@ -418,6 +426,10 @@ hr {
   color: var(--text-mute);
 }
 
+.facet-option[aria-pressed="true"] .count {
+  color: var(--text-soft);
+}
+
 /* Sits in the results-meta row (fixed height, so no layout shift), visible
    only while filters are active */
 #clear-filters {
@@ -441,6 +453,11 @@ hr {
   background: var(--surface);
   border: 1px dashed var(--border-strong);
   border-radius: 6px;
+}
+
+/* Heading-order fix made these h2; keep the quieter h3 size */
+.empty h2 {
+  font-size: 21px;
 }
 
 .empty p {

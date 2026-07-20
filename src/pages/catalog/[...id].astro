@@ -416,14 +416,14 @@ const jsonLd = datasetJsonLd(
 
         {d.note && (
             <div class="note">
-              <h3>Important note</h3>
+              <h2 class="note-title">Important note</h2>
               <p>{d.note}</p>
             </div>
           )}
 
         {(quickstart.python || quickstart.r) && (
             <div>
-              <h3>Quick start</h3>
+              <h2>Quick start</h2>
               <SnippetTabs python={quickstart.python} r={quickstart.r} />
               <p class="digest">
                 <a href="#access">Full access details and endpoints</a>
@@ -433,7 +433,7 @@ const jsonLd = datasetJsonLd(
 
         {d.cdh && d.cdh.not_recommended_for.length > 0 && (
             <div>
-              <h3>Not recommended for</h3>
+              <h2>Not recommended for</h2>
               <div class="warn-cards">
                 {d.cdh.not_recommended_for.map((n) => (
                   <div class="warn-card">
@@ -456,7 +456,7 @@ const jsonLd = datasetJsonLd(
 
         {d.commodities.length > 0 && (
             <div>
-              <h3>Commodities</h3>
+              <h2>Commodities</h2>
               <div class="chips">
                 {d.commodities.map((id) => {
                   const c = commodity(id);
@@ -477,7 +477,7 @@ const jsonLd = datasetJsonLd(
           <section id="schema">
             {d.variables.length > 0 && (
               <div>
-                <h3>Variables</h3>
+                <h2>Variables</h2>
                 <div class="table-wrap">
                   <table>
                     <thead>
@@ -531,7 +531,7 @@ const jsonLd = datasetJsonLd(
 
             {d.dimensions.length > 0 && (
               <div>
-                <h3>Dimensions</h3>
+                <h2>Dimensions</h2>
                 <p class="section-sub">Axes of the cube — spatial, temporal, and domain axes.</p>
                 <div class="dim-cards">
                   {d.dimensions.map((dim) => (
@@ -558,14 +558,14 @@ const jsonLd = datasetJsonLd(
 
       {d.data.length > 0 && (
           <section id="access">
-            <h3>Access &amp; use</h3>
+            <h2>Access &amp; use</h2>
             <p class="section-sub">
               Cloud-optimised distributions — read just the window you need directly from object
               storage.
             </p>
             {d.access_note && (
               <div class="note">
-                <h3>Access conditions</h3>
+                <h3 class="note-title">Access conditions</h3>
                 <p>{d.access_note}</p>
               </div>
             )}
@@ -578,7 +578,7 @@ const jsonLd = datasetJsonLd(
 
             {assetGroups.map((group) => (
             <div>
-              <h4 class="tech-title">{group.title}</h4>
+              <h3 class="tech-title">{group.title}</h3>
             <div class="assets">
               {group.items.map(({ asset, example, bestFor, primary, others, tplFields, tplFile, tplUrl, download }) => (
                 <div class="asset">
@@ -690,7 +690,10 @@ const jsonLd = datasetJsonLd(
                       <button class="example-btn" data-example-open type="button">
                         &lt;/&gt; View usage examples
                       </button>
-                      <dialog class="example-modal">
+                      <dialog
+                        aria-label={`${asset.name} usage examples`}
+                        class="example-modal"
+                      >
                         <div class="example-head">
                           <h4>
                             <span class="mono">{asset.name}</span> — usage
@@ -719,7 +722,7 @@ const jsonLd = datasetJsonLd(
 
       {(d.climate || d.spatial || d.temporal) && (
           <section id="technical">
-            <h3>Technical metadata</h3>
+            <h2>Technical metadata</h2>
             <p class="section-sub">
               The full spatial, temporal, and modelling detail behind the
               summaries elsewhere on this page.
@@ -727,7 +730,7 @@ const jsonLd = datasetJsonLd(
 
             {d.spatial && (
               <div>
-                <h4 class="tech-title">Spatial</h4>
+                <h3 class="tech-title">Spatial</h3>
                 <dl class="kv">
                   {d.spatial.crs && (
                     <>
@@ -771,7 +774,7 @@ const jsonLd = datasetJsonLd(
 
             {d.temporal && (
               <div>
-                <h4 class="tech-title">Temporal</h4>
+                <h3 class="tech-title">Temporal</h3>
                 <dl class="kv">
                   {"date" in d.temporal ? (
                     <>
@@ -794,7 +797,7 @@ const jsonLd = datasetJsonLd(
 
             {d.climate && (
             <div>
-              <h4 class="tech-title">Climate methods</h4>
+              <h3 class="tech-title">Climate methods</h3>
               <dl class="kv">
                   {d.climate.mip_era && (
                     <>
@@ -855,7 +858,7 @@ const jsonLd = datasetJsonLd(
             )}
 
             <div>
-              <h4 class="tech-title">Record</h4>
+              <h3 class="tech-title">Record</h3>
               <dl class="kv">
                 <dt>Resource type</dt>
                 <dd>{d.resource_type}</dd>
@@ -878,7 +881,7 @@ const jsonLd = datasetJsonLd(
 
       {d.processing.length > 0 && (
           <section id="provenance">
-            <h3>Provenance</h3>
+            <h2>Provenance</h2>
             <p class="section-sub">Ordered processing steps, from source to publication.</p>
             <ol class="lineage">
               {d.processing.map((step) => (
@@ -935,7 +938,7 @@ const jsonLd = datasetJsonLd(
             {citation && (
               <div class="cite-block">
                 <div class="cite-head">
-                  <h3>How to cite</h3>
+                  <h2>How to cite</h2>
                   <label class="cite-format">
                     <span class="label">Format</span>
                     <select id="cite-format">
@@ -977,7 +980,7 @@ const jsonLd = datasetJsonLd(
                 )}
                 {d.related_publications.length > 0 && (
                   <div>
-                    <h4>Related publications</h4>
+                    <h3>Related publications</h3>
                     <ul>
                       {d.related_publications.map((pub) => (
                         <li>
@@ -992,7 +995,7 @@ const jsonLd = datasetJsonLd(
             )}
             {d.contact.length > 0 && (
             <div class="contacts-block">
-            <h3>Contacts</h3>
+            <h2>Contacts</h2>
             <p class="section-sub">
               Who produced this dataset, and who to reach about it.
             </p>
@@ -1045,7 +1048,7 @@ const jsonLd = datasetJsonLd(
 
     <aside>
       <div class="rail-box">
-        <h4 class="label">Quick facts</h4>
+        <h2 class="label">Quick facts</h2>
         <dl class="kv">
           {coverage && (
             <>
@@ -1091,7 +1094,7 @@ const jsonLd = datasetJsonLd(
 
       {tutorialLinks.length > 0 && (
           <div class="rail-box">
-            <h4 class="label">Tutorials</h4>
+            <h2 class="label">Tutorials</h2>
             {tutorialLinks.map((t) => (
               <a class="rail-link" href={t.href}>
                 <b>{t.title}</b>
@@ -1103,7 +1106,7 @@ const jsonLd = datasetJsonLd(
 
       {derivatives.length > 0 && (
           <div class="rail-box">
-            <h4 class="label">Derived datasets</h4>
+            <h2 class="label">Derived datasets</h2>
             {derivatives.map((der) => (
               <a class="rail-link" href={der.href}>
                 <b>{der.title}</b>
@@ -1114,7 +1117,7 @@ const jsonLd = datasetJsonLd(
 
       {seenIn.length > 0 && (
           <div class="rail-box">
-            <h4 class="label">Seen in</h4>
+            <h2 class="label">Seen in</h2>
             {seenIn.map((uc) => (
               <a class="rail-link" href={uc.href}>
                 <b>{uc.title}</b>
@@ -1126,7 +1129,7 @@ const jsonLd = datasetJsonLd(
 
       {d.additional_links.length > 0 && (
           <div class="rail-box">
-            <h4 class="label">Related links</h4>
+            <h2 class="label">Related links</h2>
             {d.additional_links.map((link) => (
               <a class="rail-link ext" href={link.url} rel="noreferrer">
                 {link.name ?? link.url} ↗
@@ -1137,7 +1140,7 @@ const jsonLd = datasetJsonLd(
 
       {d.funding.length > 0 && (
           <div class="rail-box">
-            <h4 class="label">Funding</h4>
+            <h2 class="label">Funding</h2>
             {d.funding.map((f) =>
               f.url ? (
                 <a class="rail-link ext" href={f.url} rel="noreferrer">
@@ -1282,9 +1285,16 @@ if (tabs.length > 0) {
   border-radius: var(--pill-radius);
 }
 
+/* Promoted h4→h3 for heading order; global h3 is serif, keep the sans look */
+.tech-title,
+.cite-block h3 {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 700;
+}
+
 .tech-title {
   margin-bottom: 12px;
-  font-size: 15px;
 }
 
 .class-list {
@@ -1566,8 +1576,9 @@ article section {
   scroll-margin-top: calc(var(--nav-height) + 58px);
 }
 
-article h3 {
+article h2 {
   font-size: 22px;
+  line-height: 1.3;
 }
 
 article section > div > p,
@@ -1591,7 +1602,7 @@ article ul {
   border-left: 3px solid var(--terra-500);
 }
 
-.note h3 {
+.note-title {
   font-family: var(--sans);
   font-size: 16px;
   font-weight: 700;
@@ -1983,10 +1994,6 @@ td.mono {
   margin-bottom: 14px;
 }
 
-.example-head h4 {
-  font-size: 15px;
-}
-
 .example-close {
   padding: 0 6px;
   font-size: 20px;
@@ -2123,7 +2130,7 @@ td.mono {
 }
 
 /* Extra separation where the two blocks meet */
-.cite-block + .contacts-block h3 {
+.cite-block + .contacts-block h2 {
   margin-top: 16px;
 }
 
@@ -2138,7 +2145,10 @@ td.mono {
 .rail-box .label {
   display: block;
   margin-bottom: 10px;
+  font-family: var(--sans);
+  line-height: 1.3;
   color: var(--text-mute);
+  text-wrap: wrap;
 }
 
 .kv {

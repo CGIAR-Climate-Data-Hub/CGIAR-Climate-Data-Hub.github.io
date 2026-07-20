@@ -78,7 +78,7 @@ const jsonLd = {
   <section class="container missions">
     {missions.map((mission) => (
         <div class="mission">
-          <h3>{mission.title}</h3>
+          <h2>{mission.title}</h2>
           <p>{mission.body}</p>
         </div>
       ))}
@@ -149,8 +149,9 @@ h1 {
   border-top: 2px solid var(--cdh-blue-950);
 }
 
-.mission h3 {
+.mission h2 {
   font-size: 20px;
+  line-height: 1.3;
 }
 
 .mission p {
