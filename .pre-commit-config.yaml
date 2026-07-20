@@ -12,9 +12,9 @@ repos:
     rev: v0.15.22
     hooks:
       - id: ruff-check
-        args: [--fix]
+        args: [--fix, "--extend-select=I,UP,B"]
       - id: ruff-format
-        args: []
+        args: [--line-length=60]
   - repo: https://github.com/posit-dev/air-pre-commit
     rev: 0.10.0
     hooks:
