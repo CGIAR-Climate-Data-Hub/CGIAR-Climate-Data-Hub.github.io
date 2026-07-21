@@ -1,11 +1,14 @@
 version: 2
 updates:
-  # JS/TS deps (astro, biome, …) — bun reads package.json + bun.lock,
-  # packages come from the npm registry, so this covers everything npm would
+  # JS/TS deps (astro, biome, …) bun reads package.json + bun.lock,
   - package-ecosystem: "bun"
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+    # Currently TS 7.0 is not compatible with Astro, remove when it is
+      - dependency-name: "typescript"
+        versions: ["7.x"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
