@@ -60,8 +60,11 @@ site-wide constants live in `src/site.config.ts`.
 - Plain CSS: scoped `<style>` blocks per component plus shared
   `src/styles/tokens.css`. No Tailwind/Sass/CSS Modules — Astro's scoping and
   native CSS already cover what they'd add.
-- Tokens are the only source of magic values: colors, spacing, radii, and
-  shadows come from `var(--…)`, never raw hex/px values in components
+- Shared colors, radii, shadows, and fixed font sizes come from `var(--…)`,
+  never raw hex values in components. Use the compact `--space-*` and
+  `--font-size-*` scales when an exact token exists; one-off structural
+  dimensions, responsive display typography, SVG coordinates, and breakpoints
+  may stay literal.
   (`grep -rn '#[0-9a-f]\{3,6\}' src/components src/pages` should stay
   near-empty).
 - Rule of three: the same styles duplicated in two components are fine; on the

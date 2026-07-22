@@ -186,15 +186,15 @@ if (nav) scrollSpy(nav);
 
 .help-box {
   max-width: 320px;
-  padding: 16px 18px;
+  padding: var(--space-4) 18px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 .help-box p {
-  margin-top: 8px;
-  font-size: 13px;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-4);
   line-height: 1.6;
   color: var(--text-soft);
 }
@@ -202,9 +202,9 @@ if (nav) scrollSpy(nav);
 .body {
   display: grid;
   grid-template-columns: 280px 1fr;
-  gap: 32px;
+  gap: var(--space-6);
   align-items: start;
-  padding-top: 32px;
+  padding-top: var(--space-6);
 }
 
 aside {
@@ -219,16 +219,16 @@ aside {
 
 .intent a {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
-  padding: 12px 14px;
-  margin-bottom: 4px;
-  font-size: 14px;
+  padding: var(--space-3) 14px;
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-5);
   font-weight: 500;
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .intent a:hover {
@@ -243,11 +243,11 @@ aside {
   align-items: center;
   justify-content: center;
   padding: 2px 6px;
-  font-size: 10px;
+  font-size: var(--font-size-1);
   color: var(--text-soft);
   letter-spacing: 0.06em;
   background: var(--grey-1);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .intent a[aria-current="true"] {
@@ -259,15 +259,15 @@ aside {
 
 .intent a[aria-current="true"] .chip {
   color: var(--cdh-blue-150);
-  background: rgb(99 169 254 / 18%);
+  background: var(--cdh-blue-800);
 }
 
 .rail-box {
-  padding: 16px;
-  margin-top: 24px;
+  padding: var(--space-4);
+  margin-top: var(--space-5);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 .rail-box .label {
@@ -277,8 +277,8 @@ aside {
 
 .rail-link {
   display: block;
-  padding: 8px 0;
-  font-size: 13px;
+  padding: var(--space-2) 0;
+  font-size: var(--font-size-4);
   color: var(--text);
   border-bottom: 1px solid var(--border);
 }
@@ -295,7 +295,7 @@ aside {
 .guides {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: var(--space-6);
   min-width: 0;
 }
 
@@ -309,7 +309,7 @@ aside {
 .guide-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
 }
 
@@ -319,14 +319,14 @@ aside {
 
 .guide h2 {
   max-width: 720px;
-  margin-top: 12px;
-  font-size: 30px;
+  margin-top: var(--space-3);
+  font-size: var(--font-size-10);
 }
 
 .intro {
   max-width: 720px;
   margin-top: 10px;
-  font-size: 16px;
+  font-size: var(--font-size-6);
   line-height: 1.65;
   color: var(--text-soft);
 }
@@ -338,8 +338,8 @@ aside {
 .step {
   display: grid;
   grid-template-columns: 44px 1fr;
-  gap: 16px;
-  padding: 16px 0;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
 }
 
 .step-rail {
@@ -352,7 +352,7 @@ aside {
   justify-content: center;
   width: 32px;
   height: 32px;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   font-weight: 700;
   color: var(--text-inverse);
   background: var(--cdh-blue-950);
@@ -370,14 +370,12 @@ aside {
 }
 
 .step h3 {
-  font-family: var(--sans);
-  font-size: 17px;
-  font-weight: 600;
+  font-size: var(--font-size-7);
 }
 
 .step p {
   margin-top: 6px;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   line-height: 1.65;
   color: var(--text-soft);
 }
@@ -388,7 +386,7 @@ aside {
 }
 
 .step-body :global(.code-block) {
-  margin-top: 12px;
+  margin-top: var(--space-3);
 }
 
 .checklist {
@@ -396,15 +394,15 @@ aside {
 }
 
 .checklist h3 {
-  font-size: 22px;
+  font-size: var(--font-size-8);
 }
 
 .checklist ul {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
   padding: 0;
-  margin: 12px 0 0;
+  margin: var(--space-3) 0 0;
   list-style: none;
 }
 
@@ -412,7 +410,7 @@ aside {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  font-size: 14px;
+  font-size: var(--font-size-5);
 }
 
 .check {
@@ -423,11 +421,11 @@ aside {
   width: 16px;
   height: 16px;
   margin-top: 2px;
-  font-size: 10px;
+  font-size: var(--font-size-1);
   font-weight: 700;
   color: var(--cdh-blue-700);
   border: 1.5px solid var(--cdh-blue-700);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .kinds {
@@ -435,19 +433,19 @@ aside {
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 10px;
   padding: 0;
-  margin: 24px 0 0;
+  margin: var(--space-5) 0 0;
   list-style: none;
 }
 
 .kind {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
   height: 100%;
-  padding: 12px 14px;
+  padding: var(--space-3) 14px;
   background: var(--bg);
   border: 1px solid var(--border-strong);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .kind:hover {
@@ -456,12 +454,12 @@ aside {
 }
 
 .kinds b {
-  font-size: 14px;
+  font-size: var(--font-size-5);
   color: var(--cdh-blue-950);
 }
 
 .kinds span {
-  font-size: 12px;
+  font-size: var(--font-size-3);
   line-height: 1.4;
   color: var(--text-mute);
 }
@@ -469,7 +467,7 @@ aside {
 .report-tip {
   max-width: 720px;
   margin-top: 18px;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   line-height: 1.6;
   color: var(--text-soft);
 }

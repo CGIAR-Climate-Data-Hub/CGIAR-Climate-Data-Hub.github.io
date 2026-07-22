@@ -264,9 +264,7 @@ const GLYPHS: Record<string, string> = {
   background: linear-gradient(
     90deg,
     transparent 28%,
-    rgb(99 169 254 / 9%) 48%,
-    rgb(99 169 254 / 24%) 72%,
-    rgb(99 169 254 / 46%) 100%
+    color-mix(in srgb, var(--cdh-blue-300) 46%, transparent) 100%
   );
 }
 
@@ -286,54 +284,39 @@ const GLYPHS: Record<string, string> = {
 
 h1 {
   font-size: clamp(38px, 4.4vw, 58px);
+  line-height: 1.1;
   letter-spacing: -0.025em;
 }
 
 .lede {
   max-width: 540px;
-  margin-top: 24px;
+  margin-top: var(--space-5);
   font-family: var(--serif);
-  font-size: 18px;
+  font-size: var(--font-size-7);
   font-weight: 300;
   line-height: 1.6;
   color: var(--text-soft);
 }
 
-/* The searchbox renders its input at runtime, so inner parts are styled
-   via :global to keep the hero's paper look. */
 .paper-search {
+  --pf-font: var(--sans);
+  --pf-background: var(--surface);
+  --pf-border: var(--border-strong);
+  --pf-border-focus: var(--cdh-blue-700);
+  --pf-border-radius: var(--radius-sm);
+  --pf-outline-width: 0px;
+
   display: block;
   min-height: 59px; /* input height, reserved so JS render doesn't shift layout */
-  margin-top: 32px;
+  margin-top: var(--space-6);
 }
 
-.paper-search :global(.pf-searchbox-input-wrapper) {
-  display: flex;
-  align-items: center;
-  padding-right: 14px;
-  background: var(--surface);
-  border: 1.5px solid var(--border-strong);
-  border-radius: var(--input-radius);
-  box-shadow: 0 1px 2px rgb(20 16 8 / 3%);
-  transition:
-    border-color 0.16s,
-    box-shadow 0.16s;
+.paper-search:hover {
+  --pf-border: var(--cdh-blue-300);
 }
 
-.paper-search :global(.pf-searchbox-input-wrapper:focus-within) {
-  border-color: var(--cdh-blue-700);
-  box-shadow: var(--shadow-focus);
-}
-
-.paper-search :global(.pf-searchbox-input) {
-  flex: 1;
-  min-width: 0;
-  padding: 18px 22px;
-  font-size: 16.5px;
-  color: var(--text);
-  outline: 0;
-  background: transparent;
-  border: 0;
+.paper-search:focus-within {
+  --pf-border: var(--cdh-blue-700);
 }
 
 .try-row {
@@ -345,16 +328,16 @@ h1 {
 }
 
 .try-row .label {
-  font-size: 10.5px;
+  font-size: var(--font-size-1);
   color: var(--text-mute);
 }
 
 .try-chip {
   padding: 5px 13px;
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
   color: var(--text-soft);
   border: 1px solid var(--border-strong);
-  border-radius: var(--chip-radius);
+  border-radius: var(--radius-sm);
   transition:
     border-color 0.12s,
     color 0.12s,
@@ -381,9 +364,9 @@ h1 {
 
 .path {
   display: flex;
-  gap: 16px;
+  gap: var(--space-4);
   align-items: center;
-  padding: 18px 4px;
+  padding: 18px var(--space-1);
   color: var(--text);
   border-top: 1px solid var(--border);
   transition: padding-left 0.16s;
@@ -394,7 +377,7 @@ h1 {
 }
 
 .path:hover {
-  padding-left: 12px;
+  padding-left: var(--space-3);
   text-decoration: none;
 }
 
@@ -411,17 +394,17 @@ h1 {
 
 .path-label {
   display: block;
-  font-family: var(--serif);
-  font-size: 18.5px;
-  font-weight: 500;
+  font-family: var(--sans);
+  font-size: var(--font-size-7);
+  font-weight: 700;
   line-height: 1.25;
   color: var(--cdh-blue-950);
 }
 
 .path-cue {
   display: block;
-  margin-top: 4px;
-  font-size: 10px;
+  margin-top: var(--space-1);
+  font-size: var(--font-size-1);
   color: var(--text-mute);
 }
 
@@ -444,7 +427,7 @@ h1 {
 
 /* ---- Essentials ---- */
 .essentials {
-  padding: 84px 0 8px;
+  padding: 84px 0 var(--space-2);
 }
 
 .essentials-grid {
@@ -457,7 +440,7 @@ h1 {
 .essential {
   display: grid;
   grid-template-columns: 40px 1fr auto;
-  gap: 16px;
+  gap: var(--space-4);
   align-items: center;
   padding: 18px 6px;
   color: var(--text);
@@ -476,7 +459,7 @@ h1 {
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 .essential-glyph.doc {
@@ -492,7 +475,7 @@ h1 {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 15.5px;
+  font-size: var(--font-size-6);
   font-weight: 600;
   color: var(--cdh-blue-950);
   white-space: nowrap;
@@ -502,13 +485,13 @@ h1 {
   display: flex;
   gap: 9px;
   align-items: center;
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 .essential-meta .mono {
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 11.5px;
+  font-size: var(--font-size-3);
   color: var(--text-mute);
   white-space: nowrap;
 }
@@ -517,9 +500,9 @@ h1 {
   color: var(--text-mute);
 }
 
-/* ---- Principles band (navy — text is white or #63A9FE only) ---- */
+/* ---- Principles band (navy — text uses inverse or program-blue tokens) ---- */
 .principles {
-  padding: 72px 0 8px;
+  padding: 72px 0 var(--space-2);
 }
 
 .principles-band {
@@ -532,32 +515,32 @@ h1 {
   overflow: hidden;
   color: var(--text-inverse);
   background: var(--cdh-blue-950);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
 }
 
 .band-kicker {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   color: var(--cdh-blue-300);
 }
 
 .principles-band h2 {
-  font-size: 31px;
+  font-size: var(--font-size-10);
   line-height: 1.15;
   color: var(--text-inverse);
 }
 
 .band-lede {
   max-width: 400px;
-  margin-top: 16px;
-  font-size: 15.5px;
+  margin-top: var(--space-4);
+  font-size: var(--font-size-6);
   line-height: 1.65;
-  color: rgb(255 255 255 / 76%);
+  color: var(--text-inverse-soft);
 }
 
 .band-link {
   display: inline-block;
   margin-top: 22px;
-  font-size: 14.5px;
+  font-size: var(--font-size-5);
   font-weight: 600;
   color: var(--cdh-blue-300);
 }
@@ -568,7 +551,7 @@ h1 {
   gap: 18px;
   align-items: baseline;
   padding: 18px 0;
-  border-top: 1px solid rgb(255 255 255 / 12%);
+  border-top: 1px solid var(--border-inverse);
 }
 
 .principle:first-child {
@@ -576,27 +559,27 @@ h1 {
 }
 
 .principle-n {
-  font-size: 11px;
+  font-size: var(--font-size-2);
   color: var(--terra-300);
 }
 
 .principle-title {
   font-family: var(--serif);
-  font-size: 19px;
+  font-size: var(--font-size-8);
   font-weight: 500;
   color: var(--text-inverse);
 }
 
 .principle p {
   margin-top: 5px;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   line-height: 1.6;
-  color: rgb(255 255 255 / 72%);
+  color: var(--text-inverse-soft);
 }
 
 /* ---- Contribute band ---- */
 .contribute {
-  padding: 72px 0 8px;
+  padding: 72px 0 var(--space-2);
 }
 
 .contribute-band {
@@ -610,13 +593,13 @@ h1 {
 }
 
 .contribute-band h2 {
-  font-size: 30px;
+  font-size: var(--font-size-10);
 }
 
 .contribute-band p {
   max-width: 620px;
-  margin-top: 12px;
-  font-size: 16px;
+  margin-top: var(--space-3);
+  font-size: var(--font-size-6);
   line-height: 1.6;
   color: var(--text-soft);
 }
@@ -624,14 +607,14 @@ h1 {
 .contribute-ctas {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 @media (width <= 960px) {
   .hero-grid {
     grid-template-columns: 1fr;
     gap: 40px;
-    padding-top: 48px;
+    padding-top: var(--space-7);
   }
 
   .paths {
@@ -645,7 +628,7 @@ h1 {
 
   .principles-band {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: var(--space-6);
     padding: 36px 28px;
   }
 }

@@ -33,7 +33,7 @@ const facts = [
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
   height: 100%;
   padding: 22px 22px 18px;
   background: var(--surface);
@@ -66,10 +66,10 @@ h2 {
 
   /* Reserve both lines so descriptions start level across the row */
   min-height: 2lh;
-  margin-top: 4px;
+  margin-top: var(--space-1);
   overflow: hidden;
   -webkit-line-clamp: 2;
-  font-size: 21px;
+  font-size: var(--font-size-8);
   font-weight: 500;
   line-height: 1.22;
 
@@ -109,7 +109,7 @@ h2 a::after {
   margin-top: -6px;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 11.5px;
+  font-size: var(--font-size-3);
   color: var(--grey-7);
   white-space: nowrap;
 }
@@ -119,7 +119,7 @@ h2 a::after {
   -webkit-box-orient: vertical;
   overflow: hidden;
   -webkit-line-clamp: 3;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   line-height: 1.55;
   color: var(--text-soft);
 }
@@ -131,7 +131,7 @@ h2 a::after {
   gap: 3px;
   padding-top: 14px;
   margin-top: auto;
-  font-size: 11.5px;
+  font-size: var(--font-size-3);
   color: var(--text-mute);
   border-top: 1px solid var(--border);
 }

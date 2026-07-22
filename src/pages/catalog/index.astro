@@ -130,7 +130,9 @@ const catalogSchema = {
           </svg>
           <input
             aria-label="Search datasets"
+            autocomplete="off"
             id="catalog-search"
+            name="q"
             placeholder="Search datasets — name, source, variable, keyword…"
             type="search"
           >
@@ -234,17 +236,19 @@ const catalogSchema = {
             viewBox={`0 0 ${W} ${H}`}
           >
             <rect
-              fill="rgb(99 169 254 / 6%)"
+              fill="var(--cdh-blue-300)"
+              fill-opacity="0.06"
               height={H}
               width={W}
               x="0"
               y="0"
             ></rect>
-            {[-120, -60, 0, 60, 120].map((lon) => <line stroke="rgb(101 127 114 / 18%)" stroke-width="0.4" x1={projectLonLat(lon, 0, W, H)[0]} x2={projectLonLat(lon, 0, W, H)[0]} y1="0" y2={H}></line>)}
-            {[-60, -30, 30, 60].map((lat) => <line stroke="rgb(101 127 114 / 18%)" stroke-width="0.4" x1="0" x2={W} y1={projectLonLat(0, lat, W, H)[1]} y2={projectLonLat(0, lat, W, H)[1]}></line>)}
+            {[-120, -60, 0, 60, 120].map((lon) => <line stroke="var(--grey-5)" stroke-opacity="0.18" stroke-width="0.4" x1={projectLonLat(lon, 0, W, H)[0]} x2={projectLonLat(lon, 0, W, H)[0]} y1="0" y2={H}></line>)}
+            {[-60, -30, 30, 60].map((lat) => <line stroke="var(--grey-5)" stroke-opacity="0.18" stroke-width="0.4" x1="0" x2={W} y1={projectLonLat(0, lat, W, H)[1]} y2={projectLonLat(0, lat, W, H)[1]}></line>)}
             <line
-              stroke="rgb(101 127 114 / 32%)"
+              stroke="var(--grey-5)"
               stroke-dasharray="1 1"
+              stroke-opacity="0.32"
               stroke-width="0.5"
               x1="0"
               x2={W}
@@ -253,13 +257,16 @@ const catalogSchema = {
             ></line>
             <path
               d={land}
-              fill="rgb(10 44 85 / 16%)"
-              stroke="rgb(10 44 85 / 38%)"
+              fill="var(--cdh-blue-950)"
+              fill-opacity="0.16"
+              stroke="var(--cdh-blue-950)"
               stroke-linejoin="round"
+              stroke-opacity="0.36"
               stroke-width="0.35"
             ></path>
             <rect
-              fill="rgb(99 169 254 / 28%)"
+              fill="var(--cdh-blue-300)"
+              fill-opacity="0.28"
               height="0"
               id="bbox-rect"
               stroke="var(--cdh-blue-700)"
@@ -607,7 +614,7 @@ apply();
 <style>
 .head-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .toolbar {
@@ -629,35 +636,39 @@ apply();
 .toolbar-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
-  padding-top: 16px;
-  padding-bottom: 16px;
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-4);
   border-bottom: 1px solid var(--border);
 }
 
 .searchbox {
   display: flex;
   flex: 1 1 360px;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: center;
   min-width: 280px;
   max-width: 560px;
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   color: var(--grey-6);
   background: var(--surface);
   border: 1px solid var(--border-strong);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
+  transition: border-color 0.16s;
+}
+
+.searchbox:hover {
+  border-color: var(--cdh-blue-300);
 }
 
 .searchbox:focus-within {
   border-color: var(--cdh-blue-700);
-  box-shadow: var(--shadow-focus);
 }
 
 .searchbox input {
   flex: 1;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   outline: 0;
   background: transparent;
   border: 0;
@@ -666,8 +677,8 @@ apply();
 .body {
   display: grid;
   grid-template-columns: 240px 1fr;
-  gap: 32px;
-  padding-top: 32px;
+  gap: var(--space-6);
+  padding-top: var(--space-6);
 }
 
 /* Filters follow the results; align-self keeps sticky alive in the grid.
@@ -684,31 +695,31 @@ apply();
   margin-bottom: 20px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .bbox-box summary {
-  padding: 10px 12px;
+  padding: 10px var(--space-3);
 }
 
 .bbox-title {
   display: inline-flex;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: center;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   font-weight: 600;
 }
 
 .bbox-active {
   padding: 1px 6px;
-  font-size: 10px;
+  font-size: var(--font-size-1);
   color: var(--text-inverse);
   background: var(--cdh-blue-700);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .bbox-body {
-  padding: 0 12px 12px;
+  padding: 0 var(--space-3) var(--space-3);
 }
 
 #bbox-map {
@@ -724,7 +735,7 @@ apply();
 
 .bbox-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: center;
   justify-content: space-between;
   min-height: 24px;
@@ -732,18 +743,18 @@ apply();
 }
 
 .bbox-count {
-  font-size: 11px;
+  font-size: var(--font-size-2);
   color: var(--text-mute);
 }
 
 #bbox-clear {
-  padding: 4px 10px;
-  font-size: 11px;
+  padding: var(--space-1) 10px;
+  font-size: var(--font-size-2);
   font-weight: 600;
   color: var(--cdh-blue-700);
   background: transparent;
   border: 1px solid var(--border-strong);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 /* Reuses the global .pill.spatial look; only the clear button is local */
@@ -753,7 +764,7 @@ apply();
 
 .series-tag button {
   padding: 0 2px;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   color: inherit;
   cursor: pointer;
   background: none;
@@ -765,7 +776,7 @@ apply();
   flex-wrap: wrap;
   gap: 6px 14px;
   align-items: center;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   color: var(--text-soft);
 }
 
@@ -776,7 +787,7 @@ apply();
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  gap: var(--space-4);
   padding: 0;
   margin: 0;
   list-style: none;
@@ -816,7 +827,7 @@ apply();
   background: var(--surface);
   border: 1px solid var(--border);
   border-top: 0;
-  border-radius: 0 0 6px 6px;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
 }
 
 .grid.layout-table :global(.ds-card) {
@@ -839,7 +850,7 @@ apply();
 
 .row-title {
   display: block;
-  font-size: 15px;
+  font-size: var(--font-size-6);
   font-weight: 600;
   color: var(--cdh-blue-950);
 }
@@ -849,7 +860,7 @@ apply();
   margin-top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   color: var(--text-soft);
   white-space: nowrap;
 }
@@ -863,14 +874,14 @@ apply();
 }
 
 .table-head {
-  font-size: 11px;
+  font-size: var(--font-size-2);
   font-weight: 700;
   color: var(--text-soft);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   background: var(--grey-1);
   border: 1px solid var(--border);
-  border-radius: 6px 6px 0 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
 .table-head:has(+ .grid.layout-table) {
@@ -879,7 +890,7 @@ apply();
 
 .row-table {
   padding: 13px 14px;
-  font-size: 11px;
+  font-size: var(--font-size-2);
   color: var(--text-mute);
 }
 
@@ -888,7 +899,7 @@ apply();
 }
 
 .row-table .row-desc {
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
 }
 
 @media (width <= 860px) {
@@ -901,9 +912,7 @@ apply();
   .row-table > :nth-child(n + 4) {
     display: none;
   }
-}
 
-@media (width <= 860px) {
   .body {
     grid-template-columns: 1fr;
   }

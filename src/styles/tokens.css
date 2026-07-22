@@ -23,12 +23,12 @@
   /* CGIAR green — footer band only */
   --cgiar-primary: #033529;
   --cgiar-accent: #17f1bd;
-  --cgiar-primary-dark: #010d09;
   --cgiar-text: #c3d2cc;
   --cgiar-text-link: #9db4ab;
   --cgiar-text-muted: #93a89f;
 
   /* Brand neutral ramp */
+  --grey-0: #fff;
   --grey-1: #e2e0df;
   --grey-2: #c6c4c3;
   --grey-3: #aaa8a7;
@@ -40,26 +40,53 @@
 
   /* Semantic — warm-neutral paper so the brand blues read true */
   --bg: #f5f4f1;
-  --surface: #ffffff;
+  --surface: var(--grey-0);
   --border: #e7e6e3;
   --border-strong: #cfcecb;
   --text: var(--grey-8);
   --text-soft: var(--grey-6);
   --text-mute: #676665;
-  --text-inverse: #fff;
+  --text-inverse: var(--grey-0);
+  --text-inverse-soft: color-mix(in srgb, var(--text-inverse) 75%, transparent);
+  --border-inverse: color-mix(in srgb, var(--text-inverse) 15%, transparent);
   --link: var(--cdh-blue-700);
+  --navbar-glass: color-mix(in srgb, var(--bg) 86%, transparent);
 
-  --radius-lg: 12px;
-  --shadow-focus: 0 8px 30px rgb(15 46 78 / 10%);
+  --shadow-menu: 0 12px 30px rgb(20 16 8 / 12%);
 
-  /* Shape language — "editorial" (the shipped tweak choice): square 3px corners */
-  --btn-radius: 3px;
-  --pill-radius: 3px;
-  --chip-radius: 3px;
-  --input-radius: 3px;
+  /* Spacing scale — use for ordinary margins, padding, and layout gaps. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Shape scale — restrained editorial corners, from controls to major surfaces. */
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  /* Fixed type scale: steps 1–10 equal 10, 11, 12, 13, 14, 16, 18, 20, 24,
+     and 30px at the browser's default 16px root. Responsive display headings
+     stay local to their layouts. */
+  --font-size-1: 0.625rem;
+  --font-size-2: 0.6875rem;
+  --font-size-3: 0.75rem;
+  --font-size-4: 0.8125rem;
+  --font-size-5: 0.875rem;
+  --font-size-6: 1rem;
+  --font-size-7: 1.125rem;
+  --font-size-8: 1.25rem;
+  --font-size-9: 1.5rem;
+  --font-size-10: 1.875rem;
+  --font-size-body: var(--font-size-6);
+  --font-size-editorial-title: clamp(2.125rem, 4vw, 3.25rem);
 
   /* Font stacks: families come from the Astro Fonts API (--font-*) */
-  --serif: var(--font-serif), georgia, "Times New Roman", serif;
+  --serif: var(--font-serif), "Times New Roman", georgia, serif;
   --sans: var(--font-sans), arial, system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", menlo, consolas, "Courier New", monospace;
 }

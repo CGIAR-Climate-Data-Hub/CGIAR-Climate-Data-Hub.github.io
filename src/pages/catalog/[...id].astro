@@ -1272,37 +1272,35 @@ if (tabs.length > 0) {
 
 <style>
 .header {
-  padding: 18px 0 24px;
+  padding: 18px 0 var(--space-5);
   background: var(--surface);
 }
 
 /* Outline only: a caution tag that doesn't outweigh the version beside it */
 .access-flag {
-  padding: 2px 8px;
-  font-size: 12px;
+  padding: 2px var(--space-2);
+  font-size: var(--font-size-3);
   color: var(--terra-700);
   border: 1px solid var(--terra-300);
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-sm);
 }
 
-/* Promoted h4→h3 for heading order; global h3 is serif, keep the sans look */
+/* Promoted h4→h3 for heading order; keep the smaller h4-like size */
 .tech-title,
 .cite-block h3 {
-  font-family: var(--sans);
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--font-size-5);
 }
 
 .tech-title {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .class-list {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 3px 10px;
-  margin: 8px 0 0;
-  font-size: 12.5px;
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-4);
 }
 
 .class-list dt {
@@ -1320,11 +1318,11 @@ if (tabs.length > 0) {
 .deprecated-note {
   padding: 10px 14px;
   margin-top: 18px;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   color: var(--terra-900);
   background: var(--terra-50);
   border: 1px solid var(--terra-300);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .deprecated-note a {
@@ -1341,7 +1339,7 @@ if (tabs.length > 0) {
   grid-template-columns: 1fr minmax(260px, 350px);
   gap: 40px;
   align-items: stretch;
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }
 
 h1 {
@@ -1357,11 +1355,11 @@ h1 {
 }
 
 .keyword {
-  padding: 2px 8px;
-  font-size: 10.5px;
+  padding: 2px var(--space-2);
+  font-size: var(--font-size-1);
   color: var(--text-mute);
   background: var(--grey-1);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .keyword:hover {
@@ -1378,22 +1376,22 @@ h1 {
 .ctas {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
   margin-top: 18px;
 }
 
 .source {
   max-width: 640px;
-  margin-top: 8px;
-  font-size: 14px;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-5);
   color: var(--text-soft);
 }
 
 /* "Part of: <series>" — links to the catalog filtered to the series */
 .series-line {
   margin-top: 6px;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   color: var(--text-mute);
 }
 
@@ -1402,7 +1400,7 @@ h1 {
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  margin-top: 12px;
+  margin-top: var(--space-3);
 }
 
 .version-row .label {
@@ -1410,18 +1408,18 @@ h1 {
 }
 
 .version-single {
-  font-size: 13px;
+  font-size: var(--font-size-4);
   color: var(--text);
 }
 
 .latest {
   padding: 1px 5px;
-  font-size: 9.5px;
+  font-size: var(--font-size-1);
   font-weight: 700;
   color: var(--cdh-blue-700);
   letter-spacing: 0.04em;
   background: var(--cdh-blue-50);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 /* Shared details-dropdown (version switcher, metadata menu) */
@@ -1453,20 +1451,20 @@ h1 {
   padding: 6px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 12px 30px rgb(20 16 8 / 12%);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-menu);
 }
 
 .menu-list a {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
   justify-content: space-between;
   padding: 7px 10px;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   color: var(--text);
   white-space: nowrap;
-  border-radius: 5px;
+  border-radius: var(--radius-md);
 }
 
 .menu-list a:hover {
@@ -1483,32 +1481,32 @@ h1 {
 /* Compact btn-ghost — the shared button recipe, sized down */
 .version-menu summary {
   gap: 7px;
-  padding: 5px 12px;
-  font-size: 13px;
+  padding: 5px var(--space-3);
+  font-size: var(--font-size-4);
 }
 
 .meta-menu summary {
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 /* Divider between the record's representations and its maintenance actions */
 .menu-list .menu-split {
-  margin-top: 4px;
+  margin-top: var(--space-1);
   border-top: 1px solid var(--border);
 }
 
 .meta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 14px;
-  margin-top: 12px;
+  gap: var(--space-2) 14px;
+  margin-top: var(--space-3);
 }
 
 .fact {
   display: inline-flex;
   gap: 6px;
   align-items: center;
-  font-size: 11.5px;
+  font-size: var(--font-size-3);
   color: var(--text);
 }
 
@@ -1535,9 +1533,9 @@ h1 {
 }
 
 .section-nav a {
-  padding: 14px 16px;
+  padding: 14px var(--space-4);
   margin-bottom: -1px;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   font-weight: 600;
   color: var(--text-soft);
   border-bottom: 2px solid transparent;
@@ -1558,7 +1556,7 @@ h1 {
   display: grid;
   grid-template-columns: 1fr 320px;
   gap: 40px;
-  padding-top: 32px;
+  padding-top: var(--space-6);
 }
 
 /* The rail follows the reader; align-self keeps sticky alive in the grid */
@@ -1571,46 +1569,46 @@ h1 {
 article section {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-5);
   padding-bottom: 40px;
   scroll-margin-top: calc(var(--nav-height) + 58px);
 }
 
 article h2 {
-  font-size: 22px;
+  font-size: var(--font-size-8);
   line-height: 1.3;
 }
 
 article section > div > p,
 article ul {
   margin-top: 10px;
-  font-size: 15px;
+  font-size: var(--font-size-6);
   line-height: 1.65;
   color: var(--text-soft);
 }
 
 .section-sub {
   max-width: 640px;
-  margin-top: 8px;
-  font-size: 14px;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-5);
   color: var(--text-soft);
 }
 
 .note {
-  padding: 16px;
-  background: rgb(194 84 43 / 6%);
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--terra-500) 6%, transparent);
   border-left: 3px solid var(--terra-500);
 }
 
 .note-title {
   font-family: var(--sans);
-  font-size: 16px;
+  font-size: var(--font-size-6);
   font-weight: 700;
 }
 
 .note p {
   margin-top: 6px;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   line-height: 1.65;
 }
 
@@ -1618,20 +1616,20 @@ article ul {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 12px;
+  margin-top: var(--space-3);
 }
 
 .warn-card {
   padding: 14px;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .warn-card p {
-  margin-top: 4px;
-  font-size: 13.5px;
+  margin-top: var(--space-1);
+  font-size: var(--font-size-5);
   line-height: 1.55;
   color: var(--text-soft);
 }
@@ -1643,16 +1641,16 @@ article ul {
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 
 .chip {
   padding: 3px 9px;
-  font-size: 12px;
+  font-size: var(--font-size-3);
   color: var(--cdh-blue-800);
   background: var(--cdh-blue-50);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 a.chip:hover {
@@ -1663,7 +1661,7 @@ a.chip:hover {
 .dim-cards {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
   margin-top: 14px;
 }
 
@@ -1671,12 +1669,12 @@ a.chip:hover {
   padding: 14px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .dim-card p {
   margin-top: 6px;
-  font-size: 13.5px;
+  font-size: var(--font-size-5);
   color: var(--text-soft);
 }
 
@@ -1692,8 +1690,8 @@ a.chip:hover {
 }
 
 .digest {
-  margin-top: 8px;
-  font-size: 13px;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-4);
   color: var(--text-soft);
 }
 
@@ -1702,18 +1700,18 @@ a.chip:hover {
   overflow-x: auto;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 table {
   width: 100%;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   border-collapse: collapse;
 }
 
 th {
-  padding: 10px 12px;
-  font-size: 11px;
+  padding: 10px var(--space-3);
+  font-size: var(--font-size-2);
   font-weight: 700;
   color: var(--text-soft);
   text-align: left;
@@ -1725,7 +1723,7 @@ th {
 /* Only the description column wraps; the rest size to their content */
 th,
 td {
-  padding: 10px 12px;
+  padding: 10px var(--space-3);
   white-space: nowrap;
   border-top: 1px solid var(--border);
 }
@@ -1741,7 +1739,7 @@ td:last-child {
 }
 
 td.mono {
-  font-size: 12px;
+  font-size: var(--font-size-3);
   color: var(--text-soft);
 }
 
@@ -1752,7 +1750,7 @@ td.mono {
 
 .var-note {
   margin-top: 3px;
-  font-size: 12px;
+  font-size: var(--font-size-3);
   color: var(--text-mute);
 }
 
@@ -1760,16 +1758,16 @@ td.mono {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 
 /* The card's border is the only box line — inside, whitespace separates.
    Visual weight: name → download → selectors → URL → technical facts */
 .asset {
-  padding: 16px 18px;
+  padding: var(--space-4) 18px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .asset p {
@@ -1785,20 +1783,20 @@ td.mono {
 
 /* Name + description read as one unit; the breathing room sits below them */
 .asset-desc {
-  margin-top: 4px;
+  margin-top: var(--space-1);
   margin-bottom: 14px;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   color: var(--text-soft);
 }
 
 .asset-name {
-  font-size: 16px;
+  font-size: var(--font-size-6);
   font-weight: 700;
   color: var(--cdh-blue-950);
 }
 
 .asset-size {
-  font-size: 11px;
+  font-size: var(--font-size-2);
   color: var(--text-mute);
 }
 
@@ -1806,8 +1804,8 @@ td.mono {
    beside the size so the "how big" context precedes the click */
 .dl {
   height: 26px;
-  padding: 0 12px;
-  font-size: 12px;
+  padding: 0 var(--space-3);
+  font-size: var(--font-size-3);
 }
 
 /* Whichever of size/download comes first carries the row's right edge */
@@ -1822,7 +1820,7 @@ td.mono {
 
 /* Per-asset facts — light labels, darker values; mono only on literals */
 .asset-fact {
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
   color: var(--text);
 }
 
@@ -1832,7 +1830,7 @@ td.mono {
 }
 
 .asset-fact .mono {
-  font-size: 12px;
+  font-size: var(--font-size-3);
 }
 
 .best-for {
@@ -1843,7 +1841,7 @@ td.mono {
 .tpl-fields {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 16px;
+  gap: 10px var(--space-4);
   margin-top: 10px;
 }
 
@@ -1854,21 +1852,21 @@ td.mono {
 }
 
 .tpl-field .label {
-  font-size: 10px;
+  font-size: var(--font-size-1);
 }
 
 .tpl-field select {
   padding: 2px 6px;
-  font-size: 12px;
+  font-size: var(--font-size-3);
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border-strong);
-  border-radius: var(--btn-radius);
+  border-radius: var(--radius-sm);
 }
 
 /* Quieter than the asset name — it labels a control group, not content */
 .tpl-title {
-  font-size: 10px;
+  font-size: var(--font-size-1);
   color: var(--text-mute);
 }
 
@@ -1876,16 +1874,16 @@ td.mono {
    spotlighted access URL) against the card's white surface */
 .tpl-picker,
 .access-panel {
-  padding: 10px 14px 8px;
+  padding: 10px 14px var(--space-2);
   margin-top: 10px;
   background: var(--bg);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 /* Plain URL line, wrapping normally — same voice as every card URL */
 .selected-url {
-  margin-top: 8px;
-  font-size: 12px;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-3);
   color: var(--text-soft);
   word-break: normal;
   overflow-wrap: anywhere;
@@ -1901,7 +1899,7 @@ td.mono {
 .panel-head {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: center;
 }
 
@@ -1918,7 +1916,7 @@ td.mono {
 }
 
 .alt-access summary {
-  font-size: 11.5px;
+  font-size: var(--font-size-3);
   color: var(--text-mute);
   cursor: pointer;
   user-select: none;
@@ -1939,7 +1937,7 @@ td.mono {
 
 /* Same voice as the fact labels (Format, No Data) — sans, light, muted */
 .proto {
-  font-size: 12px;
+  font-size: var(--font-size-3);
   font-weight: 500;
   color: var(--text-mute);
 }
@@ -1947,19 +1945,19 @@ td.mono {
 /* <wbr> hints break URLs at slashes; break-word is the last resort for a
    single segment wider than the column — never mid-token orphans */
 .url {
-  font-size: 12px;
+  font-size: var(--font-size-3);
   color: var(--text-soft);
   overflow-wrap: break-word;
 }
 
 .example-row {
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 
 /* A quiet text affordance — the Download button stays the card's one button */
 .example-btn {
   padding: 0;
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
   font-weight: 600;
   color: var(--cdh-blue-700);
   cursor: pointer;
@@ -1977,13 +1975,14 @@ td.mono {
   padding: 20px 22px;
   margin: auto;
   overflow: auto;
+  overscroll-behavior: contain;
   background: var(--bg);
   border: 1px solid var(--border-strong);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 .example-modal::backdrop {
-  background: rgb(12 20 30 / 45%);
+  background: color-mix(in srgb, var(--text) 45%, transparent);
 }
 
 .example-head {
@@ -1996,7 +1995,7 @@ td.mono {
 
 .example-close {
   padding: 0 6px;
-  font-size: 20px;
+  font-size: var(--font-size-8);
   line-height: 1;
   color: var(--text-mute);
   cursor: pointer;
@@ -2010,13 +2009,13 @@ td.mono {
 
 .lineage {
   padding: 0;
-  margin: 8px 0 0;
+  margin: var(--space-2) 0 0;
   list-style: none;
 }
 
 .lineage li {
   position: relative;
-  padding: 8px 0 8px 32px;
+  padding: var(--space-2) 0 var(--space-2) var(--space-6);
 }
 
 .lineage li::before {
@@ -2046,15 +2045,15 @@ td.mono {
 }
 
 .step {
-  padding: 12px 14px;
+  padding: var(--space-3) 14px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .step p {
   margin-top: 6px;
-  font-size: 13.5px;
+  font-size: var(--font-size-5);
   line-height: 1.55;
   color: var(--text-soft);
 }
@@ -2067,53 +2066,53 @@ td.mono {
 }
 
 .step-id {
-  font-size: 13px;
+  font-size: var(--font-size-4);
   font-weight: 600;
 }
 
 .step-meta {
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
   overflow-wrap: break-word;
 }
 
 .cite-head {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
   justify-content: space-between;
 }
 
 .cite-format {
   display: inline-flex;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: center;
 }
 
 .cite-format select {
   padding: 5px 10px;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border-strong);
-  border-radius: var(--btn-radius);
+  border-radius: var(--radius-sm);
 }
 
 .cite-note {
   margin-top: 6px;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   color: var(--text-soft);
 }
 
 .cite {
   position: relative;
-  padding: 16px 56px 16px 16px;
-  margin: 12px 0 0;
-  font-size: 14.5px;
+  padding: var(--space-4) 56px var(--space-4) var(--space-4);
+  margin: var(--space-3) 0 0;
+  font-size: var(--font-size-5);
   line-height: 1.7;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .cite-copy {
@@ -2131,15 +2130,15 @@ td.mono {
 
 /* Extra separation where the two blocks meet */
 .cite-block + .contacts-block h2 {
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }
 
 .rail-box {
-  padding: 16px;
+  padding: var(--space-4);
   margin-bottom: 20px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .rail-box .label {
@@ -2154,9 +2153,9 @@ td.mono {
 .kv {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 8px 14px;
+  gap: var(--space-2) 14px;
   margin: 0;
-  font-size: 13px;
+  font-size: var(--font-size-4);
 }
 
 .kv dt {
@@ -2169,23 +2168,23 @@ td.mono {
 
 .fact-sub {
   margin-top: 2px;
-  font-size: 11px;
+  font-size: var(--font-size-2);
   color: var(--text-mute);
 }
 
 .contact-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 12px;
+  gap: var(--space-3);
   margin-top: 14px;
 }
 
 .contact-card {
   padding: 14px;
-  font-size: 13.5px;
+  font-size: var(--font-size-5);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .contact-card.custodian {
@@ -2195,7 +2194,7 @@ td.mono {
 .contact-head {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: baseline;
   justify-content: space-between;
 }
@@ -2208,11 +2207,11 @@ td.mono {
 
 .role-badge {
   padding: 1px 6px;
-  font-size: 9.5px;
+  font-size: var(--font-size-1);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .custodian-badge {
@@ -2227,12 +2226,12 @@ td.mono {
 
 .contact-org {
   margin-top: 2px;
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
   color: var(--text-soft);
 }
 
 .contact-card .chips {
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 
 .contact-links {
@@ -2240,21 +2239,21 @@ td.mono {
   flex-direction: column;
   gap: 2px;
   margin-top: 10px;
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
 }
 
 .rail-link {
   display: block;
-  padding: 8px 0;
-  font-size: 13px;
+  padding: var(--space-2) 0;
+  font-size: var(--font-size-4);
   color: var(--text);
   border-bottom: 1px solid var(--border);
 }
 
 /* Rail entry with no link (e.g. an unlinked funder) */
 .rail-text {
-  padding: 8px 0;
-  font-size: 13px;
+  padding: var(--space-2) 0;
+  font-size: var(--font-size-4);
   border-bottom: 1px solid var(--border);
 }
 
@@ -2267,7 +2266,7 @@ td.mono {
 }
 
 .rail-link span {
-  font-size: 11px;
+  font-size: var(--font-size-2);
   color: var(--text-mute);
 }
 

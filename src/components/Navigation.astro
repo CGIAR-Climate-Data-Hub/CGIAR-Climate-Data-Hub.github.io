@@ -170,7 +170,7 @@ header {
 
 /* Glassy once scrolled — data-scrolled is the JS fallback path */
 header[data-scrolled] {
-  background: rgb(252 250 245 / 86%);
+  background: var(--navbar-glass);
   border-color: var(--border);
   backdrop-filter: blur(12px) saturate(160%);
 }
@@ -191,7 +191,7 @@ header[data-scrolled] {
 
 @keyframes header-glass {
   to {
-    background: rgb(252 250 245 / 86%);
+    background: var(--navbar-glass);
     border-color: var(--border);
     backdrop-filter: blur(12px) saturate(160%);
   }
@@ -218,7 +218,7 @@ nav {
   justify-content: center;
   min-width: 88px;
   padding: 6px 10px;
-  font-size: 14.5px;
+  font-size: var(--font-size-6);
   font-weight: 500;
   color: var(--grey-6);
   text-align: center;
@@ -279,8 +279,8 @@ nav {
   padding: 7px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 16px 40px rgb(20 16 8 / 14%);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-menu);
 }
 
 /* Keep the hover gap bridged so the menu doesn't flicker closed */
@@ -299,9 +299,9 @@ nav {
 
 .menu-item {
   display: block;
-  padding: 10px 12px;
+  padding: 10px var(--space-3);
   text-decoration: none;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
 }
 
 .menu-item:hover {
@@ -315,7 +315,7 @@ nav {
 
 .menu-label {
   display: block;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   font-weight: 600;
   color: var(--text);
 }
@@ -327,7 +327,7 @@ nav {
 .menu-desc {
   display: block;
   margin-top: 2px;
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
   color: var(--text-mute);
 }
 
@@ -342,7 +342,21 @@ nav {
 /* Block, not pagefind's inline-block: the baseline descender gap under the
    inline-block trigger nudged it ~2px off the flex row's centre */
 .search :global(pagefind-modal-trigger) {
+  --pf-font: var(--sans);
+  --pf-background: var(--surface);
+  --pf-border: var(--border-strong);
+  --pf-border-focus: var(--cdh-blue-300);
+  --pf-border-radius: var(--radius-sm);
+  --pf-outline-width: 0px;
+
   display: block;
+}
+
+.search :global(pagefind-modal-trigger:focus-within),
+.search
+  :global(pagefind-modal-trigger:has(.pf-trigger-btn[aria-expanded="true"])) {
+  --pf-border: var(--cdh-blue-700);
+  --pf-border-focus: var(--cdh-blue-700);
 }
 
 .search :global(.trigger-compact) {
@@ -366,8 +380,8 @@ nav {
 }
 
 .cta {
-  padding: 8px 16px;
-  font-size: 13.5px;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-5);
 }
 
 .gh {
@@ -442,19 +456,19 @@ header:has(#mobile-menu:popover-open) .i-close {
   .menu-btn {
     display: inline-flex;
     flex-shrink: 0;
-    margin-right: -8px;
+    margin-right: calc(-1 * var(--space-2));
   }
 
   .mobile-menu nav {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    padding: 8px 20px 16px;
+    padding: var(--space-2) 20px var(--space-4);
   }
 
   .mobile-menu a {
-    padding: 13px 4px;
-    font-size: 16px;
+    padding: 13px var(--space-1);
+    font-size: var(--font-size-6);
     font-weight: 500;
     color: var(--text);
     border-bottom: 1px solid var(--border);
@@ -465,7 +479,7 @@ header:has(#mobile-menu:popover-open) .i-close {
   }
 
   .mobile-menu a.is-active {
-    padding-left: 12px;
+    padding-left: var(--space-3);
     color: var(--cdh-blue-950);
     box-shadow: inset 3px 0 0 var(--terra-700);
   }
