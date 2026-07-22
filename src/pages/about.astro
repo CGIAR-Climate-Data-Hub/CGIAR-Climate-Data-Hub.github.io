@@ -106,7 +106,7 @@ const jsonLd = {
 
 <style>
 .hero {
-  padding: 32px 0 40px;
+  padding: var(--space-6) 0 40px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
@@ -114,9 +114,9 @@ const jsonLd = {
 .hero-grid {
   display: grid;
   grid-template-columns: 1fr 320px;
-  gap: 48px;
+  gap: var(--space-7);
   align-items: start;
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }
 
 .hero-text {
@@ -130,7 +130,7 @@ h1 {
 }
 
 .hero-text p {
-  margin-top: 16px;
+  margin-top: var(--space-4);
   font-size: 17px;
   line-height: 1.6;
   color: var(--text-soft);
@@ -140,12 +140,12 @@ h1 {
 .missions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 32px;
-  padding-top: 48px;
+  gap: var(--space-6);
+  padding-top: var(--space-7);
 }
 
 .mission {
-  padding-top: 16px;
+  padding-top: var(--space-4);
   border-top: 2px solid var(--cdh-blue-950);
 }
 
@@ -155,14 +155,14 @@ h1 {
 }
 
 .mission p {
-  margin-top: 8px;
+  margin-top: var(--space-2);
   font-size: 14px;
   line-height: 1.6;
   color: var(--text-soft);
 }
 
 .principles {
-  padding-top: 48px;
+  padding-top: var(--space-7);
 }
 
 /* Hairline rows, not a boxed grid */
@@ -194,7 +194,7 @@ h1 {
 .governance {
   display: grid;
   grid-template-columns: 1fr 1.5fr;
-  gap: 48px;
+  gap: var(--space-7);
   align-items: start;
   padding-top: 56px;
 }
@@ -208,18 +208,18 @@ h1 {
   padding: 20px;
   background: var(--bg); /* the hero backdrop is --surface, so invert */
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 .glance .label {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
   color: var(--terra-700);
 }
 
 dl {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 8px 16px;
+  gap: var(--space-2) var(--space-4);
   margin: 0;
   font-size: 13px;
 }
@@ -245,7 +245,7 @@ dd {
   }
 
   .governance {
-    gap: 8px;
+    gap: var(--space-2);
   }
 }
 </style>

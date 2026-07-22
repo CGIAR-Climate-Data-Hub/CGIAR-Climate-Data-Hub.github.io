@@ -25,7 +25,7 @@ const { kicker, title, sub } = Astro.props;
 .section-header {
   display: flex;
   flex-wrap: wrap;
-  gap: 24px;
+  gap: var(--space-5);
   align-items: flex-end;
   justify-content: space-between;
   margin-bottom: 28px;
@@ -33,7 +33,7 @@ const { kicker, title, sub } = Astro.props;
 
 .sub {
   max-width: 680px;
-  margin-top: 12px;
+  margin-top: var(--space-3);
   font-size: 16px;
   line-height: 1.6;
   color: var(--text-soft);

@@ -170,7 +170,7 @@ const ENDPOINTS = [
 /* Same type as the surrounding prose, just disclosed on demand */
 .how-to {
   max-width: 640px;
-  margin-top: 12px;
+  margin-top: var(--space-3);
 }
 
 .how-to summary {
@@ -181,28 +181,28 @@ const ENDPOINTS = [
 }
 
 .how-to .section-sub {
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  gap: var(--space-4);
   padding: 0;
-  margin: 24px 0 0;
+  margin: var(--space-5) 0 0;
   list-style: none;
 }
 
 .skill-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
   height: 100%;
   padding: 20px;
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 a.skill-card {

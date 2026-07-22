@@ -151,14 +151,14 @@ article {
 }
 
 h1 {
-  margin-top: 16px;
+  margin-top: var(--space-4);
   font-size: clamp(32px, 4vw, 50px);
   line-height: 1.08;
   letter-spacing: -0.025em;
 }
 
 .partner {
-  margin-top: 16px;
+  margin-top: var(--space-4);
   font-size: 13px;
   color: var(--text-mute);
 }
@@ -175,11 +175,11 @@ h1 {
 }
 
 .prose {
-  margin-top: 24px;
+  margin-top: var(--space-5);
 }
 
 .built-with {
-  padding-top: 24px;
+  padding-top: var(--space-5);
   margin-top: 40px;
   border-top: 1px solid var(--border);
 }
@@ -193,19 +193,19 @@ h1 {
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .ref-chip {
   display: inline-flex;
   gap: 7px;
   align-items: center;
-  padding: 7px 12px;
+  padding: 7px var(--space-3);
   font-size: 12.5px;
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border-strong);
-  border-radius: var(--chip-radius);
+  border-radius: var(--radius-sm);
 }
 
 .ref-chip:hover {

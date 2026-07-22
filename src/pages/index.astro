@@ -264,9 +264,7 @@ const GLYPHS: Record<string, string> = {
   background: linear-gradient(
     90deg,
     transparent 28%,
-    rgb(99 169 254 / 9%) 48%,
-    rgb(99 169 254 / 24%) 72%,
-    rgb(99 169 254 / 46%) 100%
+    color-mix(in srgb, var(--cdh-blue-300) 46%, transparent) 100%
   );
 }
 
@@ -291,7 +289,7 @@ h1 {
 
 .lede {
   max-width: 540px;
-  margin-top: 24px;
+  margin-top: var(--space-5);
   font-family: var(--serif);
   font-size: 18px;
   font-weight: 300;
@@ -304,25 +302,30 @@ h1 {
 .paper-search {
   display: block;
   min-height: 59px; /* input height, reserved so JS render doesn't shift layout */
-  margin-top: 32px;
+  margin-top: var(--space-6);
 }
 
 .paper-search :global(.pf-searchbox-input-wrapper) {
+  --pf-border: transparent;
+  --pf-border-focus: transparent;
+  --pf-outline-focus: transparent;
+  --pf-outline-width: 0px;
+
   display: flex;
   align-items: center;
   padding-right: 14px;
   background: var(--surface);
-  border: 1.5px solid var(--border-strong);
-  border-radius: var(--input-radius);
-  box-shadow: 0 1px 2px rgb(20 16 8 / 3%);
-  transition:
-    border-color 0.16s,
-    box-shadow 0.16s;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.16s;
+}
+
+.paper-search :global(.pf-searchbox-input-wrapper:hover) {
+  border-color: var(--cdh-blue-300);
 }
 
 .paper-search :global(.pf-searchbox-input-wrapper:focus-within) {
   border-color: var(--cdh-blue-700);
-  box-shadow: var(--shadow-focus);
 }
 
 .paper-search :global(.pf-searchbox-input) {
@@ -354,7 +357,7 @@ h1 {
   font-size: 12.5px;
   color: var(--text-soft);
   border: 1px solid var(--border-strong);
-  border-radius: var(--chip-radius);
+  border-radius: var(--radius-sm);
   transition:
     border-color 0.12s,
     color 0.12s,
@@ -381,9 +384,9 @@ h1 {
 
 .path {
   display: flex;
-  gap: 16px;
+  gap: var(--space-4);
   align-items: center;
-  padding: 18px 4px;
+  padding: 18px var(--space-1);
   color: var(--text);
   border-top: 1px solid var(--border);
   transition: padding-left 0.16s;
@@ -394,7 +397,7 @@ h1 {
 }
 
 .path:hover {
-  padding-left: 12px;
+  padding-left: var(--space-3);
   text-decoration: none;
 }
 
@@ -420,7 +423,7 @@ h1 {
 
 .path-cue {
   display: block;
-  margin-top: 4px;
+  margin-top: var(--space-1);
   font-size: 10px;
   color: var(--text-mute);
 }
@@ -444,7 +447,7 @@ h1 {
 
 /* ---- Essentials ---- */
 .essentials {
-  padding: 84px 0 8px;
+  padding: 84px 0 var(--space-2);
 }
 
 .essentials-grid {
@@ -457,7 +460,7 @@ h1 {
 .essential {
   display: grid;
   grid-template-columns: 40px 1fr auto;
-  gap: 16px;
+  gap: var(--space-4);
   align-items: center;
   padding: 18px 6px;
   color: var(--text);
@@ -476,7 +479,7 @@ h1 {
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 .essential-glyph.doc {
@@ -502,7 +505,7 @@ h1 {
   display: flex;
   gap: 9px;
   align-items: center;
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 .essential-meta .mono {
@@ -517,9 +520,9 @@ h1 {
   color: var(--text-mute);
 }
 
-/* ---- Principles band (navy — text is white or #63A9FE only) ---- */
+/* ---- Principles band (navy — text uses inverse or program-blue tokens) ---- */
 .principles {
-  padding: 72px 0 8px;
+  padding: 72px 0 var(--space-2);
 }
 
 .principles-band {
@@ -532,11 +535,11 @@ h1 {
   overflow: hidden;
   color: var(--text-inverse);
   background: var(--cdh-blue-950);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
 }
 
 .band-kicker {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   color: var(--cdh-blue-300);
 }
 
@@ -548,10 +551,10 @@ h1 {
 
 .band-lede {
   max-width: 400px;
-  margin-top: 16px;
+  margin-top: var(--space-4);
   font-size: 15.5px;
   line-height: 1.65;
-  color: rgb(255 255 255 / 76%);
+  color: var(--text-inverse-soft);
 }
 
 .band-link {
@@ -568,7 +571,7 @@ h1 {
   gap: 18px;
   align-items: baseline;
   padding: 18px 0;
-  border-top: 1px solid rgb(255 255 255 / 12%);
+  border-top: 1px solid var(--border-inverse);
 }
 
 .principle:first-child {
@@ -591,12 +594,12 @@ h1 {
   margin-top: 5px;
   font-size: 14px;
   line-height: 1.6;
-  color: rgb(255 255 255 / 72%);
+  color: var(--text-inverse-soft);
 }
 
 /* ---- Contribute band ---- */
 .contribute {
-  padding: 72px 0 8px;
+  padding: 72px 0 var(--space-2);
 }
 
 .contribute-band {
@@ -615,7 +618,7 @@ h1 {
 
 .contribute-band p {
   max-width: 620px;
-  margin-top: 12px;
+  margin-top: var(--space-3);
   font-size: 16px;
   line-height: 1.6;
   color: var(--text-soft);
@@ -624,14 +627,14 @@ h1 {
 .contribute-ctas {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 @media (width <= 960px) {
   .hero-grid {
     grid-template-columns: 1fr;
     gap: 40px;
-    padding-top: 48px;
+    padding-top: var(--space-7);
   }
 
   .paths {
@@ -645,7 +648,7 @@ h1 {
 
   .principles-band {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: var(--space-6);
     padding: 36px 28px;
   }
 }

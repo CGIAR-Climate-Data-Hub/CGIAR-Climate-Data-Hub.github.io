@@ -186,14 +186,14 @@ if (nav) scrollSpy(nav);
 
 .help-box {
   max-width: 320px;
-  padding: 16px 18px;
+  padding: var(--space-4) 18px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 .help-box p {
-  margin-top: 8px;
+  margin-top: var(--space-2);
   font-size: 13px;
   line-height: 1.6;
   color: var(--text-soft);
@@ -202,9 +202,9 @@ if (nav) scrollSpy(nav);
 .body {
   display: grid;
   grid-template-columns: 280px 1fr;
-  gap: 32px;
+  gap: var(--space-6);
   align-items: start;
-  padding-top: 32px;
+  padding-top: var(--space-6);
 }
 
 aside {
@@ -219,16 +219,16 @@ aside {
 
 .intent a {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
-  padding: 12px 14px;
-  margin-bottom: 4px;
+  padding: var(--space-3) 14px;
+  margin-bottom: var(--space-1);
   font-size: 14px;
   font-weight: 500;
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .intent a:hover {
@@ -247,7 +247,7 @@ aside {
   color: var(--text-soft);
   letter-spacing: 0.06em;
   background: var(--grey-1);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .intent a[aria-current="true"] {
@@ -259,15 +259,15 @@ aside {
 
 .intent a[aria-current="true"] .chip {
   color: var(--cdh-blue-150);
-  background: rgb(99 169 254 / 18%);
+  background: var(--cdh-blue-800);
 }
 
 .rail-box {
-  padding: 16px;
-  margin-top: 24px;
+  padding: var(--space-4);
+  margin-top: var(--space-5);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 .rail-box .label {
@@ -277,7 +277,7 @@ aside {
 
 .rail-link {
   display: block;
-  padding: 8px 0;
+  padding: var(--space-2) 0;
   font-size: 13px;
   color: var(--text);
   border-bottom: 1px solid var(--border);
@@ -295,7 +295,7 @@ aside {
 .guides {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: var(--space-6);
   min-width: 0;
 }
 
@@ -309,7 +309,7 @@ aside {
 .guide-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
 }
 
@@ -319,7 +319,7 @@ aside {
 
 .guide h2 {
   max-width: 720px;
-  margin-top: 12px;
+  margin-top: var(--space-3);
   font-size: 30px;
 }
 
@@ -338,8 +338,8 @@ aside {
 .step {
   display: grid;
   grid-template-columns: 44px 1fr;
-  gap: 16px;
-  padding: 16px 0;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
 }
 
 .step-rail {
@@ -388,7 +388,7 @@ aside {
 }
 
 .step-body :global(.code-block) {
-  margin-top: 12px;
+  margin-top: var(--space-3);
 }
 
 .checklist {
@@ -402,9 +402,9 @@ aside {
 .checklist ul {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
   padding: 0;
-  margin: 12px 0 0;
+  margin: var(--space-3) 0 0;
   list-style: none;
 }
 
@@ -427,7 +427,7 @@ aside {
   font-weight: 700;
   color: var(--cdh-blue-700);
   border: 1.5px solid var(--cdh-blue-700);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .kinds {
@@ -435,19 +435,19 @@ aside {
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 10px;
   padding: 0;
-  margin: 24px 0 0;
+  margin: var(--space-5) 0 0;
   list-style: none;
 }
 
 .kind {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
   height: 100%;
-  padding: 12px 14px;
+  padding: var(--space-3) 14px;
   background: var(--bg);
   border: 1px solid var(--border-strong);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .kind:hover {

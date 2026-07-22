@@ -37,7 +37,7 @@ const { kicker, title, sub, breadcrumb } = Astro.props;
 .row {
   display: flex;
   flex-wrap: wrap;
-  gap: 24px;
+  gap: var(--space-5);
   align-items: flex-end;
   justify-content: space-between;
   margin-top: 22px;
@@ -55,7 +55,7 @@ h1 {
 
 .sub {
   max-width: 660px;
-  margin-top: 16px;
+  margin-top: var(--space-4);
   font-family: var(--serif);
   font-size: 17px;
   font-weight: 300;

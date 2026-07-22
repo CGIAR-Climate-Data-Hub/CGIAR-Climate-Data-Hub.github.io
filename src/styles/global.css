@@ -140,12 +140,12 @@ hr {
   top: -100%;
   left: 16px;
   z-index: 70;
-  padding: 10px 16px;
+  padding: 10px var(--space-4);
   font-weight: 600;
   color: var(--cdh-blue-950);
   background: var(--surface);
   border: 1px solid var(--border-strong);
-  border-radius: var(--btn-radius);
+  border-radius: var(--radius-sm);
 }
 
 .skip-link:focus {
@@ -192,7 +192,7 @@ hr {
   white-space: nowrap;
   background: var(--grey-1);
   border: 1px solid transparent;
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-sm);
 }
 
 .pill.spatial {
@@ -202,7 +202,7 @@ hr {
 
 .pill.tabular {
   color: var(--grey-7);
-  background: #ece7dc;
+  background: var(--grey-1);
 }
 
 .pill.warn {
@@ -221,14 +221,14 @@ hr {
 
 .btn {
   display: inline-flex;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: center;
   padding: 10px 18px;
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
   border: 1px solid transparent;
-  border-radius: var(--btn-radius);
+  border-radius: var(--radius-sm);
   transition:
     background 0.14s,
     color 0.14s,
@@ -283,14 +283,14 @@ hr {
   margin: 0;
   overflow: hidden;
   border: 1px solid var(--border-strong);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .seg > * {
   display: inline-flex;
   gap: 6px;
   align-items: center;
-  padding: 5px 12px;
+  padding: 5px var(--space-3);
   font-size: 12px;
   font-weight: 500;
   color: var(--text);
@@ -347,7 +347,7 @@ hr {
 .footer-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
   justify-content: space-between;
   padding-top: 22px;
@@ -372,7 +372,7 @@ hr {
 
 /* Facet sidebar (catalog, tutorials) */
 .facets details:not(.bbox-box) {
-  padding-bottom: 16px;
+  padding-bottom: var(--space-4);
   margin-bottom: 20px;
   border-bottom: 1px solid var(--border);
 }
@@ -398,20 +398,20 @@ hr {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-top: 12px;
+  margin-top: var(--space-3);
 }
 
 .facet-option {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 8px;
+  padding: 6px var(--space-2);
   font-size: 13px;
   color: var(--text);
   text-align: left;
   background: transparent;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .facet-option:hover {
@@ -436,13 +436,13 @@ hr {
 /* Sits in the results-meta row (fixed height, so no layout shift), visible
    only while filters are active */
 #clear-filters {
-  padding: 4px 12px;
+  padding: var(--space-1) var(--space-3);
   font-size: 12px;
   font-weight: 600;
   color: var(--cdh-blue-700);
   background: var(--surface);
   border: 1px solid var(--border-strong);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 #clear-filters:hover {
@@ -451,11 +451,11 @@ hr {
 }
 
 .empty {
-  padding: 48px;
+  padding: var(--space-7);
   text-align: center;
   background: var(--surface);
   border: 1px dashed var(--border-strong);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 /* Heading-order fix made these h2; keep the quieter h3 size */
@@ -464,7 +464,7 @@ hr {
 }
 
 .empty p {
-  margin-top: 8px;
+  margin-top: var(--space-2);
   font-size: 14px;
   color: var(--text-soft);
 }
@@ -486,7 +486,7 @@ hr {
 }
 
 .prose h2 {
-  margin: 40px 0 12px;
+  margin: 40px 0 var(--space-3);
   font-size: 24px;
   scroll-margin-top: calc(var(--nav-height) + 58px);
 }
@@ -524,7 +524,7 @@ hr {
 .prose p,
 .prose ul,
 .prose ol {
-  margin: 0 0 16px;
+  margin: 0 0 var(--space-4);
   color: var(--text-soft);
 }
 
@@ -542,16 +542,16 @@ hr {
   font-family: var(--mono);
   font-size: 0.88em;
   background: var(--grey-1);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .prose pre {
-  padding: 16px;
-  margin: 0 0 16px;
+  padding: var(--space-4);
+  margin: 0 0 var(--space-4);
   overflow-x: auto;
   font-size: 13px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .prose pre code {
@@ -560,8 +560,8 @@ hr {
 }
 
 .prose blockquote {
-  padding: 8px 16px;
-  margin: 0 0 16px;
+  padding: var(--space-2) var(--space-4);
+  margin: 0 0 var(--space-4);
   border-left: 3px solid var(--cdh-blue-700);
 }
 
@@ -571,17 +571,17 @@ hr {
 
 /* Code-block chrome (added around shiki blocks at build time — src/lib/code-block.ts) */
 .code-block {
-  margin: 0 0 16px;
+  margin: 0 0 var(--space-4);
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .code-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 8px 6px 14px;
+  padding: 6px var(--space-2) 6px 14px;
   background: var(--grey-1);
   border-bottom: 1px solid var(--border);
 }
@@ -596,11 +596,11 @@ hr {
   display: inline-flex;
   align-items: center;
   height: 26px; /* matches the .dl download buttons wherever they pair up */
-  padding: 4px 6px;
+  padding: var(--space-1) 6px;
   color: var(--text-soft);
   background: var(--surface);
   border: 1px solid var(--border-strong);
-  border-radius: var(--btn-radius);
+  border-radius: var(--radius-sm);
 }
 
 .code-copy:hover {
@@ -619,7 +619,7 @@ hr {
 }
 
 .code-block pre {
-  padding: 14px 16px;
+  padding: 14px var(--space-4);
   margin: 0;
   overflow-x: auto;
   font-size: 13px;
@@ -627,14 +627,28 @@ hr {
   border-radius: 0;
 }
 
-/* Pagefind component-UI theme */
-:root {
+/* The dedicated search-page input follows the site's shared search states:
+   quiet at rest, light blue on hover, dark blue while active. */
+pagefind-input {
   --pf-font: var(--sans);
   --pf-background: var(--surface);
   --pf-border: var(--border-strong);
   --pf-border-focus: var(--cdh-blue-300);
-  --pf-border-radius: var(--input-radius);
-  --pf-mark: var(--cdh-blue-150);
+  --pf-border-radius: var(--radius-sm);
+  --pf-outline-width: 0px;
+  --pf-outline-focus: var(--cdh-blue-700);
+}
+
+pagefind-input .pf-input {
+  transition: border-color 0.16s;
+}
+
+pagefind-input:hover {
+  --pf-border: var(--cdh-blue-300);
+}
+
+pagefind-input:focus-within {
+  --pf-border: var(--cdh-blue-700);
 }
 
 main.page {

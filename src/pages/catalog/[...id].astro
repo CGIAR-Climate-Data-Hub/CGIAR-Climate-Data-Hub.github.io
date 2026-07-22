@@ -1272,17 +1272,17 @@ if (tabs.length > 0) {
 
 <style>
 .header {
-  padding: 18px 0 24px;
+  padding: 18px 0 var(--space-5);
   background: var(--surface);
 }
 
 /* Outline only: a caution tag that doesn't outweigh the version beside it */
 .access-flag {
-  padding: 2px 8px;
+  padding: 2px var(--space-2);
   font-size: 12px;
   color: var(--terra-700);
   border: 1px solid var(--terra-300);
-  border-radius: var(--pill-radius);
+  border-radius: var(--radius-sm);
 }
 
 /* Promoted h4→h3 for heading order; global h3 is serif, keep the sans look */
@@ -1294,14 +1294,14 @@ if (tabs.length > 0) {
 }
 
 .tech-title {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .class-list {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 3px 10px;
-  margin: 8px 0 0;
+  margin: var(--space-2) 0 0;
   font-size: 12.5px;
 }
 
@@ -1324,7 +1324,7 @@ if (tabs.length > 0) {
   color: var(--terra-900);
   background: var(--terra-50);
   border: 1px solid var(--terra-300);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .deprecated-note a {
@@ -1341,7 +1341,7 @@ if (tabs.length > 0) {
   grid-template-columns: 1fr minmax(260px, 350px);
   gap: 40px;
   align-items: stretch;
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }
 
 h1 {
@@ -1357,11 +1357,11 @@ h1 {
 }
 
 .keyword {
-  padding: 2px 8px;
+  padding: 2px var(--space-2);
   font-size: 10.5px;
   color: var(--text-mute);
   background: var(--grey-1);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .keyword:hover {
@@ -1378,14 +1378,14 @@ h1 {
 .ctas {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
   margin-top: 18px;
 }
 
 .source {
   max-width: 640px;
-  margin-top: 8px;
+  margin-top: var(--space-2);
   font-size: 14px;
   color: var(--text-soft);
 }
@@ -1402,7 +1402,7 @@ h1 {
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  margin-top: 12px;
+  margin-top: var(--space-3);
 }
 
 .version-row .label {
@@ -1421,7 +1421,7 @@ h1 {
   color: var(--cdh-blue-700);
   letter-spacing: 0.04em;
   background: var(--cdh-blue-50);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 /* Shared details-dropdown (version switcher, metadata menu) */
@@ -1453,20 +1453,20 @@ h1 {
   padding: 6px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 12px 30px rgb(20 16 8 / 12%);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-menu);
 }
 
 .menu-list a {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
   justify-content: space-between;
   padding: 7px 10px;
   font-size: 13px;
   color: var(--text);
   white-space: nowrap;
-  border-radius: 5px;
+  border-radius: var(--radius-md);
 }
 
 .menu-list a:hover {
@@ -1483,25 +1483,25 @@ h1 {
 /* Compact btn-ghost — the shared button recipe, sized down */
 .version-menu summary {
   gap: 7px;
-  padding: 5px 12px;
+  padding: 5px var(--space-3);
   font-size: 13px;
 }
 
 .meta-menu summary {
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 /* Divider between the record's representations and its maintenance actions */
 .menu-list .menu-split {
-  margin-top: 4px;
+  margin-top: var(--space-1);
   border-top: 1px solid var(--border);
 }
 
 .meta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 14px;
-  margin-top: 12px;
+  gap: var(--space-2) 14px;
+  margin-top: var(--space-3);
 }
 
 .fact {
@@ -1535,7 +1535,7 @@ h1 {
 }
 
 .section-nav a {
-  padding: 14px 16px;
+  padding: 14px var(--space-4);
   margin-bottom: -1px;
   font-size: 13px;
   font-weight: 600;
@@ -1558,7 +1558,7 @@ h1 {
   display: grid;
   grid-template-columns: 1fr 320px;
   gap: 40px;
-  padding-top: 32px;
+  padding-top: var(--space-6);
 }
 
 /* The rail follows the reader; align-self keeps sticky alive in the grid */
@@ -1571,7 +1571,7 @@ h1 {
 article section {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-5);
   padding-bottom: 40px;
   scroll-margin-top: calc(var(--nav-height) + 58px);
 }
@@ -1591,14 +1591,14 @@ article ul {
 
 .section-sub {
   max-width: 640px;
-  margin-top: 8px;
+  margin-top: var(--space-2);
   font-size: 14px;
   color: var(--text-soft);
 }
 
 .note {
-  padding: 16px;
-  background: rgb(194 84 43 / 6%);
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--terra-500) 6%, transparent);
   border-left: 3px solid var(--terra-500);
 }
 
@@ -1618,7 +1618,7 @@ article ul {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 12px;
+  margin-top: var(--space-3);
 }
 
 .warn-card {
@@ -1626,11 +1626,11 @@ article ul {
   font-size: 14px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .warn-card p {
-  margin-top: 4px;
+  margin-top: var(--space-1);
   font-size: 13.5px;
   line-height: 1.55;
   color: var(--text-soft);
@@ -1643,8 +1643,8 @@ article ul {
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 
 .chip {
@@ -1652,7 +1652,7 @@ article ul {
   font-size: 12px;
   color: var(--cdh-blue-800);
   background: var(--cdh-blue-50);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 a.chip:hover {
@@ -1663,7 +1663,7 @@ a.chip:hover {
 .dim-cards {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
   margin-top: 14px;
 }
 
@@ -1671,7 +1671,7 @@ a.chip:hover {
   padding: 14px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .dim-card p {
@@ -1692,7 +1692,7 @@ a.chip:hover {
 }
 
 .digest {
-  margin-top: 8px;
+  margin-top: var(--space-2);
   font-size: 13px;
   color: var(--text-soft);
 }
@@ -1702,7 +1702,7 @@ a.chip:hover {
   overflow-x: auto;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 table {
@@ -1712,7 +1712,7 @@ table {
 }
 
 th {
-  padding: 10px 12px;
+  padding: 10px var(--space-3);
   font-size: 11px;
   font-weight: 700;
   color: var(--text-soft);
@@ -1725,7 +1725,7 @@ th {
 /* Only the description column wraps; the rest size to their content */
 th,
 td {
-  padding: 10px 12px;
+  padding: 10px var(--space-3);
   white-space: nowrap;
   border-top: 1px solid var(--border);
 }
@@ -1760,16 +1760,16 @@ td.mono {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 
 /* The card's border is the only box line — inside, whitespace separates.
    Visual weight: name → download → selectors → URL → technical facts */
 .asset {
-  padding: 16px 18px;
+  padding: var(--space-4) 18px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .asset p {
@@ -1785,7 +1785,7 @@ td.mono {
 
 /* Name + description read as one unit; the breathing room sits below them */
 .asset-desc {
-  margin-top: 4px;
+  margin-top: var(--space-1);
   margin-bottom: 14px;
   font-size: 14px;
   color: var(--text-soft);
@@ -1806,7 +1806,7 @@ td.mono {
    beside the size so the "how big" context precedes the click */
 .dl {
   height: 26px;
-  padding: 0 12px;
+  padding: 0 var(--space-3);
   font-size: 12px;
 }
 
@@ -1843,7 +1843,7 @@ td.mono {
 .tpl-fields {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 16px;
+  gap: 10px var(--space-4);
   margin-top: 10px;
 }
 
@@ -1863,7 +1863,7 @@ td.mono {
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border-strong);
-  border-radius: var(--btn-radius);
+  border-radius: var(--radius-sm);
 }
 
 /* Quieter than the asset name — it labels a control group, not content */
@@ -1876,15 +1876,15 @@ td.mono {
    spotlighted access URL) against the card's white surface */
 .tpl-picker,
 .access-panel {
-  padding: 10px 14px 8px;
+  padding: 10px 14px var(--space-2);
   margin-top: 10px;
   background: var(--bg);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 /* Plain URL line, wrapping normally — same voice as every card URL */
 .selected-url {
-  margin-top: 8px;
+  margin-top: var(--space-2);
   font-size: 12px;
   color: var(--text-soft);
   word-break: normal;
@@ -1901,7 +1901,7 @@ td.mono {
 .panel-head {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: center;
 }
 
@@ -1953,7 +1953,7 @@ td.mono {
 }
 
 .example-row {
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 
 /* A quiet text affordance — the Download button stays the card's one button */
@@ -1979,11 +1979,11 @@ td.mono {
   overflow: auto;
   background: var(--bg);
   border: 1px solid var(--border-strong);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
 }
 
 .example-modal::backdrop {
-  background: rgb(12 20 30 / 45%);
+  background: color-mix(in srgb, var(--text) 45%, transparent);
 }
 
 .example-head {
@@ -2010,13 +2010,13 @@ td.mono {
 
 .lineage {
   padding: 0;
-  margin: 8px 0 0;
+  margin: var(--space-2) 0 0;
   list-style: none;
 }
 
 .lineage li {
   position: relative;
-  padding: 8px 0 8px 32px;
+  padding: var(--space-2) 0 var(--space-2) var(--space-6);
 }
 
 .lineage li::before {
@@ -2046,10 +2046,10 @@ td.mono {
 }
 
 .step {
-  padding: 12px 14px;
+  padding: var(--space-3) 14px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .step p {
@@ -2079,14 +2079,14 @@ td.mono {
 .cite-head {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
   justify-content: space-between;
 }
 
 .cite-format {
   display: inline-flex;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: center;
 }
 
@@ -2096,7 +2096,7 @@ td.mono {
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border-strong);
-  border-radius: var(--btn-radius);
+  border-radius: var(--radius-sm);
 }
 
 .cite-note {
@@ -2107,13 +2107,13 @@ td.mono {
 
 .cite {
   position: relative;
-  padding: 16px 56px 16px 16px;
-  margin: 12px 0 0;
+  padding: var(--space-4) 56px var(--space-4) var(--space-4);
+  margin: var(--space-3) 0 0;
   font-size: 14.5px;
   line-height: 1.7;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .cite-copy {
@@ -2131,15 +2131,15 @@ td.mono {
 
 /* Extra separation where the two blocks meet */
 .cite-block + .contacts-block h2 {
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }
 
 .rail-box {
-  padding: 16px;
+  padding: var(--space-4);
   margin-bottom: 20px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .rail-box .label {
@@ -2154,7 +2154,7 @@ td.mono {
 .kv {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 8px 14px;
+  gap: var(--space-2) 14px;
   margin: 0;
   font-size: 13px;
 }
@@ -2176,7 +2176,7 @@ td.mono {
 .contact-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 12px;
+  gap: var(--space-3);
   margin-top: 14px;
 }
 
@@ -2185,7 +2185,7 @@ td.mono {
   font-size: 13.5px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .contact-card.custodian {
@@ -2195,7 +2195,7 @@ td.mono {
 .contact-head {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: baseline;
   justify-content: space-between;
 }
@@ -2212,7 +2212,7 @@ td.mono {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 
 .custodian-badge {
@@ -2232,7 +2232,7 @@ td.mono {
 }
 
 .contact-card .chips {
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 
 .contact-links {
@@ -2245,7 +2245,7 @@ td.mono {
 
 .rail-link {
   display: block;
-  padding: 8px 0;
+  padding: var(--space-2) 0;
   font-size: 13px;
   color: var(--text);
   border-bottom: 1px solid var(--border);
@@ -2253,7 +2253,7 @@ td.mono {
 
 /* Rail entry with no link (e.g. an unlinked funder) */
 .rail-text {
-  padding: 8px 0;
+  padding: var(--space-2) 0;
   font-size: 13px;
   border-bottom: 1px solid var(--border);
 }
