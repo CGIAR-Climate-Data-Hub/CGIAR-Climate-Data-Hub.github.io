@@ -298,47 +298,25 @@ h1 {
   color: var(--text-soft);
 }
 
-/* The searchbox renders its input at runtime, so inner parts are styled
-   via :global to keep the hero's paper look. */
 .paper-search {
+  --pf-font: var(--sans);
+  --pf-background: var(--surface);
+  --pf-border: var(--border-strong);
+  --pf-border-focus: var(--cdh-blue-700);
+  --pf-border-radius: var(--radius-sm);
+  --pf-outline-width: 0px;
+
   display: block;
   min-height: 59px; /* input height, reserved so JS render doesn't shift layout */
   margin-top: var(--space-6);
 }
 
-.paper-search :global(.pf-searchbox-input-wrapper) {
-  --pf-border: transparent;
-  --pf-border-focus: transparent;
-  --pf-border-radius: var(--radius-sm);
-  --pf-outline-focus: transparent;
-  --pf-outline-width: 0px;
-
-  display: flex;
-  align-items: center;
-  padding-right: 14px;
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  transition: border-color 0.16s;
+.paper-search:hover {
+  --pf-border: var(--cdh-blue-300);
 }
 
-.paper-search :global(.pf-searchbox-input-wrapper:hover) {
-  border-color: var(--cdh-blue-300);
-}
-
-.paper-search :global(.pf-searchbox-input-wrapper:focus-within) {
-  border-color: var(--cdh-blue-700);
-}
-
-.paper-search :global(.pf-searchbox-input) {
-  flex: 1;
-  min-width: 0;
-  padding: 18px 22px;
-  font-size: var(--font-size-6);
-  color: var(--text);
-  outline: 0;
-  background: transparent;
-  border: 0;
+.paper-search:focus-within {
+  --pf-border: var(--cdh-blue-700);
 }
 
 .try-row {

@@ -651,6 +651,11 @@ pagefind-input:focus-within {
   --pf-border: var(--cdh-blue-700);
 }
 
+/* Pagefind uses --pf-border for both the search field and its shortcut badge. */
+:where(pagefind-searchbox, pagefind-modal-trigger) .pf-trigger-key {
+  --pf-border: var(--border-strong);
+}
+
 main.page {
   flex: 1;
 }
