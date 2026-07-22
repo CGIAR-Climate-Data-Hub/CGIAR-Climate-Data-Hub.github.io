@@ -130,7 +130,9 @@ const catalogSchema = {
           </svg>
           <input
             aria-label="Search datasets"
+            autocomplete="off"
             id="catalog-search"
+            name="q"
             placeholder="Search datasets — name, source, variable, keyword…"
             type="search"
           >
@@ -910,9 +912,7 @@ apply();
   .row-table > :nth-child(n + 4) {
     display: none;
   }
-}
 
-@media (width <= 860px) {
   .body {
     grid-template-columns: 1fr;
   }

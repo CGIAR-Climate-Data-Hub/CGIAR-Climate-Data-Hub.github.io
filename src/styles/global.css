@@ -200,11 +200,6 @@ hr {
   background: var(--cdh-blue-50);
 }
 
-.pill.tabular {
-  color: var(--grey-7);
-  background: var(--grey-1);
-}
-
 .pill.warn {
   color: var(--terra-900);
   background: var(--terra-50);
@@ -633,7 +628,6 @@ pagefind-input {
   --pf-font: var(--sans);
   --pf-background: var(--surface);
   --pf-border: var(--border-strong);
-  --pf-border-focus: var(--cdh-blue-300);
   --pf-border-radius: var(--radius-sm);
   --pf-outline-width: 0px;
   --pf-outline-focus: var(--cdh-blue-700);
