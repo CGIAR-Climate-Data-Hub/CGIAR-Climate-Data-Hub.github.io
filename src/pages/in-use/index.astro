@@ -71,8 +71,8 @@ const monthOf = (d: Date) => d.toISOString().slice(0, 7);
 
 <style>
 .empty {
-  padding: 48px 0;
-  font-size: 15px;
+  padding: var(--space-7) 0;
+  font-size: var(--font-size-6);
   color: var(--text-soft);
 }
 
@@ -81,13 +81,13 @@ const monthOf = (d: Date) => d.toISOString().slice(0, 7);
 }
 
 .hero {
-  margin-top: 24px;
+  margin-top: var(--space-5);
 }
 
 /* The landing-hero type ramp, shared with the wikis and about heroes */
 h1 {
   max-width: 820px;
-  font-size: clamp(34px, 4vw, 52px);
+  font-size: var(--font-size-editorial-title);
   letter-spacing: -0.025em;
 }
 
@@ -95,7 +95,7 @@ h1 {
   max-width: 680px;
   margin-top: 20px;
   font-family: var(--serif);
-  font-size: 19px;
+  font-size: var(--font-size-7);
   font-weight: 300;
   line-height: 1.6;
   color: var(--text-soft);
@@ -124,12 +124,12 @@ h1 {
 
 .featured {
   margin-bottom: 14px;
-  font-size: 10px;
+  font-size: var(--font-size-1);
   color: var(--terra-700);
 }
 
 .kind {
-  font-size: 10px;
+  font-size: var(--font-size-1);
   color: var(--terra-700);
 }
 
@@ -138,20 +138,20 @@ h1 {
 }
 
 .country {
-  margin-top: 8px;
-  font-size: 12.5px;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-4);
   color: var(--text);
 }
 
 .date {
   margin-top: 3px;
-  font-size: 11.5px;
+  font-size: var(--font-size-3);
   color: var(--text-mute);
 }
 
 .partner {
   margin-top: 14px;
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
   line-height: 1.5;
   color: var(--text-soft);
 }
@@ -161,7 +161,7 @@ h1 {
 }
 
 .body h2 {
-  font-size: 26px;
+  font-size: var(--font-size-9);
   font-weight: 500;
   line-height: 1.2;
   letter-spacing: -0.01em;
@@ -183,7 +183,7 @@ h1 {
 
 .summary {
   margin-top: 13px;
-  font-size: 16.5px;
+  font-size: var(--font-size-6);
   line-height: 1.62;
   color: var(--text-soft);
 }
@@ -191,14 +191,14 @@ h1 {
 .read {
   display: inline-block;
   margin-top: 19px;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   font-weight: 600;
 }
 
 .foot {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
   justify-content: space-between;
   padding-top: 26px;
@@ -206,7 +206,7 @@ h1 {
 }
 
 .foot .caption {
-  font-size: 13px;
+  font-size: var(--font-size-4);
 }
 
 @media (width <= 800px) {

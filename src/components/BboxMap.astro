@@ -26,15 +26,24 @@ const rects = bboxes.map((b) => {
     role="img"
     viewBox={`0 0 ${W} ${H}`}
   >
-    <rect fill="rgb(99 169 254 / 6%)" height={H} width={W} x="0" y="0"></rect>
+    <rect
+      fill="var(--cdh-blue-300)"
+      fill-opacity="0.06"
+      height={H}
+      width={W}
+      x="0"
+      y="0"
+    ></rect>
     <path
       d={landPath(W, H)}
-      fill="rgb(10 44 85 / 14%)"
-      stroke="rgb(10 44 85 / 35%)"
+      fill="var(--cdh-blue-950)"
+      fill-opacity="0.16"
+      stroke="var(--cdh-blue-950)"
       stroke-linejoin="round"
+      stroke-opacity="0.36"
       stroke-width="0.35"
     ></path>
-    {rects.map((r) => <rect fill="rgb(99 169 254 / 14%)" height={r.h} stroke="var(--cdh-blue-700)" stroke-dasharray="4 2" stroke-width="1" width={r.w} x={r.x} y={r.y}></rect>)}
+    {rects.map((r) => <rect fill="var(--cdh-blue-300)" fill-opacity="0.14" height={r.h} stroke="var(--cdh-blue-700)" stroke-dasharray="4 2" stroke-width="1" width={r.w} x={r.x} y={r.y}></rect>)}
   </svg>
 </figure>
 
@@ -44,7 +53,7 @@ figure {
   overflow: hidden;
   background: linear-gradient(180deg, var(--surface), var(--cdh-blue-50));
   border: 1px solid var(--cdh-blue-150);
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
 }
 
 svg {

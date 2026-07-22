@@ -28,22 +28,22 @@ const { items, label = "Key takeaways" } = Astro.props;
 }
 
 .label {
-  margin-bottom: 12px;
-  font-size: 10px;
+  margin-bottom: var(--space-3);
+  font-size: var(--font-size-1);
   color: var(--text-mute);
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(var(--cols), 1fr);
-  gap: 11px 32px;
+  gap: 11px var(--space-6);
 }
 
 .item {
   display: flex;
   gap: 11px;
   align-items: flex-start;
-  font-size: 14.5px;
+  font-size: var(--font-size-5);
   line-height: 1.5;
   color: var(--text);
 }
