@@ -668,7 +668,7 @@ apply();
 
 .searchbox input {
   flex: 1;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   outline: 0;
   background: transparent;
   border: 0;
@@ -706,13 +706,13 @@ apply();
   display: inline-flex;
   gap: var(--space-2);
   align-items: center;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   font-weight: 600;
 }
 
 .bbox-active {
   padding: 1px 6px;
-  font-size: 10px;
+  font-size: var(--font-size-1);
   color: var(--text-inverse);
   background: var(--cdh-blue-700);
   border-radius: var(--radius-md);
@@ -743,13 +743,13 @@ apply();
 }
 
 .bbox-count {
-  font-size: 11px;
+  font-size: var(--font-size-2);
   color: var(--text-mute);
 }
 
 #bbox-clear {
   padding: var(--space-1) 10px;
-  font-size: 11px;
+  font-size: var(--font-size-2);
   font-weight: 600;
   color: var(--cdh-blue-700);
   background: transparent;
@@ -764,7 +764,7 @@ apply();
 
 .series-tag button {
   padding: 0 2px;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   color: inherit;
   cursor: pointer;
   background: none;
@@ -776,7 +776,7 @@ apply();
   flex-wrap: wrap;
   gap: 6px 14px;
   align-items: center;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   color: var(--text-soft);
 }
 
@@ -850,7 +850,7 @@ apply();
 
 .row-title {
   display: block;
-  font-size: 15px;
+  font-size: var(--font-size-6);
   font-weight: 600;
   color: var(--cdh-blue-950);
 }
@@ -860,7 +860,7 @@ apply();
   margin-top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   color: var(--text-soft);
   white-space: nowrap;
 }
@@ -874,7 +874,7 @@ apply();
 }
 
 .table-head {
-  font-size: 11px;
+  font-size: var(--font-size-2);
   font-weight: 700;
   color: var(--text-soft);
   text-transform: uppercase;
@@ -890,7 +890,7 @@ apply();
 
 .row-table {
   padding: 13px 14px;
-  font-size: 11px;
+  font-size: var(--font-size-2);
   color: var(--text-mute);
 }
 
@@ -899,7 +899,7 @@ apply();
 }
 
 .row-table .row-desc {
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
 }
 
 @media (width <= 860px) {

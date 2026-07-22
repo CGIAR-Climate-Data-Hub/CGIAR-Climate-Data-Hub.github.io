@@ -69,6 +69,22 @@
   --radius-md: 6px;
   --radius-lg: 10px;
 
+  /* Fixed type scale: steps 1–10 equal 10, 11, 12, 13, 14, 16, 18, 20, 24,
+     and 30px at the browser's default 16px root. Responsive display headings
+     stay local to their layouts. */
+  --font-size-1: 0.625rem;
+  --font-size-2: 0.6875rem;
+  --font-size-3: 0.75rem;
+  --font-size-4: 0.8125rem;
+  --font-size-5: 0.875rem;
+  --font-size-6: 1rem;
+  --font-size-7: 1.125rem;
+  --font-size-8: 1.25rem;
+  --font-size-9: 1.5rem;
+  --font-size-10: 1.875rem;
+  --font-size-body: var(--font-size-6);
+  --font-size-editorial-title: clamp(2.125rem, 4vw, 3.25rem);
+
   /* Font stacks: families come from the Astro Fonts API (--font-*) */
   --serif: var(--font-serif), georgia, "Times New Roman", serif;
   --sans: var(--font-sans), arial, system-ui, sans-serif;

@@ -1279,7 +1279,7 @@ if (tabs.length > 0) {
 /* Outline only: a caution tag that doesn't outweigh the version beside it */
 .access-flag {
   padding: 2px var(--space-2);
-  font-size: 12px;
+  font-size: var(--font-size-3);
   color: var(--terra-700);
   border: 1px solid var(--terra-300);
   border-radius: var(--radius-sm);
@@ -1289,7 +1289,7 @@ if (tabs.length > 0) {
 .tech-title,
 .cite-block h3 {
   font-family: var(--sans);
-  font-size: 15px;
+  font-size: var(--font-size-5);
   font-weight: 700;
 }
 
@@ -1302,7 +1302,7 @@ if (tabs.length > 0) {
   grid-template-columns: auto 1fr;
   gap: 3px 10px;
   margin: var(--space-2) 0 0;
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
 }
 
 .class-list dt {
@@ -1320,7 +1320,7 @@ if (tabs.length > 0) {
 .deprecated-note {
   padding: 10px 14px;
   margin-top: 18px;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   color: var(--terra-900);
   background: var(--terra-50);
   border: 1px solid var(--terra-300);
@@ -1358,7 +1358,7 @@ h1 {
 
 .keyword {
   padding: 2px var(--space-2);
-  font-size: 10.5px;
+  font-size: var(--font-size-1);
   color: var(--text-mute);
   background: var(--grey-1);
   border-radius: var(--radius-md);
@@ -1386,14 +1386,14 @@ h1 {
 .source {
   max-width: 640px;
   margin-top: var(--space-2);
-  font-size: 14px;
+  font-size: var(--font-size-5);
   color: var(--text-soft);
 }
 
 /* "Part of: <series>" — links to the catalog filtered to the series */
 .series-line {
   margin-top: 6px;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   color: var(--text-mute);
 }
 
@@ -1410,13 +1410,13 @@ h1 {
 }
 
 .version-single {
-  font-size: 13px;
+  font-size: var(--font-size-4);
   color: var(--text);
 }
 
 .latest {
   padding: 1px 5px;
-  font-size: 9.5px;
+  font-size: var(--font-size-1);
   font-weight: 700;
   color: var(--cdh-blue-700);
   letter-spacing: 0.04em;
@@ -1463,7 +1463,7 @@ h1 {
   align-items: center;
   justify-content: space-between;
   padding: 7px 10px;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   color: var(--text);
   white-space: nowrap;
   border-radius: var(--radius-md);
@@ -1484,7 +1484,7 @@ h1 {
 .version-menu summary {
   gap: 7px;
   padding: 5px var(--space-3);
-  font-size: 13px;
+  font-size: var(--font-size-4);
 }
 
 .meta-menu summary {
@@ -1508,7 +1508,7 @@ h1 {
   display: inline-flex;
   gap: 6px;
   align-items: center;
-  font-size: 11.5px;
+  font-size: var(--font-size-3);
   color: var(--text);
 }
 
@@ -1537,7 +1537,7 @@ h1 {
 .section-nav a {
   padding: 14px var(--space-4);
   margin-bottom: -1px;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   font-weight: 600;
   color: var(--text-soft);
   border-bottom: 2px solid transparent;
@@ -1577,14 +1577,14 @@ article section {
 }
 
 article h2 {
-  font-size: 22px;
+  font-size: var(--font-size-8);
   line-height: 1.3;
 }
 
 article section > div > p,
 article ul {
   margin-top: 10px;
-  font-size: 15px;
+  font-size: var(--font-size-6);
   line-height: 1.65;
   color: var(--text-soft);
 }
@@ -1592,7 +1592,7 @@ article ul {
 .section-sub {
   max-width: 640px;
   margin-top: var(--space-2);
-  font-size: 14px;
+  font-size: var(--font-size-5);
   color: var(--text-soft);
 }
 
@@ -1604,13 +1604,13 @@ article ul {
 
 .note-title {
   font-family: var(--sans);
-  font-size: 16px;
+  font-size: var(--font-size-6);
   font-weight: 700;
 }
 
 .note p {
   margin-top: 6px;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   line-height: 1.65;
 }
 
@@ -1623,7 +1623,7 @@ article ul {
 
 .warn-card {
   padding: 14px;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -1631,7 +1631,7 @@ article ul {
 
 .warn-card p {
   margin-top: var(--space-1);
-  font-size: 13.5px;
+  font-size: var(--font-size-5);
   line-height: 1.55;
   color: var(--text-soft);
 }
@@ -1649,7 +1649,7 @@ article ul {
 
 .chip {
   padding: 3px 9px;
-  font-size: 12px;
+  font-size: var(--font-size-3);
   color: var(--cdh-blue-800);
   background: var(--cdh-blue-50);
   border-radius: var(--radius-md);
@@ -1676,7 +1676,7 @@ a.chip:hover {
 
 .dim-card p {
   margin-top: 6px;
-  font-size: 13.5px;
+  font-size: var(--font-size-5);
   color: var(--text-soft);
 }
 
@@ -1693,7 +1693,7 @@ a.chip:hover {
 
 .digest {
   margin-top: var(--space-2);
-  font-size: 13px;
+  font-size: var(--font-size-4);
   color: var(--text-soft);
 }
 
@@ -1707,13 +1707,13 @@ a.chip:hover {
 
 table {
   width: 100%;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   border-collapse: collapse;
 }
 
 th {
   padding: 10px var(--space-3);
-  font-size: 11px;
+  font-size: var(--font-size-2);
   font-weight: 700;
   color: var(--text-soft);
   text-align: left;
@@ -1741,7 +1741,7 @@ td:last-child {
 }
 
 td.mono {
-  font-size: 12px;
+  font-size: var(--font-size-3);
   color: var(--text-soft);
 }
 
@@ -1752,7 +1752,7 @@ td.mono {
 
 .var-note {
   margin-top: 3px;
-  font-size: 12px;
+  font-size: var(--font-size-3);
   color: var(--text-mute);
 }
 
@@ -1787,18 +1787,18 @@ td.mono {
 .asset-desc {
   margin-top: var(--space-1);
   margin-bottom: 14px;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   color: var(--text-soft);
 }
 
 .asset-name {
-  font-size: 16px;
+  font-size: var(--font-size-6);
   font-weight: 700;
   color: var(--cdh-blue-950);
 }
 
 .asset-size {
-  font-size: 11px;
+  font-size: var(--font-size-2);
   color: var(--text-mute);
 }
 
@@ -1807,7 +1807,7 @@ td.mono {
 .dl {
   height: 26px;
   padding: 0 var(--space-3);
-  font-size: 12px;
+  font-size: var(--font-size-3);
 }
 
 /* Whichever of size/download comes first carries the row's right edge */
@@ -1822,7 +1822,7 @@ td.mono {
 
 /* Per-asset facts — light labels, darker values; mono only on literals */
 .asset-fact {
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
   color: var(--text);
 }
 
@@ -1832,7 +1832,7 @@ td.mono {
 }
 
 .asset-fact .mono {
-  font-size: 12px;
+  font-size: var(--font-size-3);
 }
 
 .best-for {
@@ -1854,12 +1854,12 @@ td.mono {
 }
 
 .tpl-field .label {
-  font-size: 10px;
+  font-size: var(--font-size-1);
 }
 
 .tpl-field select {
   padding: 2px 6px;
-  font-size: 12px;
+  font-size: var(--font-size-3);
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border-strong);
@@ -1868,7 +1868,7 @@ td.mono {
 
 /* Quieter than the asset name — it labels a control group, not content */
 .tpl-title {
-  font-size: 10px;
+  font-size: var(--font-size-1);
   color: var(--text-mute);
 }
 
@@ -1885,7 +1885,7 @@ td.mono {
 /* Plain URL line, wrapping normally — same voice as every card URL */
 .selected-url {
   margin-top: var(--space-2);
-  font-size: 12px;
+  font-size: var(--font-size-3);
   color: var(--text-soft);
   word-break: normal;
   overflow-wrap: anywhere;
@@ -1918,7 +1918,7 @@ td.mono {
 }
 
 .alt-access summary {
-  font-size: 11.5px;
+  font-size: var(--font-size-3);
   color: var(--text-mute);
   cursor: pointer;
   user-select: none;
@@ -1939,7 +1939,7 @@ td.mono {
 
 /* Same voice as the fact labels (Format, No Data) — sans, light, muted */
 .proto {
-  font-size: 12px;
+  font-size: var(--font-size-3);
   font-weight: 500;
   color: var(--text-mute);
 }
@@ -1947,7 +1947,7 @@ td.mono {
 /* <wbr> hints break URLs at slashes; break-word is the last resort for a
    single segment wider than the column — never mid-token orphans */
 .url {
-  font-size: 12px;
+  font-size: var(--font-size-3);
   color: var(--text-soft);
   overflow-wrap: break-word;
 }
@@ -1959,7 +1959,7 @@ td.mono {
 /* A quiet text affordance — the Download button stays the card's one button */
 .example-btn {
   padding: 0;
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
   font-weight: 600;
   color: var(--cdh-blue-700);
   cursor: pointer;
@@ -1997,7 +1997,7 @@ td.mono {
 
 .example-close {
   padding: 0 6px;
-  font-size: 20px;
+  font-size: var(--font-size-8);
   line-height: 1;
   color: var(--text-mute);
   cursor: pointer;
@@ -2055,7 +2055,7 @@ td.mono {
 
 .step p {
   margin-top: 6px;
-  font-size: 13.5px;
+  font-size: var(--font-size-5);
   line-height: 1.55;
   color: var(--text-soft);
 }
@@ -2068,12 +2068,12 @@ td.mono {
 }
 
 .step-id {
-  font-size: 13px;
+  font-size: var(--font-size-4);
   font-weight: 600;
 }
 
 .step-meta {
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
   overflow-wrap: break-word;
 }
 
@@ -2093,7 +2093,7 @@ td.mono {
 
 .cite-format select {
   padding: 5px 10px;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border-strong);
@@ -2102,7 +2102,7 @@ td.mono {
 
 .cite-note {
   margin-top: 6px;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   color: var(--text-soft);
 }
 
@@ -2110,7 +2110,7 @@ td.mono {
   position: relative;
   padding: var(--space-4) 56px var(--space-4) var(--space-4);
   margin: var(--space-3) 0 0;
-  font-size: 14.5px;
+  font-size: var(--font-size-5);
   line-height: 1.7;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -2157,7 +2157,7 @@ td.mono {
   grid-template-columns: auto 1fr;
   gap: var(--space-2) 14px;
   margin: 0;
-  font-size: 13px;
+  font-size: var(--font-size-4);
 }
 
 .kv dt {
@@ -2170,7 +2170,7 @@ td.mono {
 
 .fact-sub {
   margin-top: 2px;
-  font-size: 11px;
+  font-size: var(--font-size-2);
   color: var(--text-mute);
 }
 
@@ -2183,7 +2183,7 @@ td.mono {
 
 .contact-card {
   padding: 14px;
-  font-size: 13.5px;
+  font-size: var(--font-size-5);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -2209,7 +2209,7 @@ td.mono {
 
 .role-badge {
   padding: 1px 6px;
-  font-size: 9.5px;
+  font-size: var(--font-size-1);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -2228,7 +2228,7 @@ td.mono {
 
 .contact-org {
   margin-top: 2px;
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
   color: var(--text-soft);
 }
 
@@ -2241,13 +2241,13 @@ td.mono {
   flex-direction: column;
   gap: 2px;
   margin-top: 10px;
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
 }
 
 .rail-link {
   display: block;
   padding: var(--space-2) 0;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   color: var(--text);
   border-bottom: 1px solid var(--border);
 }
@@ -2255,7 +2255,7 @@ td.mono {
 /* Rail entry with no link (e.g. an unlinked funder) */
 .rail-text {
   padding: var(--space-2) 0;
-  font-size: 13px;
+  font-size: var(--font-size-4);
   border-bottom: 1px solid var(--border);
 }
 
@@ -2268,7 +2268,7 @@ td.mono {
 }
 
 .rail-link span {
-  font-size: 11px;
+  font-size: var(--font-size-2);
   color: var(--text-mute);
 }
 

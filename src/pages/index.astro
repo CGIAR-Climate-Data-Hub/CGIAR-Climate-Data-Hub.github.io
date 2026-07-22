@@ -284,6 +284,7 @@ const GLYPHS: Record<string, string> = {
 
 h1 {
   font-size: clamp(38px, 4.4vw, 58px);
+  line-height: 1.1;
   letter-spacing: -0.025em;
 }
 
@@ -291,7 +292,7 @@ h1 {
   max-width: 540px;
   margin-top: var(--space-5);
   font-family: var(--serif);
-  font-size: 18px;
+  font-size: var(--font-size-7);
   font-weight: 300;
   line-height: 1.6;
   color: var(--text-soft);
@@ -333,7 +334,7 @@ h1 {
   flex: 1;
   min-width: 0;
   padding: 18px 22px;
-  font-size: 16.5px;
+  font-size: var(--font-size-6);
   color: var(--text);
   outline: 0;
   background: transparent;
@@ -349,13 +350,13 @@ h1 {
 }
 
 .try-row .label {
-  font-size: 10.5px;
+  font-size: var(--font-size-1);
   color: var(--text-mute);
 }
 
 .try-chip {
   padding: 5px 13px;
-  font-size: 12.5px;
+  font-size: var(--font-size-4);
   color: var(--text-soft);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
@@ -416,7 +417,7 @@ h1 {
 .path-label {
   display: block;
   font-family: var(--serif);
-  font-size: 18.5px;
+  font-size: var(--font-size-7);
   font-weight: 500;
   line-height: 1.25;
   color: var(--cdh-blue-950);
@@ -425,7 +426,7 @@ h1 {
 .path-cue {
   display: block;
   margin-top: var(--space-1);
-  font-size: 10px;
+  font-size: var(--font-size-1);
   color: var(--text-mute);
 }
 
@@ -496,7 +497,7 @@ h1 {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 15.5px;
+  font-size: var(--font-size-6);
   font-weight: 600;
   color: var(--cdh-blue-950);
   white-space: nowrap;
@@ -512,7 +513,7 @@ h1 {
 .essential-meta .mono {
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 11.5px;
+  font-size: var(--font-size-3);
   color: var(--text-mute);
   white-space: nowrap;
 }
@@ -545,7 +546,7 @@ h1 {
 }
 
 .principles-band h2 {
-  font-size: 31px;
+  font-size: var(--font-size-10);
   line-height: 1.15;
   color: var(--text-inverse);
 }
@@ -553,7 +554,7 @@ h1 {
 .band-lede {
   max-width: 400px;
   margin-top: var(--space-4);
-  font-size: 15.5px;
+  font-size: var(--font-size-6);
   line-height: 1.65;
   color: var(--text-inverse-soft);
 }
@@ -561,7 +562,7 @@ h1 {
 .band-link {
   display: inline-block;
   margin-top: 22px;
-  font-size: 14.5px;
+  font-size: var(--font-size-5);
   font-weight: 600;
   color: var(--cdh-blue-300);
 }
@@ -580,20 +581,20 @@ h1 {
 }
 
 .principle-n {
-  font-size: 11px;
+  font-size: var(--font-size-2);
   color: var(--terra-300);
 }
 
 .principle-title {
   font-family: var(--serif);
-  font-size: 19px;
+  font-size: var(--font-size-8);
   font-weight: 500;
   color: var(--text-inverse);
 }
 
 .principle p {
   margin-top: 5px;
-  font-size: 14px;
+  font-size: var(--font-size-5);
   line-height: 1.6;
   color: var(--text-inverse-soft);
 }
@@ -614,13 +615,13 @@ h1 {
 }
 
 .contribute-band h2 {
-  font-size: 30px;
+  font-size: var(--font-size-10);
 }
 
 .contribute-band p {
   max-width: 620px;
   margin-top: var(--space-3);
-  font-size: 16px;
+  font-size: var(--font-size-6);
   line-height: 1.6;
   color: var(--text-soft);
 }
