@@ -86,7 +86,7 @@
   --font-size-editorial-title: clamp(2.125rem, 4vw, 3.25rem);
 
   /* Font stacks: families come from the Astro Fonts API (--font-*) */
-  --serif: var(--font-serif), georgia, "Times New Roman", serif;
+  --serif: var(--font-serif), "Times New Roman", georgia, serif;
   --sans: var(--font-sans), arial, system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", menlo, consolas, "Courier New", monospace;
 }
