@@ -277,12 +277,13 @@ const GLYPHS: Record<string, string> = {
   color: var(--cdh-blue-950);
 }
 
+/* Top-aligned, not centred: centring each column independently leaves the
+   two kickers on different baselines */
 .hero-grid {
   position: relative;
   display: grid;
   grid-template-columns: 1.35fr 1fr;
   gap: 72px;
-  align-items: center;
   padding-top: 84px;
   padding-bottom: 72px;
 }
