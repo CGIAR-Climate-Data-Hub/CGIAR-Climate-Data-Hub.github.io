@@ -16,12 +16,11 @@ layer and how they fit together.
 
 ## System overview
 
-<!-- Drop the diagram here. Raw HTML works in .md, so either inline the SVG:
-       <figure><svg viewBox="0 0 …" role="img" aria-label="…">…</svg>
-       <figcaption>…</figcaption></figure>
-     or reference a file beside this one:
+<!-- Drop the diagram here as an image reference, not inline SVG — Pandoc drops
+     raw HTML on the way to PDF, so an inline <svg> would show on the site and
+     vanish from the deliverable:
        ![Hub architecture](./architecture.svg)
-     Rename this file to .mdx if you'd rather import a diagram component. -->
+     Astro treats it as a collection asset; Quarto converts it for Typst. -->
 
 ## The metadata layer
 
