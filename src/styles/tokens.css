@@ -93,11 +93,11 @@
 
 /* Site header height — sticky offsets below the nav derive from this */
 :root {
-  --nav-height: 72px;
+  --nav-height: 76px;
 }
 
 @media (width <= 960px) {
   :root {
-    --nav-height: 60px;
+    --nav-height: 64px;
   }
 }
