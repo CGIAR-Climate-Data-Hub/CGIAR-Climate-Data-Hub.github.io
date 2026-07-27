@@ -1,5 +1,5 @@
 ---
-title: Architecture
+title: Hub architecture
 description: How the Hub is put together — the metadata layer, cloud-native distribution, the build pipeline, and the machine interfaces every page exposes.
 section: The Hub
 updated: 2026-07-27
