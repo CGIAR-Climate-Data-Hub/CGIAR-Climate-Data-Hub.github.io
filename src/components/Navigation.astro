@@ -229,7 +229,11 @@ nav {
   white-space: nowrap;
 }
 
-.nav-item:hover {
+/* An open dropdown keeps its trigger lit: once the pointer is inside the menu
+   the anchor is no longer :hover, but .dropdown still is */
+.nav-item:hover,
+.dropdown:hover .nav-item,
+.dropdown:focus-within .nav-item {
   color: var(--cdh-blue-950);
   text-decoration: none;
 }
@@ -249,7 +253,9 @@ nav {
   transition: transform 0.16s ease;
 }
 
-.nav-item:not(.is-active):hover::after {
+.nav-item:not(.is-active):hover::after,
+.dropdown:hover .nav-item:not(.is-active)::after,
+.dropdown:focus-within .nav-item:not(.is-active)::after {
   transform: scaleX(1);
 }
 
