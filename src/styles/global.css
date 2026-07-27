@@ -241,14 +241,16 @@ hr {
     border-color 0.14s;
 }
 
+/* Program blue #1955A6 at rest, deepening on hover — white holds 7.3:1 on it.
+   The brighter #63A9FE can't be used here at all: white drops to 2.4:1 */
 .btn-primary {
   color: var(--text-inverse);
-  background: var(--cdh-blue-950);
+  background: var(--cdh-blue-700);
 }
 
 .btn-primary:hover {
   text-decoration: none;
-  background: var(--cdh-blue-800);
+  background: var(--cdh-blue-950);
 }
 
 .btn-accent {
@@ -270,8 +272,8 @@ hr {
 .btn-ghost:hover {
   color: var(--text-inverse);
   text-decoration: none;
-  background: var(--cdh-blue-950);
-  border-color: var(--cdh-blue-950);
+  background: var(--cdh-blue-700);
+  border-color: var(--cdh-blue-700);
 }
 
 /* True CTA — fills with the accent on hover. Reserved for notable actions. */
