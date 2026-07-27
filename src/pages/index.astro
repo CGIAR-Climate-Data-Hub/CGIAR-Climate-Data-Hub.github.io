@@ -249,10 +249,17 @@ const GLYPHS: Record<string, string> = {
 </Layout>
 
 <style>
-/* ---- Hero: paper statement + program-blue sweep on the right ---- */
+/* ---- Hero: paper statement over a flat program-blue band ---- */
 /* No overflow clipping here — the searchbox dropdown must extend past the
-   hero's bottom edge. The ::before gradient is inset: 0, so it can't leak. */
+   hero's bottom edge. The ::before fill is inset: 0, so it can't leak. */
+/* The neutral ramp is tuned for paper and lands at ~2.4-3:1 on this blue, so
+   the hero rebinds those tokens to navy (5.7:1) instead of restating colours
+   on every rule inside it */
 .hero {
+  --text-soft: var(--cdh-blue-950);
+  --text-mute: var(--cdh-blue-950);
+  --border: color-mix(in srgb, var(--cdh-blue-950) 25%, transparent);
+  --border-strong: color-mix(in srgb, var(--cdh-blue-950) 40%, transparent);
   position: relative;
 }
 
@@ -261,11 +268,13 @@ const GLYPHS: Record<string, string> = {
   inset: 0;
   pointer-events: none;
   content: "";
-  background: linear-gradient(
-    90deg,
-    transparent 28%,
-    color-mix(in srgb, var(--cdh-blue-300) 46%, transparent) 100%
-  );
+  background: var(--cdh-blue-300);
+}
+
+/* Both hero kickers, not just "Start here" — the global rule paints them
+   terracotta, which is 2.2:1 on this blue */
+.hero .kicker {
+  color: var(--cdh-blue-950);
 }
 
 .hero-grid {
@@ -359,7 +368,6 @@ h1 {
 
 .kicker.start-here {
   margin-bottom: 6px;
-  color: var(--terra-500);
 }
 
 .path {
@@ -383,7 +391,7 @@ h1 {
 
 .path-glyph {
   flex-shrink: 0;
-  color: var(--cdh-blue-700);
+  color: var(--cdh-blue-950);
   transition: color 0.16s;
 }
 
@@ -416,9 +424,10 @@ h1 {
     color 0.16s;
 }
 
+/* White, not the usual terracotta — that pairing is 2.2:1 on program blue */
 .path:hover .path-glyph,
 .path:hover .path-arrow {
-  color: var(--terra-700);
+  color: var(--text-inverse);
 }
 
 .path:hover .path-arrow {
