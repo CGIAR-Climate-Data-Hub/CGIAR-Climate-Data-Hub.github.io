@@ -5,12 +5,16 @@ import LogoBlock from "./LogoBlock.astro";
 
 const CATALOG = { href: "/catalog/", label: "Catalog" };
 const IN_USE = { href: "/in-use/", label: "In use" };
+const AI = { href: "/ai/", label: "AI tools" };
 
 const LEARN = [
   { href: "/wikis/", label: "Wikis", desc: "Reference & standards" },
   { href: "/tutorials/", label: "Tutorials", desc: "Runnable, step-by-step" },
+];
+
+const ABOUT = [
+  { href: "/about/", label: "About the Hub", desc: "Mission & principles" },
   { href: "/faq/", label: "FAQ", desc: "Common questions, answered" },
-  { href: "/ai/", label: "For AI & agents", desc: "Skills & machine access" },
 ];
 
 const path = Astro.url.pathname;
@@ -18,6 +22,7 @@ const path = Astro.url.pathname;
 // a record page keeps Catalog underlined, a tutorial keeps Learn underlined
 const isActive = (href: string) => path.startsWith(href);
 const learnActive = LEARN.some((l) => isActive(l.href));
+const aboutActive = ABOUT.some((l) => isActive(l.href));
 ---
 
 <PagefindConfig />
@@ -70,10 +75,39 @@ const learnActive = LEARN.some((l) => isActive(l.href));
       </a>
 
       <a
-        href="/about/"
-        class:list={["nav-item", { "is-active": isActive("/about/") }]}
-        >About</a
+        href={AI.href}
+        class:list={["nav-item", { "is-active": isActive(AI.href) }]}
       >
+        {AI.label}
+      </a>
+
+      <div class="dropdown">
+        <a
+          href="/about/"
+          class:list={["nav-item", { "is-active": aboutActive }]}
+        >
+          About
+          <svg
+            aria-hidden="true"
+            fill="none"
+            height="10"
+            stroke="currentColor"
+            stroke-width="2.4"
+            viewBox="0 0 24 24"
+            width="10"
+          >
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </a>
+        <div class="menu">
+          {ABOUT.map((link) => (
+              <a href={link.href} class:list={["menu-item", { "is-active": isActive(link.href) }]}>
+                <span class="menu-label">{link.label}</span>
+                <span class="menu-desc">{link.desc}</span>
+              </a>
+            ))}
+        </div>
+      </div>
     </nav>
 
     <div class="search">
@@ -133,7 +167,7 @@ const learnActive = LEARN.some((l) => isActive(l.href));
 
   <div class="mobile-menu" id="mobile-menu" popover>
     <nav aria-label="Mobile">
-      {[CATALOG, ...LEARN, IN_USE, { href: "/about/", label: "About" }].map((link) => (
+      {[CATALOG, ...LEARN, IN_USE, AI, ...ABOUT].map((link) => (
           <a href={link.href} class:list={[{ "is-active": isActive(link.href) }]}>
             {link.label}
           </a>
