@@ -96,7 +96,6 @@ footer {
   display: grid;
   grid-template-columns: auto repeat(4, 1fr);
   gap: var(--space-6);
-  align-items: start;
 }
 
 .brand {
@@ -104,7 +103,6 @@ footer {
   flex-wrap: wrap;
   gap: 22px;
   align-items: center;
-  align-self: center;
 }
 
 .casp {
@@ -127,7 +125,6 @@ nav {
 }
 
 nav .label {
-  margin: 0 0 var(--space-1);
   color: var(--cgiar-text-muted);
 }
 
@@ -143,7 +140,6 @@ nav a:hover {
 
 .legal {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--space-2);
   align-items: center;
   justify-content: space-between;
@@ -185,10 +181,6 @@ nav a:hover {
     align-items: baseline;
   }
 
-  nav .label {
-    margin: 0;
-  }
-
   nav .label::after {
     content: ":";
   }
@@ -198,7 +190,6 @@ nav a:hover {
   .legal {
     flex-direction: column;
     gap: var(--space-1);
-    align-items: center;
     text-align: center;
   }
 }
