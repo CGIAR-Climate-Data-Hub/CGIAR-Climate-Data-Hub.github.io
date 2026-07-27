@@ -34,3 +34,7 @@ CGIAR Centers. Datasets are reviewed against the Hub's metadata and STAC
 profile before publication; contributions are triaged by the stewardship team
 and versioned in the open on
 [GitHub](https://github.com/CGIAR-Climate-Data-Hub).
+
+How the pieces fit together — the metadata layer, cloud-native distribution, the
+build pipeline and the machine interfaces — is documented in the Hub's
+[architecture blueprint](/wikis/architecture/).
