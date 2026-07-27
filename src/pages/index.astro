@@ -249,32 +249,9 @@ const GLYPHS: Record<string, string> = {
 </Layout>
 
 <style>
-/* ---- Hero: paper statement over a flat program-blue band ---- */
-/* No overflow clipping here — the searchbox dropdown must extend past the
-   hero's bottom edge. The ::before fill is inset: 0, so it can't leak. */
-/* The neutral ramp is tuned for paper and lands at ~2.4-3:1 on this blue, so
-   the hero rebinds those tokens to navy (5.7:1) instead of restating colours
-   on every rule inside it */
+/* ---- Hero: paper statement, program-blue panel on the right ---- */
 .hero {
-  --text-soft: var(--cdh-blue-950);
-  --text-mute: var(--cdh-blue-950);
-  --border: color-mix(in srgb, var(--cdh-blue-950) 25%, transparent);
-  --border-strong: color-mix(in srgb, var(--cdh-blue-950) 40%, transparent);
   position: relative;
-}
-
-.hero::before {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  content: "";
-  background: var(--cdh-blue-300);
-}
-
-/* Both hero kickers, not just "Start here" — the global rule paints them
-   terracotta, which is 2.2:1 on this blue */
-.hero .kicker {
-  color: var(--cdh-blue-950);
 }
 
 /* Top-aligned, not centred: centring each column independently leaves the
@@ -355,28 +332,41 @@ h1 {
 }
 
 .try-chip:hover {
-  color: var(--cdh-blue-800);
+  color: var(--cdh-blue-950);
   text-decoration: none;
-  background: var(--cdh-blue-50);
+  background: var(--cdh-blue-300);
   border-color: var(--cdh-blue-300);
 }
 
 /* ---- Start-here rail ---- */
+/* Full-strength #63A9FE with the rows straight on it. The paper neutrals
+   collapse there (text-mute 2.4:1), so the panel rebinds them to navy —
+   5.7:1 — for anything inside. Padding is cancelled by an equal negative
+   margin so the panel bleeds past its grid cell while its kicker stays on
+   the same line as the statement's */
 .paths {
-  padding-left: 44px;
-  border-left: 1px solid var(--border);
+  --text-mute: var(--cdh-blue-950);
+  --border: color-mix(in srgb, var(--cdh-blue-950) 22%, transparent);
+
+  padding: 24px 28px;
+  margin: -24px -28px;
+  background: var(--cdh-blue-300);
+  border-left: 2px solid var(--cdh-blue-950);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
+/* Terracotta is 1.5:1 on program blue */
 .kicker.start-here {
   margin-bottom: 6px;
+  color: var(--cdh-blue-950);
 }
 
 .path {
   display: flex;
   gap: var(--space-4);
   align-items: center;
-  padding: 18px var(--space-1);
-  color: var(--text);
+  padding: 16px var(--space-1);
+  color: var(--cdh-blue-950);
   border-top: 1px solid var(--border);
   transition: padding-left 0.16s;
 }
@@ -628,8 +618,7 @@ h1 {
   }
 
   .paths {
-    padding-left: 0;
-    border-left: 0;
+    margin-inline: 0;
   }
 
   .essentials-grid {
