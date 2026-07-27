@@ -11,6 +11,8 @@ export async function allTutorials() {
 }
 
 export const WIKI_SECTIONS = [
+  // Sidebar groups render in this order — hub-level docs lead
+  "The Hub",
   "Standards",
   "Methods",
   "Concepts",
