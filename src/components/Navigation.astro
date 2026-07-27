@@ -3,21 +3,34 @@ import PagefindConfig from "astro-pagefind/components/PagefindConfig.astro";
 import { GITHUB_URL } from "@/site.config";
 import LogoBlock from "./LogoBlock.astro";
 
-const CATALOG = { href: "/catalog/", label: "Catalog" };
-const IN_USE = { href: "/in-use/", label: "In use" };
-
 const LEARN = [
   { href: "/wikis/", label: "Wikis", desc: "Reference & standards" },
   { href: "/tutorials/", label: "Tutorials", desc: "Runnable, step-by-step" },
-  { href: "/faq/", label: "FAQ", desc: "Common questions, answered" },
-  { href: "/ai/", label: "For AI & agents", desc: "Skills & machine access" },
 ];
+
+const ABOUT = [
+  { href: "/about/", label: "About the Hub", desc: "Mission & principles" },
+  { href: "/faq/", label: "FAQ", desc: "Common questions, answered" },
+];
+
+// Bar order. An entry with `items` renders as a dropdown, and its parent link
+// goes to the first thing under it; the mobile menu lists the items instead.
+const NAV: { href: string; label: string; items?: typeof LEARN }[] = [
+  { href: "/catalog/", label: "Catalog" },
+  { href: "/wikis/", label: "Learn", items: LEARN },
+  { href: "/in-use/", label: "In use" },
+  { href: "/ai/", label: "AI tools" },
+  { href: "/about/", label: "About", items: ABOUT },
+];
+
+// The mobile menu lists a dropdown's items in place of its parent link
+type Link = { href: string; label: string };
+const MOBILE = NAV.flatMap((item): Link[] => item.items ?? [item]);
 
 const path = Astro.url.pathname;
 // Hrefs end in "/", so prefix matching marks the whole section active —
 // a record page keeps Catalog underlined, a tutorial keeps Learn underlined
 const isActive = (href: string) => path.startsWith(href);
-const learnActive = LEARN.some((l) => isActive(l.href));
 ---
 
 <PagefindConfig />
@@ -27,53 +40,44 @@ const learnActive = LEARN.some((l) => isActive(l.href));
     <LogoBlock />
 
     <nav aria-label="Main">
-      <a
-        href={CATALOG.href}
-        class:list={["nav-item", { "is-active": isActive(CATALOG.href) }]}
-      >
-        {CATALOG.label}
-      </a>
-
-      <div class="dropdown">
-        <a
-          href="/wikis/"
-          class:list={["nav-item", { "is-active": learnActive }]}
-        >
-          Learn
-          <svg
-            aria-hidden="true"
-            fill="none"
-            height="10"
-            stroke="currentColor"
-            stroke-width="2.4"
-            viewBox="0 0 24 24"
-            width="10"
+      {NAV.map((item) =>
+        item.items ? (
+          <div class="dropdown">
+            <a
+              href={item.href}
+              class:list={["nav-item", { "is-active": item.items.some((l) => isActive(l.href)) }]}
+            >
+              {item.label}
+              <svg
+                aria-hidden="true"
+                fill="none"
+                height="10"
+                stroke="currentColor"
+                stroke-width="2.4"
+                viewBox="0 0 24 24"
+                width="10"
+              >
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </a>
+            <div class="menu">
+              {item.items.map((link) => (
+                <a href={link.href} class:list={["menu-item", { "is-active": isActive(link.href) }]}>
+                  <span class="menu-label">{link.label}</span>
+                  <span class="menu-desc">{link.desc}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <a
+            href={item.href}
+            class:list={["nav-item", { "is-active": isActive(item.href) }]}
           >
-            <path d="M6 9l6 6 6-6"></path>
-          </svg>
-        </a>
-        <div class="menu">
-          {LEARN.map((link) => (
-              <a href={link.href} class:list={["menu-item", { "is-active": isActive(link.href) }]}>
-                <span class="menu-label">{link.label}</span>
-                <span class="menu-desc">{link.desc}</span>
-              </a>
-            ))}
-        </div>
-      </div>
-
-      <a
-        href={IN_USE.href}
-        class:list={["nav-item", { "is-active": isActive(IN_USE.href) }]}
-      >
-        {IN_USE.label}
-      </a>
-
-      <a
-        href="/about/"
-        class:list={["nav-item", { "is-active": isActive("/about/") }]}
-        >About</a
-      >
+            {item.label}
+          </a>
+        ),
+      )}
     </nav>
 
     <div class="search">
@@ -133,7 +137,7 @@ const learnActive = LEARN.some((l) => isActive(l.href));
 
   <div class="mobile-menu" id="mobile-menu" popover>
     <nav aria-label="Mobile">
-      {[CATALOG, ...LEARN, IN_USE, { href: "/about/", label: "About" }].map((link) => (
+      {MOBILE.map((link) => (
           <a href={link.href} class:list={[{ "is-active": isActive(link.href) }]}>
             {link.label}
           </a>
@@ -225,7 +229,11 @@ nav {
   white-space: nowrap;
 }
 
-.nav-item:hover {
+/* An open dropdown keeps its trigger lit: once the pointer is inside the menu
+   the anchor is no longer :hover, but .dropdown still is */
+.nav-item:hover,
+.dropdown:hover .nav-item,
+.dropdown:focus-within .nav-item {
   color: var(--cdh-blue-950);
   text-decoration: none;
 }
@@ -245,7 +253,9 @@ nav {
   transition: transform 0.16s ease;
 }
 
-.nav-item:not(.is-active):hover::after {
+.nav-item:not(.is-active):hover::after,
+.dropdown:hover .nav-item:not(.is-active)::after,
+.dropdown:focus-within .nav-item:not(.is-active)::after {
   transform: scaleX(1);
 }
 
