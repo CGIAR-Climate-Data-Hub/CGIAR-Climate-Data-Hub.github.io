@@ -272,8 +272,8 @@ hr {
 .btn-ghost:hover {
   color: var(--text-inverse);
   text-decoration: none;
-  background: var(--cdh-blue-700);
-  border-color: var(--cdh-blue-700);
+  background: var(--cdh-blue-950);
+  border-color: var(--cdh-blue-950);
 }
 
 /* True CTA — fills with the accent on hover. Reserved for notable actions. */
