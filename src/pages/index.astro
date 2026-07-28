@@ -31,7 +31,6 @@ const essentials = [
     href: `/catalog/${d.id}/`,
     name: d.title,
     badge: "Dataset",
-    badgeClass: d.type,
     meta: [d.coverage, d.temporal].filter(Boolean).join(" · "),
     glyph: d.type,
   })),
@@ -39,7 +38,6 @@ const essentials = [
     href: `/tutorials/${t.id}/`,
     name: t.data.title,
     badge: "Tutorial",
-    badgeClass: "warn",
     meta: `${t.data.audience} · ${t.data.time}`,
     glyph: undefined,
   })),
@@ -47,7 +45,6 @@ const essentials = [
     href: `/wikis/${w.id}/`,
     name: w.data.title,
     badge: "Wiki",
-    badgeClass: "",
     meta: w.data.section,
     glyph: undefined,
   })),
@@ -178,19 +175,21 @@ const GLYPHS: Record<string, string> = {
       <div class="essentials-grid">
         {essentials.map((item) => (
             <a class="essential" href={item.href}>
-              <span class:list={["essential-glyph", item.glyph ?? "doc"]}>
-                {item.glyph ? (
-                  <DataGlyph size={19} type={item.glyph} />
-                ) : (
-                  <svg aria-hidden="true" fill="none" height="19" stroke="currentColor" stroke-linecap="round" stroke-width="1.6" viewBox="0 0 24 24" width="19">
-                    <path d="M7 3h7l5 5v13H7V3Zm7 0v5h5M10 12h6M10 16h6" />
-                  </svg>
-                )}
+              <span class="essential-kind">
+                <span class="essential-glyph">
+                  {item.glyph ? (
+                    <DataGlyph size={19} type={item.glyph} />
+                  ) : (
+                    <svg aria-hidden="true" fill="none" height="19" stroke="currentColor" stroke-linecap="round" stroke-width="1.6" viewBox="0 0 24 24" width="19">
+                      <path d="M7 3h7l5 5v13H7V3Zm7 0v5h5M10 12h6M10 16h6" />
+                    </svg>
+                  )}
+                </span>
+                <span class="label">{item.badge}</span>
               </span>
               <span class="essential-text">
                 <span class="essential-name">{item.name}</span>
                 <span class="essential-meta">
-                  <span class:list={["pill", "dot", item.badgeClass]}>{item.badge}</span>
                   <span class="mono">{item.meta}</span>
                 </span>
               </span>
@@ -439,7 +438,7 @@ h1 {
 
 .essential {
   display: grid;
-  grid-template-columns: 40px 1fr auto;
+  grid-template-columns: auto 1fr auto;
   gap: var(--space-4);
   align-items: center;
   padding: 18px 6px;
@@ -453,18 +452,30 @@ h1 {
   background: var(--surface);
 }
 
+/* The kind reads as a marker column — glyph over label — instead of a pill in
+   the meta line. Bare and single-colour like the start-here rail's glyphs: a
+   blue chip for spatial, grey for tabular and terracotta for docs put three
+   more colours in one card. Navy matches the card's own title. */
+.essential-kind {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: center;
+  color: var(--cdh-blue-950);
+}
+
 .essential-glyph {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-lg);
+  height: 22px;
 }
 
-.essential-glyph.doc {
-  color: var(--terra-700);
-  background: var(--terra-50);
+.essential-glyph :global(.glyph) {
+  width: auto;
+  height: auto;
+  color: inherit;
+  background: none;
 }
 
 .essential-text {
