@@ -241,16 +241,16 @@ hr {
     border-color 0.14s;
 }
 
-/* Program blue #1955A6 at rest, deepening on hover — white holds 7.3:1 on it.
-   The brighter #63A9FE can't be used here at all: white drops to 2.4:1 */
+/* Navy, not either brand hex: white is 2.4:1 on the primary #63A9FE, and
+   #1955A6 put one blue too many on the page next to the links */
 .btn-primary {
   color: var(--text-inverse);
-  background: var(--cdh-blue-700);
+  background: var(--cdh-blue-950);
 }
 
 .btn-primary:hover {
   text-decoration: none;
-  background: var(--cdh-blue-950);
+  background: var(--cdh-blue-800);
 }
 
 .btn-accent {
