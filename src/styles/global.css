@@ -306,7 +306,8 @@ hr {
   border: 0;
 }
 
-.seg > a:hover {
+/* Skips the selected option, whose :hover would otherwise outrank the fill below */
+.seg > a:not([aria-current="page"]):hover {
   text-decoration: none;
   background: var(--grey-1);
 }
