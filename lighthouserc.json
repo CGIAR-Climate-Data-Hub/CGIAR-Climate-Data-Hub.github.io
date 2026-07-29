@@ -5,7 +5,8 @@
       "url": [
         "http://localhost/",
         "http://localhost/catalog/",
-        "http://localhost/about/"
+        "http://localhost/about/",
+        "http://localhost/wikis/"
       ],
       "numberOfRuns": 1,
       "settings": {
