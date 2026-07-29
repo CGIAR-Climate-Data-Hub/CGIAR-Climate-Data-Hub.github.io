@@ -6,7 +6,8 @@
         "http://localhost/",
         "http://localhost/catalog/",
         "http://localhost/about/",
-        "http://localhost/wikis/"
+        "http://localhost/wikis/",
+        "http://localhost/contribute/"
       ],
       "numberOfRuns": 1,
       "settings": {
