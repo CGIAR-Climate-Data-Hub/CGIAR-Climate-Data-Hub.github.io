@@ -5,6 +5,7 @@
       "url": [
         "http://localhost/",
         "http://localhost/catalog/",
+        "http://localhost/catalog/example-crop-suitability/",
         "http://localhost/about/",
         "http://localhost/wikis/",
         "http://localhost/contribute/"
