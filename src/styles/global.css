@@ -317,6 +317,8 @@ hr {
   border-left: 1px solid var(--border-strong);
 }
 
+/* Navy with white on it — program blue only takes navy text, which reads as a
+   dimmer label than a segmented control's selected option should */
 .seg > [aria-pressed="true"],
 .seg > [aria-current="page"] {
   font-weight: 600;
@@ -430,7 +432,7 @@ hr {
 .facet-option[aria-pressed="true"] {
   font-weight: 600;
   color: var(--cdh-blue-950);
-  background: var(--grey-1);
+  background: var(--cdh-blue-300);
 }
 
 .facet-option .count {
@@ -438,8 +440,9 @@ hr {
   color: var(--text-mute);
 }
 
+/* Navy, not the neutral soft — grey-6 is only 3.1:1 on program blue */
 .facet-option[aria-pressed="true"] .count {
-  color: var(--text-soft);
+  color: var(--cdh-blue-950);
 }
 
 /* Sits in the results-meta row (fixed height, so no layout shift), visible
