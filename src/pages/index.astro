@@ -338,56 +338,70 @@ h1 {
 }
 
 /* ---- Start-here rail ---- */
-/* Full-strength #63A9FE with the rows straight on it. The paper neutrals
-   collapse there (text-mute 2.4:1), so the panel rebinds them to navy —
-   5.7:1 — for anything inside. Padding is cancelled by an equal negative
-   margin so the panel bleeds past its grid cell while its kicker stays on
-   the same line as the statement's */
+/* Keep the primary blue prominent as a masthead and interaction colour,
+   without turning the full navigation rail into a competing colour field. */
 .paths {
   --text-mute: var(--cdh-blue-950);
   --border: color-mix(in srgb, var(--cdh-blue-950) 22%, transparent);
 
-  padding: 24px 28px;
-  margin: -24px -28px;
-  background: var(--cdh-blue-300);
-  border-left: 2px solid var(--cdh-blue-950);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding-bottom: var(--space-2);
+  /* Matches the blue slab's 20px top padding, so "Start here" and the
+     terracotta kicker share a baseline. No horizontal bleed: the rail's right
+     edge is the container gutter, same as the header's. */
+  margin-top: -20px;
 }
 
-/* Terracotta is 1.5:1 on program blue */
+.statement > .kicker,
 .kicker.start-here {
-  margin-bottom: 6px;
+  font-size: var(--font-size-4);
+  font-weight: 700;
+}
+
+.kicker.start-here {
+  padding: 20px 28px;
+  margin-bottom: 0;
   color: var(--cdh-blue-950);
+  background: var(--cdh-blue-300);
+  border-left: 2px solid var(--cdh-blue-950);
+  /* Top-right only — a bottom radius would leave a paper notch above the
+     first row's hover fill */
+  border-radius: 0 var(--radius-sm) 0 0;
 }
 
 .path {
   display: flex;
   gap: var(--space-4);
   align-items: center;
-  padding: 16px var(--space-1);
+  padding: 16px 28px;
   color: var(--cdh-blue-950);
   border-top: 1px solid var(--border);
-  transition: padding-left 0.16s;
+  border-left: 2px solid var(--border);
+  transition:
+    background-color 0.16s,
+    border-color 0.16s;
 }
 
 .path:first-of-type {
   border-top: 0;
 }
 
-.path:hover {
-  padding-left: var(--space-3);
+.path:hover,
+.path:focus-visible {
   text-decoration: none;
+  background: var(--cdh-blue-300);
+  border-left-color: var(--cdh-blue-950);
 }
 
 .path-glyph {
   flex-shrink: 0;
   color: var(--cdh-blue-950);
-  transition: color 0.16s;
+  transition: transform 0.16s;
 }
 
 .path-text {
   flex: 1;
   min-width: 0;
+  transition: transform 0.16s;
 }
 
 .path-label {
@@ -409,18 +423,18 @@ h1 {
 .path-arrow {
   flex-shrink: 0;
   color: var(--text-mute);
-  transition:
-    transform 0.16s,
-    color 0.16s;
+  transition: transform 0.16s;
 }
 
-/* White, not the usual terracotta — that pairing is 2.2:1 on program blue */
 .path:hover .path-glyph,
-.path:hover .path-arrow {
-  color: var(--text-inverse);
+.path:hover .path-text,
+.path:focus-visible .path-glyph,
+.path:focus-visible .path-text {
+  transform: translateX(var(--space-2));
 }
 
-.path:hover .path-arrow {
+.path:hover .path-arrow,
+.path:focus-visible .path-arrow {
   transform: translateX(4px);
 }
 
@@ -628,8 +642,9 @@ h1 {
     padding-top: var(--space-7);
   }
 
+  /* Stacked: no kicker beside it to align to, so keep the full 40px gap */
   .paths {
-    margin-inline: 0;
+    margin-top: 0;
   }
 
   .essentials-grid {
