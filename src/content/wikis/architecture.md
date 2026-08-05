@@ -161,7 +161,7 @@ parameters, confirm a plan with the researcher, then delegate each stage to the
 relevant foundational skill rather than re-implementing it. Any foundational
 skill can therefore be used alone or updated without touching the orchestrators.
 
-![Skills orchestrator diagram](src/assets/orchestrator.png)
+![Skills orchestrator diagram](../../assets/orchestrator.png)
 
 ### Results
 
