@@ -82,6 +82,13 @@ developed; for the second, GUI interfaces such as Antigravity or Codex were
 used.
 
 #### What are skills?
+
+A skill is a series of instructions that tells an agent how to achieve a
+particular goal — what to ask, what order to do things in, and what a correct
+result looks like. Its purpose is standardization: instead of every
+conversation reinventing how a task gets done, the same procedure runs the
+same way each time, whoever is asking and whichever agent is running it.
+
 #### Why skills?
 
 A bespoke chatbot would require its own server, authentication stack, and
@@ -113,7 +120,28 @@ work.
 
 ### Repository structure
 
-Skills live in the `.agents/skills/` folder of the skills repository.
+Skills live in the `.agents/skills/` folder of the skills repository, one
+subfolder per skill, each holding a required `SKILL.md` plus whatever
+`references/`, `evals/`, or `assets/` that skill needs:
+
+```
+skills/
+├── skills.json                    # index: skill name → SKILL.md path
+├── skills-lock.json               # content hash per skill, checked before install/update
+├── .agents/
+│   ├── AGENTS.md                  # repo-level agent instructions
+│   ├── mcp_config.json
+│   └── skills/
+│       ├── climate-data-download/
+│       │   ├── SKILL.md
+│       │   └── references/
+
+```
+
+Every skill folder is self-contained and independently loadable — an agent
+only needs the one subfolder its plan resolves to, not the whole repo — which
+is what lets a foundational skill be updated without touching the
+orchestrators that call it.
 
 ### Underlying Python packages
 
