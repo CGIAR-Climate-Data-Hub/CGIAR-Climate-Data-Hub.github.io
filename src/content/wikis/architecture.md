@@ -34,7 +34,12 @@ format, then maps it onto the community formats consumers already use: STAC
 for anything with a spatial footprint, OGC API Records for everything else
 (documents, software, services, non-spatial datasets). Records are authored
 once in CDH YAML; STAC or OGC Records is what gets generated from it, not
-what a contributor writes by hand.
+what a contributor writes by hand. The standard is deliberately generic
+underneath the CGIAR-specific parts: a project outside the Hub can adopt just
+the core schema, or compose its own extensions on top, without inheriting any
+CDH policy. It is also explicitly pre-1.0 — versioned and expected to change
+— so the model favors records that stay valid as the standard evolves over
+one that is complete today and brittle tomorrow.
 
 ### Methodology
 
@@ -45,17 +50,74 @@ and a native-fields-first authoring rule: put each fact in a core field before
 an extension field, a linked sidecar asset, a custom extension, or free text,
 in that order. Requirement levels (Required/Recommended/Conditional/Optional)
 follow RFC 2119-style wording, and the schema rejects blank values outright.
-`mapping-stac.md` carries that same discipline into STAC: which STAC
-extensions apply (Datacube, Table, Raster, Classification, Version, …), and
-explicit rules for when a fact belongs on the Collection, an Item, a
-`summaries` entry, or an Asset. The standard, its schemas, vocabularies, and
-extensions all share one version tag, so a record's `cdh_schema_version`
-names exactly the release it validates against.
+Validation itself has two independent layers: a *mechanism* check (core plus
+exactly the extensions a record declares in `extensions[]` — fields from an
+undeclared extension are rejected outright) and a *profile* check (policy on
+top, such as the CDH profile's requirement that every record carry the `cdh`
+extension). That split is what lets an outside adopter reuse the mechanism
+without adopting CGIAR's policy. The authoring guide keeps first drafts
+small on purpose — `id`, `title`, `description`, `resource_type`,
+`cdh.domain`, `keywords`, `license`, a `licensor` contact, `citation`, and
+`data` cover "can someone find, understand, cite, and access this," with
+every other section optional until it applies. A first pass is small enough
+to write in one sitting:
+
+```yaml
+"$schema": https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.2.0/schemas/profiles/cdh.schema.json
+cdh_schema_version: "v0.2.0"
+id: chirps-daily-v1.0
+title: CHIRPS Daily Precipitation
+description: Daily gridded rainfall estimates blending satellite and station data.
+resource_type: dataset
+extensions:
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.2.0/extensions/cdh/schema.json
+keywords: [precipitation, gridded, daily]
+license: CC-BY-4.0
+contact:
+  - organization: Climate Hazards Center
+    roles: [licensor]
+    url: https://www.chc.ucsb.edu/
+citation:
+  authors: [Funk, Chris]
+  date: "2015"
+cdh:
+  domain: [climate]
+data:
+  - name: Daily rainfall, COG
+    locations:
+      - url: https://data.example.org/chirps/daily.tif
+    media_type: image/tiff; application=geotiff; profile=cloud-optimized
+```
+
+Everything past this — `spatial`, `temporal`, `dimensions`, `variables`,
+`classes` — gets added only for the sections that apply to the resource.
+Controlled vocabularies
+(`vocab/domain.json`, `commodity.json`, `geography.json`) constrain the
+closed-vocabulary fields and double as the scheme targets that `cdh.domain`,
+`commodities`, and linked keywords get folded into as STAC Themes at encode
+time. `mapping-stac.md` carries the same native-fields-first discipline into
+STAC: which STAC extensions apply (Datacube, Table, Raster, Classification,
+Version, …), and explicit rules for when a fact belongs on the Collection, an
+Item, a `summaries` entry, or an Asset. The standard, its schemas,
+vocabularies, and extensions all share one version tag; a release publishes
+schemas, vocab fragments, and extension definitions to a versioned URL
+(`<tag>/schemas/…`) on the standard's own GitHub Pages, plus an unversioned
+mirror of the vocabularies so `themes[].scheme` URIs stay stable across
+releases. A record's `cdh_schema_version` names exactly the tagged release it
+validates against, so a new standard release never invalidates an existing
+record.
 
 ### Results
 
 Records live in [`cdh-catalog`](https://github.com/CGIAR-Climate-Data-Hub/cdh-catalog)
-as one YAML file per resource. Getting a record published runs through a
+as one YAML file per resource — currently a small, real set (`glw4-2020`,
+`mapspam2020`) rather than a placeholder schema with no data behind it.
+`glw4-2020` is a good illustration of the standard doing its job: a `note`
+field carries the projection caveat that would otherwise mislead anyone
+doing area-based analysis, `keywords` mixes plain search terms with a
+linked AGROVOC concept, and `contact` entries carry distinct `roles`
+(`licensor`, `producer`, `processor`, `point-of-contact`) rather than one
+undifferentiated author list. Getting a record published runs through a
 gate, not a merge: a submission opens a pull request — either a contributor
 editing YAML directly, or the same PR produced on their behalf by
 [`CDH-metadata-app`](https://github.com/CGIAR-Climate-Data-Hub/CDH-metadata-app),
@@ -67,17 +129,26 @@ runs before the catalog is allowed to notify the site (below) — so a rule
 change or a bad rebase can't silently ship an invalid record. Converting a
 validated record to STAC or OGC API Records is the job of
 [`cdh-metadata-tools`](https://github.com/CGIAR-Climate-Data-Hub/cdh-metadata-tools),
-a pygeometa-style CLI: it parses the authoring YAML into a typed record,
-validates it against the standard's JSON Schema, and encodes it through a
-pluggable output schema (`metadata-tools generate --schema stac`). It isn't
-wired into `cdh-catalog`'s CI yet — today it runs standalone — but it is
-where the CDH-to-STAC mapping is implemented in code rather than only
+a pygeometa-style CLI: `io.py` reads the raw authoring YAML, `model.py`
+parses it into a lenient typed `CDHRecord` (unknown and forward-compatible
+fields survive the round trip; validation of completeness is left to the
+JSON Schema, not the model), and a small registry of pluggable output
+schemas (`STACOutputSchema`, `OGCRecordsOutputSchema`) encodes that typed
+record into the target format — `metadata-tools generate --schema stac`. A
+`datapackage` (frictionless) output schema is scoped but not yet built. The
+tool isn't wired into `cdh-catalog`'s CI yet — today it runs standalone — but
+it is where the CDH-to-STAC mapping is implemented in code rather than only
 specified in docs.
 
 ### Publishing and discovery
 
-A merge to `cdh-catalog`'s `main` branch is what feeds the [build
-pipeline](#build-pipeline): once the second validation pass clears, a
+Two different things get published here, on two different schedules. The
+standard itself — schemas, vocabularies, extensions — publishes to
+versioned URLs on `cdh-metadata-standard`'s own GitHub Pages whenever a
+release is tagged, gated on `npm run check` passing so a broken schema graph
+never goes live. Individual records publish far more often: a merge to
+`cdh-catalog`'s `main` branch is what feeds the [build
+pipeline](#build-pipeline) — once the second validation pass clears, a
 `repository_dispatch` tells the site to rebuild and fetch the updated
 records. See that section for what happens from there.
 
