@@ -299,12 +299,43 @@ way to stop a researcher from presenting an all-NaN yield map as results.
 
 #### How to use these skills
 
-Which interface fits depends on the persona described in the introduction:
-technical users run skills directly from a terminal-based agent (Claude Code,
-OpenAI Codex), while non-technical users go through a GUI-based agent
-(Antigravity) that follows the same `SKILL.md` workflow with no command line
-involved. See [Publishing and discovery](#publishing-and-discovery) below for
-how each is installed.
+Which interface fits depends on the persona described in the introduction —
+the workflow underneath is identical either way; only the surface changes.
+
+**Technical users** run skills directly from a terminal-based agent (Claude
+Code, OpenAI Codex) with the skills repository already configured. A single
+natural-language request is enough; the agent resolves it to a skill,
+confirms a plan, and executes:
+
+```
+You:   Simulate maize yield potential in Mwanza district, Malawi, 2010–2012,
+       planting 2010-11-01, 4 windows, no fertilizer, 8 cores.
+
+Agent: [resolves the request to spatial-crop-modeler]
+       → checks ag-cube-cm and aggeodata are installed
+       → shows the plan — area, period, crop, sources — for approval
+       → runs the pipeline, reports mean yield and output paths
+```
+
+**Non-technical users** — proposal writers, partners, anyone without a
+development environment set up — go through a GUI-based agent (Antigravity)
+that follows the same `SKILL.md` workflow with no command line involved. The
+prompt is just as plain; there's no terminal, no install step, no code to
+read:
+
+```
+You:   I need rainfall and temperature data for Togo, 2015–2023, by
+       district, for a GCF proposal.
+
+Agent: [resolves the request to gcf-pipeline]
+       → shows the same plan a terminal user would see, in the chat window
+       → delivers a CSV, a COG per variable, and a dashboard link
+```
+
+Both routes run the same skill and produce the same output — only how the
+plan is confirmed and the result is handed back changes. See
+[Publishing and discovery](#publishing-and-discovery) below for how each
+interface is installed.
 
 ### Publishing and discovery
 
