@@ -24,8 +24,62 @@ layer and how they fit together.
 
 ## The metadata layer
 
-<!-- CDH record schema, the STAC profile, what review a record passes before
-     publication, how records relate to STAC items. -->
+### Introduction
+
+A Hub record exists to make a resource discoverable, understandable without
+opening the underlying files, citable, validatable against a schema, and
+usable without manual interpretation — structured facts, not just free text.
+The CDH metadata standard defines that record independent of any output
+format, then maps it onto the community formats consumers already use: STAC
+for anything with a spatial footprint, OGC API Records for everything else
+(documents, software, services, non-spatial datasets). Records are authored
+once in CDH YAML; STAC or OGC Records is what gets generated from it, not
+what a contributor writes by hand.
+
+### Methodology
+
+The standard ([`cdh-metadata-standard`](https://github.com/CGIAR-Climate-Data-Hub/cdh-metadata-standard))
+is a core JSON Schema plus a CDH profile that requires five CDH-maintained
+extensions — `cdh`, `climate`, `datacube`, `classification`, `agriculture` —
+and a native-fields-first authoring rule: put each fact in a core field before
+an extension field, a linked sidecar asset, a custom extension, or free text,
+in that order. Requirement levels (Required/Recommended/Conditional/Optional)
+follow RFC 2119-style wording, and the schema rejects blank values outright.
+`mapping-stac.md` carries that same discipline into STAC: which STAC
+extensions apply (Datacube, Table, Raster, Classification, Version, …), and
+explicit rules for when a fact belongs on the Collection, an Item, a
+`summaries` entry, or an Asset. The standard, its schemas, vocabularies, and
+extensions all share one version tag, so a record's `cdh_schema_version`
+names exactly the release it validates against.
+
+### Results
+
+Records live in [`cdh-catalog`](https://github.com/CGIAR-Climate-Data-Hub/cdh-catalog)
+as one YAML file per resource. Getting a record published runs through a
+gate, not a merge: a submission opens a pull request — either a contributor
+editing YAML directly, or the same PR produced on their behalf by
+[`CDH-metadata-app`](https://github.com/CGIAR-Climate-Data-Hub/CDH-metadata-app),
+a lightweight guided front-end that calls the same GitHub Action rather than
+writing files itself. `cdh-metadata-standard`'s reusable validation workflow
+runs automatically against every PR, and `CODEOWNERS` requires sign-off from
+a named owner before it can merge. On merge, a second full-set validation
+runs before the catalog is allowed to notify the site (below) — so a rule
+change or a bad rebase can't silently ship an invalid record. Converting a
+validated record to STAC or OGC API Records is the job of
+[`cdh-metadata-tools`](https://github.com/CGIAR-Climate-Data-Hub/cdh-metadata-tools),
+a pygeometa-style CLI: it parses the authoring YAML into a typed record,
+validates it against the standard's JSON Schema, and encodes it through a
+pluggable output schema (`metadata-tools generate --schema stac`). It isn't
+wired into `cdh-catalog`'s CI yet — today it runs standalone — but it is
+where the CDH-to-STAC mapping is implemented in code rather than only
+specified in docs.
+
+### Publishing and discovery
+
+A merge to `cdh-catalog`'s `main` branch is what feeds the [build
+pipeline](#build-pipeline): once the second validation pass clears, a
+`repository_dispatch` tells the site to rebuild and fetch the updated
+records. See that section for what happens from there.
 
 ## Data storage and distribution
 
