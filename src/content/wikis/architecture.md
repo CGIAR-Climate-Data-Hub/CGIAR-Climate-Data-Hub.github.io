@@ -62,50 +62,33 @@ layer and how they fit together.
 
 ### Introduction
 
-The Hub's datasets are cloud-native and machine-readable, but reaching a usable
-result still demands knowledge most researchers don't carry day-to-day: which
-source holds which variable, how to clip a raster to an administrative boundary,
-which aggregation preserves the right units, how to run DSSAT over a spatial
-grid, what fields the CDH metadata schema requires. The goal of the agent skills
-work was to close that gap — let a researcher state what they need in plain
-language and have an AI agent execute the full workflow correctly, from raw
-download to a shareable output.
+Across the institutions that make up CGIAR, researchers spend much of their time on the same kinds of tasks: downloading datasets, defining methodologies, running analytical protocols, and assembling information for their studies. In practice, each center tends to rebuild these processes on its own — the same workflow reinvented in a dozen places, with little that can be handed off or reused across institutions. The aim of this work is to change that: to capture each process once, in a form that is reproducible and easy to share, so that both the data and the methods behind it can be picked up and reused by another institution with as little friction as possible.
 
-#### UseCase personas
+#### Simplifying geospatial processing
 
-This workflow was developed with two different kinds of users in mind: one
-with advanced programming and agent experience, the other needing to access
-the information quickly, using only simple prompts.
+The Hub's datasets are cloud-native and machine-readable, yet turning them into a usable result still demands knowledge that most researchers don't carry day to day: which source holds which variable, how to clip a raster to an administrative boundary, which aggregation method preserves the correct units, how to compute a seasonal indicator over a spatial grid, and what fields the CDH metadata schema requires. 
 
-For the first group, examples of adopting the tool through the terminal were
-developed; for the second, GUI interfaces such as Antigravity or Codex were
-used.
+#### Standardizing workflows via AI Agent Skills
 
-#### What are skills?
+The agent-skills work set out to close that gap — to let a researcher state what they need in plain language and have an AI agent carry out the full workflow correctly, from raw download to a shareable output.
 
-A skill is a series of instructions that tells an agent how to achieve a
-particular goal — what to ask, what order to do things in, and what a correct
-result looks like. Its purpose is standardization: instead of every
-conversation reinventing how a task gets done, the same procedure runs the
-same way each time, whoever is asking and whichever agent is running it.
+A skill is a set of instructions that tells an agent how to accomplish a specific goal: what to ask the user, in what order to perform each step, and what a correct result looks like. Its purpose is standardization. Instead of every conversation reinventing how a task is done, the same procedure runs the same way each time — regardless of who is asking or which agent is executing it.
 
-#### Why skills?
+In practice, each skill is a plain-text SKILL.md file: YAML frontmatter that tells the agent when to trigger the skill, followed by Markdown instructions describing the workflow. Optional folders can bundle helper scripts, reference documents, and templates alongside it.
 
-A bespoke chatbot would require its own server, authentication stack, and
-ongoing maintenance, and would work with only one AI provider. A custom API
-wrapper would still leave the user writing code to call it.
+#### Why AI Agent Skills?
 
-Agent Skills are a different answer: plain-text `SKILL.md` files that encode
-workflow instructions any compatible assistant can load and follow. The format
-is open — Claude Code, OpenAI Codex, Antigravity, and OpenCode all read the
-same folder — so each workflow is published once and works everywhere, with no
-server to operate and no vendor lock-in.
+We considered other ways to deliver these workflows. A bespoke chatbot would need its own server, authentication stack, and ongoing maintenance, and would be tied to a single AI provider. A custom API wrapper would remove some of that burden but would still leave the user writing code to call it. Agent skills take a different approach. Because a skill is just an open-format text file, any compatible assistant can load and follow it — Claude Code, OpenAI Codex, and Antigravity all read the same skill folder. Each workflow is therefore published once and works everywhere, with no server to operate and no vendor lock-in.
+
+#### Supporting Multi-Modal execution personas
+
+The workflows were designed with two kinds of users in mind. The first is comfortable with programming and with AI agents, and wants direct, scriptable control; the second needs to reach a result quickly using only plain-language prompts, without touching code. For the first profile, we documented use through the terminal with Claude Code. For the second, we relied on more guided, GUI-driven agents such as Antigravity or Codex. In every case the end-user experience is the same: describe what you need in one sentence, confirm the proposed plan, and receive a ready to use output.
+
 
 
 ### Methodology
 
 ### Skills creation
-
 
 
 Each skill was built and iterated using Anthropic's
