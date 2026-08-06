@@ -88,7 +88,7 @@ The workflows were designed with two kinds of users in mind. The first is comfor
 
 ### Methodology
 
-### Skills creation
+#### Skills creation
 
 
 Each skill was built and iterated using Anthropic's
@@ -101,7 +101,7 @@ pass rates are satisfactory. This process keeps skill writing grounded in
 observed agent behavior rather than intuition about what instructions should
 work.
 
-### Repository structure
+#### Repository structure
 
 Skills live in the `.agents/skills/` folder of the skills repository, one
 subfolder per skill, each holding a required `SKILL.md` plus whatever
@@ -126,7 +126,7 @@ only needs the one subfolder its plan resolves to, not the whole repo — which
 is what lets a foundational skill be updated without touching the
 orchestrators that call it.
 
-### Underlying Python packages
+#### Underlying Python packages
 
 Most foundational skills are conversational wrappers around two Python
 packages — [`aggeodata`](https://github.com/CGIAR-Climate-Data-Hub/aggeodata)
@@ -136,7 +136,7 @@ model orchestration — described in [Python packages](#python-packages) below.
 A skill's job is to collect parameters, confirm a plan, and hand off to the
 package; the package does the actual download, processing, or simulation.
 
-### Design pattern: foundational skills + orchestrators
+#### Design pattern: foundational skills + orchestrators
 
 The work was decomposed into single-responsibility *foundational skills*, each
 owning one well-defined task. *Orchestrator skills* sit on top: they collect
