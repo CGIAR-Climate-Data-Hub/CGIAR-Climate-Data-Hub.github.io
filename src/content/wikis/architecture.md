@@ -39,14 +39,48 @@ layer and how they fit together.
 
 ## The site layer
 
-<!-- Why static, and why Astro: no server or database to operate, the whole site
-     is a build artifact on GitHub Pages; catalog and skills are fetched from
-     their source repos at build time, so the metadata has one home; ships zero
-     JavaScript by default, which is what keeps the pages fast and readable by
-     anything that fetches them; content collections give the schema validation
-     the deliverable relies on, and MDX is there when a page needs components.
-     Note what this rules out too — no server-side search or per-user state —
-     and why that trade was acceptable. -->
+### Introduction
+
+The Hub needed a public-facing site to present datasets, documentation, and
+machine interfaces without operating a server or database. Astro was chosen
+for its simplicity in building documentation-style sites: pages are static by
+default, content is authored in Markdown/MDX, and the framework ships zero
+JavaScript unless a component opts in — which keeps pages fast and readable
+by anything that fetches them, human or machine. The trade-off is explicit:
+no server-side search and no per-user state, which the Hub doesn't need since
+every dataset and page is public and identical for every visitor.
+
+### Methodology
+
+The site runs on Astro's content collections (`src/content.config.ts`):
+typed, schema-validated content for tutorials, wikis, FAQ, use cases, and
+contribution guides. Two collections — `catalog` and `skills` — are fetched
+from their source repos (`cdh-catalog`, `skills`) at build time rather than
+stored locally, via custom loaders (`src/lib/records.ts`, `src/lib/skills.ts`),
+so each piece of metadata keeps one home. Markdown renders through Astro's
+Sätteri pipeline with heading-anchor and Shiki syntax-highlighting plugins
+(`astro.config.mjs`); search is client-side via `astro-pagefind`, and
+`@astrojs/sitemap` generates the sitemap. Biome enforces one lint/format
+standard across the codebase, and Bun is the package manager.
+
+### Results
+
+The build produces the full public site — catalog, tutorials, wikis, FAQ, and
+use-case pages — plus the machine-interface surface (`/ai/`,
+`.well-known/agent-skills/`, `.well-known/api-catalog`, `llms.txt`,
+`robots.txt`) described under [Machine interfaces](#machine-interfaces).
+Every collection's schema is validated at build time, so malformed content
+fails the build rather than reaching production.
+
+### Publishing and discovery
+
+`astroDeploy.yml` builds and deploys to GitHub Pages on every push to `main`,
+on manual dispatch, and on a `repository_dispatch` fired by `cdh-catalog`
+when records change — so a metadata update rebuilds the site without a
+manual release. A `REQUIRE_RECORDS` guard stops a zero-record build from
+deploying over a working catalog. The site is served at the GitHub Pages
+root under the canonical domain hardcoded in `astro.config.mjs`; moving to a
+custom domain later is a one-line change plus a `public/CNAME` file.
 
 ## Machine interfaces
 
