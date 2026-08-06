@@ -59,8 +59,28 @@ without adopting CGIAR's policy. The authoring guide keeps first drafts
 small on purpose — `id`, `title`, `description`, `resource_type`,
 `cdh.domain`, `keywords`, `license`, a `licensor` contact, `citation`, and
 `data` cover "can someone find, understand, cite, and access this," with
-every other section optional until it applies. A first pass is small enough
-to write in one sitting:
+every other section optional until it applies. Controlled vocabularies
+(`vocab/domain.json`, `commodity.json`, `geography.json`) constrain the
+closed-vocabulary fields and double as the scheme targets that `cdh.domain`,
+`commodities`, and linked keywords get folded into as STAC Themes at encode
+time. `mapping-stac.md` carries the same native-fields-first discipline into
+STAC: which STAC extensions apply (Datacube, Table, Raster, Classification,
+Version, …), and explicit rules for when a fact belongs on the Collection, an
+Item, a `summaries` entry, or an Asset. The standard, its schemas,
+vocabularies, and extensions all share one version tag; a release publishes
+schemas, vocab fragments, and extension definitions to a versioned URL
+(`<tag>/schemas/…`) on the standard's own GitHub Pages, plus an unversioned
+mirror of the vocabularies so `themes[].scheme` URIs stay stable across
+releases. A record's `cdh_schema_version` names exactly the tagged release it
+validates against, so a new standard release never invalidates an existing
+record.
+
+### Results
+
+Records live in [`cdh-catalog`](https://github.com/CGIAR-Climate-Data-Hub/cdh-catalog)
+as one YAML file per resource — currently a small, real set (`glw4-2020`,
+`mapspam2020`) rather than a placeholder schema with no data behind it. A
+minimal record, once through the standard, looks like this:
 
 ```yaml
 "$schema": https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.2.0/schemas/profiles/cdh.schema.json
@@ -89,30 +109,9 @@ data:
     media_type: image/tiff; application=geotiff; profile=cloud-optimized
 ```
 
-Everything past this — `spatial`, `temporal`, `dimensions`, `variables`,
-`classes` — gets added only for the sections that apply to the resource.
-Controlled vocabularies
-(`vocab/domain.json`, `commodity.json`, `geography.json`) constrain the
-closed-vocabulary fields and double as the scheme targets that `cdh.domain`,
-`commodities`, and linked keywords get folded into as STAC Themes at encode
-time. `mapping-stac.md` carries the same native-fields-first discipline into
-STAC: which STAC extensions apply (Datacube, Table, Raster, Classification,
-Version, …), and explicit rules for when a fact belongs on the Collection, an
-Item, a `summaries` entry, or an Asset. The standard, its schemas,
-vocabularies, and extensions all share one version tag; a release publishes
-schemas, vocab fragments, and extension definitions to a versioned URL
-(`<tag>/schemas/…`) on the standard's own GitHub Pages, plus an unversioned
-mirror of the vocabularies so `themes[].scheme` URIs stay stable across
-releases. A record's `cdh_schema_version` names exactly the tagged release it
-validates against, so a new standard release never invalidates an existing
-record.
-
-### Results
-
-Records live in [`cdh-catalog`](https://github.com/CGIAR-Climate-Data-Hub/cdh-catalog)
-as one YAML file per resource — currently a small, real set (`glw4-2020`,
-`mapspam2020`) rather than a placeholder schema with no data behind it.
-`glw4-2020` is a good illustration of the standard doing its job: a `note`
+`spatial`, `temporal`, `dimensions`, `variables`, and `classes` are added only
+for the sections that apply to the resource — the real records in the
+catalog use most of them. `glw4-2020` is a good illustration of the standard doing its job: a `note`
 field carries the projection caveat that would otherwise mislead anyone
 doing area-based analysis, `keywords` mixes plain search terms with a
 linked AGROVOC concept, and `contact` entries carry distinct `roles`
