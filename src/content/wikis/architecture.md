@@ -84,13 +84,56 @@ custom domain later is a one-line change plus a `public/CNAME` file.
 
 ## Machine interfaces
 
-<!-- The AI-readiness posture, not just the endpoint list: HTML for people,
-     with a machine counterpart for every page rather than a separate API to
-     keep in sync — markdown twins, llms.txt / llms-full.txt, catalog.json and
-     per-record JSON, schema.org JSON-LD, the RFC 9727 api-catalog for
-     discovery, Content Signals in robots.txt. Say what a static host can't do
-     here (content negotiation, Link headers) and what that would take.
-     Link to /ai/ rather than duplicating its endpoint table. -->
+### Introduction
+
+Every page on the Hub is built for two readers at once: a person in a
+browser and an agent that needs the same information without parsing HTML.
+Rather than stand up a separate API and keep it in sync with the site, the
+Hub gives each page a machine counterpart at a predictable URL, generated
+from the same content collections at build time. There is nothing to fall
+out of date, because there is nothing hand-maintained to forget — the
+machine surface and the human surface come from one source.
+
+### Methodology
+
+Each interface targets a different consumption pattern. A page's markdown
+source is served as a plain-text twin at `<page>/index.md`
+(`src/pages/[...page].ts`) for agents that would rather read Markdown than
+strip HTML; MDX pages and notebooks are excluded because their source bodies
+can carry JSX or base64 figures that aren't plain markdown. `llms.txt` and
+`llms-full.txt` give a compact and a fully-inlined map of the whole site,
+regenerated from the collections on every build rather than written by hand.
+`catalog.json` publishes the entire catalog as one schema.org `DataCatalog`
+document — the same markup Google Dataset Search reads — with each record's
+full CDH metadata also standing alone at `/catalog/<id>.json`. Discovery
+itself is machine-readable too: `/.well-known/api-catalog` advertises the
+Hub's endpoints as an RFC 9727 linkset, and `robots.txt` sets Content Signals
+(`search=yes, ai-input=yes, ai-train=yes`) to state AI use is welcome rather
+than leaving it ambiguous. Pages also register in-browser WebMCP tools
+(`src/lib/webmcp.ts`) — search the catalog, fetch a record, list skills —
+so an agent already sitting in an open tab can act without leaving it.
+
+### Results
+
+A static host on GitHub Pages can't do everything this posture would ideally
+want: no content negotiation (serving JSON or Markdown from the same URL
+based on an `Accept` header) and no custom response headers, so there's no
+HTTP `Link` header pointing an agent at `/.well-known/api-catalog`. The repo
+carries what that would look like anyway — `public/_headers` declares the
+`Link` header and a corrected linkset `Content-Type`, with its own comment
+noting the limit: `Cloudflare Pages only; GitHub Pages serves this as a
+plain file.` Everything the Hub can guarantee on GitHub Pages instead moves
+into the URL space itself — a separate path per format, discovery files at
+well-known locations — so a real host gains header-level shortcuts later
+without anything else changing.
+
+### Publishing and discovery
+
+The full, current list of endpoints — with descriptions of what each
+returns and why — is published at [`/ai/`](/ai/) rather than duplicated
+here; that page also lists the installable agent skills described under
+[Agent skills](#agent-skills). Treat `/ai/` as the source of truth for the
+endpoint table and this section as the reasoning behind it.
 
 ## Agent skills
 
