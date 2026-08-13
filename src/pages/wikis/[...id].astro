@@ -29,7 +29,7 @@ const updatedLong = entry.data.updated.toLocaleDateString("en-US", {
 });
 
 const pageUrl = new URL(`/wikis/${entry.id}/`, Astro.site).href;
-const cite = pageCitable(entry, pageUrl, "Wiki page");
+const cite = pageCitable(entry, pageUrl);
 
 const jsonLd = {
   "@context": "https://schema.org",

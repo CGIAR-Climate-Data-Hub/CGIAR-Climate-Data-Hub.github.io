@@ -21,7 +21,7 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
 const pageUrl = new URL(`/tutorials/${entry.id}/`, Astro.site).href;
-const cite = pageCitable(entry, pageUrl, entry.data.format);
+const cite = pageCitable(entry, pageUrl);
 
 // Notebook tutorials offer the source for download / opening in Colab
 const isNotebook = entry.collection === "notebookTutorials";

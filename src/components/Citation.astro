@@ -1,12 +1,12 @@
 ---
-// "How to cite" block: one prerendered panel per style, swapped by the format
-// select. Strings come from src/lib/citation.ts, so anything that can map
-// itself to a Citable (records, tutorials, wikis) gets the same block.
-// The default slot takes extra content below the panels — the record page
-// puts its related publications there.
+// "How to cite" block: the suggested citation, with BibTeX in a disclosure for
+// reference managers. Strings come from src/lib/citation.ts, so anything that
+// can map itself to a Citable (records, tutorials, wikis) gets the same block.
+// The default slot takes extra content below — the record page puts its
+// related publications there.
 import { Code } from "astro:components";
 import CopyButton from "@/components/CopyButton.astro";
-import { bibtex, type Citable, citationFormats } from "@/lib/citation";
+import { bibtex, type Citable, citationText } from "@/lib/citation";
 import { codeHeader, shikiConfig } from "@/lib/code-block";
 
 interface Props {
@@ -14,83 +14,39 @@ interface Props {
   // "Accessed through" clause — for things the hub redistributes, not publishes
   viaUrl?: string;
   note?: string;
-  formats?: string[];
   heading?: string;
 }
 
-const {
-  cite,
-  formats = ["apa", "harvard", "chicago", "bibtex"],
-  heading = "How to cite",
-  note,
-  viaUrl,
-} = Astro.props;
+const { cite, heading = "How to cite", note, viaUrl } = Astro.props;
 
-const styles = citationFormats(cite, viaUrl).filter((f) =>
-  formats.includes(f.id),
-);
-const bib = formats.includes("bibtex") ? bibtex(cite, viaUrl) : undefined;
-const showPicker = styles.length + (bib ? 1 : 0) > 1;
+const text = citationText(cite, viaUrl);
+const bib = bibtex(cite, viaUrl);
 ---
 
 <div class="cite-block">
-  <div class="cite-head">
-    <h2>{heading}</h2>
-    {showPicker && (
-      <label class="cite-format">
-        <span class="label">Format</span>
-        <select id="cite-format">
-          {styles.map((f) => (
-            <option value={f.id}>{f.label}</option>
-          ))}
-          {bib && <option value="bibtex">BibTeX</option>}
-        </select>
-      </label>
-    )}
-  </div>
+  <h2>{heading}</h2>
   {note && <p class="cite-note">{note}</p>}
-  {styles.map((f, i) => (
-    <blockquote class="cite" data-cite-panel={f.id} hidden={i !== 0}>
-      {f.text}
+  {text && (
+    <blockquote class="cite">
+      {text}
       <span class="cite-copy">
-        <CopyButton copy={f.text} label={`Copy ${f.label} citation`} />
+        <CopyButton copy={text} label="Copy citation" />
       </span>
     </blockquote>
-  ))}
+  )}
   {bib && (
-    <div data-cite-panel="bibtex" hidden={styles.length > 0}>
+    <details class="cite-bibtex">
+      <summary>BibTeX</summary>
       <Code
         code={bib}
         lang="bibtex"
         theme={shikiConfig.theme}
         transformers={[codeHeader("BibTeX")]}
       />
-    </div>
+    </details>
   )}
   <slot />
 </div>
-
-<script>
-// Panels are all prerendered (crawlers see every format); the select picks
-// the visible one and the choice persists like the snippet language does.
-// One block per page: the id and the panel query both assume it.
-const citeSelect = document.querySelector<HTMLSelectElement>("#cite-format");
-if (citeSelect) {
-  const panels = [
-    ...document.querySelectorAll<HTMLElement>("[data-cite-panel]"),
-  ];
-  const show = (fmt: string) => {
-    for (const p of panels) p.hidden = p.dataset.citePanel !== fmt;
-    citeSelect.value = fmt;
-  };
-  citeSelect.addEventListener("change", () => {
-    show(citeSelect.value);
-    localStorage.setItem("cite-format", citeSelect.value);
-  });
-  const saved = localStorage.getItem("cite-format");
-  if (saved && panels.some((p) => p.dataset.citePanel === saved)) show(saved);
-}
-</script>
 
 <style>
 .cite-block {
@@ -103,29 +59,6 @@ if (citeSelect) {
 h2 {
   font-size: var(--font-size-8);
   line-height: 1.3;
-}
-
-.cite-head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  align-items: center;
-  justify-content: space-between;
-}
-
-.cite-format {
-  display: inline-flex;
-  gap: var(--space-2);
-  align-items: center;
-}
-
-.cite-format select {
-  padding: 5px 10px;
-  font-size: var(--font-size-4);
-  color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
 }
 
 .cite-note {
@@ -149,5 +82,15 @@ h2 {
   position: absolute;
   top: 10px;
   right: 10px;
+}
+
+.cite-bibtex summary {
+  font-size: var(--font-size-4);
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.cite-bibtex[open] summary {
+  margin-bottom: var(--space-3);
 }
 </style>

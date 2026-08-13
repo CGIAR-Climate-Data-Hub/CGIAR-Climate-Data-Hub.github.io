@@ -19,15 +19,10 @@ export type CitablePage = {
 
 // Citation shape for docs pages the hub publishes itself: the page url is the
 // citation url, so callers pass no viaUrl ("accessed through") clause.
-export function pageCitable(
-  e: CitablePage,
-  url: string,
-  genre: string,
-): Citable {
+export function pageCitable(e: CitablePage, url: string): Citable {
   return {
     authors: e.data.author ? [e.data.author] : [],
     date: e.data.updated.toISOString().slice(0, 10),
-    genre,
     key: e.id,
     publisher: SITE_PUBLISHER_NAME,
     title: e.data.title,

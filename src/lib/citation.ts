@@ -1,7 +1,13 @@
 // Citation strings for anything citable: catalog records, tutorials, wikis.
 // Callers map their own frontmatter into Citable (see citable() in
 // src/lib/catalog.ts for the record adapter), so nothing here knows about
-// collections or schemas — just the seven fields a citation needs.
+// collections or schemas — just the fields a citation needs.
+//
+// Two outputs on purpose: one suggested citation and BibTeX. Per-style
+// variants (APA, Harvard, …) are a reference manager's job — the real rules
+// (surname-initial inversion, et al. past 20 authors, n.d. for no date)
+// don't fit in string concatenation, so labelling output "APA" would promise
+// what this can't deliver.
 import { SITE_PUBLISHER_NAME } from "@/site.config";
 
 export interface Citable {
@@ -15,8 +21,6 @@ export interface Citable {
   version?: string;
   // BibTeX key stem: record id or page slug
   key: string;
-  // APA/Harvard bracket describing what's being cited
-  genre?: string;
 }
 
 const VIA = `Accessed through the ${SITE_PUBLISHER_NAME}`;
@@ -27,15 +31,15 @@ const authorList = (c: Citable) =>
 // A DOI is the preferred identifier; the record's own url is the fallback
 const linkOf = (c: Citable) => (c.doi ? `https://doi.org/${c.doi}` : c.url);
 
-// Every style drops the publisher when it's also the author — which is the
-// case for anything the hub publishes itself
+// Drop the publisher when it's also the author — the case for anything the
+// hub publishes itself
 const publisherOf = (c: Citable) =>
   c.publisher === authorList(c) ? undefined : c.publisher;
 
 const join = (parts: (string | false | undefined)[]) =>
   parts.filter(Boolean).join(" ");
 
-// A trailing URL takes no terminal period (APA); it needs one only when the
+// A trailing URL takes no terminal period; it needs one only when the
 // "accessed through" clause follows it
 const linkPart = (c: Citable, via?: string) => {
   const link = linkOf(c);
@@ -60,59 +64,6 @@ export function citationText(c?: Citable, viaUrl?: string) {
     linkPart(c, via),
     via,
   ]);
-}
-
-// One text citation per style — the same fields shuffled per convention.
-// citationText (above) stays the generic form used in JSON-LD.
-export function citationFormats(c?: Citable, viaUrl?: string) {
-  if (!c) return [];
-  const authors = authorList(c);
-  const year = (c.date ?? "").slice(0, 4);
-  const link = linkOf(c);
-  const via = viaUrl ? `${VIA}, ${viaUrl}.` : undefined;
-  const genre = c.genre ?? "Data set";
-  return [
-    {
-      id: "apa",
-      label: "APA",
-      text: join([
-        authors,
-        year && `(${year}).`,
-        `${c.title}`,
-        c.version ? `(Version ${c.version}) [${genre}].` : `[${genre}].`,
-        publisherOf(c) && `${publisherOf(c)}.`,
-        linkPart(c, via),
-        via,
-      ]),
-    },
-    {
-      id: "harvard",
-      label: "Harvard",
-      text: join([
-        authors,
-        year && `(${year})`,
-        `${c.title} [${genre}].`,
-        c.version && `Version ${c.version}.`,
-        publisherOf(c) && `${publisherOf(c)}.`,
-        link && `Available at: ${link}.`,
-        via,
-      ]),
-    },
-    {
-      id: "chicago",
-      label: "Chicago",
-      text: join([
-        // Initials already end with a period — don't double it
-        authors && (authors.endsWith(".") ? authors : `${authors}.`),
-        year && `${year}.`,
-        `“${c.title}.”`,
-        c.version && `Version ${c.version}.`,
-        publisherOf(c) && `${publisherOf(c)}.`,
-        link && `${link}.`,
-        via,
-      ]),
-    },
-  ];
 }
 
 export function bibtex(c?: Citable, viaUrl?: string) {

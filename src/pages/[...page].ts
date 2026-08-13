@@ -13,21 +13,13 @@ type Props = { md: string } | { dataset: CatalogRecord };
 
 export async function getStaticPaths() {
   const cited = [
-    ...(await getCollection("wikis")).map((e) => ({
-      e,
-      base: "wikis",
-      genre: "Wiki page",
-    })),
-    ...(await allTutorials()).map((e) => ({
-      e,
-      base: "tutorials",
-      genre: e.data.format,
-    })),
-  ].map(({ e, base, genre }) => ({
+    ...(await getCollection("wikis")).map((e) => ({ e, base: "wikis" })),
+    ...(await allTutorials()).map((e) => ({ e, base: "tutorials" })),
+  ].map(({ e, base }) => ({
     e,
     base,
     // Matches the "Cite:" line datasetMd emits, so every twin cites the same way
-    cite: `Cite: ${citationText(pageCitable(e, `${SITE_URL}/${base}/${e.id}/`, genre))}`,
+    cite: `Cite: ${citationText(pageCitable(e, `${SITE_URL}/${base}/${e.id}/`))}`,
   }));
 
   // Use-case stories carry no author/updated pair, so they get no citation

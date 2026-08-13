@@ -37,8 +37,8 @@ export const GET: APIRoute = async ({ site }) => {
     [`### ${title}`, abs(url), nestHeadings((body ?? desc ?? "").trim()), cite]
       .filter(Boolean)
       .join("\n\n");
-  const citeLine = (url: string, genre: string, e: CitablePage) =>
-    `Cite: ${citationText(pageCitable(e, abs(url), genre))}`;
+  const citeLine = (url: string, e: CitablePage) =>
+    `Cite: ${citationText(pageCitable(e, abs(url)))}`;
 
   const md = `# ${SITE_NAME} — full documentation
 
@@ -50,11 +50,11 @@ ${datasets.join("\n\n")}
 
 ## Documentation
 
-${wikis.map((w) => doc(w.data.title, `/wikis/${w.id}/`, w.body, undefined, citeLine(`/wikis/${w.id}/`, "Wiki page", w))).join("\n\n")}
+${wikis.map((w) => doc(w.data.title, `/wikis/${w.id}/`, w.body, undefined, citeLine(`/wikis/${w.id}/`, w))).join("\n\n")}
 
 ## Tutorials
 
-${tutorials.map((t) => doc(t.data.title, `/tutorials/${t.id}/`, t.body, t.data.description, citeLine(`/tutorials/${t.id}/`, t.data.format, t))).join("\n\n")}
+${tutorials.map((t) => doc(t.data.title, `/tutorials/${t.id}/`, t.body, t.data.description, citeLine(`/tutorials/${t.id}/`, t))).join("\n\n")}
 
 ## FAQ
 
