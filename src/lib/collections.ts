@@ -1,5 +1,7 @@
 // Shared ordering/grouping for the docs collections.
 import { type CollectionEntry, getCollection } from "astro:content";
+import type { Citable } from "@/lib/citation";
+import { SITE_PUBLISHER_NAME } from "@/site.config";
 
 // Markdown tutorials and notebook tutorials share a schema and render the
 // same way — every consumer treats them as one collection.
@@ -8,6 +10,29 @@ export async function allTutorials() {
     ...(await getCollection("tutorials")),
     ...(await getCollection("notebookTutorials")),
   ];
+}
+
+export type CitablePage = {
+  id: string;
+  data: { title: string; author?: string; updated: Date };
+};
+
+// Citation shape for docs pages the hub publishes itself: the page url is the
+// citation url, so callers pass no viaUrl ("accessed through") clause.
+export function pageCitable(
+  e: CitablePage,
+  url: string,
+  genre: string,
+): Citable {
+  return {
+    authors: e.data.author ? [e.data.author] : [],
+    date: e.data.updated.toISOString().slice(0, 10),
+    genre,
+    key: e.id,
+    publisher: SITE_PUBLISHER_NAME,
+    title: e.data.title,
+    url,
+  };
 }
 
 export const WIKI_SECTIONS = [

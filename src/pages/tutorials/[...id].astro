@@ -2,9 +2,11 @@
 import { getCollection, render } from "astro:content";
 import ArticleToc from "@/components/ArticleToc.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import Citation from "@/components/Citation.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import Layout from "@/layouts/Layout.astro";
-import { allTutorials } from "@/lib/collections";
+import { citationText } from "@/lib/citation";
+import { allTutorials, pageCitable } from "@/lib/collections";
 import { editUrl } from "@/lib/github";
 import { SITE_NAME, SITE_PUBLISHER_NAME, SITE_REPO } from "@/site.config";
 
@@ -18,6 +20,8 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
+const pageUrl = new URL(`/tutorials/${entry.id}/`, Astro.site).href;
+const cite = pageCitable(entry, pageUrl, entry.data.format);
 
 // Notebook tutorials offer the source for download / opening in Colab
 const isNotebook = entry.collection === "notebookTutorials";
@@ -40,13 +44,15 @@ const jsonLd = {
   "@type": ["TechArticle", "LearningResource"],
   headline: entry.data.title,
   description: entry.data.description,
-  url: new URL(`/tutorials/${entry.id}/`, Astro.site).href,
+  url: pageUrl,
   audience: { "@type": "Audience", audienceType: entry.data.audience },
   ...(timeRequired && { timeRequired }),
   dateModified: entry.data.updated.toISOString().slice(0, 10),
   author: entry.data.author
     ? { "@type": "Person", name: entry.data.author }
     : { "@type": "Organization", name: SITE_PUBLISHER_NAME },
+  publisher: { "@type": "Organization", name: SITE_PUBLISHER_NAME },
+  citation: citationText(cite),
   isPartOf: { "@type": "WebSite", "@id": `${Astro.site}#website` },
 };
 ---
@@ -108,6 +114,9 @@ const jsonLd = {
       )}
       <div class="prose">
         <Content />
+      </div>
+      <div class="cite-wrap">
+        <Citation cite={cite} />
       </div>
       <div class="footer-row">
         <a class="back" href="/tutorials/">← All tutorials</a>
@@ -178,6 +187,12 @@ h1 {
 
 .prose {
   margin-top: 28px;
+}
+
+.cite-wrap {
+  padding-top: var(--space-6);
+  margin-top: var(--space-6);
+  border-top: 1px solid var(--border);
 }
 
 @media (width <= 960px) {

@@ -4,21 +4,46 @@
 import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
 import { type CatalogRecord, currentReleases, datasetMd } from "@/lib/catalog";
-import { allTutorials } from "@/lib/collections";
+import { citationText } from "@/lib/citation";
+import { allTutorials, pageCitable } from "@/lib/collections";
 import { markdownResponse } from "@/lib/markdown";
+import { SITE_URL } from "@/site.config";
 
 type Props = { md: string } | { dataset: CatalogRecord };
 
 export async function getStaticPaths() {
-  const docs = [
-    ...(await getCollection("wikis")).map((e) => ({ e, base: "wikis" })),
-    ...(await allTutorials()).map((e) => ({ e, base: "tutorials" })),
-    ...(await getCollection("useCases")).map((e) => ({ e, base: "in-use" })),
-  ]
+  const cited = [
+    ...(await getCollection("wikis")).map((e) => ({
+      e,
+      base: "wikis",
+      genre: "Wiki page",
+    })),
+    ...(await allTutorials()).map((e) => ({
+      e,
+      base: "tutorials",
+      genre: e.data.format,
+    })),
+  ].map(({ e, base, genre }) => ({
+    e,
+    base,
+    // Matches the "Cite:" line datasetMd emits, so every twin cites the same way
+    cite: `Cite: ${citationText(pageCitable(e, `${SITE_URL}/${base}/${e.id}/`, genre))}`,
+  }));
+
+  // Use-case stories carry no author/updated pair, so they get no citation
+  const stories = (await getCollection("useCases")).map((e) => ({
+    e,
+    base: "in-use",
+    cite: undefined,
+  }));
+
+  const docs = [...cited, ...stories]
     .filter(({ e }) => e.filePath?.endsWith(".md") && e.body)
-    .map(({ e, base }) => ({
+    .map(({ e, base, cite }) => ({
       params: { page: `${base}/${e.id}/index.md` },
-      props: { md: `# ${e.data.title}\n\n${e.body}` },
+      props: {
+        md: [`# ${e.data.title}`, e.body, cite].filter(Boolean).join("\n\n"),
+      },
     }));
 
   const datasets = currentReleases(await getCollection("catalog")).map((e) => ({

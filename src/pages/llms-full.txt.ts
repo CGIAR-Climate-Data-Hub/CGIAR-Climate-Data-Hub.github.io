@@ -4,7 +4,8 @@
 import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
 import { currentReleases, datasetMd } from "@/lib/catalog";
-import { allTutorials } from "@/lib/collections";
+import { citationText } from "@/lib/citation";
+import { allTutorials, type CitablePage, pageCitable } from "@/lib/collections";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/site.config";
 
 export const GET: APIRoute = async ({ site }) => {
@@ -25,8 +26,19 @@ export const GET: APIRoute = async ({ site }) => {
     md.replace(/^(#{1,6})(?= )/gm, (heading) =>
       "#".repeat(Math.min(heading.length + 2, 6)),
     );
-  const doc = (title: string, url: string, body?: string, desc?: string) =>
-    `### ${title}\n\n${abs(url)}\n\n${nestHeadings((body ?? desc ?? "").trim())}`;
+  // cite is the same "Cite:" line the markdown twins and dataset records carry
+  const doc = (
+    title: string,
+    url: string,
+    body?: string,
+    desc?: string,
+    cite?: string,
+  ) =>
+    [`### ${title}`, abs(url), nestHeadings((body ?? desc ?? "").trim()), cite]
+      .filter(Boolean)
+      .join("\n\n");
+  const citeLine = (url: string, genre: string, e: CitablePage) =>
+    `Cite: ${citationText(pageCitable(e, abs(url), genre))}`;
 
   const md = `# ${SITE_NAME} — full documentation
 
@@ -38,11 +50,11 @@ ${datasets.join("\n\n")}
 
 ## Documentation
 
-${wikis.map((w) => doc(w.data.title, `/wikis/${w.id}/`, w.body)).join("\n\n")}
+${wikis.map((w) => doc(w.data.title, `/wikis/${w.id}/`, w.body, undefined, citeLine(`/wikis/${w.id}/`, "Wiki page", w))).join("\n\n")}
 
 ## Tutorials
 
-${tutorials.map((t) => doc(t.data.title, `/tutorials/${t.id}/`, t.body, t.data.description)).join("\n\n")}
+${tutorials.map((t) => doc(t.data.title, `/tutorials/${t.id}/`, t.body, t.data.description, citeLine(`/tutorials/${t.id}/`, t.data.format, t))).join("\n\n")}
 
 ## FAQ
 
