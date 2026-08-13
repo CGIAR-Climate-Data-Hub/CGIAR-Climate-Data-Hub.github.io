@@ -1,17 +1,15 @@
 ---
-import { Code } from "astro:components";
 import { getCollection } from "astro:content";
 import { satteri } from "@astrojs/markdown-satteri";
 import BboxMap from "@/components/BboxMap.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import Citation from "@/components/Citation.astro";
 import CopyButton from "@/components/CopyButton.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import SnippetTabs from "@/components/SnippetTabs.astro";
 import Layout from "@/layouts/Layout.astro";
 import {
-  bibtex,
-  citationFormats,
-  citationText,
+  citable,
   datasetJsonLd,
   formatBestFor,
   formatLabel,
@@ -26,7 +24,7 @@ import {
   temporalText,
   versionChain,
 } from "@/lib/catalog";
-import { codeHeader, shikiConfig } from "@/lib/code-block";
+import { shikiConfig } from "@/lib/code-block";
 import { allTutorials } from "@/lib/collections";
 import { blobUrl, editUrl, githubUrl } from "@/lib/github";
 import { assetExample, quickstarts } from "@/lib/snippets";
@@ -121,10 +119,8 @@ const reportParams = new URLSearchParams({
   body: reportBody,
 });
 const reportUrl = `${githubUrl(CATALOG_REPO)}/issues/new?${reportParams}`;
-const citation = citationText(d, recordUrl);
-const citeFormats = citationFormats(d, recordUrl);
+const cite = citable(d);
 const licenseHref = licenseUrl(d.license);
-const bibtexStr = bibtex(d, recordUrl);
 
 // Build-time cross-links: stories and tutorials citing this dataset id
 const seenIn = (
@@ -214,11 +210,11 @@ const SECTIONS = [
   hasSchema && ["schema", "Schema"],
   (d.climate || d.spatial || d.temporal) && ["technical", "Technical metadata"],
   d.processing.length > 0 && ["provenance", "Provenance"],
-  (citation || d.contact.length > 0) && [
+  (cite || d.contact.length > 0) && [
     "citation",
-    citation && d.contact.length > 0
+    cite && d.contact.length > 0
       ? "Citation & contacts"
-      : citation
+      : cite
         ? "Citation"
         : "Contacts",
   ],
@@ -558,22 +554,24 @@ const jsonLd = datasetJsonLd(
 
       {d.data.length > 0 && (
           <section id="access">
-            <h2>Access &amp; use</h2>
-            <p class="section-sub">
-              Cloud-optimised distributions — read just the window you need directly from object
-              storage.
-            </p>
+            <div>
+              <h2>Access &amp; use</h2>
+              <p class="section-sub">
+                Cloud-optimised distributions — read just the window you need directly from object
+                storage.
+              </p>
+              {hasTemplated && (
+                <p class="digest">
+                  Machine-readable file index:{" "}
+                  <a href={stacUrl} rel="noreferrer">STAC Collection</a>
+                </p>
+              )}
+            </div>
             {d.access_note && (
               <div class="note">
                 <h3 class="note-title">Access conditions</h3>
                 <p>{d.access_note}</p>
               </div>
-            )}
-            {hasTemplated && (
-              <p class="digest">
-                Machine-readable file index:{" "}
-                <a href={stacUrl} rel="noreferrer">STAC Collection</a>
-              </p>
             )}
 
             {assetGroups.map((group) => (
@@ -722,11 +720,13 @@ const jsonLd = datasetJsonLd(
 
       {(d.climate || d.spatial || d.temporal) && (
           <section id="technical">
-            <h2>Technical metadata</h2>
-            <p class="section-sub">
-              The full spatial, temporal, and modelling detail behind the
-              summaries elsewhere on this page.
-            </p>
+            <div>
+              <h2>Technical metadata</h2>
+              <p class="section-sub">
+                The full spatial, temporal, and modelling detail behind the
+                summaries elsewhere on this page.
+              </p>
+            </div>
 
             {d.spatial && (
               <div>
@@ -881,105 +881,70 @@ const jsonLd = datasetJsonLd(
 
       {d.processing.length > 0 && (
           <section id="provenance">
-            <h2>Provenance</h2>
-            <p class="section-sub">Ordered processing steps, from source to publication.</p>
-            <ol class="lineage">
-              {d.processing.map((step) => (
-                <li>
-                  <div class="step">
-                    <div class="step-head">
-                      <span class="mono step-id">{step.id}</span>
-                      {step.date && <span class="label">{step.date.slice(0, 10)}</span>}
+            <div>
+              <h2>Provenance</h2>
+              <p class="section-sub">Ordered processing steps, from source to publication.</p>
+              <ol class="lineage">
+                {d.processing.map((step) => (
+                  <li>
+                    <div class="step">
+                      <div class="step-head">
+                        <span class="mono step-id">{step.id}</span>
+                        {step.date && <span class="label">{step.date.slice(0, 10)}</span>}
+                      </div>
+                      {step.description && <p>{step.description}</p>}
+                      {step.derived_from.length > 0 && (
+                        <p class="step-meta">
+                          Derived from:{" "}
+                          {step.derived_from.map((src, i) => {
+                            const hub = hubSource(src.url);
+                            return (
+                              <>
+                                {i > 0 && ", "}
+                                {hub ? (
+                                  <a href={hub.href}>{src.title ?? hub.title}</a>
+                                ) : (
+                                  <a href={src.url} rel="noreferrer">
+                                    {src.title ?? src.url}
+                                  </a>
+                                )}
+                              </>
+                            );
+                          })}
+                        </p>
+                      )}
+                      {step.code && (
+                        <p class="step-meta mono">
+                          code:{" "}
+                          <a href={step.code.url} rel="noreferrer">
+                            {urlParts(step.code.url).map((part) => (
+                              <>
+                                {part}
+                                <wbr />
+                              </>
+                            ))}
+                          </a>
+                          {step.code.version && <span> @ {step.code.version}</span>}
+                        </p>
+                      )}
                     </div>
-                    {step.description && <p>{step.description}</p>}
-                    {step.derived_from.length > 0 && (
-                      <p class="step-meta">
-                        Derived from:{" "}
-                        {step.derived_from.map((src, i) => {
-                          const hub = hubSource(src.url);
-                          return (
-                            <>
-                              {i > 0 && ", "}
-                              {hub ? (
-                                <a href={hub.href}>{src.title ?? hub.title}</a>
-                              ) : (
-                                <a href={src.url} rel="noreferrer">
-                                  {src.title ?? src.url}
-                                </a>
-                              )}
-                            </>
-                          );
-                        })}
-                      </p>
-                    )}
-                    {step.code && (
-                      <p class="step-meta mono">
-                        code:{" "}
-                        <a href={step.code.url} rel="noreferrer">
-                          {urlParts(step.code.url).map((part) => (
-                            <>
-                              {part}
-                              <wbr />
-                            </>
-                          ))}
-                        </a>
-                        {step.code.version && <span> @ {step.code.version}</span>}
-                      </p>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ol>
+                  </li>
+                ))}
+              </ol>
+            </div>
           </section>
         )}
 
-      {(citation || d.contact.length > 0) && (
+      {(cite || d.contact.length > 0) && (
           <section id="citation">
-            {citation && (
-              <div class="cite-block">
-                <div class="cite-head">
-                  <h2>How to cite</h2>
-                  <label class="cite-format">
-                    <span class="label">Format</span>
-                    <select id="cite-format">
-                      {citeFormats.map((f) => (
-                        <option value={f.id}>{f.label}</option>
-                      ))}
-                      {bibtexStr && <option value="bibtex">BibTeX</option>}
-                    </select>
-                  </label>
-                </div>
-                <p class="cite-note">
-                  Please cite the dataset and any associated peer-reviewed
-                  publications.
-                </p>
-                {citeFormats.map((f, i) => (
-                  <blockquote
-                    class="cite"
-                    data-cite-panel={f.id}
-                    hidden={i !== 0}
-                  >
-                    {f.text}
-                    <span class="cite-copy">
-                      <CopyButton
-                        copy={f.text}
-                        label={`Copy ${f.label} citation`}
-                      />
-                    </span>
-                  </blockquote>
-                ))}
-                {bibtexStr && (
-                  <div data-cite-panel="bibtex" hidden>
-                    <Code
-                      code={bibtexStr}
-                      lang="bibtex"
-                      theme={shikiConfig.theme}
-                      transformers={[codeHeader("BibTeX")]}
-                    />
-                  </div>
-                )}
+            {cite && (
+              <Citation
+                cite={cite}
+                note="Please cite the dataset and any associated peer-reviewed publications."
+                viaUrl={recordUrl}
+              >
                 {d.related_publications.length > 0 && (
-                  <div>
+                  <div class="related-pubs">
                     <h3>Related publications</h3>
                     <ul>
                       {d.related_publications.map((pub) => (
@@ -991,7 +956,7 @@ const jsonLd = datasetJsonLd(
                     </ul>
                   </div>
                 )}
-              </div>
+              </Citation>
             )}
             {d.contact.length > 0 && (
             <div class="contacts-block">
@@ -1212,24 +1177,6 @@ for (const picker of document.querySelectorAll<HTMLElement>(".tpl-picker")) {
   update();
 }
 
-// Citation formats are prerendered panels; the select swaps them and the
-// choice persists like the snippet language does
-const citeSelect = document.querySelector<HTMLSelectElement>("#cite-format");
-const citePanels = [
-  ...document.querySelectorAll<HTMLElement>("[data-cite-panel]"),
-];
-const showCite = (fmt: string) => {
-  for (const p of citePanels) p.hidden = p.dataset.citePanel !== fmt;
-  if (citeSelect) citeSelect.value = fmt;
-};
-citeSelect?.addEventListener("change", () => {
-  showCite(citeSelect.value);
-  localStorage.setItem("cite-format", citeSelect.value);
-});
-const savedCite = localStorage.getItem("cite-format");
-if (savedCite && citePanels.some((p) => p.dataset.citePanel === savedCite))
-  showCite(savedCite);
-
 // Hash-driven tabs: all panels stay in the DOM (crawlers see everything);
 // the hash picks the visible one, so /catalog/<id>#access deep-links work.
 const tabs = [
@@ -1272,7 +1219,7 @@ if (tabs.length > 0) {
 
 <style>
 .header {
-  padding: 18px 0 var(--space-5);
+  padding: var(--space-4) 0 var(--space-5);
   background: var(--surface);
 }
 
@@ -1287,8 +1234,12 @@ if (tabs.length > 0) {
 
 /* Promoted h4→h3 for heading order; keep the smaller h4-like size */
 .tech-title,
-.cite-block h3 {
+.related-pubs h3 {
   font-size: var(--font-size-5);
+}
+
+.related-pubs {
+  margin-top: var(--space-3);
 }
 
 .tech-title {
@@ -1298,7 +1249,7 @@ if (tabs.length > 0) {
 .class-list {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 3px 10px;
+  gap: var(--space-1) var(--space-2);
   margin: var(--space-2) 0 0;
   font-size: var(--font-size-4);
 }
@@ -1311,13 +1262,16 @@ if (tabs.length > 0) {
   margin: 0;
 }
 
-.class-desc {
+.class-desc,
+.version-row .label,
+.fact-label,
+.kv dt {
   color: var(--text-mute);
 }
 
 .deprecated-note {
-  padding: 10px 14px;
-  margin-top: 18px;
+  padding: var(--space-3) var(--space-4);
+  margin-top: var(--space-4);
   font-size: var(--font-size-5);
   color: var(--terra-900);
   background: var(--terra-50);
@@ -1344,14 +1298,14 @@ if (tabs.length > 0) {
 
 h1 {
   max-width: 760px;
-  margin-top: 10px;
+  margin-top: var(--space-3);
   font-size: clamp(25px, 2.6vw, 31px);
 }
 
 .keywords {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .keyword {
@@ -1378,7 +1332,7 @@ h1 {
   flex-wrap: wrap;
   gap: var(--space-3);
   align-items: center;
-  margin-top: 18px;
+  margin-top: var(--space-4);
 }
 
 .source {
@@ -1390,7 +1344,7 @@ h1 {
 
 /* "Part of: <series>" — links to the catalog filtered to the series */
 .series-line {
-  margin-top: 6px;
+  margin-top: var(--space-2);
   font-size: var(--font-size-4);
   color: var(--text-mute);
 }
@@ -1398,13 +1352,9 @@ h1 {
 .version-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--space-2);
   align-items: center;
   margin-top: var(--space-3);
-}
-
-.version-row .label {
-  color: var(--text-mute);
 }
 
 .version-single {
@@ -1448,7 +1398,7 @@ h1 {
   left: 0;
   z-index: 20;
   min-width: 170px;
-  padding: 6px;
+  padding: var(--space-2);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -1460,7 +1410,7 @@ h1 {
   gap: var(--space-3);
   align-items: center;
   justify-content: space-between;
-  padding: 7px 10px;
+  padding: var(--space-2) var(--space-3);
   font-size: var(--font-size-4);
   color: var(--text);
   white-space: nowrap;
@@ -1480,8 +1430,8 @@ h1 {
 
 /* Compact btn-ghost — the shared button recipe, sized down */
 .version-menu summary {
-  gap: 7px;
-  padding: 5px var(--space-3);
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
   font-size: var(--font-size-4);
 }
 
@@ -1498,25 +1448,21 @@ h1 {
 .meta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2) 14px;
+  gap: var(--space-2) var(--space-4);
   margin-top: var(--space-3);
 }
 
 .fact {
   display: inline-flex;
-  gap: 6px;
+  gap: var(--space-2);
   align-items: center;
   font-size: var(--font-size-3);
   color: var(--text);
 }
 
 .fact + .fact {
-  padding-left: 14px;
+  padding-left: var(--space-4);
   border-left: 1px solid var(--border);
-}
-
-.fact-label {
-  color: var(--text-mute);
 }
 
 .section-nav {
@@ -1533,7 +1479,7 @@ h1 {
 }
 
 .section-nav a {
-  padding: 14px var(--space-4);
+  padding: var(--space-4);
   margin-bottom: -1px;
   font-size: var(--font-size-4);
   font-weight: 600;
@@ -1570,7 +1516,7 @@ article section {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  padding-bottom: 40px;
+  padding-bottom: var(--space-6);
   scroll-margin-top: calc(var(--nav-height) + 58px);
 }
 
@@ -1581,7 +1527,7 @@ article h2 {
 
 article section > div > p,
 article ul {
-  margin-top: 10px;
+  margin-top: var(--space-3);
   font-size: var(--font-size-6);
   line-height: 1.65;
   color: var(--text-soft);
@@ -1607,7 +1553,7 @@ article ul {
 }
 
 .note p {
-  margin-top: 6px;
+  margin-top: var(--space-2);
   font-size: var(--font-size-5);
   line-height: 1.65;
 }
@@ -1615,12 +1561,12 @@ article ul {
 .warn-cards {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-3);
   margin-top: var(--space-3);
 }
 
 .warn-card {
-  padding: 14px;
+  padding: var(--space-4);
   font-size: var(--font-size-5);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1646,7 +1592,7 @@ article ul {
 }
 
 .chip {
-  padding: 3px 9px;
+  padding: var(--space-1) var(--space-2);
   font-size: var(--font-size-3);
   color: var(--cdh-blue-800);
   background: var(--cdh-blue-50);
@@ -1662,25 +1608,25 @@ a.chip:hover {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  margin-top: 14px;
+  margin-top: var(--space-3);
 }
 
 .dim-card {
-  padding: 14px;
+  padding: var(--space-4);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
 }
 
 .dim-card p {
-  margin-top: 6px;
+  margin-top: var(--space-2);
   font-size: var(--font-size-5);
   color: var(--text-soft);
 }
 
 .dim-head {
   display: flex;
-  gap: 10px;
+  gap: var(--space-2);
   align-items: baseline;
 }
 
@@ -1696,7 +1642,7 @@ a.chip:hover {
 }
 
 .table-wrap {
-  margin-top: 14px;
+  margin-top: var(--space-3);
   overflow-x: auto;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1710,7 +1656,7 @@ table {
 }
 
 th {
-  padding: 10px var(--space-3);
+  padding: var(--space-3);
   font-size: var(--font-size-2);
   font-weight: 700;
   color: var(--text-soft);
@@ -1723,7 +1669,7 @@ th {
 /* Only the description column wraps; the rest size to their content */
 th,
 td {
-  padding: 10px var(--space-3);
+  padding: var(--space-3);
   white-space: nowrap;
   border-top: 1px solid var(--border);
 }
@@ -1749,7 +1695,7 @@ td.mono {
 }
 
 .var-note {
-  margin-top: 3px;
+  margin-top: var(--space-1);
   font-size: var(--font-size-3);
   color: var(--text-mute);
 }
@@ -1757,34 +1703,37 @@ td.mono {
 .assets {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-3);
   margin-top: var(--space-2);
 }
 
 /* The card's border is the only box line — inside, whitespace separates.
    Visual weight: name → download → selectors → URL → technical facts */
 .asset {
-  padding: var(--space-4) 18px;
+  padding: var(--space-4);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
 }
 
-.asset p {
-  margin-top: 6px;
+.asset p,
+.alt-access,
+.example-row,
+.contact-card .chips {
+  margin-top: var(--space-2);
 }
 
 .asset-head {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--space-2);
   align-items: baseline;
 }
 
 /* Name + description read as one unit; the breathing room sits below them */
 .asset-desc {
   margin-top: var(--space-1);
-  margin-bottom: 14px;
+  margin-bottom: var(--space-3);
   font-size: var(--font-size-5);
   color: var(--text-soft);
 }
@@ -1841,13 +1790,13 @@ td.mono {
 .tpl-fields {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px var(--space-4);
-  margin-top: 10px;
+  gap: var(--space-3) var(--space-4);
+  margin-top: var(--space-3);
 }
 
 .tpl-field {
   display: inline-flex;
-  gap: 7px;
+  gap: var(--space-2);
   align-items: center;
 }
 
@@ -1874,8 +1823,8 @@ td.mono {
    spotlighted access URL) against the card's white surface */
 .tpl-picker,
 .access-panel {
-  padding: 10px 14px var(--space-2);
-  margin-top: 10px;
+  padding: var(--space-3) var(--space-4) var(--space-2);
+  margin-top: var(--space-3);
   background: var(--bg);
   border-radius: var(--radius-md);
 }
@@ -1892,7 +1841,7 @@ td.mono {
 /* Every URL starts with the same slight inset, whatever its container */
 .selected-url,
 .url {
-  padding-left: 5px;
+  padding-left: var(--space-1);
 }
 
 /* Panel head: quiet title left, the panel's actions right */
@@ -1911,10 +1860,6 @@ td.mono {
   margin-left: 0;
 }
 
-.alt-access {
-  margin-top: 6px;
-}
-
 .alt-access summary {
   font-size: var(--font-size-3);
   color: var(--text-mute);
@@ -1929,10 +1874,10 @@ td.mono {
 .endpoint {
   display: grid;
   grid-template-columns: minmax(56px, max-content) 1fr auto;
-  gap: 10px;
+  gap: var(--space-2);
   align-items: center;
-  padding: 3px 0;
-  margin-top: 6px;
+  padding: var(--space-1) 0;
+  margin-top: var(--space-2);
 }
 
 /* Same voice as the fact labels (Format, No Data) — sans, light, muted */
@@ -1948,10 +1893,6 @@ td.mono {
   font-size: var(--font-size-3);
   color: var(--text-soft);
   overflow-wrap: break-word;
-}
-
-.example-row {
-  margin-top: var(--space-2);
 }
 
 /* A quiet text affordance — the Download button stays the card's one button */
@@ -1972,7 +1913,7 @@ td.mono {
 .example-modal {
   width: min(760px, 92vw);
   max-height: 84vh;
-  padding: 20px 22px;
+  padding: var(--space-5);
   margin: auto;
   overflow: auto;
   overscroll-behavior: contain;
@@ -1987,14 +1928,14 @@ td.mono {
 
 .example-head {
   display: flex;
-  gap: 14px;
+  gap: var(--space-3);
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: var(--space-3);
 }
 
 .example-close {
-  padding: 0 6px;
+  padding: 0 var(--space-2);
   font-size: var(--font-size-8);
   line-height: 1;
   color: var(--text-mute);
@@ -2009,7 +1950,7 @@ td.mono {
 
 .lineage {
   padding: 0;
-  margin: var(--space-2) 0 0;
+  margin: var(--space-3) 0 0;
   list-style: none;
 }
 
@@ -2045,14 +1986,14 @@ td.mono {
 }
 
 .step {
-  padding: var(--space-3) 14px;
+  padding: var(--space-3) var(--space-4);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
 }
 
 .step p {
-  margin-top: 6px;
+  margin-top: var(--space-2);
   font-size: var(--font-size-5);
   line-height: 1.55;
   color: var(--text-soft);
@@ -2060,7 +2001,7 @@ td.mono {
 
 .step-head {
   display: flex;
-  gap: 10px;
+  gap: var(--space-2);
   align-items: center;
   justify-content: space-between;
 }
@@ -2075,67 +2016,11 @@ td.mono {
   overflow-wrap: break-word;
 }
 
-.cite-head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  align-items: center;
-  justify-content: space-between;
-}
-
-.cite-format {
-  display: inline-flex;
-  gap: var(--space-2);
-  align-items: center;
-}
-
-.cite-format select {
-  padding: 5px 10px;
-  font-size: var(--font-size-4);
-  color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-}
-
-.cite-note {
-  margin-top: 6px;
-  font-size: var(--font-size-5);
-  color: var(--text-soft);
-}
-
-.cite {
-  position: relative;
-  padding: var(--space-4) 56px var(--space-4) var(--space-4);
-  margin: var(--space-3) 0 0;
-  font-size: var(--font-size-5);
-  line-height: 1.7;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-}
-
-.cite-copy {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
-/* The wrapper divs only carry the conditionals — contents puts their
+/* The wrapper div only carries the conditional — contents puts its
    children back into the section's flex layout (and its 24px gap) */
-.cite-block,
-.contacts-block {
-  display: contents;
-}
-
-/* Extra separation where the two blocks meet */
-.cite-block + .contacts-block h2 {
-  margin-top: var(--space-4);
-}
-
 .rail-box {
   padding: var(--space-4);
-  margin-bottom: 20px;
+  margin-bottom: var(--space-4);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -2143,7 +2028,7 @@ td.mono {
 
 .rail-box .label {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: var(--space-3);
   font-family: var(--sans);
   line-height: 1.3;
   color: var(--text-mute);
@@ -2153,13 +2038,9 @@ td.mono {
 .kv {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: var(--space-2) 14px;
+  gap: var(--space-2) var(--space-4);
   margin: 0;
   font-size: var(--font-size-4);
-}
-
-.kv dt {
-  color: var(--text-mute);
 }
 
 .kv dd {
@@ -2167,7 +2048,7 @@ td.mono {
 }
 
 .fact-sub {
-  margin-top: 2px;
+  margin-top: var(--space-1);
   font-size: var(--font-size-2);
   color: var(--text-mute);
 }
@@ -2176,11 +2057,11 @@ td.mono {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: var(--space-3);
-  margin-top: 14px;
+  margin-top: var(--space-3);
 }
 
 .contact-card {
-  padding: 14px;
+  padding: var(--space-4);
   font-size: var(--font-size-5);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -2202,7 +2083,7 @@ td.mono {
 .badges {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .role-badge {
@@ -2225,20 +2106,16 @@ td.mono {
 }
 
 .contact-org {
-  margin-top: 2px;
+  margin-top: var(--space-1);
   font-size: var(--font-size-4);
   color: var(--text-soft);
-}
-
-.contact-card .chips {
-  margin-top: var(--space-2);
 }
 
 .contact-links {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  margin-top: 10px;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
   font-size: var(--font-size-4);
 }
 
