@@ -1,5 +1,5 @@
 ---
-title: Hub architecture
+title: Data Hub Architecture
 description: How the Hub is designed and why it was built the way it is. The metadata, cloud-native data, the build pipeline, and the machine interfaces.
 group: The Hub
 updated: 2026-09-14
@@ -17,6 +17,8 @@ This is added as a wiki to the hub, but it is also generated as a PDF
 with Quarto and Typst for distribution.
 The quarto settings are in in <root>/.quarto.yml
 -->
+
+## Introduction
 
 The Climate Action Data Hub was designed with the core aims of being modular,
 sustainable, open, and built on modern technologies and best practices.
@@ -84,8 +86,6 @@ Repository-level `AGENTS.md` instructions, development skills, and access to
 relevant documentation through MCP servers help coding agents follow project
 conventions. Automated checks, linters, and human code review provide additional
 quality controls.
-
-# What the Hub uses/doesn't use and why?
 
 ## Architecture Overview
 
@@ -170,35 +170,6 @@ away from common pitfalls, biases, and misusages. These can be used to direct
 users to alternate data sources for their needs, explain dataset directionality,
 and provide additional warnings and guidance in how a dataset is intended to be
 used.
-
-A minimal record, once through the standard, looks like this:
-
-```yaml
-"$schema": https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.2.0/schemas/profiles/cdh.schema.json
-cdh_schema_version: "v0.2.0"
-id: chirps-daily-v1.0
-title: CHIRPS Daily Precipitation
-description: Daily gridded rainfall estimates blending satellite and station data.
-resource_type: dataset
-extensions:
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/extensions/cdh/schema.json
-keywords: [precipitation, gridded, daily]
-license: CC-BY-4.0
-contact:
-  - organization: Climate Hazards Center
-    roles: [licensor]
-    url: https://www.chc.ucsb.edu/
-citation:
-  authors: [Funk, Chris]
-  date: "2015"
-cdh:
-  domain: [climate]
-data:
-  - name: Daily rainfall, COG
-    locations:
-      - url: https://data.example.org/chirps/daily.tif
-    media_type: image/tiff; application=geotiff; profile=cloud-optimized
-```
 
 The
 [`glw4-2020` record](https://github.com/CGIAR-Climate-Data-Hub/cdh-catalog/blob/main/records/glw4-2020/glw4-2020.yaml)
