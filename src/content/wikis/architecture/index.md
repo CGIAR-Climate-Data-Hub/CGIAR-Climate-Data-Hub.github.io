@@ -14,8 +14,8 @@ and provide a general overview people can follow to understand how the hub
 work and how they can build from it.
 
 This is added as a wiki to the hub, but it is also generated as a PDF
-with Quarto and Typst for distribution.
-The quarto settings are in in <root>/.quarto.yml
+with Quarto and Typst for distribution: `bun run pdf` writes pdfs/architecture.pdf.
+Quarto settings live in <root>/_quarto.yml, which also lists the wikis to export.
 -->
 
 ## Introduction

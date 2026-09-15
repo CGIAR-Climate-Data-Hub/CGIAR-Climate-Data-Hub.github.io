@@ -9,28 +9,26 @@ bun run build   # static build to dist/
 bun run check   # lint + format (Biome)
 ```
 
-### Architecture blueprint as a PDF
+### Wiki PDFs
 
-`src/content/wikis/architecture.md` is the technical blueprint deliverable. It
-renders on the site at `/wikis/architecture/`, and
-[Quarto](https://quarto.org) turns the same file into a PDF:
+Some wikis double as PDF deliverables, e.g. the architecture blueprint at
+`src/content/wikis/architecture/index.md`. [Quarto](https://quarto.org) renders
+them with Typst (bundled, no LaTeX):
 
 ```sh
-quarto render src/content/wikis/architecture.md --to typst \
-  -o architecture.pdf --metadata validate-yaml=false
+bun run pdf     # writes pdfs/<wiki>.pdf (gitignored)
 ```
 
-Typst ships with Quarto, so this needs no LaTeX. The `--metadata` flag is
-needed because Quarto type-checks its own `section:` key, which the site uses
-for the wiki sidebar group — passing it on the command line keeps print
-concerns out of the content file. If the PDF grows its own options (a printed
-date, `toc`, a template), put them in a `print.yml` and pass
-`--metadata-file print.yml` instead; Quarto doesn't read the site's `updated:`
-field.
+`_quarto.yml` lists which wikis render and holds the print settings. To export
+another wiki, give it its own folder (`wikis/<name>/index.md`, images beside
+it) and add the file to `project.render`. The PDF is generated on demand, not
+in the site build; nothing is committed.
 
-Keep diagrams as image references (`![…](./diagram.svg)`) rather than inline
-`<svg>` — Pandoc drops raw HTML on the way to PDF — and use absolute URLs for
-links you want clickable in print.
+Two constraints on the content: wiki frontmatter must avoid keys Quarto
+reserves (`section` is why the sidebar key is `group`), and diagrams must be
+image references rather than inline `<svg>`, which Pandoc drops on the way to
+PDF. Use absolute URLs for links you want clickable in print.
+
 ### Lighthouse CI
 
 `bun run lh` builds the site with the bundled example records and skills,

@@ -1,0 +1,26 @@
+# PDF exports of wiki pages (bun run pdf). Only the files listed here render;
+# the post-render script moves each output to pdfs/<wiki>.pdf.
+project:
+  render:
+    - src/content/wikis/architecture/index.md
+  post-render: scripts/flatten-pdfs.sh
+
+author: CGIAR Climate Action Data Hub
+# File mtime; quarto doesn't read the wiki's `updated` key
+date: last-modified
+
+format:
+  typst:
+    papersize: a4
+    margin:
+      x: 2.2cm
+      y: 2.5cm
+    # Embedded in quarto's typst, so identical output on every machine and in CI
+    mainfont: Libertinus Serif
+    fontsize: 10.5pt
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    section-numbering: "1.1.1"
+    # Wikis start at ## (the page title is the h1); promote so sections number 1, 2, …
+    shift-heading-level-by: -1

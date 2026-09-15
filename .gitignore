@@ -30,3 +30,9 @@ pnpm-debug.log*
 
 # local assistant settings
 .claude/settings.local.json
+
+# wiki PDF exports (bun run pdf) and quarto scratch files; the two quarto
+# entries are spelled exactly as quarto would add them itself
+/pdfs/
+/.quarto/
+**/*.quarto_ipynb
