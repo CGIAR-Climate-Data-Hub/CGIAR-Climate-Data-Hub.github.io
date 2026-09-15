@@ -6,9 +6,17 @@ updated: 2026-09-14
 order: 1
 ---
 
-<!-- Technical blueprint deliverable. Keep this page the single source of truth
-     for how the Hub is built; link to the wikis that go deeper rather than
-     restating them here. -->
+<!--
+Technical blueprint deliverable for the Hub.
+This page should be the main documnentation for how the hub is build and why.
+It should highlight the decisions we made, how the components fit together,
+and provide a general overview people can follow to understand how the hub
+work and how they can build from it.
+
+This is added as a wiki to the hub, but it is also generated as a PDF
+with Quarto and Typst for distribution.
+The quarto settings are in in <root>/.quarto.yml
+-->
 
 The Climate Action Data Hub was designed with the core aims of being modular,
 sustainable, open, and built on modern technologies and best practices.
@@ -209,7 +217,7 @@ This skill allows the Agent to fill in fields automatically based on the actual
 data file (_e.g._, the bounding box, data type, column/layer names, etc). It
 then works with the user to fill in the remaining fields and validates the
 record to catch any errors. More about AI skills and why the Hub uses them can
-be found in the [Skills section](#skills) of this document, and on the
+be found in the [Skills section](#agent-skills) of this document, and on the
 [Skills Github](https://github.com/CGIAR-Climate-Data-Hub/skills).
 
 For users who prefer a more manual workflow, but don't want to hand-write YAML
