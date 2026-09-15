@@ -1,8 +1,8 @@
 ---
 title: Hub architecture
-description: How the Hub is put together — the metadata layer, cloud-native distribution, the build pipeline, and the machine interfaces every page exposes.
+description: How the Hub is designed and why it was built the way it is. The metadata, cloud-native data, the build pipeline, and the machine interfaces.
 section: The Hub
-updated: 2026-07-27
+updated: 2026-09-14
 order: 1
 ---
 
@@ -10,9 +10,74 @@ order: 1
      for how the Hub is built; link to the wikis that go deeper rather than
      restating them here. -->
 
-The Hub is a static site over a versioned metadata catalog, with the data itself
-living in object storage and read directly by clients. This page describes each
-layer and how they fit together.
+The Climate Action Data Hub was designed with the core aims of being modular,
+sustainable, open, and built on modern technologies and best practices.
+Everything is open source and designed to be easily copied, built on, and
+modified by others. The overall architecture can be split into multiple
+individual components:
+
+- [The metadata standard](https://github.com/CGIAR-Climate-Data-Hub/cdh-metadata-standard)
+- [The metadata catalog](https://github.com/CGIAR-Climate-Data-Hub/cdh-catalog)
+- [The website](https://github.com/CGIAR-Climate-Data-Hub/CGIAR-Climate-Data-Hub.github.io)
+- [The AI Skills](https://github.com/CGIAR-Climate-Data-Hub/skills)
+- And, of course, the data itself
+
+This page describes these different components, how they fit together, and why
+the design choices were made.
+
+These components are maintained in separate repositories so they can be used and
+developed independently. For example, the metadata standard can be adopted
+without using the catalog or website. The catalog can be explored through the
+website or accessed directly by other tools and applications. If these were all
+grouped together, these usage patterns would be much less explicit and
+development and maintenance would be much more complex. This approach keeps
+things simple, easy to navigate, and flexible.
+
+## General Conventions
+
+### Version Control and Review
+
+The Hub's code is open source and licensed for reuse. Changes are
+version-controlled with Git and reviewed through GitHub pull requests.
+Conventional Commits provide a consistent way to describe changes, while pull
+requests document their purpose, expected behavior, and allow additional reviews
+and quality checks. Repository permissions, branch rules, and code ownership
+establish review responsibilities and control how changes are approved and
+merged. These steps and rules are in place to ensure that the Hub is a reliable
+source of information and data and keeps code maintainable for long-term
+sustainability. The Hub uses automated checks through GitHub Actions to help
+identify problems early and assist in human review.
+
+### AI-Assisted Development
+
+The Hub uses AI tools to prototype ideas, develop features, and speed up
+development. These tools allow The Hub to respond to feedback and deliver
+improvements faster and with fewer resources. However, the use of AI is guided
+by the need to keep the Hub usable and maintainable beyond its initial
+development team and funding period, as a high-quality product. Therefore,
+AI-assisted contributions follow the same quality and review requirements as
+other contributions.
+
+Contributors remain responsible for understanding the generated code they
+submit, checking its behavior, and ensuring it follows the repository's
+conventions. Accepting generated code solely because it appears to work is
+insufficient for production use, and passing automated tests alone does not
+establish correctness or maintainability.
+
+AI tools assist with implementation, debugging, documentation, and review, while
+human contributors remain accountable for design decisions, scientific
+correctness, and long-term maintainability. This development prioritizes small,
+focused changes and documentation that is readable and understandable to other
+developers. Existing development patterns are reused where appropriate and
+documentation and comments explain decisions and assumptions that future
+maintainers need to understand.
+
+Repository-level `AGENTS.md` instructions, development skills, and access to
+relevant documentation through MCP servers help coding agents follow project
+conventions. Automated checks, linters, and human code review provide additional
+quality controls.
+
+# What the Hub uses/doesn't use and why?
 
 ## Architecture Overview
 
@@ -24,64 +89,81 @@ layer and how they fit together.
 
 ## The metadata standard
 
-### Introduction
-
 A Hub record exists to make a resource discoverable, understandable without
 opening the underlying files, citable, validatable against a schema, and usable
-without manual interpretation — structured facts, not just free text. The CDH
-metadata standard defines that record independent of any output format, then
-maps it onto the community formats consumers already use: STAC for anything with
-a spatial footprint, OGC API Records for everything else (documents, software,
-services, non-spatial datasets). Records are authored once in CDH YAML; STAC or
-OGC Records is what gets generated from it, not what a contributor writes by
-hand. The standard is deliberately generic underneath the CGIAR-specific parts:
-a project outside the Hub can adopt just the core schema, or compose its own
-extensions on top, without inheriting any CDH policy. It is also explicitly
-pre-1.0 — versioned and expected to change — so the model favors records that
-stay valid as the standard evolves over one that is complete today and brittle
-tomorrow.
+without manual interpretation. The Hub needed a standard that was easy to
+author, AI agent-ready, easy to validate, easy to render site pages from, and
+flexible enough to cover different data formats, tools and platforms, reports,
+and other resources. Many fantastic community formats exist (_i.e._, STAC, OGC
+API Records, DataPackage, etc.), but none are generic enough to cover all the
+Hub's needs without some pros and cons. The Hub did not want to reinvent the
+wheel, so rather than trying to create a new metadata standard from scratch, it
+designed a standard 'Authoring Format' that was specifically designed to be
+mapped to existing community formats - similar to and inspired by
+[pygeometa](https://github.com/geopython/pygeometa) or
+[portolan](https://www.portolan-sdi.org/). Hub records allow one authoring
+format which can then be converted into widespread community formats for
+downstream use and publishing - Geospatial records become STAC, Tabular records
+become Frictionless DataPackages, etc.
 
-### Methodology
+The standard is deliberately generic underneath the CGIAR and Climate Action
+-specific parts: a project outside the Hub can adopt just the core schema, or
+compose its own extensions on top, without inheriting any Hub policy.
 
-The standard
-([`cdh-metadata-standard`](https://github.com/CGIAR-Climate-Data-Hub/cdh-metadata-standard))
-is a core JSON Schema plus a CDH profile that requires five CDH-maintained
-extensions — `cdh`, `climate`, `datacube`, `classification`, `agriculture` — and
-a native-fields-first authoring rule: put each fact in a core field before an
-extension field, a linked sidecar asset, a custom extension, or free text, in
-that order. Requirement levels (Required/Recommended/Conditional/Optional)
-follow RFC 2119-style wording, and the schema rejects blank values outright.
+### Design and validation model
+
+The standard is intended to be written as YAML to make it easier to author and
+more human-readable. It can then be validated using JSON schema, which also
+provides autocomplete, descriptions, examples, and useful error messages. This
+also makes the metadata easier to author for AI agents as they can read the
+schema and validate their work as they go.
+
+The metadata standard publishes a core JSON Schema plus a Hub profile that
+requires five Hub-maintained extensions: `cdh`, `climate`, `datacube`,
+`classification`, `agriculture`. It was designed this way to allow outside
+projects to easily reuse the core fields, and add custom extensions for
+additional fields as needed. This will allow them to use much of the tooling the
+Hub has built for its needs without needing to adopt fields which may not be
+relevant to them or cover their needs.
+
+The Hub has adopted the [RFC 2119](https://tools.ietf.org/html/rfc2119)
+requirement levels (Required/Recommended/Conditional/Optional) for each field in
+the standard, and the schema + some additional validation rules enforce them.
 Validation itself has two independent layers: a _mechanism_ check (core plus
 exactly the extensions a record declares in `extensions[]` — fields from an
 undeclared extension are rejected outright) and a _profile_ check (policy on
 top, such as the CDH profile's requirement that every record carry the `cdh`
 extension). That split is what lets an outside adopter reuse the mechanism
-without adopting CGIAR's policy. The authoring guide keeps first drafts small on
-purpose — `id`, `title`, `description`, `resource_type`, `cdh.domain`,
-`keywords`, `license`, a `licensor` contact, `citation`, and `data` cover "can
-someone find, understand, cite, and access this," with every other section
-optional until it applies. Controlled vocabularies (`vocab/domain.json`,
-`commodity.json`, `geography.json`) constrain the closed-vocabulary fields and
-double as the scheme targets that `cdh.domain`, `commodities`, and linked
-keywords get folded into as STAC Themes at encode time. `mapping-stac.md`
-carries the same native-fields-first discipline into STAC: which STAC extensions
-apply (Datacube, Table, Raster, Classification, Version, …), and explicit rules
-for when a fact belongs on the Collection, an Item, a `summaries` entry, or an
-Asset. The standard, its schemas, vocabularies, and extensions all share one
-version tag; a release publishes schemas, vocab fragments, and extension
-definitions to a versioned URL (`<tag>/schemas/…`) on the standard's own GitHub
-Pages, plus an unversioned mirror of the vocabularies so `themes[].scheme` URIs
-stay stable across releases. A record's `cdh_schema_version` names exactly the
-tagged release it validates against, so a new standard release never invalidates
-an existing record.
+without adopting CGIAR's policy. The core required fields of `id`, `title`,
+`description`, `resource_type`, `cdh.domain`, `keywords`, `license`, a
+`licensor` contact, `citation`, and `data` address "can someone find,
+understand, cite, and access this," with other sections optional until it
+applies.
 
-### Results
+Controlled vocabularies (`vocab/domain.json`, `commodity.json`,
+`geography.json`) constrain the closed-vocabulary fields for easier filtering
+and linking to external vocabularies, such as AgroVOC and UN M49 geographies.
+These links improve machine interpretability and interoperability across
+datasets and tools.
 
-Records live in
-[`cdh-catalog`](https://github.com/CGIAR-Climate-Data-Hub/cdh-catalog) as one
-YAML file per resource — currently a small, real set (`glw4-2020`,
-`mapspam2020`) rather than a placeholder schema with no data behind it. A
-minimal record, once through the standard, looks like this:
+Along with controlled vocabularies, the Hub adopted multiple fields directly
+from STAC and other standards and provides mapping files within the standard
+repo to translate between the Hub fields and these community fields. For STAC,
+the Hub includes which STAC extensions apply (Datacube, Table, Raster,
+Classification, Version, …), and explicit rules for when a fact belongs on the
+Collection, an Item, a `summaries` entry, or an Asset. The Hub is currently
+working on Python tooling to easily convert from Hub metadata records to STAC,
+and will add additional community standards in the future.
+
+Other fields were chosen specifically to help guide users, both human and AI
+agents, improving interpretation resulting in more robust workflows. These
+fields, such as `note` and `not_recommended_for` are intended to guide the user
+away from common pitfalls, biases, and misusages. These can be used to direct
+users to alternate data sources for their needs, explain dataset directionality,
+and provide additional warnings and guidance in how a dataset is intended to be
+used.
+
+A minimal record, once through the standard, looks like this:
 
 ```yaml
 "$schema": https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.2.0/schemas/profiles/cdh.schema.json
@@ -91,7 +173,7 @@ title: CHIRPS Daily Precipitation
 description: Daily gridded rainfall estimates blending satellite and station data.
 resource_type: dataset
 extensions:
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.2.0/extensions/cdh/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/extensions/cdh/schema.json
 keywords: [precipitation, gridded, daily]
 license: CC-BY-4.0
 contact:
@@ -110,151 +192,356 @@ data:
     media_type: image/tiff; application=geotiff; profile=cloud-optimized
 ```
 
-`spatial`, `temporal`, `dimensions`, `variables`, and `classes` are added only
-for the sections that apply to the resource — the real records in the catalog
-use most of them. `glw4-2020` is a good illustration of the standard doing its
-job: a `note` field carries the projection caveat that would otherwise mislead
-anyone doing area-based analysis, `keywords` mixes plain search terms with a
-linked AGROVOC concept, and `contact` entries carry distinct `roles`
-(`licensor`, `producer`, `processor`, `point-of-contact`) rather than one
-undifferentiated author list. Getting a record published runs through a gate,
-not a merge: a submission opens a pull request — either a contributor editing
-YAML directly, or the same PR produced on their behalf by
-[`CDH-metadata-app`](https://github.com/CGIAR-Climate-Data-Hub/CDH-metadata-app),
-a lightweight guided front-end that calls the same GitHub Action rather than
-writing files itself. `cdh-metadata-standard`'s reusable validation workflow
-runs automatically against every PR, and `CODEOWNERS` requires sign-off from a
-named owner before it can merge. On merge, a second full-set validation runs
-before the catalog is allowed to notify the site (below) — so a rule change or a
-bad rebase can't silently ship an invalid record. Converting a validated record
-to STAC or OGC API Records is the job of
-[`cdh-metadata-tools`](https://github.com/CGIAR-Climate-Data-Hub/cdh-metadata-tools),
-a pygeometa-style CLI: `io.py` reads the raw authoring YAML, `model.py` parses
-it into a lenient typed `CDHRecord` (unknown and forward-compatible fields
-survive the round trip; validation of completeness is left to the JSON Schema,
-not the model), and a small registry of pluggable output schemas
-(`STACOutputSchema`, `OGCRecordsOutputSchema`) encodes that typed record into
-the target format — `metadata-tools generate --schema stac`. A `datapackage`
-(frictionless) output schema is scoped but not yet built. The tool isn't wired
-into `cdh-catalog`'s CI yet — today it runs standalone — but it is where the
-CDH-to-STAC mapping is implemented in code rather than only specified in docs.
+The
+[`glw4-2020` record](https://github.com/CGIAR-Climate-Data-Hub/cdh-catalog/blob/main/records/glw4-2020/glw4-2020.yaml)
+is a good illustration of the standard: a `note` field carries the projection
+caveat that would otherwise mislead anyone doing area-based analysis, `keywords`
+mixes plain search terms with a linked AGROVOC concept, and `contact` entries
+carry distinct `roles` (`licensor`, `producer`, `processor`, `point-of-contact`)
+rather than one undifferentiated author list.
 
-### Publishing and discovery
+### Additional Metadata Tooling
 
-Two different things get published here, on two different schedules. The
-standard itself — schemas, vocabularies, extensions — publishes to versioned
-URLs on `cdh-metadata-standard`'s own GitHub Pages whenever a release is tagged,
-gated on `npm run check` passing so a broken schema graph never goes live.
-Individual records publish far more often: a merge to `cdh-catalog`'s `main`
-branch is what feeds the [build pipeline](#build-pipeline) — once the second
-validation pass clears, a `repository_dispatch` tells the site to rebuild and
-fetch the updated records. See that section for what happens from there.
+To assist in authoring and publishing records, the Hub has developed multiple
+tools. For users familiar with AI agents and data workflows, the Hub provides an
+AI agent Skill to help author and fill in the metadata fields for new datasets.
+This skill allows the Agent to fill in fields automatically based on the actual
+data file (_e.g._, the bounding box, data type, column/layer names, etc). It
+then works with the user to fill in the remaining fields and validates the
+record to catch any errors. More about AI skills and why the Hub uses them can
+be found in the [Skills section](#skills) of this document, and on the
+[Skills Github](https://github.com/CGIAR-Climate-Data-Hub/skills).
+
+For users who prefer a more manual workflow, but don't want to hand-write YAML
+in a code editor, the Hub provides a simple form-based workflow in the
+[Metadata Submission App](https://github.com/CGIAR-Climate-Data-Hub/CDH-metadata-app).
+This is a lightweight and static web app that allows users to create a new
+record or upload an existing one for easier editing. The form includes
+autocomplete, field descriptions, and immediate validation against the standard,
+so errors can be caught immediately. The app also has a built-in AI agent which
+can assist in filling in some of the metadata fields, and it can be activated by
+providing a free API key. This app is also intended to simplify the submission
+process, and it allows users to open a request to add the record directly in the
+Hub Catalog with minimal technical knowledge.
+
+The Hub is also developing a Python package for working with the standard at
+[`cdh-metadata-tools`](https://github.com/CGIAR-Climate-Data-Hub/cdh-metadata-tools).
+This Python package is inspired by
+[pygeometa](https://github.com/geometa/pygeometa) and will provide tools and
+functions to read, write, and validate records, while also providing the
+interface to convert records to STAC, OGC API Records, Datapackage, and other
+community metadata formats. `io.py` reads the raw authoring YAML, `model.py`
+parses it into a typed `CDHRecord`, and a small registry of pluggable output
+schemas (`STACOutputSchema`, `OGCRecordsOutputSchema`) encodes that typed record
+into the target format - `metadata-tools generate --schema stac` It is intended
+to be wired into the CI systems of the Hub, publishing records in the Hub STAC
+Catalog and other systems as they are submitted.
+
+### Publishing and versioning
+
+All changes to the standard are tracked in a changelog following the
+[Keep A Changelog Conventions](https://keepachangelog.com/en/1.1.0/) and
+releases use [Semantic Versioning](https://semver.org/).
+
+The standard, its schemas, vocabularies, and extensions all share one version
+tag. Each release publishes the schemas, vocabs, and extension definitions to a
+versioned URL (`<tag>/schemas/…`) on GitHub Pages, plus an unversioned mirror of
+the vocabularies so `themes[].scheme` URIs stay stable across releases. A
+record's cdh_schema_version identifies the release against which it should be
+validated. Published release artifacts and their validation dependencies remain
+fixed, allowing existing records to continue validating against their declared
+version as the standard evolves. Each release also includes a versioned
+Authoring Guide and Specification Document describing the metadata fields, their
+definitions, and their intended use.
+
+Published, versioned schemas support validation and integration with tools such
+as language servers and the metadata submission app described above. They
+provide a single source of truth, reducing drift between the standard and the
+tools that implement it. Explicit version references allow downstream tools to
+adopt schema changes deliberately. Changes and releases are subject to automated
+checks and tests to detect errors before publication and reduce the risk of
+breaking downstream workflows.
+
+## CDH Metadata Catalog
+
+Hub records are recorded and published in the
+[CDH Catalog](https://github.com/CGIAR-Climate-Data-Hub/cdh-catalog). The full
+catalog is managed with Git and kept in a public GitHub repository, with all
+accepted records merged into the `main` branch. This tracks submissions, review
+decisions, and changes, with Git preserving the version history of published
+records for transparency and future reference. The full catalog can be
+downloaded or cloned, allowing others to archive, reuse, and maintain it
+independently of the Hub's website and infrastructure.
+
+Currently there is a small number of records (including
+[mapspam](https://github.com/CGIAR-Climate-Data-Hub/cdh-catalog/blob/main/records/mapspam2020/mapspam2020.yaml)
+and
+[glw4](https://github.com/CGIAR-Climate-Data-Hub/cdh-catalog/blob/main/records/glw4-2020/glw4-2020.yaml))
+which can be used as an example and guide for additional records.
+
+### Catalog Submission
+
+When a new dataset and record is submitted to the Hub, an Issue or PR is opened
+in this repository. This triggers multiple automated validation pipelines, and
+if the record is not valid against the Hub Metadata Standard the author is
+notified with a helpful error message, and the addition to the Hub is blocked
+until the record is fixed. Following the automated validations, the record is
+reviewed by a member of the Hub team. This review is used to check the metadata
+for understanding and completeness against the standard, and allows the team to
+fill in and edit any fields that are missing or unclear. It also allows the team
+to determine the dataset's suitability for the Hub - some records may be
+rejected if they are not appropriate, out of date, or not related to the aims of
+the Hub. Following review and approval, the record is then merged to the `main`
+branch. This step is critical to ensure that the Hub provides consistent,
+useful, and scientifically robust data and metadata. This also adds an
+additional safety step by forcing all records to be independently reviewed,
+validated, and approved before they are published.
+
+### Catalog Publication
+
+A submitted record is published when it is merged into the main branch. This
+triggers workflows that update downstream products.
+
+A GitHub Actions workflow sends a repository_dispatch event to trigger the build
+pipeline, rebuilding the Hub website with the updated catalog through the
+[build pipeline](#build-pipeline). This allows the catalog to remain as the
+canonical source of metadata records, while automated builds keep the website
+aligned with it and reduce the need for manual updates.
+
+An additional workflow, currently under development, will use the
+[cdh-metadata-tools package](#additional-metadata-tooling) to convert records
+into STAC and other community formats and publish them to cloud storage for
+distribution and usage.
 
 ## Data storage and distribution
 
-<!-- Object storage, the cloud-native formats (COG, Zarr, Parquet) and why
-     each is used, subsetting/streaming instead of bulk download. -->
+The Hub is designed to be a federated, cloud-native data platform. Datasets can
+be hosted in Hub-managed cloud storage or remain with external providers, while
+being discoverable and accessible through the same catalog. This approach
+reduces unnecessary duplication of data that are already openly and easily
+accessible. Shared metadata provides a consistent interface for users,
+applications, and AI agents to discover, interpret, and access datasets across
+providers, and allows users and producers to work with datasets through their
+preferred tools and workflows.
 
-## Build pipeline
+The Hub prioritizes open data and supports the Accessible principle of FAIR by
+promoting documented, machine-accessible links to data and metadata. The
+independently maintained catalog also supports the preservation of metadata when
+source datasets become unavailable. All data in the Hub must carry a license and
+usage restrictions must be explicitly documented.
 
-<!-- records repo → build-time fetch → static output; the repository_dispatch
-     rebuild trigger; where the skills collection comes in. -->
+Beyond discoverability and access, the Hub aims to make large datasets practical
+to use. Cloud-optimized formats such as Cloud Optimized GeoTIFF (COG), Zarr, and
+Parquet allow applications to retrieve relevant portions of datasets without
+downloading them in full. This can reduce bandwidth, local storage, and
+computational requirements, lowering barriers to scientific analysis and machine
+learning, particularly for users with limited connectivity or computing
+resources.
 
-## The site layer
+### Hub Data Storage and Processing
 
-### Introduction
+Where datasets are already available from reliable providers with suitable
+access methods, the Hub prioritizes cataloging and linking to those existing
+assets. Where access is limited by file formats, download requirements, or
+hosting arrangements, the Hub can process and host a copy to improve usability,
+subject to the source license.
 
-The Hub needed a public-facing site to present datasets, documentation, and
-machine interfaces without operating a server or database. Astro was chosen for
-its simplicity in building documentation-style sites: pages are static by
-default, content is authored in Markdown/MDX, and the framework ships zero
-JavaScript unless a component opts in. This keeps pages fast and readable by
-anything that fetches them, human or machine.
+Any Hub-produced versions retain clear links to the original dataset and
+document the processing applied, including changes to format. This helps users
+distinguish source data from derived products, assess their suitability, and
+reproduce the processing where needed.
 
-### Methodology
+To support the preparation of analysis-ready, cloud-optimized (ARCO) datasets,
+the Hub provides a Python package and a data pipeline which can be used to
+process and publish datasets. The
+[CDH Data Pipeline repository](https://github.com/CGIAR-Climate-Data-Hub/cdh-data-pipeline)
+contains the package and dataset-specific “recipes” that define how source data
+are retrieved, processed, and published for the Hub. This is inspired by
+[Pangeo Forge](https://pangeo-forge.org/) and makes dataset preparation
+repeatable and transparent. Version-controlled recipes document the processing
+steps, allowing others to inspect, reproduce, and adapt the workflows for their
+own use.
 
-The site runs on Astro's content collections (`src/content.config.ts`): typed,
-schema-validated content for tutorials, wikis, FAQ, use cases, and contribution
-guides. Two collections — `catalog` and `skills` — are fetched from their source
-repos (`cdh-catalog`, `skills`) at build time rather than stored locally, via
-custom loaders (`src/lib/records.ts`, `src/lib/skills.ts`), so each piece of
-metadata keeps one home. Markdown renders through Astro's Sätteri pipeline with
-heading-anchor and Shiki syntax-highlighting plugins (`astro.config.mjs`);
-search is client-side via `astro-pagefind`, and `@astrojs/sitemap` generates the
-sitemap. Biome enforces one lint/format standard across the codebase, and Bun is
-the package manager.
+Together, these practices support FAIR data reusability by preserving
+attribution, licensing, and provenance alongside improved access.
 
-### Results
+Hub-managed datasets are stored across multiple cloud providers, depending on
+dataset size, access requirements, and hosting agreements. The Hub primarily
+uses Cloudflare R2, whose absence of data egress fees helps sustain access to
+large climate datasets without high download-related costs for the Hub. Selected
+datasets are also hosted on Amazon S3, with the aim of publishing specific
+high-impact datasets directly through the AWS Data For Good catalog.
 
-The build produces the full public site — catalog, tutorials, wikis, FAQ, and
-use-case pages — plus the machine-interface surface (`/ai/`,
-`.well-known/agent-skills/`, `.well-known/api-catalog`, `llms.txt`,
-`robots.txt`) described under [Machine interfaces](#machine-interfaces). Every
-collection's schema is validated at build time, so malformed content fails the
-build rather than reaching production.
+Regardless of storage location, datasets are described through the same catalog,
+providing consistent discovery and access information across providers.
 
-### Publishing and discovery
+## The Hub website
 
-`astroDeploy.yml` builds and deploys to GitHub Pages on every push to `main`, on
-manual dispatch, and on a `repository_dispatch` fired by `cdh-catalog` when
-records change — so a metadata update rebuilds the site without a manual
-release. A `REQUIRE_RECORDS` guard stops a zero-record build from deploying over
-a working catalog. The site is served at the GitHub Pages root under the
-canonical domain hardcoded in `astro.config.mjs`; moving to a custom domain
-later is a one-line change plus a `public/CNAME` file.
+The Hub website provides an easy-to-navigate interface for discovering datasets
+and understanding their potential uses and limitations. It also brings together
+dataset tutorials and code examples, wikis on data and climate analysis, and
+information about the Hub's mission and how to contribute. Dataset information
+is drawn from the Hub Catalog, which remains the canonical source of metadata
+records.
 
-## Machine interfaces
+### Static Architecture
 
-### Introduction
+The website is built as a static site: pages are generated during the build
+process and served as HTML, CSS, and JavaScript. Static generation suits the Hub
+because catalog content changes through reviewed submissions and releases. Pages
+are rebuilt when those changes are published and then served directly to
+visitors, without requiring an application server or database to operate and
+maintain.
 
-Every page on the Hub is built for two readers at once: a person in a browser
-and an agent that needs the same information without parsing HTML. Rather than
-stand up a separate API and keep it in sync with the site, the Hub gives each
-page a machine counterpart at a predictable URL, generated from the same content
-collections at build time. There is nothing to fall out of date, because there
-is nothing hand-maintained to forget — the machine surface and the human surface
-come from one source.
+Dataset metadata are included directly in the generated HTML, making them
+accessible to search engines and automated clients without requiring JavaScript
+execution to retrieve the core content. This supports FAIR findability by
+exposing catalog information through individually addressable web pages.
 
-### Methodology
+This architecture reduces hosting costs, operational complexity, and ongoing
+maintenance requirements, as minimal infrastructure is needed to operate the
+website. It also improves security as there are no server or database endpoints
+which could be exploited. Once deployed, the published pages remain available
+independently of the systems used to build them.
 
-Each interface targets a different consumption pattern. A page's markdown source
-is served as a plain-text twin at `<page>/index.md` (`src/pages/[...page].ts`)
-for agents that would rather read Markdown than strip HTML; MDX pages and
-notebooks are excluded because their source bodies can carry JSX or base64
-figures that aren't plain markdown. `llms.txt` and `llms-full.txt` give a
-compact and a fully-inlined map of the whole site, regenerated from the
-collections on every build rather than written by hand. `catalog.json` publishes
-the entire catalog as one schema.org `DataCatalog` document — the same markup
-Google Dataset Search reads — with each record's full CDH metadata also standing
-alone at `/catalog/<id>.json`. Discovery itself is machine-readable too:
-`/.well-known/api-catalog` advertises the Hub's endpoints as an RFC 9727
-linkset, and `robots.txt` sets Content Signals
-(`search=yes, ai-input=yes, ai-train=yes`) to state AI use is welcome rather
-than leaving it ambiguous. Pages also register in-browser WebMCP tools
-(`src/lib/webmcp.ts`) — search the catalog, fetch a record, list skills — so an
-agent already sitting in an open tab can act without leaving it.
+Static hosting also improves operational resilience. Serving published pages
+requires no application process or database that could crash, become overloaded,
+or lose connectivity. Problems with source repositories or the build pipeline
+can delay updates without interrupting access to the existing website. Hosting
+and network outages remain possible, but fewer runtime dependencies reduce the
+ways the website can become unavailable to users.
 
-### Results
+These characteristics support the Hub's long-term sustainability. Services such
+as GitHub Pages and Cloudflare Pages offer free hosting options for static
+websites, reducing dependence on continued project funding. The generated files
+can be copied, archived, or transferred to another hosting provider, while the
+source code and build configuration allow others to clone the repository,
+rebuild the site, and publish their own copy. Together, these options support
+continued access to the published catalog and documentation even if the original
+Hub deployment is discontinued.
 
-A static host on GitHub Pages can't do everything this posture would ideally
-want: no content negotiation (serving JSON or Markdown from the same URL based
-on an `Accept` header) and no custom response headers, so there's no HTTP `Link`
-header pointing an agent at `/.well-known/api-catalog`. The repo carries what
-that would look like anyway — `public/_headers` declares the `Link` header and a
-corrected linkset `Content-Type`, with its own comment noting the limit:
-`Cloudflare Pages only; GitHub Pages serves this as a
-plain file.` Everything
-the Hub can guarantee on GitHub Pages instead moves into the URL space itself —
-a separate path per format, discovery files at well-known locations — so a real
-host gains header-level shortcuts later without anything else changing.
+### Website Tech Stack
 
-### Publishing and discovery
+#### Astro
 
-The full, current list of endpoints — with descriptions of what each returns and
-why — is published at [`/ai/`](/ai/) rather than duplicated here; that page also
-lists the installable agent skills described under
-[Agent skills](#agent-skills). Treat `/ai/` as the source of truth for the
-endpoint table and this section as the reasoning behind it.
+The website uses Astro, a framework well-suited to static content and
+documentation websites. Astro generates pages from Markdown and structured data
+such as YAML, simplifying authoring of content and integration with the Hub
+Catalog. Astro uses an HTML-first approach that limits JavaScript to interactive
+features such as search, filtering, and maps. This allows a modern user
+experience while keeping the website lightweight, fast, and readable,
+particularly benefiting users with limited bandwidth or computing resources.
+
+The site uses multiple plugins to add functionality, including Sätteri for fast
+and efficient markdown rendering, Shiki for syntax highlighting, and
+astro-pagefind for client-side search. These limit the number of tech components
+the site needs to hand-build and maintain, while keeping the dependencies
+limited to widely-used community packages.
+
+#### Code Maintenance
+
+The website uses TypeScript for static type checking and Biome for linting and
+consistent code formatting. These tools help catch common errors early, reduce
+inconsistencies, and make the codebase easier to review and maintain. Astro's
+own checks complement them by validating types and identifying issues in .astro
+components.
+
+### Build pipeline
+
+The Hub website leverages GitHub Actions to build and deploy the production site
+to GitHub Pages. It can also be built locally in a compatible JavaScript
+environment, and the generated static files can be deployed to other hosting
+platforms (_e.g._, Cloudflare Pages). GitHub Pages was chosen as an initial host
+due to its ease of setup; however, Cloudflare Pages may be used in the future to
+provide greater control and features supporting AI agents. The static
+architecture allows the website to move between providers with minimal changes.
+
+During each build, the website fetches catalog records and agent skills directly
+from their respective repositories. This keeps those two standalone products as
+the source of truth, preventing drift and reducing maintenance overhead.
+Environment variables allow developers to use local directories, select
+different branches, or point to alternative repositories to build a custom
+catalog. Local content examples also support development without fetching the
+full catalog, which is useful where connectivity is limited.
+
+The production build is triggered on every applicable update to the main branch
+of the catalog repository, the skills repository, or the website repository.
+This ensures that the website always shows the most up-to-date content submitted
+to the Hub. The build process installs dependencies using the lockfile,
+retrieves source content, and validates it against the website's content
+schemas. These checks cover catalog records, skills, tutorials, wikis, FAQs, and
+other content collections. Malformed metadata, code issues, bad dependencies,
+missing required fields, or incorrect types cause the build to fail. A failed
+catalog fetch or an empty catalog also stops the build, helping prevent an
+upstream outage or configuration error from publishing an empty catalog.
+Deployment runs only after the validation and build completes successfully. If
+the build fails, the existing production site remains available.
+
+This design keeps the website up-to-date with the latest content through
+automated rebuilds, while ownership and control remain with each source
+repository. Validation checks and deployment safeguards reduce the risk of
+publishing invalid content or a downstream failure causing a production outage.
+
+### Design Principles and Modern Standards
+
+The Hub website prioritizes accessibility, discoverability, and efficient access
+for people and automated tools. These goals complement the Hub's FAIR data
+practices by helping users find, understand, and access its published resources.
+
+#### Accessibility
+
+To ensure the Hub is accessible to all users, the website has a strict target
+score of 100 in Lighthouse's accessibility audits for tested pages. Any changes
+to the codebase are unable to be merged unless they pass this check. This checks
+for descriptive links, alternative text for informative images, sufficient color
+contrast, keyboard navigation, and visible focus indicators, among others.
+Native HTML controls are preferred, with ARIA labels, roles, and states added
+where needed to communicate interactive behavior to assistive technologies.
+These automated checks cover only a subset of accessibility requirements and are
+supplemented by manual testing and review.
+
+#### Performance and SEO
+
+The website prioritizes lightweight pages, limited JavaScript, optimized images,
+and responsive layouts to support users across devices and connection speeds.
+Descriptive page titles, Schema.org structured metadata, sitemaps, and crawlable
+links help search engines, crawlers, and AI agents discover and interpret its
+content. Dataset descriptions are available directly in HTML, with links to the
+underlying catalog records and data assets. For more about how the Hub website
+is built for use by AI agents, see [Agent Readiness](#agent-readiness) below.
+Together, these practices support fast page delivery and make the Hub's
+resources easier to discover and access.
+
+Alongside accessibility checks, the repository runs Lighthouse performance and
+SEO audits on each pull request to identify regressions and opportunities for
+improvement before changes are merged.
+
+### Agent Readiness
+
+The Hub recognizes that AI is rapidly changing how people access information and
+is designed to support both people and AI agents. Alongside standard HTML pages,
+the Hub generates Markdown and JSON representations at build time to support
+different access needs. These share the same source content, reducing
+duplication and keeping the human- and machine-readable versions aligned.
+
+Eligible wiki, tutorial, and dataset pages are available as Markdown at
+<page>/index.md URLs, allowing agents to read the content with less HTML
+processing and potentially fewer tokens. Generated llms.txt and llms-full.txt
+files provide a compact site guide and an expanded content reference for tools
+that support this convention.
+
+Pages also include Schema.org metadata to support discovery by search engines
+and automated tools. A `catalog.json` publishes the full catalog as a Schema.org
+DataCatalog, while a `/catalog/<id>.json` provides each record's metadata. A
+directory at `/.well-known/api-catalog` points agents to the available
+endpoints. These are based on up-and-coming and already established standards
+for modern access patterns. In compatible browsers, WebMCP tools allow agents to
+search the catalog, retrieve records, and list available agent skills.
+
+Cloudflare's Agent Readiness assessment helps identify opportunities to improve
+automated discovery and access, with recommendations assessed against the Hub's
+needs and hosting capabilities. The current interfaces and agent skills are
+documented on AI and agent access.
 
 ## Agent skills
 
@@ -276,10 +563,10 @@ The Hub's datasets are cloud-native and machine-readable, yet turning them into
 a usable result still demands knowledge that most researchers don't carry day to
 day: which source holds which variable, how to clip a raster to an
 administrative boundary, which aggregation method preserves the correct units,
-how to compute a seasonal indicator over a spatial grid, and what fields the CDH
+how to compute a seasonal indicator over a spatial grid, and what fields the Hub
 metadata schema requires.
 
-#### Standardizing workflows via AI Agent Skills
+#### Standardizing workflows via AI agent skills
 
 The agent-skills work set out to close that gap — to let a researcher state what
 they need in plain language and have an AI agent carry out the full workflow
@@ -296,13 +583,13 @@ tells the agent when to trigger the skill, followed by Markdown instructions
 describing the workflow. Optional folders can bundle helper scripts, reference
 documents, and templates alongside it.
 
-#### Why AI Agent Skills?
+#### Why AI agent skills?
 
-We considered other ways to deliver these workflows. A bespoke chatbot would
-need its own server, authentication stack, and ongoing maintenance, and would be
-tied to a single AI provider. A custom API wrapper would remove some of that
-burden but would still leave the user writing code to call it. Agent skills take
-a different approach. Because a skill is just an open-format text file, any
+The Hub considered other ways to deliver these workflows. A bespoke chatbot
+would need its own server, authentication stack, and ongoing maintenance, and
+would be tied to a single AI provider. A custom API wrapper would remove some of
+that burden but would still leave the user writing code to call it. Agent skills
+take a different approach. Because a skill is just an open-format text file, any
 compatible assistant can load and follow it — Claude Code, OpenAI Codex, and
 Antigravity all read the same skill folder. Each workflow is therefore published
 once and works everywhere, with no server to operate and no vendor lock-in.
@@ -312,11 +599,11 @@ once and works everywhere, with no server to operate and no vendor lock-in.
 The workflows were designed with two kinds of users in mind. The first is
 comfortable with programming and with AI agents, and wants direct, scriptable
 control; the second needs to reach a result quickly using only plain-language
-prompts, without touching code. For the first profile, we documented use through
-the terminal with Claude Code. For the second, we relied on more guided,
-GUI-driven agents such as Antigravity or Codex. In every case the end-user
-experience is the same: describe what you need in one sentence, confirm the
-proposed plan, and receive a ready to use output.
+prompts, without touching code. For the first profile, the Hub documented use
+through the terminal with Claude Code. For the second, the Hub relied on more
+guided, GUI-driven agents such as Antigravity or Codex. In every case the
+end-user experience is the same: describe what you need in one sentence, confirm
+the proposed plan, and receive a ready to use output.
 
 ### Methodology
 
@@ -559,14 +846,14 @@ The repository also ships deployment guides for Antigravity and OpenAI Codex
 alongside the Claude Code guide, so the full pipeline is accessible to
 researchers who do not have a paid Claude subscription.
 
-## Python packages
+### Python packages
 
 Two open-source Python packages do the heavy lifting behind the foundational
 skills — each skill is a thin conversational wrapper around one of them, and
 both can be used directly, without an AI agent, by anyone comfortable scripting
 the workflow.
 
-### aggeodata
+#### aggeodata
 
 [`aggeodata`](https://github.com/CGIAR-Climate-Data-Hub/aggeodata) handles data
 acquisition: it downloads daily gridded climate data from CHIRPS, CHIRTS,
@@ -575,7 +862,7 @@ assembles them into analysis-ready NetCDF datacubes aligned to a common grid and
 CRS. A YAML-driven pipeline (`run_download` → `run_datacube`) covers the common
 case; each source also has a standalone downloader for one-off use.
 
-### ag-cube-cm
+#### ag-cube-cm
 
 [`ag-cube-cm`](https://github.com/CGIAR-Climate-Data-Hub/ag-cube-cm) is the
 crop-modeling layer: it takes the datacubes `aggeodata` builds and runs a
@@ -584,13 +871,3 @@ model — pixel-by-pixel across the domain in parallel, producing a gridded yiel
 map (kg/ha) across planting windows, years, and space. It performs no downloads
 of its own. Both packages ship an MCP server, so an AI agent can drive the same
 two-step workflow the `spatial-crop-modeler` skill uses.
-
-## Versioning
-
-<!-- Field-based versioning: version, previous_version, deprecated — and why
-     folder layout is never used to infer a version. -->
-
-## Repositories
-
-<!-- What lives where across the GitHub org, so a reader can find the source
-     for any layer above. -->
