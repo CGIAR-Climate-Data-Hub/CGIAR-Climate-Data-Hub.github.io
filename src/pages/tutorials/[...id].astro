@@ -44,11 +44,13 @@ const jsonLd = {
   audience: { "@type": "Audience", audienceType: entry.data.audience },
   ...(timeRequired && { timeRequired }),
   dateModified: entry.data.updated.toISOString().slice(0, 10),
-  author: entry.data.author
-    ? { "@type": "Person", name: entry.data.author }
+  author: entry.data.author.length
+    ? entry.data.author.map((name) => ({ "@type": "Person", name }))
     : { "@type": "Organization", name: SITE_PUBLISHER_NAME },
   isPartOf: { "@type": "WebSite", "@id": `${Astro.site}#website` },
 };
+
+const byline = new Intl.ListFormat("en").format(entry.data.author);
 ---
 
 <Layout
@@ -73,7 +75,7 @@ const jsonLd = {
           {[
             entry.data.time,
             entry.data.format,
-            entry.data.author && `by ${entry.data.author}`,
+            byline && `by ${byline}`,
           ]
             .filter(Boolean)
             .join(" · ")}

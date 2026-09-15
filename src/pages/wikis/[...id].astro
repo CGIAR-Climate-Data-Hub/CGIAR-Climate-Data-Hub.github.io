@@ -32,11 +32,13 @@ const jsonLd = {
   description: entry.data.description,
   dateModified: updated,
   url: new URL(`/wikis/${entry.id}/`, Astro.site).href,
-  author: entry.data.author
-    ? { "@type": "Person", name: entry.data.author }
+  author: entry.data.author.length
+    ? entry.data.author.map((name) => ({ "@type": "Person", name }))
     : { "@type": "Organization", name: SITE_PUBLISHER_NAME },
   isPartOf: { "@type": "WebSite", "@id": `${Astro.site}#website` },
 };
+
+const byline = new Intl.ListFormat("en").format(entry.data.author);
 ---
 
 <Layout
@@ -53,9 +55,7 @@ const jsonLd = {
         items={[{ label: "Hub", href: "/" }, { label: "Wikis", href: "/wikis/" }, { label: entry.data.title }]}
       />
       <h1>{entry.data.title}</h1>
-      <div class="meta">
-        {entry.data.author && `By ${entry.data.author} · `}Updated {updatedLong}
-      </div>
+      <div class="meta">{byline && `By ${byline} · `}Updated {updatedLong}</div>
       <p class="lede">{entry.data.description}</p>
       <div class="prose">
         <Content />
