@@ -1,7 +1,7 @@
 ---
 title: Authoring a metadata record
 description: "What goes in a CDH record, field by field — and the three ways to produce one: the AI skill, the web editor, or hand-written YAML."
-section: Data standards
+group: Data standards
 updated: 2026-08-25
 order: 1
 ---

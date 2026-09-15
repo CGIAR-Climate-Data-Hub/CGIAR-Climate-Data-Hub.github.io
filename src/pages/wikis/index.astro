@@ -42,7 +42,7 @@ const description = `Long-form reference for how the ${SITE_NAME} works — stan
 
       {groups.map((group) => (
           <section>
-            <h2>{group.section}</h2>
+            <h2>{group.label}</h2>
             <div class="rows">
               {group.entries.map((wiki) => (
                 <a class="row" href={`/wikis/${wiki.id}/`}>

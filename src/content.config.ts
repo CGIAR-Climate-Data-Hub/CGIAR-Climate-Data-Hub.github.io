@@ -1,7 +1,7 @@
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
-import { WIKI_SECTIONS } from "./lib/collections";
+import { WIKI_GROUPS } from "./lib/collections";
 import { notebooks } from "./lib/notebooks";
 import { records } from "./lib/records";
 import { skills as skillsLoader } from "./lib/skills";
@@ -42,9 +42,10 @@ const wikis = defineCollection({
     title: z.string(),
     description: z.string(),
     author: z.string().optional(),
-    section: z.enum(WIKI_SECTIONS),
+    // Sidebar group
+    group: z.enum(WIKI_GROUPS),
     updated: z.coerce.date(),
-    // Sidebar position within a section; unordered entries sort alphabetically after
+    // Sidebar position within a group; unordered entries sort alphabetically after
     order: z.number().optional(),
     // Planned but unwritten: listed in the sidebar, no page generated
     soon: z.boolean().default(false),

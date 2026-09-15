@@ -11,14 +11,14 @@ interface Props {
 
 const { activeId } = Astro.props;
 
-// Sections open by default — remove one to start it collapsed. The section
+// Groups open by default — remove one to start it collapsed. The group
 // holding the current page always opens regardless.
 const DEFAULT_OPEN = new Set(["Data standards", "Methods", "Concepts"]);
 
 type Item = { title: string; href?: string; id?: string; soon?: boolean };
 
 const nav = groupWikis(await getCollection("wikis")).map((group) => ({
-  label: group.section,
+  label: group.label,
   items: group.entries.map(
     (e): Item => ({
       title: e.data.title,
@@ -28,7 +28,7 @@ const nav = groupWikis(await getCollection("wikis")).map((group) => ({
     }),
   ),
   open:
-    DEFAULT_OPEN.has(group.section)
+    DEFAULT_OPEN.has(group.label)
     || group.entries.some((e) => e.id === activeId),
 }));
 ---

@@ -1,7 +1,7 @@
 ---
 title: Cloud-optimizing data
 description: Converting rasters to COG and cubes to Zarr so Hub datasets can be read by range request — the layout conventions, the tooling, and how to validate the result.
-section: Data standards
+group: Data standards
 updated: 2026-08-25
 order: 2
 ---

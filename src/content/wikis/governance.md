@@ -1,7 +1,7 @@
 ---
 title: Governance
 description: How datasets are chosen, maintained, and retired — and who decides.
-section: The Hub
+group: The Hub
 updated: 2026-08-25
 order: 2
 ---
