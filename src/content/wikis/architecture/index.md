@@ -43,6 +43,10 @@ grouped together, these usage patterns would be much less explicit and
 development and maintenance would be much more complex. This approach keeps
 things simple, easy to navigate, and flexible.
 
+### Architecture Overview
+
+![Hub system overview](./CDH_Architecture.svg)
+
 ## General Conventions
 
 ### Version Control and Review
@@ -68,11 +72,11 @@ development team and funding period, as a high-quality product. Therefore,
 AI-assisted contributions follow the same quality and review requirements as
 other contributions.
 
-Contributors remain responsible for understanding the generated code they
-submit, checking its behavior, and ensuring it follows the repository's
-conventions. Accepting generated code solely because it appears to work is
-insufficient for production use, and passing automated tests alone does not
-establish correctness or maintainability.
+Contributors are responsible for understanding the generated code they submit,
+checking its behavior, and ensuring it follows the repository's conventions.
+Accepting generated code solely because it appears to work is insufficient for
+production use, and passing automated tests alone does not establish correctness
+or maintainability.
 
 AI tools assist with implementation, debugging, documentation, and review, while
 human contributors remain accountable for design decisions, scientific
@@ -86,14 +90,6 @@ Repository-level `AGENTS.md` instructions, development skills, and access to
 relevant documentation through MCP servers help coding agents follow project
 conventions. Automated checks, linters, and human code review provide additional
 quality controls.
-
-## Architecture Overview
-
-<!-- Drop the diagram here as an image reference, not inline SVG — Pandoc drops
-     raw HTML on the way to PDF, so an inline <svg> would show on the site and
-     vanish from the deliverable:
-       ![Hub architecture](./architecture.svg)
-     Astro treats it as a collection asset; Quarto converts it for Typst. -->
 
 ## The metadata standard
 

@@ -9,7 +9,8 @@ import { CATALOG_REPO, SKILLS_REPO } from "./site.config";
 
 // One name or a list; normalised to a list so templates handle one shape
 const authors = z
-  .union([z.string().transform((s) => [s]), z.array(z.string())])
+  .union([z.string(), z.array(z.string())])
+  .transform((a) => [a].flat())
   .default([]);
 
 const tutorialSchema = z.object({

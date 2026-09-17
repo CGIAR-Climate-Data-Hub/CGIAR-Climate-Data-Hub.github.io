@@ -24,3 +24,7 @@ format:
     section-numbering: "1.1.1"
     # Wikis start at ## (the page title is the h1); promote so sections number 1, 2, …
     shift-heading-level-by: -1
+    include-in-header:
+      # Inset figures so a full-height diagram still fits under its heading
+      # instead of pushing to a page of its own
+      - text: "#show figure: set image(width: 88%)"

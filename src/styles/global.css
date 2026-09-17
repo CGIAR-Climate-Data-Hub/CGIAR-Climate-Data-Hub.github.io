@@ -578,6 +578,7 @@ hr {
 
 .prose img {
   max-width: 100%;
+  height: auto;
 }
 
 /* Code-block chrome (added around shiki blocks at build time — src/lib/code-block.ts) */

@@ -19,6 +19,9 @@ them with Typst (bundled, no LaTeX):
 bun run pdf     # writes pdfs/<wiki>.pdf (gitignored)
 ```
 
+Quarto 1.10+ must be on your PATH for this. It is only needed to generate PDFs
+from content; the site build does not use it.
+
 `_quarto.yml` lists which wikis render and holds the print settings. To export
 another wiki, give it its own folder (`wikis/<name>/index.md`, images beside
 it) and add the file to `project.render`. The PDF is generated on demand, not
