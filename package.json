@@ -13,6 +13,7 @@
     "lh": "bun run build:example && lhci autorun",
     "lh:open": "lhci open --no-lighthouserc",
     "preview": "astro preview",
+    "pdf": "quarto render",
     "astro": "astro",
     "check": "biome check",
     "fix": "biome check --write",
