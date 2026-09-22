@@ -2,7 +2,7 @@
 title: Governance Policy (Draft)
 description: How Hub Resources are chosen, maintained, and retired.
 group: The Hub
-updated: 2026-09-17
+updated: 2026-09-22
 author: Brayden Youngberg
 order: 2
 ---
@@ -146,6 +146,13 @@ Resource Stewards and Hub Maintainers are responsible for ensuring that
 resources remain current and relevant to the Hub. For federated resources,
 Stewards must review and update the metadata record when the upstream data,
 license, access conditions, or lifecycle status change.
+
+Each ongoing or open-ended dataset must document its expected update frequency,
+or explicitly state that updates are irregular or the schedule is unknown. For
+externally maintained datasets, this must reflect the provider’s stated schedule.
+Where the Hub maintains a copy, its refresh schedule must also be documented.
+Stewards must keep this information current and record known delays or cessation
+of updates.
 
 Published data versions must not be overwritten. A new dataset version must be
 created whenever values, coverage, methodology, structure, or other
