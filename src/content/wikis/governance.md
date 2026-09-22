@@ -5,7 +5,6 @@ group: The Hub
 updated: 2026-09-17
 author: Brayden Youngberg
 order: 2
-soon: true
 ---
 
 **Version**: Draft Standard
