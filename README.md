@@ -9,6 +9,29 @@ bun run build   # static build to dist/
 bun run check   # lint + format (Biome)
 ```
 
+### Wiki PDFs
+
+Some wikis double as PDF deliverables, e.g. the architecture blueprint at
+`src/content/wikis/architecture/index.md`. [Quarto](https://quarto.org) renders
+them with Typst (bundled, no LaTeX):
+
+```sh
+bun run pdf     # writes pdfs/<wiki>.pdf (gitignored)
+```
+
+Quarto 1.10+ must be on your PATH for this. It is only needed to generate PDFs
+from content; the site build does not use it.
+
+`_quarto.yml` lists which wikis render and holds the print settings. To export
+another wiki, give it its own folder (`wikis/<name>/index.md`, images beside
+it) and add the file to `project.render`. The PDF is generated on demand, not
+in the site build; nothing is committed.
+
+Two constraints on the content: wiki frontmatter must avoid keys Quarto
+reserves (`section` is why the sidebar key is `group`), and diagrams must be
+image references rather than inline `<svg>`, which Pandoc drops on the way to
+PDF. Use absolute URLs for links you want clickable in print.
+
 ### Lighthouse CI
 
 `bun run lh` builds the site with the bundled example records and skills,

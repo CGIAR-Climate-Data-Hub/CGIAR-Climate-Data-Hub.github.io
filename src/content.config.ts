@@ -1,16 +1,22 @@
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
-import { WIKI_SECTIONS } from "./lib/collections";
+import { WIKI_GROUPS } from "./lib/collections";
 import { notebooks } from "./lib/notebooks";
 import { records } from "./lib/records";
 import { skills as skillsLoader } from "./lib/skills";
 import { CATALOG_REPO, SCHEMA_SERIES, SKILLS_REPO } from "./site.config";
 
+// One name or a list; normalised to a list so templates handle one shape
+const authors = z
+  .union([z.string(), z.array(z.string())])
+  .transform((a) => [a].flat())
+  .default([]);
+
 const tutorialSchema = z.object({
   title: z.string(),
   description: z.string(),
-  author: z.string().optional(),
+  author: authors,
   // Who the tutorial is for — the card/facet axis ("is this for me?")
   audience: z.enum(["Anyone", "Python & R", "GIS"]),
   topic: z.string(),
@@ -41,11 +47,14 @@ const wikis = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    author: z.string().optional(),
-    section: z.enum(WIKI_SECTIONS),
+    author: authors,
+    // Sidebar group
+    group: z.enum(WIKI_GROUPS),
     updated: z.coerce.date(),
-    // Sidebar position within a section; unordered entries sort alphabetically after
+    // Sidebar position within a group; unordered entries sort alphabetically after
     order: z.number().optional(),
+    // Planned but unwritten: listed in the sidebar, no page generated
+    soon: z.boolean().default(false),
   }),
 });
 

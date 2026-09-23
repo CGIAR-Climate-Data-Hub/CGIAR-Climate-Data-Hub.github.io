@@ -10,23 +10,20 @@ export async function allTutorials() {
   ];
 }
 
-export const WIKI_SECTIONS = [
-  "Standards",
+export const WIKI_GROUPS = [
+  // Sidebar groups render in this order — hub-level docs lead
+  "The Hub",
+  "Data standards",
   "Methods",
   "Concepts",
-  "Governance",
   "Reference",
 ] as const;
 
-export const WIKI_SECTION_LABELS: Partial<
-  Record<(typeof WIKI_SECTIONS)[number], string>
-> = { Standards: "Data standards" };
-
 export function groupWikis(entries: CollectionEntry<"wikis">[]) {
-  return WIKI_SECTIONS.map((section) => ({
-    section,
+  return WIKI_GROUPS.map((label) => ({
+    label,
     entries: entries
-      .filter((e) => e.data.section === section)
+      .filter((e) => e.data.group === label)
       .sort(
         (a, b) =>
           (a.data.order ?? 99) - (b.data.order ?? 99)
