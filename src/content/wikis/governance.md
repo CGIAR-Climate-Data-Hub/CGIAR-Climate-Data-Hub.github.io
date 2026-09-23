@@ -1,5 +1,6 @@
 ---
 title: Governance Policy (Draft)
+description: How Hub Resources are chosen, maintained, and retired.
 group: The Hub
 updated: 2026-09-22
 order: 2
