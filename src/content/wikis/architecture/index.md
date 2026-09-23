@@ -3,6 +3,10 @@ title: Data Hub Architecture
 description: How the Hub is designed and why it was built the way it is. The metadata, cloud-native data, the build pipeline, and the machine interfaces.
 group: The Hub
 updated: 2026-09-14
+author:
+  - Andres Aguilar
+  - Diego Agudelo
+  - Brayden Youngberg
 order: 1
 ---
 
