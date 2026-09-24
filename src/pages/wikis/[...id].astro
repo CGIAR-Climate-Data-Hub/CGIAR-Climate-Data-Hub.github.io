@@ -63,12 +63,18 @@ const byline = new Intl.ListFormat("en").format(entry.data.author);
         items={[{ label: "Hub", href: "/" }, { label: "Wikis", href: "/wikis/" }, { label: entry.data.title }]}
       />
       <h1>{entry.data.title}</h1>
-      <div class="meta">{byline && `By ${byline} · `}Updated {updatedLong}</div>
+      <div class="meta">
+        <div class="meta-main">
+          {byline && <span>By {byline}</span>}
+          <a href="#how-to-cite">Cite this page</a>
+        </div>
+        <div>Updated <time datetime={updated}>{updatedLong}</time></div>
+      </div>
       <p class="lede">{entry.data.description}</p>
       <div class="prose">
         <Content />
       </div>
-      <div class="cite-wrap">
+      <div class="cite-wrap" id="how-to-cite">
         <Citation cite={cite} />
       </div>
       <div class="footer-row">
@@ -117,6 +123,13 @@ h1 {
   color: var(--text-mute);
 }
 
+.meta-main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  justify-content: space-between;
+}
+
 .lede {
   padding-bottom: 26px;
   margin-top: 22px;
@@ -135,6 +148,7 @@ h1 {
 .cite-wrap {
   padding-top: var(--space-6);
   margin-top: var(--space-6);
+  scroll-margin-top: calc(var(--nav-height) + var(--space-5));
   border-top: 1px solid var(--border);
 }
 
