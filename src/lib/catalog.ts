@@ -226,8 +226,7 @@ export function normalizeBboxes(bbox?: number[] | number[][]) {
   return (Array.isArray(bbox[0]) ? bbox : [bbox]) as number[][];
 }
 
-// Records carry their citation nested, plus doi/version/id at the top level;
-// flatten to the shape src/lib/citation.ts works in.
+// Flatten record metadata into the shared citation shape.
 export function citable(d: CatalogRecord): Citable | undefined {
   if (!d.citation) return undefined;
   return { ...d.citation, doi: d.doi, key: d.id, version: d.version };

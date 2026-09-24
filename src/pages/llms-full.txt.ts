@@ -26,7 +26,6 @@ export const GET: APIRoute = async ({ site }) => {
     md.replace(/^(#{1,6})(?= )/gm, (heading) =>
       "#".repeat(Math.min(heading.length + 2, 6)),
     );
-  // cite is the same "Cite:" line the markdown twins and dataset records carry
   const doc = (
     title: string,
     url: string,

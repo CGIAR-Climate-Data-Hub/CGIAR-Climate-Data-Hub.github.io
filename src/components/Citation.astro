@@ -1,9 +1,5 @@
 ---
-// "How to cite" block: the suggested citation, with BibTeX in a disclosure for
-// reference managers. Strings come from src/lib/citation.ts, so anything that
-// can map itself to a Citable (records, tutorials, wikis) gets the same block.
-// The default slot takes extra content below — the record page puts its
-// related publications there.
+// The slot holds related publications on record pages.
 import { Code } from "astro:components";
 import CopyButton from "@/components/CopyButton.astro";
 import { bibtex, type Citable, citationText } from "@/lib/citation";
@@ -11,7 +7,7 @@ import { codeHeader, shikiConfig } from "@/lib/code-block";
 
 interface Props {
   cite: Citable;
-  // "Accessed through" clause — for things the hub redistributes, not publishes
+  // Hub page for redistributed datasets
   viaUrl?: string;
   note?: string;
   heading?: string;
@@ -55,7 +51,6 @@ const bib = bibtex(cite, viaUrl);
   gap: var(--space-3);
 }
 
-/* The block carries its own heading size — page-scoped h2 rules don't reach in */
 h2 {
   font-size: var(--font-size-8);
   line-height: 1.3;

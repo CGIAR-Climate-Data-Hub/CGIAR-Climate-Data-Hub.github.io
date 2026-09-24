@@ -17,8 +17,6 @@ export type CitablePage = {
   data: { title: string; author: string[]; updated: Date };
 };
 
-// Citation shape for docs pages the hub publishes itself: the page url is the
-// citation url, so callers pass no viaUrl ("accessed through") clause.
 export function pageCitable(e: CitablePage, url: string): Citable {
   return {
     authors: e.data.author,

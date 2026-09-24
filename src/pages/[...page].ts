@@ -18,11 +18,9 @@ export async function getStaticPaths() {
   ].map(({ e, base }) => ({
     e,
     base,
-    // Matches the "Cite:" line datasetMd emits, so every twin cites the same way
     cite: `Cite: ${citationText(pageCitable(e, `${SITE_URL}/${base}/${e.id}/`))}`,
   }));
 
-  // Use-case stories carry no author/updated pair, so they get no citation
   const stories = (await getCollection("useCases")).map((e) => ({
     e,
     base: "in-use",
