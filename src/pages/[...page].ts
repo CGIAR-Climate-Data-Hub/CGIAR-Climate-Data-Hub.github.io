@@ -4,8 +4,10 @@
 import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
 import { type CatalogRecord, currentReleases, datasetMd } from "@/lib/catalog";
-import { allTutorials } from "@/lib/collections";
+import { citationText } from "@/lib/citation";
+import { allTutorials, pageCitable } from "@/lib/collections";
 import { markdownResponse } from "@/lib/markdown";
+import { SITE_URL } from "@/site.config";
 
 type Props = { md: string } | { dataset: CatalogRecord };
 
@@ -18,7 +20,16 @@ export async function getStaticPaths() {
     .filter(({ e }) => e.filePath?.endsWith(".md") && e.body)
     .map(({ e, base }) => ({
       params: { page: `${base}/${e.id}/index.md` },
-      props: { md: `# ${e.data.title}\n\n${e.body}` },
+      props: {
+        md: [
+          `# ${e.data.title}`,
+          e.body,
+          e.collection !== "useCases"
+            && `Cite: ${citationText(pageCitable(e, `${SITE_URL}/${base}/${e.id}/`))}`,
+        ]
+          .filter(Boolean)
+          .join("\n\n"),
+      },
     }));
 
   const datasets = currentReleases(await getCollection("catalog")).map((e) => ({

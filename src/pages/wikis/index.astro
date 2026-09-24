@@ -12,30 +12,27 @@ const groups = groupWikis(
 const description = `Long-form reference for how the ${SITE_NAME} works — standards, methods, and governance.`;
 ---
 
-<Layout description={description} title={`Wikis — ${SITE_NAME}`}>
+<Layout description={description} title={`Wikis - ${SITE_NAME}`}>
   <div class="container docs">
     <WikiSidebar />
 
     <div class="main">
       <div class="hero">
-        <div class="label kicker">The CDH Wiki</div>
-        <h1>Read the Hub, like a book.</h1>
+        <div class="label kicker">The CDH Wikis</div>
+        <h1>The Hub Knowledge Base</h1>
         <p class="lede">
-          Long-form reference for how the {SITE_NAME} works — the standards data
-          must meet, the methods behind the layers, and the concepts that frame
-          them. Pick a topic from the left, or start with the essentials below.
+          Methodology and reference documentation for the {SITE_NAME}. Explore
+          technical documentation, scientific methodologies, data standards, and
+          concepts related to climate data.
         </p>
         <div class="ctas">
-          <a
-            class="btn btn-primary"
-            href={githubUrl(STANDARD_REPO)}
-            rel="noreferrer"
-            >Read the metadata standard →</a
+          <a class="btn btn-primary" href={"/tutorials/"} rel="noreferrer"
+            >Follow step-by-step tutorials →</a
           >
           <a
             class="btn btn-ghost"
             href={treeUrl(SITE_REPO, "src/content/wikis")}
-            >Contribute an article</a
+            >Contribute a wiki</a
           >
         </div>
       </div>

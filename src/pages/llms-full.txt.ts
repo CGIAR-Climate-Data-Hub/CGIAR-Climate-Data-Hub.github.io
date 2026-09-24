@@ -4,7 +4,8 @@
 import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
 import { currentReleases, datasetMd } from "@/lib/catalog";
-import { allTutorials } from "@/lib/collections";
+import { citationText } from "@/lib/citation";
+import { allTutorials, type CitablePage, pageCitable } from "@/lib/collections";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/site.config";
 
 export const GET: APIRoute = async ({ site }) => {
@@ -25,8 +26,15 @@ export const GET: APIRoute = async ({ site }) => {
     md.replace(/^(#{1,6})(?= )/gm, (heading) =>
       "#".repeat(Math.min(heading.length + 2, 6)),
     );
-  const doc = (title: string, url: string, body?: string, desc?: string) =>
-    `### ${title}\n\n${abs(url)}\n\n${nestHeadings((body ?? desc ?? "").trim())}`;
+  const doc = (title: string, url: string, body = "", cite?: CitablePage) =>
+    [
+      `### ${title}`,
+      abs(url),
+      nestHeadings(body.trim()),
+      cite && `Cite: ${citationText(pageCitable(cite, abs(url)))}`,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
 
   const md = `# ${SITE_NAME} — full documentation
 
@@ -38,11 +46,11 @@ ${datasets.join("\n\n")}
 
 ## Documentation
 
-${wikis.map((w) => doc(w.data.title, `/wikis/${w.id}/`, w.body)).join("\n\n")}
+${wikis.map((w) => doc(w.data.title, `/wikis/${w.id}/`, w.body, w)).join("\n\n")}
 
 ## Tutorials
 
-${tutorials.map((t) => doc(t.data.title, `/tutorials/${t.id}/`, t.body, t.data.description)).join("\n\n")}
+${tutorials.map((t) => doc(t.data.title, `/tutorials/${t.id}/`, t.body ?? t.data.description, t)).join("\n\n")}
 
 ## FAQ
 
@@ -50,7 +58,7 @@ ${faq.map((f) => `### ${f.data.question}\n\n${(f.body ?? "").trim()}`).join("\n\
 
 ## Use cases
 
-${useCases.map((u) => doc(u.data.title, `/in-use/${u.id}/`, u.body, u.data.description)).join("\n\n")}
+${useCases.map((u) => doc(u.data.title, `/in-use/${u.id}/`, u.body ?? u.data.description)).join("\n\n")}
 `;
 
   return new Response(md, {

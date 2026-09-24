@@ -1,0 +1,86 @@
+---
+// The slot holds related publications on record pages.
+import { Code } from "astro:components";
+import CopyButton from "@/components/CopyButton.astro";
+import { bibtex, type Citable, citationText } from "@/lib/citation";
+import { codeHeader, shikiConfig } from "@/lib/code-block";
+
+interface Props {
+  cite: Citable;
+  // Hub page for redistributed datasets
+  viaUrl?: string;
+  note?: string;
+}
+
+const { cite, note, viaUrl } = Astro.props;
+
+const text = citationText(cite, viaUrl);
+const bib = bibtex(cite, viaUrl);
+---
+
+<div class="cite-block">
+  <h2>How to cite</h2>
+  {note && <p class="cite-note">{note}</p>}
+  <blockquote class="cite">
+    {text}
+    <span class="cite-copy">
+      <CopyButton copy={text} label="Copy citation" />
+    </span>
+  </blockquote>
+  <details class="cite-bibtex">
+    <summary>BibTeX</summary>
+    <Code
+      code={bib}
+      lang="bibtex"
+      theme={shikiConfig.theme}
+      transformers={[codeHeader("BibTeX")]}
+    />
+  </details>
+  <slot />
+</div>
+
+<style>
+.cite-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+h2 {
+  font-size: var(--font-size-8);
+  line-height: 1.3;
+}
+
+.cite-note {
+  font-size: var(--font-size-5);
+  line-height: 1.65;
+  color: var(--text-soft);
+}
+
+.cite {
+  position: relative;
+  padding: var(--space-4) 56px var(--space-4) var(--space-4);
+  margin: 0;
+  font-size: var(--font-size-5);
+  line-height: 1.7;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.cite-copy {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.cite-bibtex summary {
+  font-size: var(--font-size-4);
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.cite-bibtex[open] summary {
+  margin-bottom: var(--space-3);
+}
+</style>

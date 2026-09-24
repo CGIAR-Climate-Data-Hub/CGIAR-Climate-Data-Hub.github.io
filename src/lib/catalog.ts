@@ -1,6 +1,7 @@
 // Shared shaping of CDH catalog records for cards, facets, and JSON-LD.
 import type { CollectionEntry } from "astro:content";
 import formatVocab from "@/assets/format-vocab.json";
+import { type Citable, citationText } from "@/lib/citation";
 import {
   commodity,
   commodityWithParents,
@@ -10,9 +11,7 @@ import {
   isCommodityGroup,
   VOCAB_URL,
 } from "@/lib/vocab";
-import { SITE_PUBLISHER_NAME } from "@/site.config";
 
-const VIA = `Accessed through the ${SITE_PUBLISHER_NAME}`;
 const formatsById = new Map(
   formatVocab.concepts.map((format) => [format.id, format]),
 );
@@ -227,97 +226,10 @@ export function normalizeBboxes(bbox?: number[] | number[][]) {
   return (Array.isArray(bbox[0]) ? bbox : [bbox]) as number[][];
 }
 
-// recordUrl appends an "accessed through" clause pointing at the hub's
-// record page; omit it where only the original citation belongs (JSON-LD).
-export function citationText(d: CatalogRecord, recordUrl?: string) {
-  const c = d.citation;
-  if (!c) return undefined;
-  const authors = c.authors.join(", ");
-  const link = d.doi ? `https://doi.org/${d.doi}` : c.url;
-  return [
-    authors,
-    c.date && `(${c.date})`,
-    `${c.title}.`,
-    // The version pins the citation: the current release's Hub URL rolls
-    // forward to newer releases, so the text must record what was used
-    d.version && `Version ${d.version}.`,
-    c.publisher && `${c.publisher}.`,
-    link,
-    recordUrl && `${VIA}, ${recordUrl}.`,
-  ]
-    .filter(Boolean)
-    .join(" ");
-}
-
-// One text citation per style — the same fields shuffled per convention.
-// citationText (above) stays the generic form used in JSON-LD.
-export function citationFormats(d: CatalogRecord, recordUrl?: string) {
-  const c = d.citation;
-  if (!c) return [];
-  const authors = c.authors.join(", ");
-  const year = (c.date ?? "").slice(0, 4);
-  const link = d.doi ? `https://doi.org/${d.doi}` : c.url;
-  const via = recordUrl ? `${VIA}, ${recordUrl}.` : undefined;
-  const join = (parts: (string | false | undefined)[]) =>
-    parts.filter(Boolean).join(" ");
-  return [
-    {
-      id: "apa",
-      label: "APA",
-      text: join([
-        authors,
-        year && `(${year}).`,
-        `${c.title}`,
-        d.version ? `(Version ${d.version}) [Data set].` : "[Data set].",
-        c.publisher && `${c.publisher}.`,
-        link,
-        via,
-      ]),
-    },
-    {
-      id: "harvard",
-      label: "Harvard",
-      text: join([
-        authors,
-        year && `(${year})`,
-        `${c.title} [Data set].`,
-        d.version && `Version ${d.version}.`,
-        c.publisher && `${c.publisher}.`,
-        link && `Available at: ${link}.`,
-        via,
-      ]),
-    },
-    {
-      id: "chicago",
-      label: "Chicago",
-      text: join([
-        // Initials already end with a period — don't double it
-        authors && (authors.endsWith(".") ? authors : `${authors}.`),
-        year && `${year}.`,
-        `“${c.title}.”`,
-        d.version && `Version ${d.version}.`,
-        c.publisher && `${c.publisher}.`,
-        link && `${link}.`,
-        via,
-      ]),
-    },
-  ];
-}
-
-export function bibtex(d: CatalogRecord, recordUrl?: string) {
-  const c = d.citation;
-  if (!c) return undefined;
-  const key = `${d.id.replaceAll("-", "_")}_${(c.date ?? "").slice(0, 4)}`;
-  const lines = [
-    `  title     = {${c.title}}`,
-    c.authors.length > 0 && `  author    = {${c.authors.join(" and ")}}`,
-    c.date && `  year      = {${c.date.slice(0, 4)}}`,
-    d.version && `  version   = {${d.version}}`,
-    c.publisher && `  publisher = {${c.publisher}}`,
-    d.doi ? `  doi       = {${d.doi}}` : c.url && `  url       = {${c.url}}`,
-    recordUrl && `  note      = {${VIA}, ${recordUrl}}`,
-  ].filter(Boolean);
-  return `@misc{${key},\n${lines.join(",\n")}\n}`;
+// Flatten record metadata into the shared citation shape.
+export function citable(d: CatalogRecord): Citable | undefined {
+  if (!d.citation) return undefined;
+  return { ...d.citation, doi: d.doi, key: d.id, version: d.version };
 }
 
 const STEP_LABELS: Record<string, string> = {
@@ -346,6 +258,7 @@ export function datasetMd(
   sectionDepth = 4,
 ) {
   const abs = (path: string) => new URL(path, site).href;
+  const citation = citable(d);
   const values = (v: string[]) =>
     v.length > 8
       ? `${v[0]} … ${v[v.length - 1]} (${v.length} values)`
@@ -444,7 +357,7 @@ export function datasetMd(
         c.baseline
           && `Baseline: ${c.baseline.start_date}${c.baseline.end_date ? ` to ${c.baseline.end_date}` : ""}`,
       ]),
-    d.citation && `Cite: ${citationText(d, abs(`/catalog/${d.id}/`))}`,
+    citation && `Cite: ${citationText(citation, abs(`/catalog/${d.id}/`))}`,
   ].filter(Boolean);
 
   return blocks.join("\n\n");
@@ -486,7 +399,8 @@ export function datasetJsonLd(
   catalogUrl: string,
 ) {
   const boxes = normalizeBboxes(d.spatial?.bbox) ?? [];
-  const cite = citationText(d);
+  const citation = citable(d);
+  const cite = citation && citationText(citation);
   const creators = d.contact.filter((c) => c.roles.includes("producer"));
   // Distributions stay coarse, and only URLs a consumer can fetch directly
   // (e.g. a Zarr root). Templated assets have no such URL — their prefix

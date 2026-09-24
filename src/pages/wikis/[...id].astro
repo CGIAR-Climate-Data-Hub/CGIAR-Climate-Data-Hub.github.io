@@ -2,9 +2,12 @@
 import { getCollection, render } from "astro:content";
 import ArticleToc from "@/components/ArticleToc.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import Citation from "@/components/Citation.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import WikiSidebar from "@/components/WikiSidebar.astro";
 import Layout from "@/layouts/Layout.astro";
+import { citationText } from "@/lib/citation";
+import { pageCitable } from "@/lib/collections";
 import { editUrl } from "@/lib/github";
 import { SITE_NAME, SITE_PUBLISHER_NAME, SITE_REPO } from "@/site.config";
 
@@ -25,16 +28,21 @@ const updatedLong = entry.data.updated.toLocaleDateString("en-US", {
   day: "numeric",
 });
 
+const pageUrl = new URL(`/wikis/${entry.id}/`, Astro.site).href;
+const cite = pageCitable(entry, pageUrl);
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "TechArticle",
   headline: entry.data.title,
   description: entry.data.description,
   dateModified: updated,
-  url: new URL(`/wikis/${entry.id}/`, Astro.site).href,
+  url: pageUrl,
   author: entry.data.author.length
     ? entry.data.author.map((name) => ({ "@type": "Person", name }))
     : { "@type": "Organization", name: SITE_PUBLISHER_NAME },
+  publisher: { "@type": "Organization", name: SITE_PUBLISHER_NAME },
+  citation: citationText(cite),
   isPartOf: { "@type": "WebSite", "@id": `${Astro.site}#website` },
 };
 
@@ -55,10 +63,19 @@ const byline = new Intl.ListFormat("en").format(entry.data.author);
         items={[{ label: "Hub", href: "/" }, { label: "Wikis", href: "/wikis/" }, { label: entry.data.title }]}
       />
       <h1>{entry.data.title}</h1>
-      <div class="meta">{byline && `By ${byline} · `}Updated {updatedLong}</div>
+      <div class="meta">
+        <div class="meta-main">
+          {byline && <span>By {byline}</span>}
+          <a href="#how-to-cite">Cite this page</a>
+        </div>
+        <div>Updated <time datetime={updated}>{updatedLong}</time></div>
+      </div>
       <p class="lede">{entry.data.description}</p>
       <div class="prose">
         <Content />
+      </div>
+      <div class="cite-wrap" id="how-to-cite">
+        <Citation cite={cite} />
       </div>
       <div class="footer-row">
         <a class="back" href="/wikis/">← Back to the wiki</a>
@@ -106,6 +123,13 @@ h1 {
   color: var(--text-mute);
 }
 
+.meta-main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  justify-content: space-between;
+}
+
 .lede {
   padding-bottom: 26px;
   margin-top: 22px;
@@ -119,6 +143,13 @@ h1 {
 
 .prose {
   margin-top: var(--space-2);
+}
+
+.cite-wrap {
+  padding-top: var(--space-6);
+  margin-top: var(--space-6);
+  scroll-margin-top: calc(var(--nav-height) + var(--space-5));
+  border-top: 1px solid var(--border);
 }
 
 @media (width <= 1080px) {
