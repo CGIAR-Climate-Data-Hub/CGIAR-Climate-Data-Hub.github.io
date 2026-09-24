@@ -104,7 +104,7 @@ a:hover {
 /* Inline links need a non-colour cue; standalone navigation and controls keep
    their component treatments. */
 :where(p, :where(.prose, .answer) :where(li, td, dd), .cite-block li, .fact)
-  a:not(.btn, .pill, .chip) {
+a:not(.btn, .pill, .chip) {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -432,7 +432,7 @@ hr {
 .facet-option[aria-pressed="true"] {
   font-weight: 600;
   color: var(--cdh-blue-950);
-  background: var(--cdh-blue-300);
+  background: var(--grey-1);
 }
 
 .facet-option .count {
@@ -440,9 +440,8 @@ hr {
   color: var(--text-mute);
 }
 
-/* Navy, not the neutral soft — grey-6 is only 3.1:1 on program blue */
 .facet-option[aria-pressed="true"] .count {
-  color: var(--cdh-blue-950);
+  color: var(--text-soft);
 }
 
 /* Sits in the results-meta row (fixed height, so no layout shift), visible
@@ -579,6 +578,7 @@ hr {
 
 .prose img {
   max-width: 100%;
+  height: auto;
 }
 
 /* Code-block chrome (added around shiki blocks at build time — src/lib/code-block.ts) */

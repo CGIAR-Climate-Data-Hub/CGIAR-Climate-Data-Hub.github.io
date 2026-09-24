@@ -14,14 +14,14 @@ export async function allTutorials() {
 
 export type CitablePage = {
   id: string;
-  data: { title: string; author?: string; updated: Date };
+  data: { title: string; author: string[]; updated: Date };
 };
 
 // Citation shape for docs pages the hub publishes itself: the page url is the
 // citation url, so callers pass no viaUrl ("accessed through") clause.
 export function pageCitable(e: CitablePage, url: string): Citable {
   return {
-    authors: e.data.author ? [e.data.author] : [],
+    authors: e.data.author,
     date: e.data.updated.toISOString().slice(0, 10),
     key: e.id,
     publisher: SITE_PUBLISHER_NAME,
@@ -30,23 +30,20 @@ export function pageCitable(e: CitablePage, url: string): Citable {
   };
 }
 
-export const WIKI_SECTIONS = [
-  "Standards",
+export const WIKI_GROUPS = [
+  // Sidebar groups render in this order — hub-level docs lead
+  "The Hub",
+  "Data standards",
   "Methods",
   "Concepts",
-  "Governance",
   "Reference",
 ] as const;
 
-export const WIKI_SECTION_LABELS: Partial<
-  Record<(typeof WIKI_SECTIONS)[number], string>
-> = { Standards: "Data standards" };
-
 export function groupWikis(entries: CollectionEntry<"wikis">[]) {
-  return WIKI_SECTIONS.map((section) => ({
-    section,
+  return WIKI_GROUPS.map((label) => ({
+    label,
     entries: entries
-      .filter((e) => e.data.section === section)
+      .filter((e) => e.data.group === label)
       .sort(
         (a, b) =>
           (a.data.order ?? 99) - (b.data.order ?? 99)
