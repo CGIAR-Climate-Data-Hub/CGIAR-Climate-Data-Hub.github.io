@@ -258,6 +258,7 @@ export function datasetMd(
   sectionDepth = 4,
 ) {
   const abs = (path: string) => new URL(path, site).href;
+  const citation = citable(d);
   const values = (v: string[]) =>
     v.length > 8
       ? `${v[0]} … ${v[v.length - 1]} (${v.length} values)`
@@ -356,7 +357,7 @@ export function datasetMd(
         c.baseline
           && `Baseline: ${c.baseline.start_date}${c.baseline.end_date ? ` to ${c.baseline.end_date}` : ""}`,
       ]),
-    d.citation && `Cite: ${citationText(citable(d), abs(`/catalog/${d.id}/`))}`,
+    citation && `Cite: ${citationText(citation, abs(`/catalog/${d.id}/`))}`,
   ].filter(Boolean);
 
   return blocks.join("\n\n");
@@ -398,7 +399,8 @@ export function datasetJsonLd(
   catalogUrl: string,
 ) {
   const boxes = normalizeBboxes(d.spatial?.bbox) ?? [];
-  const cite = citationText(citable(d));
+  const citation = citable(d);
+  const cite = citation && citationText(citation);
   const creators = d.contact.filter((c) => c.roles.includes("producer"));
   // Distributions stay coarse, and only URLs a consumer can fetch directly
   // (e.g. a Zarr root). Templated assets have no such URL — their prefix

@@ -21,25 +21,21 @@ const bib = bibtex(cite, viaUrl);
 <div class="cite-block">
   <h2>How to cite</h2>
   {note && <p class="cite-note">{note}</p>}
-  {text && (
-    <blockquote class="cite">
-      {text}
-      <span class="cite-copy">
-        <CopyButton copy={text} label="Copy citation" />
-      </span>
-    </blockquote>
-  )}
-  {bib && (
-    <details class="cite-bibtex">
-      <summary>BibTeX</summary>
-      <Code
-        code={bib}
-        lang="bibtex"
-        theme={shikiConfig.theme}
-        transformers={[codeHeader("BibTeX")]}
-      />
-    </details>
-  )}
+  <blockquote class="cite">
+    {text}
+    <span class="cite-copy">
+      <CopyButton copy={text} label="Copy citation" />
+    </span>
+  </blockquote>
+  <details class="cite-bibtex">
+    <summary>BibTeX</summary>
+    <Code
+      code={bib}
+      lang="bibtex"
+      theme={shikiConfig.theme}
+      transformers={[codeHeader("BibTeX")]}
+    />
+  </details>
   <slot />
 </div>
 

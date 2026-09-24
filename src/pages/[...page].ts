@@ -12,27 +12,23 @@ import { SITE_URL } from "@/site.config";
 type Props = { md: string } | { dataset: CatalogRecord };
 
 export async function getStaticPaths() {
-  const cited = [
+  const docs = [
     ...(await getCollection("wikis")).map((e) => ({ e, base: "wikis" })),
     ...(await allTutorials()).map((e) => ({ e, base: "tutorials" })),
-  ].map(({ e, base }) => ({
-    e,
-    base,
-    cite: `Cite: ${citationText(pageCitable(e, `${SITE_URL}/${base}/${e.id}/`))}`,
-  }));
-
-  const stories = (await getCollection("useCases")).map((e) => ({
-    e,
-    base: "in-use",
-    cite: undefined,
-  }));
-
-  const docs = [...cited, ...stories]
+    ...(await getCollection("useCases")).map((e) => ({ e, base: "in-use" })),
+  ]
     .filter(({ e }) => e.filePath?.endsWith(".md") && e.body)
-    .map(({ e, base, cite }) => ({
+    .map(({ e, base }) => ({
       params: { page: `${base}/${e.id}/index.md` },
       props: {
-        md: [`# ${e.data.title}`, e.body, cite].filter(Boolean).join("\n\n"),
+        md: [
+          `# ${e.data.title}`,
+          e.body,
+          e.collection !== "useCases"
+            && `Cite: ${citationText(pageCitable(e, `${SITE_URL}/${base}/${e.id}/`))}`,
+        ]
+          .filter(Boolean)
+          .join("\n\n"),
       },
     }));
 

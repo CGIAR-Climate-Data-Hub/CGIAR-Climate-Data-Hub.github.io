@@ -25,8 +25,7 @@ const publisherOf = (c: Citable) =>
   c.publisher === authorList(c) ? undefined : c.publisher;
 
 // viaUrl points to the hub page for a redistributed dataset.
-export function citationText(c?: Citable, viaUrl?: string) {
-  if (!c) return undefined;
+export function citationText(c: Citable, viaUrl?: string) {
   const via = viaUrl ? `${VIA}, ${viaUrl}.` : undefined;
   const link = linkOf(c);
   const publisher = publisherOf(c);
@@ -44,8 +43,7 @@ export function citationText(c?: Citable, viaUrl?: string) {
     .join(" ");
 }
 
-export function bibtex(c?: Citable, viaUrl?: string) {
-  if (!c) return undefined;
+export function bibtex(c: Citable, viaUrl?: string) {
   const key = `${c.key.replace(/\W+/g, "_")}_${(c.date ?? "").slice(0, 4)}`;
   const publisher = publisherOf(c);
   // Braces keep a corporate author together in BibTeX.
