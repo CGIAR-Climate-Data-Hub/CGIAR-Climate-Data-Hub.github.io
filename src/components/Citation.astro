@@ -10,17 +10,16 @@ interface Props {
   // Hub page for redistributed datasets
   viaUrl?: string;
   note?: string;
-  heading?: string;
 }
 
-const { cite, heading = "How to cite", note, viaUrl } = Astro.props;
+const { cite, note, viaUrl } = Astro.props;
 
 const text = citationText(cite, viaUrl);
 const bib = bibtex(cite, viaUrl);
 ---
 
 <div class="cite-block">
-  <h2>{heading}</h2>
+  <h2>How to cite</h2>
   {note && <p class="cite-note">{note}</p>}
   {text && (
     <blockquote class="cite">
