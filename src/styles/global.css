@@ -23,6 +23,11 @@ body {
   html {
     scroll-behavior: smooth;
   }
+
+  /* Native cross-page cross-fade; the header is named so it holds still */
+  @view-transition {
+    navigation: auto;
+  }
 }
 
 body {
