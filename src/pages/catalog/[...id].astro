@@ -216,7 +216,12 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
       if (!url) return [];
       const label = INDEX_LABELS[ix.format] ?? ix.format;
       const source = asset.locations[0]?.url ?? "<source prefix>/";
-      return [{ label, url, snippet: indexExample(ix.format, url, source) }];
+      // Only Kerchunk and Icechunk may be a directory, and then omit media_type
+      const isDir =
+        (ix.format === "kerchunk" || ix.format === "icechunk")
+        && !ix.media_type;
+      const snippet = indexExample(ix.format, url, source);
+      return [{ label, url, isDir, snippet }];
     });
   const index = indexes[0];
 
@@ -727,7 +732,7 @@ const jsonLd = datasetJsonLd(
                           Open with a file index · {index.label}
                         </span>
                         <CopyButton copy={index.url} label="Copy index URL" />
-                        {!restricted && (
+                        {!restricted && !index.isDir && (
                           <a class="btn btn-ghost dl" download href={index.url}>
                             Download
                           </a>

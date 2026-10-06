@@ -188,6 +188,8 @@ const asset = z.object({
         format: z.string(),
         locations: z.array(location),
         title: z.string().optional(),
+        // Omitted when the index is a directory (Icechunk, Kerchunk Parquet)
+        media_type: z.string().optional(),
       }),
     )
     .default([]),
