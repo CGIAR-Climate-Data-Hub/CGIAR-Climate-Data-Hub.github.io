@@ -254,7 +254,8 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
     tplUrl: tplFile && httpUrl ? httpUrl + tplFile : undefined,
     // Every templated file as a cdh-inventory CSV, built by [asset]-files.csv
     fileCount:
-      asset.href_template && templateInventory(d, asset.href_template)?.count,
+      asset.href_template
+      && templateInventory(d, asset.href_template, asset.locations)?.count,
     download:
       !restricted
       && !asset.href_template

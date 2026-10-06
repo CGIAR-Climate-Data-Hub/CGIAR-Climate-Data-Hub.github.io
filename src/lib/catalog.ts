@@ -59,9 +59,16 @@ function tokenValues(d: CatalogRecord, name: string) {
   return name === "variable" ? d.variables.map((v) => v.name) : [];
 }
 
-// Every file a template names, as a cdh-inventory CSV (RFC 4180): href, then
-// each file's value per token. Undefined unless every token resolves.
-export function templateInventory(d: CatalogRecord, template: string) {
+// Every file an asset's template names, as a cdh-inventory CSV (RFC 4180):
+// href, each file's value per token, then a full url so the download works
+// on its own. Undefined unless every token resolves.
+export function templateInventory(
+  d: CatalogRecord,
+  template: string,
+  locations: { url: string }[],
+) {
+  const base =
+    locations.find((l) => l.url.startsWith("http"))?.url ?? locations[0]?.url;
   const tokens = tokenNames(template);
   const axes = tokens.map((name) => tokenValues(d, name));
   if (axes.some((values) => values.length === 0)) return undefined;
@@ -72,11 +79,13 @@ export function templateInventory(d: CatalogRecord, template: string) {
     /[",\r\n]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v;
   const lines = rows.map((row) => {
     const pick = Object.fromEntries(tokens.map((t, i) => [t, row[i]]));
-    return [fillTemplate(template, pick), ...row].map(cell).join(",");
+    const href = fillTemplate(template, pick);
+    return [href, ...row, `${base ?? ""}${href}`].map(cell).join(",");
   });
+  const header = ["href", ...tokens, "url"].join(",");
   return {
     count: rows.length,
-    csv: `${[["href", ...tokens].join(","), ...lines].join("\r\n")}\r\n`,
+    csv: `${[header, ...lines].join("\r\n")}\r\n`,
   };
 }
 

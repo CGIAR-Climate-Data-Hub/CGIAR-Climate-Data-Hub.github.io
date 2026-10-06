@@ -11,7 +11,7 @@ export async function getStaticPaths() {
     entry.data.data.flatMap((asset) => {
       const inventory =
         asset.href_template
-        && templateInventory(entry.data, asset.href_template);
+        && templateInventory(entry.data, asset.href_template, asset.locations);
       if (!inventory) return [];
       return [
         {
