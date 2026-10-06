@@ -368,7 +368,7 @@ const catalog = defineCollection({
       additional_links: z
         .array(
           z.object({
-            name: z.string().optional(),
+            title: z.string().optional(),
             rel: z.string().optional(),
             url: z.string(),
             description: z.string().optional(),

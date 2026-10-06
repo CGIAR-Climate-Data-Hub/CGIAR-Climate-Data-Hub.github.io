@@ -1100,7 +1100,7 @@ const jsonLd = datasetJsonLd(
             <h2 class="label">Related links</h2>
             {d.additional_links.map((link) => (
               <a class="rail-link ext" href={link.url} rel="noreferrer">
-                {link.name ?? link.url} ↗
+                {link.title ?? link.url} ↗
               </a>
             ))}
           </div>

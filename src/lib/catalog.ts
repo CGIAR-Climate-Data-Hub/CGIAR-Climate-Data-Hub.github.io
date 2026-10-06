@@ -291,7 +291,7 @@ export function datasetMd(
         .filter(Boolean)
         .join(" · ")}`,
     ...d.additional_links.map((l) =>
-      dash(`Link: ${l.name ?? l.url}`, l.name && l.url, l.description),
+      dash(`Link: ${l.title ?? l.url}`, l.title && l.url, l.description),
     ),
   ].filter(Boolean);
 
