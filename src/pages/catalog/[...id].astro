@@ -185,6 +185,9 @@ const quickstart = {
 // - primary: the spotlighted access route (HTTPS when available); others
 //   fills the disclosure — everything on templated assets, where the picker
 //   stands in for the access panel and no root URL shows above
+// - indexes: file_index entries; the first stands in for the access panel,
+//   the rest and the files directory go to the disclosure, and their
+//   snippets join the usage examples dialog
 // - download: only where one click yields one file — an http(s) URL to a
 //   single object, never templated collections, Zarr stores, or prefixes.
 //   Restricted records get no Download buttons at all (the click would just
@@ -200,15 +203,43 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
   const tplFields = resolved?.fields;
   const tplFile = resolved?.file;
 
+  const indexes = asset.file_index.flatMap((ix) => {
+    const url =
+      ix.locations.find((l) => l.url.startsWith("http"))?.url
+      ?? ix.locations[0]?.url;
+    if (!url) return [];
+    const label = INDEX_LABELS[ix.format] ?? ix.format;
+    const source = asset.locations[0]?.url ?? "<source prefix>/";
+    return [{ label, url, snippet: indexExample(ix.format, url, source) }];
+  });
+  // Lead with an index users can open from a snippet
+  const index = indexes.find((ix) => ix.snippet) ?? indexes[0];
+
+  // Templated and indexed assets list their locations as file directories
+  const asDirs = Boolean(asset.href_template || index);
+  const others = [
+    ...indexes
+      .filter((ix) => ix !== index)
+      .map((ix) => ({ label: `${ix.label} index`, url: ix.url })),
+    ...(asDirs
+      ? asset.locations
+      : asset.locations.filter((l) => l !== primary)
+    ).map((loc) => ({
+      label: `${loc.title ?? (asDirs ? "Files" : "URL")}${asDirs ? " directory" : ""}`,
+      url: loc.url,
+    })),
+  ];
+
   const lastSegment = httpUrl?.split("/").pop() ?? "";
   return {
     asset,
-    example: assetExample(d, asset),
+    // An indexed asset's root is a directory, not a file to open
+    example: index ? undefined : assetExample(d, asset),
     bestFor: formatBestFor(asset.media_type),
     primary,
-    others: asset.href_template
-      ? asset.locations
-      : asset.locations.filter((l) => l !== primary),
+    index,
+    indexSnippets: indexes.filter((ix) => ix.snippet),
+    others,
     tplFields,
     tplFile,
     tplUrl: tplFile && httpUrl ? httpUrl + tplFile : undefined,
@@ -605,7 +636,7 @@ const jsonLd = datasetJsonLd(
             <div>
               <h3 class="tech-title">{group.title}</h3>
             <div class="assets">
-              {group.items.map(({ asset, example, bestFor, primary, others, tplFields, tplFile, tplUrl, download }) => (
+              {group.items.map(({ asset, example, bestFor, primary, index, indexSnippets, others, tplFields, tplFile, tplUrl, download }) => (
                 <div class="asset">
                   <div class="asset-head">
                     <span class="mono asset-name">{asset.name}</span>
@@ -684,7 +715,32 @@ const jsonLd = datasetJsonLd(
                         <p class="mono selected-url" data-tpl-url>{tplUrl}</p>
                       </div>
                     )}
-                  {!asset.href_template && primary && (
+                  {index && (
+                    <div class="access-panel">
+                      <p class="panel-head">
+                        <span class="label tpl-title">
+                          Open with a file index · {index.label}
+                        </span>
+                        <CopyButton copy={index.url} label="Copy index URL" />
+                        {!restricted && (
+                          <a class="btn btn-ghost dl" download href={index.url}>
+                            Download
+                          </a>
+                        )}
+                      </p>
+                      <p class="asset-fact">
+                        <span class="mono url">
+                          {urlParts(index.url).map((part) => (
+                            <>
+                              {part}
+                              <wbr />
+                            </>
+                          ))}
+                        </span>
+                      </p>
+                    </div>
+                  )}
+                  {!asset.href_template && !index && primary && (
                     <div class="access-panel">
                       <p class="panel-head">
                         <span class="label tpl-title">Access the data</span>
@@ -713,10 +769,7 @@ const jsonLd = datasetJsonLd(
                       )}
                       {others.map((loc) => (
                         <div class="endpoint">
-                          <span class="proto">
-                            {loc.title ?? "URL"}
-                            {asset.href_template ? " directory" : ""}:
-                          </span>
+                          <span class="proto">{loc.label}:</span>
                           <span class="mono url">
                             {urlParts(loc.url).map((part) => (
                               <>
@@ -730,39 +783,7 @@ const jsonLd = datasetJsonLd(
                       ))}
                     </details>
                   )}
-                  {asset.file_index.map((ix) => {
-                    const url =
-                      ix.locations.find((l) => l.url.startsWith("http"))?.url
-                      ?? ix.locations[0]?.url;
-                    const snippet =
-                      url
-                      && indexExample(
-                        ix.format,
-                        url,
-                        asset.locations[0]?.url ?? "<source prefix>/",
-                      );
-                    return (
-                      <div class="file-index">
-                        <p class="asset-fact">
-                          <b>File index:</b> {INDEX_LABELS[ix.format] ?? ix.format}
-                          {ix.title && ` — ${ix.title}`}
-                        </p>
-                        {url && (
-                          <p class="asset-fact">
-                            <span class="mono url">{url}</span>{" "}
-                            <CopyButton copy={url} label="Copy URL" />
-                          </p>
-                        )}
-                        {snippet && (
-                          <details class="index-example">
-                            <summary>How to open it</summary>
-                            <SnippetTabs python={snippet.python} r={snippet.r} sh={snippet.sh} />
-                          </details>
-                        )}
-                      </div>
-                    );
-                  })}
-                  {example && (
+                  {(example || indexSnippets.length > 0) && (
                     <div class="example-row">
                       <button class="example-btn" data-example-open type="button">
                         &lt;/&gt; View usage examples
@@ -785,7 +806,20 @@ const jsonLd = datasetJsonLd(
                             ×
                           </button>
                         </div>
-                        <SnippetTabs python={example.python} r={example.r} />
+                        {example && indexSnippets.length > 0 && (
+                          <h5>{formatLabel(asset.media_type)}</h5>
+                        )}
+                        {example && <SnippetTabs python={example.python} r={example.r} />}
+                        {indexSnippets.map((ix) => (
+                          <>
+                            <h5>{ix.label} index</h5>
+                            <SnippetTabs
+                              python={ix.snippet?.python}
+                              r={ix.snippet?.r}
+                              sh={ix.snippet?.sh}
+                            />
+                          </>
+                        ))}
                       </dialog>
                     </div>
                   )}
@@ -1931,16 +1965,6 @@ td.mono {
 
 .asset-fact .mono {
   font-size: var(--font-size-3);
-}
-
-.file-index {
-  margin-top: var(--space-3);
-}
-
-.index-example summary {
-  font-size: var(--font-size-3);
-  color: var(--text-soft);
-  cursor: pointer;
 }
 
 /* A 128-character sha512 must wrap rather than widen the card */
