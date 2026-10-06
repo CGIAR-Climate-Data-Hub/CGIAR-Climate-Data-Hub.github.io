@@ -24,6 +24,7 @@ import {
   stacCollectionUrl,
   temporalText,
   versionChain,
+  versionedSlug,
 } from "@/lib/catalog";
 import { shikiConfig } from "@/lib/code-block";
 import { allTutorials } from "@/lib/collections";
@@ -36,8 +37,14 @@ export async function getStaticPaths() {
   const entries = await getCollection("catalog");
   // Record descriptions may carry markdown; render like any other content
   const markdown = await satteri().createRenderer({ shikiConfig });
-  // The current release lives at <id>, superseded ones at <id>_<version>
-  return Promise.all(
+  // A current release's <id>_<version> redirects to <id> until superseded
+  const redirects = entries
+    .filter((e) => !e.data.deprecated)
+    .map((e) => ({
+      params: { id: versionedSlug(e.data) },
+      props: { redirect: `/catalog/${e.data.id}/` },
+    }));
+  const pages = await Promise.all(
     entries.map(async (entry) => ({
       params: { id: recordSlug(entry.data) },
       props: {
@@ -46,8 +53,10 @@ export async function getStaticPaths() {
       },
     })),
   );
+  return [...pages, ...redirects];
 }
 
+if ("redirect" in Astro.props) return Astro.redirect(Astro.props.redirect, 301);
 const { entry, descriptionHtml } = Astro.props;
 const d = entry.data;
 
@@ -934,7 +943,7 @@ const jsonLd = datasetJsonLd(
               <Citation
                 cite={cite}
                 note="Please cite the dataset and any associated peer-reviewed publications."
-                viaUrl={recordUrl}
+                viaUrl={new URL(`/catalog/${versionedSlug(d)}/`, Astro.site).href}
               >
                 {d.related_publications.length > 0 && (
                   <div class="related-pubs">

@@ -136,7 +136,8 @@ export function currentReleases(entries: CollectionEntry<"catalog">[]) {
   return entries.filter((e) => !e.data.deprecated);
 }
 
-// Releases share one id; <id>_<version> names one release, as the spec emits
+// Releases share one id; <id>_<version> names one release, as the spec emits.
+// Citations use it so they keep pointing at the release they cite.
 export const versionedSlug = (d: CatalogRecord) => `${d.id}_${d.version}`;
 
 // The current release lives at <id>; superseded ones at <id>_<version>
@@ -373,7 +374,7 @@ export function datasetMd(
           && `Baseline: ${c.baseline.start_date}${c.baseline.end_date ? ` to ${c.baseline.end_date}` : ""}`,
       ]),
     citation
-      && `Cite: ${citationText(citation, abs(`/catalog/${recordSlug(d)}/`))}`,
+      && `Cite: ${citationText(citation, abs(`/catalog/${versionedSlug(d)}/`))}`,
   ].filter(Boolean);
 
   return blocks.join("\n\n");
