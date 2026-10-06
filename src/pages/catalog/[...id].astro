@@ -138,7 +138,7 @@ const varGroups =
   d.structures.length > 0
     ? d.structures.map((s) => ({
         name: s.name,
-        dims: s.dimensions.join(", ") || "none beyond the grid",
+        dims: s.dimensions.join(", "),
         files: d.data
           .filter((a) => a.structures.includes(s.name))
           .map((a) => a.name)
@@ -611,8 +611,12 @@ const jsonLd = datasetJsonLd(
                   <>
                     <h3 class="tech-title mono">{g.name}</h3>
                     <p class="section-sub">
-                      Dimensions: {g.dims}
-                      {g.files && <> · Files: <span class="mono">{g.files}</span></>}
+                      {[
+                        g.dims && `Dimensions: ${g.dims}`,
+                        g.files && `Files: ${g.files}`,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </p>
                   </>
                 )}
@@ -814,8 +818,7 @@ const jsonLd = datasetJsonLd(
                                   : <span class="mono">{s.variables.join(", ")}</span>
                                   <span class="layout-dims">
                                     {s.dimensions.length > 0
-                                      ? ` by ${s.dimensions.join(" × ")}`
-                                      : " (grid only)"}
+                                      && ` by ${s.dimensions.join(" × ")}`}
                                   </span>
                                 </>
                               )}
