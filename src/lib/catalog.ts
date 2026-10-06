@@ -299,6 +299,7 @@ export function datasetMd(
     `Resource type: ${d.resource_type}`,
     `License: ${d.license}`,
     d.attribution && `Attribution: ${d.attribution}`,
+    d.parent && `Parent record: ${abs(`/catalog/${d.parent}/`)}`,
     d.access && dash(`Access: ${d.access}`, d.access_note),
     d.doi && `DOI: ${d.doi}`,
     temporal && `Temporal coverage: ${temporal}`,
@@ -561,6 +562,7 @@ export function datasetJsonLd(
     }),
     ...(distributions.length > 0 && { distribution: distributions }),
     ...(cite && { citation: cite }),
+    ...(d.parent && { isPartOf: new URL(`${d.parent}/`, catalogUrl).href }),
     includedInDataCatalog: { "@type": "DataCatalog", "@id": catalogUrl },
   };
 }

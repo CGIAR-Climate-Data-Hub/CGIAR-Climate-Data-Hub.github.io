@@ -84,6 +84,14 @@ const derivatives = catalog
   )
   .map((e) => ({ href: `/catalog/${e.data.id}/`, title: e.data.title }));
 
+// Parent and child representations, linked by the child's `parent` id
+const parent = catalog.find(
+  (e) => !e.data.deprecated && e.data.id === d.parent,
+);
+const children = catalog.filter(
+  (e) => !e.data.deprecated && e.data.parent === d.id,
+);
+
 const bboxes = normalizeBboxes(d.spatial?.bbox);
 const coverage = d.spatial?.geography.map(geoLabel).join(", ");
 const resolution = d.spatial?.resolution
@@ -1104,6 +1112,26 @@ const jsonLd = datasetJsonLd(
               <a class="rail-link" href={t.href}>
                 <b>{t.title}</b>
                 <span>{t.meta}</span>
+              </a>
+            ))}
+          </div>
+        )}
+
+      {parent && (
+          <div class="rail-box">
+            <h2 class="label">Parent record</h2>
+            <a class="rail-link" href={`/catalog/${parent.data.id}/`}>
+              <b>{parent.data.title}</b>
+            </a>
+          </div>
+        )}
+
+      {children.length > 0 && (
+          <div class="rail-box">
+            <h2 class="label">Child records</h2>
+            {children.map((c) => (
+              <a class="rail-link" href={`/catalog/${c.data.id}/`}>
+                <b>{c.data.title}</b>
               </a>
             ))}
           </div>

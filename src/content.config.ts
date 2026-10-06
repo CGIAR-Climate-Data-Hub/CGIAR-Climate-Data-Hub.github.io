@@ -196,6 +196,8 @@ const catalog = defineCollection({
       // names its predecessor's version
       previous_version: z.string().optional(),
       deprecated: z.boolean().default(false),
+      // id of the record this one is a child representation of
+      parent: z.string().optional(),
       // Cross-dataset family (e.g. MapSPAM), distinct from the version chain
       series: z
         .object({ name: z.string(), url: z.string().optional() })
