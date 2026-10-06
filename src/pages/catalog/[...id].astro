@@ -688,25 +688,33 @@ const jsonLd = datasetJsonLd(
                         data-root={primary.url}
                         data-template={asset.href_template}
                       >
-                        <p class="panel-head">
-                          <span class="label tpl-title">
-                            Access a specific file
-                          </span>
-                          <CopyButton
-                            copy={tplUrl}
-                            label="Copy selected file URL"
-                          />
-                          {!restricted && (
-                            <a class="btn btn-ghost dl" download href={tplUrl}>
-                              Download
+                        {fileCount && (
+                          <p class="panel-head">
+                            <span class="tpl-title">
+                              List of files{" "}
+                              <span class="tpl-count">
+                                {fileCount.toLocaleString("en")} files
+                              </span>
+                            </span>
+                            <a
+                              class="btn btn-ghost dl"
+                              download={`${asset.name}-files.csv`}
+                              href={`/catalog/${recordSlug(d)}/${asset.name}-files.csv`}
+                            >
+                              Download CSV
                             </a>
-                          )}
+                          </p>
+                        )}
+                        <p class="panel-head file-head">
+                          <span class="tpl-title">Individual file</span>
                         </p>
+                        {/* The selectors, with the actions on the file they pick */}
+                        <div class="tpl-row">
                         <div class="tpl-fields">
                           {(tplFields ?? []).map((f) => (
                             // biome-ignore lint/a11y/noLabelWithoutControl: the control is inside, behind a ternary
                             <label class="tpl-field">
-                              <span class="label">{humanize(f.name)}</span>
+                              <span class="tpl-field-label">{humanize(f.name)}</span>
                               {f.date ? (
                                 <input
                                   data-tpl-dim={f.name}
@@ -725,23 +733,28 @@ const jsonLd = datasetJsonLd(
                             </label>
                           ))}
                         </div>
-                        <p class="mono selected-url" data-tpl-url>{tplUrl}</p>
-                        {fileCount && (
-                          <p class="asset-fact">
+                          <CopyButton
+                            copy={tplUrl}
+                            label="Copy selected file URL"
+                          />
+                          {!restricted && (
                             <a
-                              download={`${asset.name}-files.csv`}
-                              href={`/catalog/${recordSlug(d)}/${asset.name}-files.csv`}
+                              class="btn btn-ghost dl"
+                              data-tpl-download
+                              download
+                              href={tplUrl}
                             >
-                              List all {fileCount.toLocaleString("en")} files (CSV)
+                              Download
                             </a>
-                          </p>
-                        )}
+                          )}
+                        </div>
+                        <p class="mono selected-url" data-tpl-url>{tplUrl}</p>
                       </div>
                     )}
                   {index && (
                     <div class="access-panel">
                       <p class="panel-head">
-                        <span class="label tpl-title">File indexes</span>
+                        <span class="tpl-title">File indexes</span>
                       </p>
                       <div class="index-list">
                         {indexes.map((ix) => (
@@ -785,7 +798,7 @@ const jsonLd = datasetJsonLd(
                   {!asset.href_template && !index && primary && (
                     <div class="access-panel">
                       <p class="panel-head">
-                        <span class="label tpl-title">Access the data</span>
+                        <span class="tpl-title">Access the data</span>
                         <CopyButton copy={primary.url} label="Copy URL" />
                       </p>
                       <p class="asset-fact">
@@ -827,13 +840,13 @@ const jsonLd = datasetJsonLd(
                   )}
                   {example && (
                     <div class="asset-examples">
-                      <p class="label tpl-title">Usage examples</p>
+                      <p class="tpl-title">Usage examples</p>
                       <SnippetTabs python={example.python} r={example.r} />
                     </div>
                   )}
                   {indexSnippets.length > 0 && (
                     <div class="asset-examples">
-                      <p class="label tpl-title">Usage examples</p>
+                      <p class="tpl-title">Usage examples</p>
                       {/* One index open at a time: details sharing a name */}
                       {indexSnippets.map((ix, i) => (
                         <details
@@ -1343,7 +1356,7 @@ for (const picker of document.querySelectorAll<HTMLElement>(".tpl-picker")) {
     const copyBtn =
       picker.querySelector<HTMLButtonElement>("button[data-copy]");
     if (copyBtn) copyBtn.dataset.copy = url;
-    const dl = picker.querySelector<HTMLAnchorElement>("a[download]");
+    const dl = picker.querySelector<HTMLAnchorElement>("[data-tpl-download]");
     if (dl) dl.href = url;
     // The usage example bakes in the previous selection's filename — swap it
     // wherever it appears in the card's examples so they stay live
@@ -2030,14 +2043,16 @@ td.mono {
   margin-top: var(--space-3);
 }
 
+/* Label above its control */
 .tpl-field {
   display: inline-flex;
-  gap: var(--space-2);
-  align-items: center;
+  flex-direction: column;
+  gap: var(--space-1);
 }
 
-.tpl-field .label {
-  font-size: var(--font-size-1);
+.tpl-field-label {
+  font-size: var(--font-size-3);
+  color: var(--text-mute);
 }
 
 .tpl-field select,
@@ -2051,8 +2066,15 @@ td.mono {
 }
 
 /* Quieter than the asset name — it labels a control group, not content */
+/* Panel headings: the card's sub-sections, one step under the asset name */
 .tpl-title {
-  font-size: var(--font-size-1);
+  font-size: var(--font-size-5);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.tpl-count {
+  font-weight: 400;
   color: var(--text-mute);
 }
 
@@ -2060,10 +2082,16 @@ td.mono {
    spotlighted access URL) against the card's white surface */
 .tpl-picker,
 .access-panel {
-  padding: var(--space-3) var(--space-4) var(--space-2);
+  padding: var(--space-4);
   margin-top: var(--space-3);
   background: var(--bg);
   border-radius: var(--radius-md);
+}
+
+/* The panel's padding is its top edge; drop the card's paragraph margin */
+.tpl-picker > :first-child,
+.access-panel > :first-child {
+  margin-top: 0;
 }
 
 /* Plain URL line, wrapping normally — same voice as every card URL */
@@ -2081,6 +2109,31 @@ td.mono {
   padding-left: var(--space-1);
 }
 
+/* Selectors left, the picked file's copy and Download right */
+.tpl-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: flex-end;
+  margin-top: var(--space-3);
+}
+
+.tpl-row .tpl-fields {
+  margin-top: 0;
+  margin-right: auto;
+}
+
+.tpl-row .dl {
+  margin-left: 0;
+}
+
+/* The individual-file section, divided from the file list above */
+.file-head {
+  padding-top: var(--space-4);
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
 /* Panel head: quiet title left, the panel's actions right */
 .panel-head {
   display: flex;
@@ -2089,12 +2142,9 @@ td.mono {
   align-items: center;
 }
 
-.panel-head :global(.code-copy) {
-  margin-left: auto;
-}
-
-.panel-head .dl {
-  margin-left: 0;
+/* The title takes the free space, so actions sit at the right edge */
+.panel-head .tpl-title {
+  margin-right: auto;
 }
 
 .alt-access summary {
