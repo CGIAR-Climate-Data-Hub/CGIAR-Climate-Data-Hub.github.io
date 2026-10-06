@@ -59,9 +59,10 @@ function tokenValues(d: CatalogRecord, name: string) {
   return name === "variable" ? d.variables.map((v) => v.name) : [];
 }
 
-// Every file an asset's template names, as a cdh-inventory CSV (RFC 4180):
-// href, each file's value per token, then a full url so the download works
-// on its own. Undefined unless every token resolves.
+// Every file an asset's template names, in cdh-inventory columns (RFC 4180):
+// href, then each file's value per token. href is the full URL, not relative
+// as in an inventory, so the download works on its own. Undefined unless
+// every token resolves.
 export function templateInventory(
   d: CatalogRecord,
   template: string,
@@ -79,10 +80,10 @@ export function templateInventory(
     /[",\r\n]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v;
   const lines = rows.map((row) => {
     const pick = Object.fromEntries(tokens.map((t, i) => [t, row[i]]));
-    const href = fillTemplate(template, pick);
-    return [href, ...row, `${base ?? ""}${href}`].map(cell).join(",");
+    const href = `${base ?? ""}${fillTemplate(template, pick)}`;
+    return [href, ...row].map(cell).join(",");
   });
-  const header = ["href", ...tokens, "url"].join(",");
+  const header = ["href", ...tokens].join(",");
   return {
     count: rows.length,
     csv: `${[header, ...lines].join("\r\n")}\r\n`,
