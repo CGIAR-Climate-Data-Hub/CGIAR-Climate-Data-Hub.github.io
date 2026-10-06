@@ -248,6 +248,15 @@ const STEP_LABELS: Record<string, string> = {
   PT1H: "hourly",
 };
 
+const UPDATE_LABELS: Record<string, string> = {
+  semiannual: "twice a year",
+  annual: "yearly",
+  irregular: "irregularly",
+};
+
+// "monthly" → "updated monthly"
+export const updateLabel = (f: string) => `updated ${UPDATE_LABELS[f] ?? f}`;
+
 // "P3M" → "every 3 months" (steps are pipeline-validated ISO 8601 durations)
 function stepLabel(step: string) {
   if (STEP_LABELS[step]) return STEP_LABELS[step];
@@ -277,7 +286,11 @@ export function datasetMd(
     d.temporal
     && ("date" in d.temporal
       ? d.temporal.date
-      : `${d.temporal.start_date} to ${d.temporal.end_date ?? "ongoing"}`);
+      : `${d.temporal.start_date} to ${d.temporal.end_date ?? "ongoing"}${
+          d.temporal.update_frequency
+            ? `, ${updateLabel(d.temporal.update_frequency)}`
+            : ""
+        }`);
 
   const facts = [
     `URL: ${abs(`/catalog/${recordSlug(d)}/`)}`,
@@ -380,9 +393,13 @@ export function temporalText(t: CatalogRecord["temporal"], step?: string) {
   if (!t) return undefined;
   const year = (date: string) => date.slice(0, 4);
   if ("date" in t) return { main: year(t.date), sub: "static snapshot" };
+  const sub = [
+    step && stepLabel(step),
+    t.update_frequency && updateLabel(t.update_frequency),
+  ].filter(Boolean);
   return {
     main: `${year(t.start_date)} – ${t.end_date ? year(t.end_date) : "present"}`,
-    sub: step && stepLabel(step),
+    sub: sub.join(" · ") || undefined,
   };
 }
 

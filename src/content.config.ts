@@ -253,7 +253,12 @@ const catalog = defineCollection({
           // Static reference date — "represents 2020", not "covers 2020"
           z.object({ date: z.string() }),
           // Coverage span; end_date is required but null when ongoing
-          z.object({ start_date: z.string(), end_date: z.string().nullable() }),
+          z.object({
+            start_date: z.string(),
+            end_date: z.string().nullable(),
+            // How often the resource gains data: daily … annual, irregular
+            update_frequency: z.string().optional(),
+          }),
         ])
         .optional(),
       dimensions: z

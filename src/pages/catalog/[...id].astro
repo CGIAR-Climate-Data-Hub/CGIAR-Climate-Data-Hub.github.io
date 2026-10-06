@@ -808,6 +808,12 @@ const jsonLd = datasetJsonLd(
                       <dd class="mono">
                         {d.temporal.end_date ?? "open (present)"}
                       </dd>
+                      {d.temporal.update_frequency && (
+                        <>
+                          <dt>Updates</dt>
+                          <dd>{humanize(d.temporal.update_frequency)}</dd>
+                        </>
+                      )}
                     </>
                   )}
                 </dl>
