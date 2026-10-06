@@ -162,6 +162,26 @@ const citation = z.object({
 
 const location = z.object({ url: z.string(), title: z.string().optional() });
 
+// The record's coverage, or one asset's (data[].spatial, same shape)
+const spatial = z.object({
+  // Either one bbox or a list of them, per the datacube extension
+  bbox: z.union([z.array(z.number()), z.array(z.array(z.number()))]).optional(),
+  geography: z.array(z.string()).default([]),
+  crs: z.string().optional(),
+  resolution: z
+    .array(
+      z.object({
+        type: z.string().optional(),
+        unit: z.string().optional(),
+        value: z.number().optional(),
+        label: z.string().optional(),
+      }),
+    )
+    .default([]),
+  // The geometry column of a vector table
+  geometry_column: z.string().optional(),
+});
+
 const asset = z.object({
   name: z.string(),
   description: z.string().optional(),
@@ -181,6 +201,8 @@ const asset = z.object({
   nodata: z.union([z.string(), z.number()]).optional(),
   // Single-file digest as <algorithm>:<hex>
   checksum: z.string().optional(),
+  // Coverage of this asset alone, for picking files by area
+  spatial: spatial.optional(),
   // Index files that list or open this entry's files as one dataset
   file_index: z
     .array(
@@ -243,26 +265,7 @@ const catalog = defineCollection({
         .default([]),
       created: z.string(),
       updated: z.string(),
-      spatial: z
-        .object({
-          // Either one bbox or a list of them, per the datacube extension
-          bbox: z
-            .union([z.array(z.number()), z.array(z.array(z.number()))])
-            .optional(),
-          geography: z.array(z.string()).default([]),
-          crs: z.string().optional(),
-          resolution: z
-            .array(
-              z.object({
-                type: z.string().optional(),
-                unit: z.string().optional(),
-                value: z.number().optional(),
-                label: z.string().optional(),
-              }),
-            )
-            .default([]),
-        })
-        .optional(),
+      spatial: spatial.optional(),
       // Dates are ISO 8601, possibly reduced precision ("2020", "2020-06");
       // a reduced-precision end_date is inclusive (through the period's end).
       temporal: z
@@ -301,6 +304,8 @@ const catalog = defineCollection({
             data_type: z.string().optional(),
             unit: z.string().optional(),
             note: z.string().optional(),
+            // Fill value for this variable, replacing the asset's nodata
+            nodata: z.union([z.string(), z.number()]).optional(),
             // Code → label for categorical values
             categories: z
               .array(

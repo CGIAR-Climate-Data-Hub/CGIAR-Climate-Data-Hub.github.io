@@ -95,6 +95,15 @@ const children = catalog.filter(
 );
 
 const bboxes = normalizeBboxes(d.spatial?.bbox);
+// The variables table grows a "No data" column only when one has a value
+const varNodata = d.variables.some((v) => v.nodata !== undefined);
+// An asset's own coverage: place names, then bounding boxes (W, S, E, N)
+const assetCoverage = (s?: (typeof d.data)[number]["spatial"]) =>
+  s
+  && [
+    ...s.geography.map(geoLabel),
+    ...(normalizeBboxes(s.bbox) ?? []).map((b) => `[${b.join(", ")}]`),
+  ].join(" · ");
 const coverage = d.spatial?.geography.map(geoLabel).join(", ");
 const resolution = d.spatial?.resolution
   .map((r) => r.label)
@@ -570,6 +579,7 @@ const jsonLd = datasetJsonLd(
                         <th>Variable</th>
                         <th>Type</th>
                         <th>Unit</th>
+                        {varNodata && <th>No data</th>}
                         <th>Description</th>
                       </tr>
                     </thead>
@@ -579,6 +589,7 @@ const jsonLd = datasetJsonLd(
                             <td class="mono var-name">{v.name}</td>
                             <td class="mono">{v.data_type ?? "—"}</td>
                             <td class="mono">{v.unit ?? "—"}</td>
+                            {varNodata && <td class="mono">{v.nodata ?? "—"}</td>}
                             <td>
                               {v.description ?? "—"}
                               {v.note && <div class="var-note">{v.note}</div>}
@@ -685,6 +696,12 @@ const jsonLd = datasetJsonLd(
                   {asset.nodata !== undefined && (
                     <p class="asset-fact">
                       <b>No Data:</b> <span class="mono">{asset.nodata}</span>
+                    </p>
+                  )}
+                  {assetCoverage(asset.spatial) && (
+                    <p class="asset-fact">
+                      <b>Coverage:</b>{" "}
+                      <span class="mono">{assetCoverage(asset.spatial)}</span>
                     </p>
                   )}
                   {asset.checksum && (
@@ -961,6 +978,12 @@ const jsonLd = datasetJsonLd(
                     <>
                       <dt>Coverage</dt>
                       <dd>{coverage}</dd>
+                    </>
+                  )}
+                  {d.spatial.geometry_column && (
+                    <>
+                      <dt>Geometry column</dt>
+                      <dd class="mono">{d.spatial.geometry_column}</dd>
                     </>
                   )}
                   {d.spatial.resolution.map((r) => (
