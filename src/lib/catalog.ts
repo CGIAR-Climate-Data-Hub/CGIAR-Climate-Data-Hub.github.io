@@ -3,6 +3,12 @@ import type { CollectionEntry } from "astro:content";
 import formatVocab from "@/assets/format-vocab.json";
 import { type Citable, citationText } from "@/lib/citation";
 import {
+  type Axis,
+  axisValues,
+  fillTemplate,
+  tokenNames,
+} from "@/lib/template";
+import {
   commodity,
   commodityWithParents,
   geography,
@@ -25,26 +31,23 @@ export function stacCollectionUrl(id: string) {
   return `${STAC_ROOT}/${id}/collection.json`;
 }
 
-// Resolve an asset template's placeholders to their valid dimension values.
-// {variable} is the one special placeholder backed by variable names.
+// An asset template's tokens with their axes, plus one real file (first value
+// per token). {variable} is the one token backed by variable names.
 export function resolveTemplate(d: CatalogRecord, template: string) {
-  const fields = [
-    ...new Set([...template.matchAll(/\{(\w+)\}/g)].map((match) => match[1])),
-  ].map((name) => ({
-    name,
-    values:
-      d.dimensions.find((dimension) => dimension.name === name)?.values
-      ?? (name === "variable"
-        ? d.variables.map((variable) => variable.name)
-        : []),
-  }));
-  if (!fields.every((field) => field.values.length > 0)) return undefined;
-  const file = fields.reduce(
-    (resolved, field) =>
-      resolved.replaceAll(`{${field.name}}`, field.values[0]),
-    template,
+  const fields = tokenNames(template).map((name) => {
+    const axis: Axis = d.dimensions.find((dim) => dim.name === name) ?? {
+      values: name === "variable" ? d.variables.map((v) => v.name) : [],
+    };
+    return {
+      name,
+      axis: { values: axis.values, extent: axis.extent, step: axis.step },
+    };
+  });
+  const first = Object.fromEntries(
+    fields.map((f) => [f.name, axisValues(f.axis)[0]]),
   );
-  return { fields, file };
+  if (Object.values(first).some((v) => v === undefined)) return undefined;
+  return { fields, file: fillTemplate(template, first) };
 }
 
 // Fill every placeholder with its first valid value to name one real file.

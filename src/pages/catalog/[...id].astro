@@ -159,8 +159,8 @@ const quickstart = {
 };
 
 // Everything the asset card renders, derived once per asset:
-// - tplFields: one select per template placeholder, options from the cube's
-//   dimensions (and variable names); undefined unless every one resolves
+// - tplFields: one select per template token, options built client-side from
+//   the token's axis (dimension or variable names); undefined unless all resolve
 // - tplFile/tplUrl: the picker's prerendered default (first value per field)
 // - primary: the spotlighted access route (HTTPS when available); others
 //   fills the disclosure — everything on templated assets, where the picker
@@ -174,13 +174,10 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
   const primary =
     asset.locations.find((l) => l.url === httpUrl) ?? asset.locations[0];
 
-  let tplFields: { name: string; values: string[] }[] | undefined;
-  let tplFile: string | undefined;
-  if (asset.href_template) {
-    const resolved = resolveTemplate(d, asset.href_template);
-    tplFields = resolved?.fields;
-    tplFile = resolved?.file;
-  }
+  const resolved =
+    asset.href_template && resolveTemplate(d, asset.href_template);
+  const tplFields = resolved ? resolved.fields : undefined;
+  const tplFile = resolved ? resolved.file : undefined;
 
   const lastSegment = httpUrl?.split("/").pop() ?? "";
   return {
@@ -637,9 +634,10 @@ const jsonLd = datasetJsonLd(
                           {(tplFields ?? []).map((f) => (
                             <label class="tpl-field">
                               <span class="label">{humanize(f.name)}</span>
-                              <select data-tpl-dim={f.name}>
-                                {f.values.map((v) => <option>{v}</option>)}
-                              </select>
+                              <select
+                                data-tpl-axis={JSON.stringify(f.axis)}
+                                data-tpl-dim={f.name}
+                              />
                             </label>
                           ))}
                         </div>
@@ -1128,6 +1126,8 @@ const jsonLd = datasetJsonLd(
 </Layout>
 
 <script>
+import { axisValues, fillTemplate } from "@/lib/template";
+
 // Usage-example modals: native <dialog> handles backdrop/Esc/focus; this
 // wires the open and close buttons plus backdrop-click dismiss.
 document.addEventListener("click", (e) => {
@@ -1151,12 +1151,22 @@ document.addEventListener("click", (e) => {
 // Template pickers: the selects fill the asset's href_template; the built
 // URL feeds the row's copy button and download link
 for (const picker of document.querySelectorAll<HTMLElement>(".tpl-picker")) {
+  const selects = [
+    ...picker.querySelectorAll<HTMLSelectElement>("select[data-tpl-dim]"),
+  ];
+  // Options come from the axis here, not the HTML: an extent can expand to
+  // thousands of values
+  for (const sel of selects)
+    sel.replaceChildren(
+      ...axisValues(JSON.parse(sel.dataset.tplAxis ?? "{}")).map(
+        (v) => new Option(v),
+      ),
+    );
   const update = () => {
-    let file = picker.dataset.template ?? "";
-    for (const sel of picker.querySelectorAll<HTMLSelectElement>(
-      "select[data-tpl-dim]",
-    ))
-      file = file.replaceAll(`{${sel.dataset.tplDim}}`, sel.value);
+    const file = fillTemplate(
+      picker.dataset.template ?? "",
+      Object.fromEntries(selects.map((s) => [s.dataset.tplDim, s.value])),
+    );
     const url = (picker.dataset.root ?? "") + file;
     const urlEl = picker.querySelector<HTMLElement>("[data-tpl-url]");
     if (urlEl) urlEl.textContent = url;

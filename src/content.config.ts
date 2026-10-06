@@ -262,6 +262,8 @@ const catalog = defineCollection({
             description: z.string().optional(),
             // The standard allows bare numbers (years); the site works in strings
             values: z.array(z.coerce.string()).default([]),
+            // [first, last] of a regular temporal axis, in place of values
+            extent: z.array(z.string()).optional(),
             // ISO 8601 duration between slices, on temporal axes
             step: z.string().optional(),
           }),
