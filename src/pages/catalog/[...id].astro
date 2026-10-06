@@ -156,15 +156,17 @@ const tutorialLinks = (await allTutorials())
     meta: `${t.data.audience} · ${t.data.time}`,
   }));
 
-// file_index formats, as the standard's file index table names them
+// file_index formats in display priority: the first an asset has leads its
+// access panel, and the usage examples follow this order
 const INDEX_LABELS: Record<string, string> = {
+  icechunk: "Icechunk",
+  vrt: "GDAL VRT",
   "stac-geoparquet": "STAC-GeoParquet",
   gti: "GDAL Tile Index (GTI)",
-  vrt: "GDAL VRT",
   kerchunk: "Kerchunk",
-  icechunk: "Icechunk",
   "cdh-inventory": "CDH inventory",
 };
+const INDEX_ORDER = Object.keys(INDEX_LABELS);
 
 // Long URLs wrap at path boundaries, not mid-token: each segment gets a
 // <wbr> break hint
@@ -203,17 +205,20 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
   const tplFields = resolved?.fields;
   const tplFile = resolved?.file;
 
-  const indexes = asset.file_index.flatMap((ix) => {
-    const url =
-      ix.locations.find((l) => l.url.startsWith("http"))?.url
-      ?? ix.locations[0]?.url;
-    if (!url) return [];
-    const label = INDEX_LABELS[ix.format] ?? ix.format;
-    const source = asset.locations[0]?.url ?? "<source prefix>/";
-    return [{ label, url, snippet: indexExample(ix.format, url, source) }];
-  });
-  // Lead with an index users can open from a snippet
-  const index = indexes.find((ix) => ix.snippet) ?? indexes[0];
+  const indexes = [...asset.file_index]
+    .sort(
+      (a, b) => INDEX_ORDER.indexOf(a.format) - INDEX_ORDER.indexOf(b.format),
+    )
+    .flatMap((ix) => {
+      const url =
+        ix.locations.find((l) => l.url.startsWith("http"))?.url
+        ?? ix.locations[0]?.url;
+      if (!url) return [];
+      const label = INDEX_LABELS[ix.format] ?? ix.format;
+      const source = asset.locations[0]?.url ?? "<source prefix>/";
+      return [{ label, url, snippet: indexExample(ix.format, url, source) }];
+    });
+  const index = indexes[0];
 
   // Templated and indexed assets list their locations as file directories
   const asDirs = Boolean(asset.href_template || index);
@@ -806,19 +811,21 @@ const jsonLd = datasetJsonLd(
                             ×
                           </button>
                         </div>
-                        {example && indexSnippets.length > 0 && (
-                          <h5>{formatLabel(asset.media_type)}</h5>
-                        )}
                         {example && <SnippetTabs python={example.python} r={example.r} />}
-                        {indexSnippets.map((ix) => (
-                          <>
-                            <h5>{ix.label} index</h5>
+                        {/* One index open at a time: details sharing a name */}
+                        {indexSnippets.map((ix, i) => (
+                          <details
+                            class="index-example"
+                            name={`index-${asset.name}`}
+                            open={i === 0}
+                          >
+                            <summary>{ix.label}</summary>
                             <SnippetTabs
                               python={ix.snippet?.python}
                               r={ix.snippet?.r}
                               sh={ix.snippet?.sh}
                             />
-                          </>
+                          </details>
                         ))}
                       </dialog>
                     </div>
@@ -1965,6 +1972,15 @@ td.mono {
 
 .asset-fact .mono {
   font-size: var(--font-size-3);
+}
+
+.index-example + .index-example {
+  margin-top: var(--space-2);
+}
+
+.index-example summary {
+  font-weight: 500;
+  cursor: pointer;
 }
 
 /* A 128-character sha512 must wrap rather than widen the card */
