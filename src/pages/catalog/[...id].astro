@@ -949,7 +949,7 @@ const jsonLd = datasetJsonLd(
           </section>
         )}
 
-      {(cite || d.contact.length > 0) && (
+      {(cite || d.attribution || d.contact.length > 0) && (
           <section id="citation">
             {cite && (
               <Citation
@@ -979,6 +979,18 @@ const jsonLd = datasetJsonLd(
                   </div>
                 )}
               </Citation>
+            )}
+            {d.attribution && (
+              <div class="attribution">
+                <h3>Attribution</h3>
+                <p class="section-sub">
+                  Reproduce this credit line wherever you reuse the data.
+                </p>
+                <p>
+                  {d.attribution}{" "}
+                  <CopyButton copy={d.attribution} label="Copy attribution" />
+                </p>
+              </div>
             )}
             {d.contact.length > 0 && (
             <div class="contacts-block">
@@ -1264,11 +1276,13 @@ if (tabs.length > 0) {
 
 /* Promoted h4→h3 for heading order; keep the smaller h4-like size */
 .tech-title,
-.related-pubs h3 {
+.related-pubs h3,
+.attribution h3 {
   font-size: var(--font-size-5);
 }
 
-.related-pubs {
+.related-pubs,
+.attribution {
   margin-top: var(--space-3);
 }
 

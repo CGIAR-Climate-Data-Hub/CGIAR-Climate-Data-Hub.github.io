@@ -208,6 +208,8 @@ const catalog = defineCollection({
       access_note: z.string().optional(),
       doi: z.string().optional(),
       note: z.string().optional(),
+      // Credit line reusers must reproduce (Copernicus, OpenStreetMap…)
+      attribution: z.string().optional(),
       keywords: z.array(keyword).default([]),
       contact: z.array(contact).default([]),
       citation: citation.optional(),

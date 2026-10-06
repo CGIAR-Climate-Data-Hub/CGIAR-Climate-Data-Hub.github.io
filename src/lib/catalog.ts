@@ -285,6 +285,7 @@ export function datasetMd(
     d.data.length && `STAC collection: ${stacCollectionUrl(d.id)}`,
     `Resource type: ${d.resource_type}`,
     `License: ${d.license}`,
+    d.attribution && `Attribution: ${d.attribution}`,
     d.access && dash(`Access: ${d.access}`, d.access_note),
     d.doi && `DOI: ${d.doi}`,
     temporal && `Temporal coverage: ${temporal}`,
@@ -456,6 +457,7 @@ export function datasetJsonLd(
     license: licenseUrl(d.license) ?? d.license,
     // "Free" in the Dataset Search sense: openly retrievable, no gate
     isAccessibleForFree: (d.access ?? "public") === "public",
+    ...(d.attribution && { creditText: d.attribution }),
     ...(d.access_note && { conditionsOfAccess: d.access_note }),
     version: d.version,
     dateCreated: d.created,
