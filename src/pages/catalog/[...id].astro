@@ -620,6 +620,13 @@ const jsonLd = datasetJsonLd(
                       <b>No Data:</b> <span class="mono">{asset.nodata}</span>
                     </p>
                   )}
+                  {asset.checksum && (
+                    <p class="asset-fact">
+                      <b>Checksum:</b>{" "}
+                      <span class="mono checksum">{asset.checksum}</span>{" "}
+                      <CopyButton copy={asset.checksum} label="Copy checksum" />
+                    </p>
+                  )}
                   {tplUrl && (
                       <div
                         class="tpl-picker"
@@ -1882,6 +1889,11 @@ td.mono {
 
 .asset-fact .mono {
   font-size: var(--font-size-3);
+}
+
+/* A 128-character sha512 must wrap rather than widen the card */
+.checksum {
+  overflow-wrap: anywhere;
 }
 
 .best-for {

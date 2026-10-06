@@ -179,6 +179,8 @@ const asset = z.object({
     })
     .optional(),
   nodata: z.union([z.string(), z.number()]).optional(),
+  // Single-file digest as <algorithm>:<hex>
+  checksum: z.string().optional(),
 });
 
 const catalog = defineCollection({
