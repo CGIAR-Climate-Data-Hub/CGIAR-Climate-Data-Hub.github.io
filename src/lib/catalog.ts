@@ -2,12 +2,7 @@
 import type { CollectionEntry } from "astro:content";
 import formatVocab from "@/assets/format-vocab.json";
 import { type Citable, citationText } from "@/lib/citation";
-import {
-  type Axis,
-  axisValues,
-  fillTemplate,
-  tokenNames,
-} from "@/lib/template";
+import { axisValues, fillTemplate, tokenNames } from "@/lib/template";
 import {
   commodity,
   commodityWithParents,
@@ -31,22 +26,20 @@ export function stacCollectionUrl(id: string) {
   return `${STAC_ROOT}/${id}/collection.json`;
 }
 
-// An asset template's tokens with their axes, plus one real file (first value
-// per token). {variable} is the one token backed by variable names.
+// An asset template's tokens with their values, plus one real file (first
+// value per token). {variable} is the one token backed by variable names.
 export function resolveTemplate(d: CatalogRecord, template: string) {
   const fields = tokenNames(template).map((name) => {
-    const axis: Axis = d.dimensions.find((dim) => dim.name === name) ?? {
-      values: name === "variable" ? d.variables.map((v) => v.name) : [],
-    };
-    return {
-      name,
-      axis: { values: axis.values, extent: axis.extent, step: axis.step },
-    };
+    const dim = d.dimensions.find((x) => x.name === name);
+    const values = dim
+      ? axisValues(dim)
+      : name === "variable"
+        ? d.variables.map((v) => v.name)
+        : [];
+    return { name, values };
   });
-  const first = Object.fromEntries(
-    fields.map((f) => [f.name, axisValues(f.axis)[0]]),
-  );
-  if (Object.values(first).some((v) => v === undefined)) return undefined;
+  if (fields.some((f) => f.values.length === 0)) return undefined;
+  const first = Object.fromEntries(fields.map((f) => [f.name, f.values[0]]));
   return { fields, file: fillTemplate(template, first) };
 }
 

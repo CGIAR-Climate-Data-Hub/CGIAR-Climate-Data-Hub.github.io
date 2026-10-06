@@ -1,7 +1,7 @@
 // href_template filling, shared by the build and the record page's picker.
 // Dates are handled as text parts, never local time, so no timezone shifts.
 
-export interface Axis {
+interface Axis {
   values?: string[];
   extent?: string[];
   step?: string;
