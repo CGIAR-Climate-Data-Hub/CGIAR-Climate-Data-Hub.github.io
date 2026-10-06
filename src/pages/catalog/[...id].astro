@@ -26,6 +26,7 @@ import {
   versionChain,
   versionedSlug,
 } from "@/lib/catalog";
+import { authorName } from "@/lib/citation";
 import { shikiConfig } from "@/lib/code-block";
 import { allTutorials } from "@/lib/collections";
 import { blobUrl, editUrl, githubUrl } from "@/lib/github";
@@ -951,7 +952,7 @@ const jsonLd = datasetJsonLd(
                     <ul>
                       {d.related_publications.map((pub) => (
                         <li>
-                          {pub.citation && `${pub.citation.authors.join(", ")} (${pub.citation.date}). ${pub.citation.title}. ${pub.citation.publisher}. `}
+                          {pub.citation && `${pub.citation.authors.map(authorName).join(", ")} (${pub.citation.date}). ${pub.citation.title}. ${pub.citation.publisher}. `}
                           {pub.doi && <a href={`https://doi.org/${pub.doi}`}>doi:{pub.doi}</a>}
                         </li>
                       ))}

@@ -1,10 +1,31 @@
 // Shared citation strings for records and documentation pages.
 import { SITE_PUBLISHER_NAME } from "@/site.config";
 
+// Record authors are objects; docs page authors are plain names
+export type Author =
+  | string
+  | { family: string; given?: string }
+  | { organization: string };
+
+export const authorName = (a: Author) =>
+  typeof a === "string"
+    ? a
+    : "organization" in a
+      ? a.organization
+      : [a.given, a.family].filter(Boolean).join(" ");
+
+// "Family, Given" marks the surname; braces keep an organization one name
+const bibtexName = (a: Author) =>
+  typeof a === "string"
+    ? a
+    : "organization" in a
+      ? `{${a.organization}}`
+      : [a.family, a.given].filter(Boolean).join(", ");
+
 export interface Citable {
   title: string;
   // Empty means the hub is the author.
-  authors: string[];
+  authors: Author[];
   date?: string;
   publisher?: string;
   url?: string;
@@ -17,7 +38,10 @@ export interface Citable {
 const VIA = `Accessed through the ${SITE_PUBLISHER_NAME}`;
 
 const authorList = (c: Citable) =>
-  (c.authors.length > 0 ? c.authors : [SITE_PUBLISHER_NAME]).join(", ");
+  (c.authors.length > 0
+    ? c.authors.map(authorName)
+    : [SITE_PUBLISHER_NAME]
+  ).join(", ");
 
 const linkOf = (c: Citable) => (c.doi ? `https://doi.org/${c.doi}` : c.url);
 
@@ -46,9 +70,10 @@ export function citationText(c: Citable, viaUrl?: string) {
 export function bibtex(c: Citable, viaUrl?: string) {
   const key = `${c.key.replace(/\W+/g, "_")}_${(c.date ?? "").slice(0, 4)}`;
   const publisher = publisherOf(c);
-  // Braces keep a corporate author together in BibTeX.
   const author =
-    c.authors.length > 0 ? c.authors.join(" and ") : `{${SITE_PUBLISHER_NAME}}`;
+    c.authors.length > 0
+      ? c.authors.map(bibtexName).join(" and ")
+      : `{${SITE_PUBLISHER_NAME}}`;
   const lines = [
     `  title     = {${c.title}}`,
     `  author    = {${author}}`,

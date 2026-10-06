@@ -143,20 +143,11 @@ const contact = z.object({
   url: z.string().optional(),
 });
 
-// 0.4 authors are { family, given? } or { organization }; flattened for display
-const author = z
-  .union([
-    z.string(),
-    z.object({ family: z.string(), given: z.string().optional() }),
-    z.object({ organization: z.string() }),
-  ])
-  .transform((a) =>
-    typeof a === "string"
-      ? a
-      : "organization" in a
-        ? a.organization
-        : [a.given, a.family].filter(Boolean).join(" "),
-  );
+// A person or an organization, in citation order (CSL-JSON shape)
+const author = z.union([
+  z.object({ family: z.string(), given: z.string().optional() }),
+  z.object({ organization: z.string() }),
+]);
 
 const citation = z.object({
   title: z.string().optional(),
