@@ -158,17 +158,16 @@ const tutorialLinks = (await allTutorials())
     meta: `${t.data.audience} · ${t.data.time}`,
   }));
 
-// file_index formats in display priority: the first an asset has leads its
-// access panel, and the usage examples follow this order
+// file_index formats, as the standard's file index table names them. Indexes
+// show in record order: the author lists the one to open first.
 const INDEX_LABELS: Record<string, string> = {
-  icechunk: "Icechunk",
-  vrt: "GDAL VRT",
   "stac-geoparquet": "STAC-GeoParquet",
   gti: "GDAL Tile Index (GTI)",
+  vrt: "GDAL VRT",
   kerchunk: "Kerchunk",
+  icechunk: "Icechunk",
   "cdh-inventory": "CDH inventory",
 };
-const INDEX_ORDER = Object.keys(INDEX_LABELS);
 
 // Long URLs wrap at path boundaries, not mid-token: each segment gets a
 // <wbr> break hint
@@ -225,23 +224,19 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
   const tplFields = resolved?.fields;
   const tplFile = resolved?.file;
 
-  const indexes = [...asset.file_index]
-    .sort(
-      (a, b) => INDEX_ORDER.indexOf(a.format) - INDEX_ORDER.indexOf(b.format),
-    )
-    .flatMap((ix) => {
-      const url = indexUrl(ix);
-      if (!url) return [];
-      const label = INDEX_LABELS[ix.format] ?? ix.format;
-      const source = asset.locations[0]?.url ?? "<source prefix>/";
-      // An Icechunk repo, or any index given as a prefix, is not one file
-      const isDir = ix.format === "icechunk" || url.endsWith("/");
-      // "cogs.vrt", or "suitability/" for a prefix
-      const name = `${url.replace(/\/$/, "").split("/").pop()}${url.endsWith("/") ? "/" : ""}`;
-      const snippet = indexExample(ix.format, url, source);
-      const preview = previews.get(url);
-      return [{ label, url, name, isDir, snippet, preview }];
-    });
+  const indexes = asset.file_index.flatMap((ix) => {
+    const url = indexUrl(ix);
+    if (!url) return [];
+    const label = INDEX_LABELS[ix.format] ?? ix.format;
+    const source = asset.locations[0]?.url ?? "<source prefix>/";
+    // An Icechunk repo, or any index given as a prefix, is not one file
+    const isDir = ix.format === "icechunk" || url.endsWith("/");
+    // "cogs.vrt", or "suitability/" for a prefix
+    const name = `${url.replace(/\/$/, "").split("/").pop()}${url.endsWith("/") ? "/" : ""}`;
+    const snippet = indexExample(ix.format, url, source);
+    const preview = previews.get(url);
+    return [{ label, url, name, isDir, snippet, preview }];
+  });
   const index = indexes[0];
 
   // Indexed assets list their indexes in their own panel; a templated asset
