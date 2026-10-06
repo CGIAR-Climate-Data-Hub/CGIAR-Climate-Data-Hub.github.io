@@ -49,12 +49,14 @@ const tabs = [
 const buttons = document.querySelectorAll<HTMLButtonElement>("[data-lang]");
 
 function setLang(lang: string) {
-  for (const b of buttons)
-    b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
   for (const snip of document.querySelectorAll<HTMLElement>(".snippet")) {
     const panels = [...snip.querySelectorAll<HTMLElement>("[data-snippet]")];
-    if (!panels.some((p) => p.dataset.snippet === lang)) continue;
-    for (const p of panels) p.hidden = p.dataset.snippet !== lang;
+    if (panels.some((p) => p.dataset.snippet === lang))
+      for (const p of panels) p.hidden = p.dataset.snippet !== lang;
+    // Each block marks the language it shows, which may not be the one picked
+    const shown = panels.find((p) => !p.hidden)?.dataset.snippet;
+    for (const b of snip.querySelectorAll<HTMLButtonElement>("[data-lang]"))
+      b.setAttribute("aria-pressed", String(b.dataset.lang === shown));
   }
 }
 
