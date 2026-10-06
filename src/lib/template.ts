@@ -15,8 +15,6 @@ const ISO =
   /^(\d{4})(?:-(\d{2})(?:-(\d{2})(?:T(\d{2}):(\d{2}):(\d{2}))?)?)?(.*)$/;
 const DURATION =
   /^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/;
-// ISO string length per precision: year, month, date, -, -, date-time
-const WIDTH = [4, 7, 10, 10, 10, 19];
 
 function parts(iso: string) {
   const m = iso.match(ISO);
@@ -45,7 +43,8 @@ export function axisValues({ values = [], extent, step }: Axis) {
   const [y0, mo0 = 1, d0 = 1, h0 = 0, mi0 = 0, s0 = 0] = start.nums;
   const [y1, mo1 = 1, d1 = 1, h1 = 0, mi1 = 0, s1 = 0] = end.nums;
   const last = Date.UTC(y1, mo1 - 1, d1, h1, mi1, s1);
-  const width = WIDTH[start.nums.length - 1];
+  // Each value is written like the start: "2030", "2030-01", …
+  const width = extent[0].length - start.suffix.length;
   const out: string[] = [];
   let prev = Number.NEGATIVE_INFINITY;
   // Each value steps from the start, so month ends don't drift

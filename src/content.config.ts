@@ -192,8 +192,8 @@ const catalog = defineCollection({
       title: z.string(),
       description: z.string(),
       version: z.string(),
-      // Versioning per standard §4.7: snapshots are frozen records marked
-      // deprecated; the chain links backward via previous_version ids
+      // Releases share one id; superseded ones are deprecated, and each
+      // names its predecessor's version
       previous_version: z.string().optional(),
       deprecated: z.boolean().default(false),
       // Cross-dataset family (e.g. MapSPAM), distinct from the version chain

@@ -3,6 +3,7 @@ import { getCollection, getEntry, render } from "astro:content";
 import JsonLd from "@/components/JsonLd.astro";
 import SectionHeader from "@/components/SectionHeader.astro";
 import Layout from "@/layouts/Layout.astro";
+import { formatBytes } from "@/lib/catalog";
 import { SITE_NAME } from "@/site.config";
 
 // Copy lives in src/content/pages/about.md — sections in frontmatter, prose in the body
@@ -19,7 +20,6 @@ const catalogEntries = await getCollection(
 const datasetCount = catalogEntries.length;
 const skillCount = (await getCollection("skills")).length;
 
-const UNITS: Record<string, number> = { KB: 1e3, MB: 1e6, GB: 1e9, TB: 1e12 };
 const totalBytes = catalogEntries
   .flatMap((e) => [...e.data.data, ...e.data.additional_assets])
   .reduce((sum, a) => sum + (a.file_size ?? 0), 0);
@@ -29,10 +29,8 @@ const floorClean = (n: number) => {
   const p = 10 ** Math.floor(Math.log10(Math.max(n, 1)));
   return Math.floor(n / p) * p;
 };
-const [volumeUnit, factor] = Object.entries(UNITS)
-  .reverse()
-  .find(([, f]) => totalBytes >= f) ?? ["MB", 1e6];
-const dataVolume = `${floorClean(totalBytes / factor)}+ ${volumeUnit}`;
+// "500 MB" → "500+ MB"
+const dataVolume = formatBytes(floorClean(totalBytes)).replace(" ", "+ ");
 
 const jsonLd = {
   "@context": "https://schema.org",
