@@ -352,6 +352,8 @@ const catalog = defineCollection({
                   id: z.string().optional(),
                   url: z.string().optional(),
                   title: z.string().optional(),
+                  // The source release used, when the link should not float
+                  version: z.string().optional(),
                 }),
               )
               .default([]),

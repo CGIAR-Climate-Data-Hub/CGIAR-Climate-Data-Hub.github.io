@@ -68,9 +68,11 @@ const current = d.deprecated ? chain[0] : undefined;
 
 // Provenance cross-links: derived_from ids render as internal links, and
 // records derived from this one list in the rail. No drawn DAG.
-const hubSource = (src: { id?: string }) => {
+// A pinned version links that release's permanent URL
+const hubSource = (src: { id?: string; version?: string }) => {
   const rec = catalog.find((e) => !e.data.deprecated && e.data.id === src.id);
-  return rec && { href: `/catalog/${rec.data.id}/`, title: rec.data.title };
+  const slug = src.version ? `${src.id}_${src.version}` : src.id;
+  return rec && { href: `/catalog/${slug}/`, title: rec.data.title };
 };
 const derivatives = catalog
   .filter(
@@ -898,7 +900,10 @@ const jsonLd = datasetJsonLd(
                               <>
                                 {i > 0 && ", "}
                                 {hub ? (
-                                  <a href={hub.href}>{src.title ?? hub.title}</a>
+                                  <a href={hub.href}>
+                                    {src.title ?? hub.title}
+                                    {src.version && ` (${src.version})`}
+                                  </a>
                                 ) : (
                                   <a href={src.url} rel="noreferrer">
                                     {src.title ?? src.url ?? src.id}
