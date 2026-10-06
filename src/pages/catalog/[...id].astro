@@ -811,10 +811,10 @@ const jsonLd = datasetJsonLd(
                     </details>
                   )}
                   {example && (
-                    <details class="asset-examples usage">
-                      <summary>&lt;/&gt; Usage examples</summary>
+                    <div class="asset-examples">
+                      <p class="label tpl-title">Usage examples</p>
                       <SnippetTabs python={example.python} r={example.r} />
-                    </details>
+                    </div>
                   )}
                   {indexSnippets.length > 0 && (
                     <div class="asset-examples">
@@ -2115,18 +2115,6 @@ td.mono {
   font-size: var(--font-size-3);
   color: var(--text-soft);
   overflow-wrap: break-word;
-}
-
-/* A quiet text affordance — the Download button stays the card's one button */
-.usage > summary {
-  font-size: var(--font-size-4);
-  font-weight: 600;
-  color: var(--cdh-blue-700);
-  cursor: pointer;
-}
-
-.usage > summary:hover {
-  color: var(--cdh-blue-950);
 }
 
 .lineage {
