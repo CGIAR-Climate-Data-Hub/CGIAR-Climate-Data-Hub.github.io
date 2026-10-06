@@ -189,7 +189,7 @@ const quickstart = {
 //   stands in for the access panel and no root URL shows above
 // - indexes: file_index entries; the first stands in for the access panel,
 //   the rest and the files directory go to the disclosure, and their
-//   snippets join the usage examples dialog
+//   snippets sit inline below it
 // - download: only where one click yields one file — an http(s) URL to a
 //   single object, never templated collections, Zarr stores, or prefixes.
 //   Restricted records get no Download buttons at all (the click would just
@@ -810,46 +810,30 @@ const jsonLd = datasetJsonLd(
                       ))}
                     </details>
                   )}
-                  {(example || indexSnippets.length > 0) && (
-                    <div class="example-row">
-                      <button class="example-btn" data-example-open type="button">
-                        &lt;/&gt; View usage examples
-                      </button>
-                      <dialog
-                        aria-label={`${asset.name} usage examples`}
-                        class="example-modal"
-                      >
-                        <div class="example-head">
-                          <h4>
-                            <span class="mono">{asset.name}</span> — usage
-                            examples
-                          </h4>
-                          <button
-                            aria-label="Close"
-                            class="example-close"
-                            data-example-close
-                            type="button"
-                          >
-                            ×
-                          </button>
-                        </div>
-                        {example && <SnippetTabs python={example.python} r={example.r} />}
-                        {/* One index open at a time: details sharing a name */}
-                        {indexSnippets.map((ix, i) => (
-                          <details
-                            class="index-example"
-                            name={`index-${asset.name}`}
-                            open={i === 0}
-                          >
-                            <summary>{ix.label}</summary>
-                            <SnippetTabs
-                              python={ix.snippet?.python}
-                              r={ix.snippet?.r}
-                              sh={ix.snippet?.sh}
-                            />
-                          </details>
-                        ))}
-                      </dialog>
+                  {example && (
+                    <details class="asset-examples usage">
+                      <summary>&lt;/&gt; Usage examples</summary>
+                      <SnippetTabs python={example.python} r={example.r} />
+                    </details>
+                  )}
+                  {indexSnippets.length > 0 && (
+                    <div class="asset-examples">
+                      <p class="label tpl-title">Usage examples</p>
+                      {/* One index open at a time: details sharing a name */}
+                      {indexSnippets.map((ix, i) => (
+                        <details
+                          class="index-example"
+                          name={`index-${asset.name}`}
+                          open={i === 0}
+                        >
+                          <summary>{ix.label}</summary>
+                          <SnippetTabs
+                            python={ix.snippet?.python}
+                            r={ix.snippet?.r}
+                            sh={ix.snippet?.sh}
+                          />
+                        </details>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -1314,17 +1298,6 @@ const jsonLd = datasetJsonLd(
 <script>
 import { fillTemplate } from "@/lib/template";
 
-// Usage-example modals: native <dialog> handles backdrop/Esc/focus; this
-// wires the open and close buttons plus backdrop-click dismiss.
-document.addEventListener("click", (e) => {
-  const target = e.target as HTMLElement;
-  if (target.closest("[data-example-open]"))
-    target.closest(".example-row")?.querySelector("dialog")?.showModal();
-  if (target.closest("[data-example-close]")) target.closest("dialog")?.close();
-  // A click on the dialog element itself is the backdrop, not its content
-  if (target instanceof HTMLDialogElement) target.close();
-});
-
 // Dropdowns (version switcher, metadata menu): <details> handles open/toggle
 // natively; this only adds light-dismiss on outside clicks.
 const menus =
@@ -1358,11 +1331,11 @@ for (const picker of document.querySelectorAll<HTMLElement>(".tpl-picker")) {
     const dl = picker.querySelector<HTMLAnchorElement>("a[download]");
     if (dl) dl.href = url;
     // The usage example bakes in the previous selection's filename — swap it
-    // wherever it appears in the dialog's code so the example stays live
+    // wherever it appears in the card's examples so they stay live
     const prev = picker.dataset.file;
-    const dialog = picker.closest(".asset")?.querySelector("dialog");
-    if (dialog && prev && prev !== file) {
-      const walker = document.createTreeWalker(dialog, NodeFilter.SHOW_TEXT);
+    const examples = picker.closest(".asset")?.querySelector(".asset-examples");
+    if (examples && prev && prev !== file) {
+      const walker = document.createTreeWalker(examples, NodeFilter.SHOW_TEXT);
       while (walker.nextNode()) {
         const node = walker.currentNode;
         if (node.nodeValue?.includes(prev))
@@ -1932,7 +1905,7 @@ td.mono {
 
 .asset p,
 .alt-access,
-.example-row,
+.asset-examples,
 .contact-card .chips {
   margin-top: var(--space-2);
 }
@@ -2001,6 +1974,7 @@ td.mono {
 }
 
 .index-example summary {
+  font-size: var(--font-size-4);
   font-weight: 500;
   cursor: pointer;
 }
@@ -2144,56 +2118,15 @@ td.mono {
 }
 
 /* A quiet text affordance — the Download button stays the card's one button */
-.example-btn {
-  padding: 0;
+.usage > summary {
   font-size: var(--font-size-4);
   font-weight: 600;
   color: var(--cdh-blue-700);
   cursor: pointer;
-  background: none;
-  border: 0;
 }
 
-.example-btn:hover {
+.usage > summary:hover {
   color: var(--cdh-blue-950);
-}
-
-.example-modal {
-  width: min(760px, 92vw);
-  max-height: 84vh;
-  padding: var(--space-5);
-  margin: auto;
-  overflow: auto;
-  overscroll-behavior: contain;
-  background: var(--bg);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
-}
-
-.example-modal::backdrop {
-  background: color-mix(in srgb, var(--text) 45%, transparent);
-}
-
-.example-head {
-  display: flex;
-  gap: var(--space-3);
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-3);
-}
-
-.example-close {
-  padding: 0 var(--space-2);
-  font-size: var(--font-size-8);
-  line-height: 1;
-  color: var(--text-mute);
-  cursor: pointer;
-  background: none;
-  border: 0;
-}
-
-.example-close:hover {
-  color: var(--text);
 }
 
 .lineage {
