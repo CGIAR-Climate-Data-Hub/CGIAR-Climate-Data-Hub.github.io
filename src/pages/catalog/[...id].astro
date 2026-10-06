@@ -218,29 +218,23 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
       const source = asset.locations[0]?.url ?? "<source prefix>/";
       // An Icechunk repo, or any index given as a prefix, is not one file
       const isDir = ix.format === "icechunk" || url.endsWith("/");
+      // "cogs.vrt", or "suitability/" for a prefix
+      const name = `${url.replace(/\/$/, "").split("/").pop()}${url.endsWith("/") ? "/" : ""}`;
       const snippet = indexExample(ix.format, url, source);
-      return [{ label, url, isDir, snippet }];
+      return [{ label, url, name, isDir, snippet }];
     });
   const index = indexes[0];
 
-  // An indexed asset lists its other indexes (each a file to download unless
-  // a directory); its files directory opens nothing, so it is left out. A
-  // templated asset lists its directories, which the picker builds URLs from.
+  // Indexed assets list their indexes in their own panel; a templated asset
+  // lists its directories, which the picker builds URLs from
   const others = index
-    ? indexes
-        .filter((ix) => ix !== index)
-        .map((ix) => ({
-          label: `${ix.label} index`,
-          url: ix.url,
-          download: !ix.isDir,
-        }))
+    ? []
     : (asset.href_template
         ? asset.locations
         : asset.locations.filter((l) => l !== primary)
       ).map((loc) => ({
         label: `${loc.title ?? "URL"}${asset.href_template ? " directory" : ""}`,
         url: loc.url,
-        download: false,
       }));
 
   const lastSegment = httpUrl?.split("/").pop() ?? "";
@@ -251,6 +245,7 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
     bestFor: formatBestFor(asset.media_type),
     primary,
     index,
+    indexes,
     indexSnippets: indexes.filter((ix) => ix.snippet),
     others,
     tplFields,
@@ -649,7 +644,7 @@ const jsonLd = datasetJsonLd(
             <div>
               <h3 class="tech-title">{group.title}</h3>
             <div class="assets">
-              {group.items.map(({ asset, example, bestFor, primary, index, indexSnippets, others, tplFields, tplFile, tplUrl, download }) => (
+              {group.items.map(({ asset, example, bestFor, primary, index, indexes, indexSnippets, others, tplFields, tplFile, tplUrl, download }) => (
                 <div class="asset">
                   <div class="asset-head">
                     <span class="mono asset-name">{asset.name}</span>
@@ -731,26 +726,45 @@ const jsonLd = datasetJsonLd(
                   {index && (
                     <div class="access-panel">
                       <p class="panel-head">
-                        <span class="label tpl-title">
-                          Open with a file index · {index.label}
-                        </span>
-                        <CopyButton copy={index.url} label="Copy index URL" />
-                        {!restricted && !index.isDir && (
-                          <a class="btn btn-ghost dl" download href={index.url}>
-                            Download
-                          </a>
-                        )}
+                        <span class="label tpl-title">File indexes</span>
                       </p>
-                      <p class="asset-fact">
-                        <span class="mono url">
-                          {urlParts(index.url).map((part) => (
-                            <>
-                              {part}
-                              <wbr />
-                            </>
-                          ))}
-                        </span>
-                      </p>
+                      <div class="index-list">
+                        {indexes.map((ix) => (
+                          <>
+                            <span class="index-format">{ix.label}</span>
+                            <a class="mono index-file" href={ix.url} rel="noreferrer" title={ix.url}>
+                              {ix.name}
+                            </a>
+                            <CopyButton copy={ix.url} label={`Copy ${ix.label} URL`} />
+                            {ix.isDir || restricted ? (
+                              <span />
+                            ) : (
+                              <a
+                                aria-label={`Download ${ix.label}`}
+                                class="code-copy"
+                                download
+                                href={ix.url}
+                                title={`Download ${ix.label}`}
+                              >
+                                <svg
+                                  fill="none"
+                                  height="13"
+                                  role="img"
+                                  stroke="currentColor"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  viewBox="0 0 24 24"
+                                  width="13"
+                                >
+                                  <title>Download {ix.label}</title>
+                                  <path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14" />
+                                </svg>
+                              </a>
+                            )}
+                          </>
+                        ))}
+                      </div>
                     </div>
                   )}
                   {!asset.href_template && !index && primary && (
@@ -792,11 +806,6 @@ const jsonLd = datasetJsonLd(
                             ))}
                           </span>
                           <CopyButton copy={loc.url} label="Copy URL" />
-                          {loc.download && !restricted && (
-                            <a class="btn btn-ghost dl" download href={loc.url}>
-                              Download
-                            </a>
-                          )}
                         </div>
                       ))}
                     </details>
@@ -1994,6 +2003,25 @@ td.mono {
 .index-example summary {
   font-weight: 500;
   cursor: pointer;
+}
+
+/* Format | file name | copy | download, one row per index */
+.index-list {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) auto auto;
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  margin-top: var(--space-2);
+}
+
+.index-format {
+  font-size: var(--font-size-4);
+}
+
+.index-file {
+  font-size: var(--font-size-3);
+  color: var(--text-soft);
+  overflow-wrap: anywhere;
 }
 
 /* A 128-character sha512 must wrap rather than widen the card */
