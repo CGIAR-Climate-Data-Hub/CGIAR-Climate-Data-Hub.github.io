@@ -635,11 +635,24 @@ const jsonLd = datasetJsonLd(
                         </p>
                         <div class="tpl-fields">
                           {(tplFields ?? []).map((f) => (
+                            // biome-ignore lint/a11y/noLabelWithoutControl: the control is inside, behind a ternary
                             <label class="tpl-field">
                               <span class="label">{humanize(f.name)}</span>
-                              <select data-tpl-dim={f.name}>
-                                {f.values.map((v) => <option>{v}</option>)}
-                              </select>
+                              {f.date ? (
+                                <input
+                                  data-tpl-dim={f.name}
+                                  max={f.date.max}
+                                  min={f.date.min}
+                                  required
+                                  step={f.date.step}
+                                  type="date"
+                                  value={f.date.min}
+                                />
+                              ) : (
+                                <select data-tpl-dim={f.name}>
+                                  {f.values.map((v) => <option>{v}</option>)}
+                                </select>
+                              )}
                             </label>
                           ))}
                         </div>
@@ -1153,16 +1166,20 @@ document.addEventListener("click", (e) => {
     if (menu.open && !menu.contains(e.target as Node)) menu.open = false;
 });
 
-// Template pickers: the selects fill the asset's href_template; the built
-// URL feeds the row's copy button and download link
+// Template pickers: the selects and date fields fill the asset's
+// href_template; the built URL feeds the row's copy button and download link
 for (const picker of document.querySelectorAll<HTMLElement>(".tpl-picker")) {
-  const selects = [
-    ...picker.querySelectorAll<HTMLSelectElement>("select[data-tpl-dim]"),
+  const fields = [
+    ...picker.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+      "[data-tpl-dim]",
+    ),
   ];
   const update = () => {
+    // A cleared date field names no file
+    if (fields.some((f) => !f.value)) return;
     const file = fillTemplate(
       picker.dataset.template ?? "",
-      Object.fromEntries(selects.map((s) => [s.dataset.tplDim, s.value])),
+      Object.fromEntries(fields.map((f) => [f.dataset.tplDim, f.value])),
     );
     const url = (picker.dataset.root ?? "") + file;
     const urlEl = picker.querySelector<HTMLElement>("[data-tpl-url]");
@@ -1831,7 +1848,8 @@ td.mono {
   font-size: var(--font-size-1);
 }
 
-.tpl-field select {
+.tpl-field select,
+.tpl-field input {
   padding: 2px 6px;
   font-size: var(--font-size-3);
   color: var(--text);

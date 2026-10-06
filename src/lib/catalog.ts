@@ -26,11 +26,25 @@ export function stacCollectionUrl(id: string) {
   return `${STAC_ROOT}/${id}/collection.json`;
 }
 
+// Days between values on a date-precision extent (P1D, P1W, P10D…)
+function dayStep(dim?: { extent?: string[]; step?: string }) {
+  if (!dim?.extent || !/^\d{4}-\d{2}-\d{2}$/.test(dim.extent[0])) return;
+  const m = dim.step?.match(/^P(?:(\d+)W)?(?:(\d+)D)?$/);
+  const days = m ? Number(m[1] ?? 0) * 7 + Number(m[2] ?? 0) : 0;
+  return days > 0 ? days : undefined;
+}
+
 // An asset template's tokens with their values, plus one real file (first
 // value per token). {variable} is the one token backed by variable names.
 export function resolveTemplate(d: CatalogRecord, template: string) {
   const fields = tokenNames(template).map((name) => {
     const dim = d.dimensions.find((x) => x.name === name);
+    const days = dayStep(dim);
+    // A daily axis can span decades: a native date field, not a list
+    if (dim?.extent && days) {
+      const [min, max] = dim.extent;
+      return { name, values: [min], date: { min, max, step: days } };
+    }
     const values = dim
       ? axisValues(dim)
       : name === "variable"
