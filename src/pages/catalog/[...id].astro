@@ -729,7 +729,11 @@ const jsonLd = datasetJsonLd(
                         {/* The selectors, with the actions on the file they pick */}
                         <div class="tpl-row">
                         <div class="tpl-fields">
-                          {(tplFields ?? []).map((f) => (
+                          {(tplFields ?? []).map((f) =>
+                            // One value is no choice: keep it for the URL, show no control
+                            (f.date ? f.date.min === f.date.max : f.values.length === 1) ? (
+                              <input data-tpl-dim={f.name} type="hidden" value={f.values[0]} />
+                            ) : (
                             // biome-ignore lint/a11y/noLabelWithoutControl: the control is inside, behind a ternary
                             <label class="tpl-field">
                               <span class="tpl-field-label">{humanize(f.name)}</span>
@@ -749,7 +753,8 @@ const jsonLd = datasetJsonLd(
                                 </select>
                               )}
                             </label>
-                          ))}
+                            ),
+                          )}
                         </div>
                           <CopyButton
                             copy={tplUrl}
