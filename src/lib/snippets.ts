@@ -1,6 +1,7 @@
 // Example code for record pages, assembled from the template files in
 // src/snippets named (quickstart|subset)-<format>.{py,R}, where <format> is
-// a format-vocab concept id, or index-<file_index format>.{py,R,sh}. The __URL__ placeholder gets the asset's root
+// a format-vocab concept id, or index-<file_index format>.{py,R,sh}, whose
+// __SOURCE__ gets the asset's own location (where Icechunk's virtual chunks live). The __URL__ placeholder gets the asset's root
 // URL, or one real file URL for templated assets. Supporting a new format =
 // a vocab entry + template files, nothing else.
 import type { CatalogRecord } from "@/lib/catalog";
@@ -41,11 +42,18 @@ function formatAssets(d: CatalogRecord) {
   return out;
 }
 
-const render = (kind: string, format: string, lang: string, url: string) =>
+const render = (
+  kind: string,
+  format: string,
+  lang: string,
+  url: string,
+  source = "",
+) =>
   TEMPLATES.find(
     (t) => t.kind === kind && t.format === format && t.lang === lang,
   )
     ?.code.replaceAll("__URL__", url)
+    .replaceAll("__SOURCE__", source)
     .trim();
 
 // Quick start: one short block per format, stacked
@@ -56,10 +64,10 @@ export function quickstarts(d: CatalogRecord, lang: string) {
 }
 
 // How to open one file index, for the formats that have templates
-export function indexExample(format: string, url: string) {
-  const python = render("index", format, "py", url);
-  const r = render("index", format, "R", url);
-  const sh = render("index", format, "sh", url);
+export function indexExample(format: string, url: string, source: string) {
+  const python = render("index", format, "py", url, source);
+  const r = render("index", format, "R", url, source);
+  const sh = render("index", format, "sh", url, source);
   return python || r || sh ? { python, r, sh } : undefined;
 }
 

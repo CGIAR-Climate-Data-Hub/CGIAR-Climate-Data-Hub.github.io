@@ -734,7 +734,13 @@ const jsonLd = datasetJsonLd(
                     const url =
                       ix.locations.find((l) => l.url.startsWith("http"))?.url
                       ?? ix.locations[0]?.url;
-                    const snippet = url && indexExample(ix.format, url);
+                    const snippet =
+                      url
+                      && indexExample(
+                        ix.format,
+                        url,
+                        asset.locations[0]?.url ?? "<source prefix>/",
+                      );
                     return (
                       <div class="file-index">
                         <p class="asset-fact">
@@ -749,7 +755,7 @@ const jsonLd = datasetJsonLd(
                         )}
                         {snippet && (
                           <details class="index-example">
-                            <summary>Open it with Python, R, or the command line</summary>
+                            <summary>How to open it</summary>
                             <SnippetTabs python={snippet.python} r={snippet.r} sh={snippet.sh} />
                           </details>
                         )}
