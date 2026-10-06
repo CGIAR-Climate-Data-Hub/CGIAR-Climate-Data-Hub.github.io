@@ -275,6 +275,16 @@ const catalog = defineCollection({
             data_type: z.string().optional(),
             unit: z.string().optional(),
             note: z.string().optional(),
+            // Code → label for categorical values
+            categories: z
+              .array(
+                z.object({
+                  value: z.coerce.string(),
+                  label: z.string(),
+                  description: z.string().optional(),
+                }),
+              )
+              .default([]),
           }),
         )
         .default([]),
@@ -323,23 +333,6 @@ const catalog = defineCollection({
           scenarios: z.array(z.string()).default([]),
         })
         .optional(),
-      // Classification extension: value → label maps for categorical variables
-      classes: z
-        .array(
-          z.object({
-            variable: z.string(),
-            values: z
-              .array(
-                z.object({
-                  value: z.coerce.string(),
-                  label: z.string(),
-                  description: z.string().optional(),
-                }),
-              )
-              .default([]),
-          }),
-        )
-        .default([]),
       commodities: z.array(z.string()).default([]),
       processing: z
         .array(

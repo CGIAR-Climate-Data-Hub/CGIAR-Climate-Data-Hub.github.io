@@ -329,11 +329,13 @@ export function datasetMd(
       ),
     ),
     section(
-      "Classes",
-      d.classes.map(
-        (cl) =>
-          `${cl.variable}: ${cl.values.map((v) => `${v.value} = ${v.label}`).join("; ")}`,
-      ),
+      "Categories",
+      d.variables
+        .filter((v) => v.categories.length > 0)
+        .map(
+          (v) =>
+            `${v.name}: ${v.categories.map((c) => `${c.value} = ${c.label}`).join("; ")}`,
+        ),
     ),
     d.cdh
       && section("Intended use", [

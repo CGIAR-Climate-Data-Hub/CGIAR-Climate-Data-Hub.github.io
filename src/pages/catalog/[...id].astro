@@ -499,11 +499,7 @@ const jsonLd = datasetJsonLd(
                       </tr>
                     </thead>
                     <tbody>
-                      {d.variables.map((v) => {
-                        const classValues = d.classes.find(
-                          (c) => c.variable === v.name,
-                        )?.values;
-                        return (
+                      {d.variables.map((v) => (
                           <tr>
                             <td class="mono var-name">{v.name}</td>
                             <td class="mono">{v.data_type ?? "—"}</td>
@@ -511,9 +507,9 @@ const jsonLd = datasetJsonLd(
                             <td>
                               {v.description ?? "—"}
                               {v.note && <div class="var-note">{v.note}</div>}
-                              {classValues && classValues.length > 0 && (
+                              {v.categories.length > 0 && (
                                 <dl class="class-list">
-                                  {classValues.map((cv) => (
+                                  {v.categories.map((cv) => (
                                     <>
                                       <dt class="mono">{cv.value}</dt>
                                       <dd>
@@ -531,8 +527,7 @@ const jsonLd = datasetJsonLd(
                               )}
                             </td>
                           </tr>
-                        );
-                      })}
+                      ))}
                     </tbody>
                   </table>
                 </div>
