@@ -756,42 +756,66 @@ const jsonLd = datasetJsonLd(
                       <p class="panel-head">
                         <span class="tpl-title">File indexes</span>
                       </p>
+                      {/* One row per index; a row with a snippet expands to
+                          show it, one open at a time (details sharing a name) */}
                       <div class="index-list">
-                        {indexes.map((ix) => (
-                          <>
-                            <span class="index-format">{ix.label}</span>
-                            <a class="mono index-file" href={ix.url} rel="noreferrer" title={ix.url}>
-                              {ix.name}
-                            </a>
-                            <CopyButton copy={ix.url} label={`Copy ${ix.label} URL`} />
-                            {ix.isDir || restricted ? (
-                              <span />
-                            ) : (
-                              <a
-                                aria-label={`Download ${ix.label}`}
-                                class="code-copy"
-                                download
-                                href={ix.url}
-                                title={`Download ${ix.label}`}
-                              >
-                                <svg
-                                  fill="none"
-                                  height="13"
-                                  role="img"
-                                  stroke="currentColor"
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  stroke-width="2"
-                                  viewBox="0 0 24 24"
-                                  width="13"
-                                >
-                                  <title>Download {ix.label}</title>
-                                  <path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14" />
-                                </svg>
+                        {indexes.map((ix) => {
+                          const row = (
+                            <>
+                              <span class="index-format">{ix.label}</span>
+                              <a class="mono index-file" href={ix.url} rel="noreferrer" title={ix.url}>
+                                {ix.name}
                               </a>
-                            )}
-                          </>
-                        ))}
+                              <CopyButton copy={ix.url} label={`Copy ${ix.label} URL`} />
+                              {ix.isDir || restricted ? (
+                                <span />
+                              ) : (
+                                <a
+                                  aria-label={`Download ${ix.label}`}
+                                  class="code-copy"
+                                  download
+                                  href={ix.url}
+                                  title={`Download ${ix.label}`}
+                                >
+                                  <svg
+                                    fill="none"
+                                    height="13"
+                                    role="img"
+                                    stroke="currentColor"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    viewBox="0 0 24 24"
+                                    width="13"
+                                  >
+                                    <title>Download {ix.label}</title>
+                                    <path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14" />
+                                  </svg>
+                                </a>
+                              )}
+                            </>
+                          );
+                          return ix.snippet ? (
+                            <details
+                              class="index-row"
+                              name={`index-${asset.name}`}
+                              open={ix === indexSnippets[0]}
+                            >
+                              <summary class="index-head">{row}</summary>
+                              <div class="index-body">
+                                <SnippetTabs
+                                  python={ix.snippet.python}
+                                  r={ix.snippet.r}
+                                  sh={ix.snippet.sh}
+                                />
+                              </div>
+                            </details>
+                          ) : (
+                            <div class="index-row">
+                              <div class="index-head">{row}</div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -842,26 +866,6 @@ const jsonLd = datasetJsonLd(
                     <div class="asset-examples">
                       <p class="tpl-title">Usage examples</p>
                       <SnippetTabs python={example.python} r={example.r} />
-                    </div>
-                  )}
-                  {indexSnippets.length > 0 && (
-                    <div class="asset-examples">
-                      <p class="tpl-title">Usage examples</p>
-                      {/* One index open at a time: details sharing a name */}
-                      {indexSnippets.map((ix, i) => (
-                        <details
-                          class="index-example"
-                          name={`index-${asset.name}`}
-                          open={i === 0}
-                        >
-                          <summary>{ix.label}</summary>
-                          <SnippetTabs
-                            python={ix.snippet?.python}
-                            r={ix.snippet?.r}
-                            sh={ix.snippet?.sh}
-                          />
-                        </details>
-                      ))}
                     </div>
                   )}
                 </div>
@@ -1997,33 +2001,66 @@ td.mono {
   font-size: var(--font-size-3);
 }
 
-.index-example + .index-example {
-  margin-top: var(--space-2);
-}
-
-.index-example summary {
-  font-size: var(--font-size-4);
-  font-weight: 500;
-  cursor: pointer;
-}
-
-/* Format | file name | copy | download, one row per index */
+/* Index rows: caret | format | file name | copy | download. A fixed format
+   column keeps rows aligned, since each row is its own grid */
 .index-list {
+  margin-top: var(--space-3);
+}
+
+.index-row + .index-row {
+  border-top: 1px solid var(--border);
+}
+
+.index-head {
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr) auto auto;
-  gap: var(--space-2) var(--space-3);
+  grid-template-columns: 1rem 10rem minmax(0, 1fr) auto auto;
+  gap: var(--space-3);
   align-items: center;
-  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-1);
+  list-style: none;
+}
+
+.index-head::-webkit-details-marker {
+  display: none;
+}
+
+/* Caret only on rows that expand; plain rows keep the column empty */
+.index-head::before {
+  font-size: var(--font-size-5);
+  color: var(--text-soft);
+  content: "";
+}
+
+summary.index-head {
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+summary.index-head::before {
+  content: "▸";
+}
+
+details[open] > summary.index-head::before {
+  content: "▾";
+}
+
+summary.index-head:hover {
+  background: color-mix(in srgb, var(--text) 4%, transparent);
 }
 
 .index-format {
   font-size: var(--font-size-4);
+  font-weight: 500;
 }
 
 .index-file {
   font-size: var(--font-size-3);
   color: var(--text-soft);
   overflow-wrap: anywhere;
+}
+
+.index-body {
+  padding: var(--space-1) 0 var(--space-3);
 }
 
 /* A 128-character sha512 must wrap rather than widen the card */
