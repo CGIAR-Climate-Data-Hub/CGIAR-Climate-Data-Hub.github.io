@@ -146,15 +146,23 @@ const varGroups =
         vars: d.variables.filter((v) => s.variables.includes(v.name)),
       }))
     : [{ name: "", dims: "", files: "", vars: d.variables }];
-// A foreign key's target: a Hub record by id, else its own URL
+// A foreign key's target: a Hub record by id (its title), else its URL
+// shortened to the last path segment, with the host as a quiet hint
 const fkTarget = (resource: string) => {
-  const rec = resource.includes(":")
-    ? undefined
-    : catalog.find((e) => !e.data.deprecated && e.data.id === resource);
-  return rec
-    ? { href: `/catalog/${rec.data.id}/`, title: rec.data.title }
-    : { href: resource.includes(":") ? resource : undefined, title: resource };
+  if (!resource.includes(":")) {
+    const rec = catalog.find(
+      (e) => !e.data.deprecated && e.data.id === resource,
+    );
+    return rec
+      ? { href: `/catalog/${rec.data.id}/`, title: rec.data.title, host: "" }
+      : { href: undefined, title: resource, host: "" };
+  }
+  const u = new URL(resource);
+  const name = u.pathname.split("/").filter(Boolean).pop() ?? u.host;
+  return { href: resource, title: name, host: u.host };
 };
+// An asset's layout: each structure it holds, its variables and dimensions
+const structureByName = new Map(d.structures.map((s) => [s.name, s]));
 const hasTemplated = d.data.some((a) => a.href_template);
 const stacUrl = stacCollectionUrl(d.id);
 // Record metadata lives in the catalog repo, so source + issue links point
@@ -662,28 +670,49 @@ const jsonLd = datasetJsonLd(
               <div>
                 <h2>Foreign keys</h2>
                 <p class="section-sub">Columns that join this table to another dataset.</p>
-                <ul class="fk-list">
+                <div class="dim-cards">
                   {d.foreign_keys.map((fk) => {
                     const target = fkTarget(fk.reference.resource);
                     return (
-                      <li>
-                        <span class="mono">{fk.fields.join(", ")}</span> →{" "}
-                        <span class="mono">{fk.reference.fields.join(", ")}</span> in{" "}
-                        {target.href ? (
-                          <a href={target.href} rel="noreferrer">{target.title}</a>
-                        ) : (
-                          <span class="mono">{target.title}</span>
-                        )}
-                        {fk.reference.asset && (
-                          <>
-                            {" "}
-                            (file <span class="mono">{fk.reference.asset}</span>)
-                          </>
-                        )}
-                      </li>
+                      <div class="dim-card">
+                        <p class="fk-head">
+                          Joins to{" "}
+                          {target.href ? (
+                            <a href={target.href} rel="noreferrer">{target.title}</a>
+                          ) : (
+                            <b>{target.title}</b>
+                          )}
+                          {target.host && <span class="fk-host"> · {target.host}</span>}
+                          {fk.reference.asset && (
+                            <span class="fk-host">
+                              {" "}
+                              · file <span class="mono">{fk.reference.asset}</span>
+                            </span>
+                          )}
+                        </p>
+                        {/* Columns pair up by position */}
+                        <table class="fk-map">
+                          <thead>
+                            <tr>
+                              <th>This table</th>
+                              <th />
+                              <th>{target.title}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {fk.fields.map((field, i) => (
+                              <tr>
+                                <td class="mono">{field}</td>
+                                <td class="fk-arrow">→</td>
+                                <td class="mono">{fk.reference.fields[i]}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     );
                   })}
-                </ul>
+                </div>
               </div>
             )}
 
@@ -772,10 +801,29 @@ const jsonLd = datasetJsonLd(
                     </p>
                   )}
                   {asset.structures.length > 0 && (
-                    <p class="asset-fact">
-                      <b>Structures:</b>{" "}
-                      <span class="mono">{asset.structures.join(", ")}</span>
-                    </p>
+                    <div class="asset-fact">
+                      <b>Holds:</b>
+                      <ul class="layout-list">
+                        {asset.structures.map((name) => {
+                          const s = structureByName.get(name);
+                          return (
+                            <li>
+                              <a class="mono" href="#schema">{name}</a>
+                              {s && (
+                                <>
+                                  : <span class="mono">{s.variables.join(", ")}</span>
+                                  <span class="layout-dims">
+                                    {s.dimensions.length > 0
+                                      ? ` by ${s.dimensions.join(" × ")}`
+                                      : " (grid only)"}
+                                  </span>
+                                </>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
                   )}
                   {assetCoverage(asset.spatial) && (
                     <p class="asset-fact">
@@ -1608,11 +1656,6 @@ if (tabs.length > 0) {
 
 .var-group .tech-title {
   margin: var(--space-4) 0 var(--space-1);
-}
-
-.fk-list {
-  padding-left: var(--space-5);
-  margin: var(--space-2) 0 0;
 }
 
 .class-list {
@@ -2631,5 +2674,52 @@ summary.index-head:hover {
   .header-grid > div:last-child {
     max-width: 350px;
   }
+}
+
+.fk-head {
+  margin: 0;
+  font-size: var(--font-size-5);
+}
+
+.fk-host,
+.layout-dims {
+  color: var(--text-mute);
+}
+
+/* A plain two-column mapping, not a data table */
+.fk-map {
+  margin-top: var(--space-3);
+  font-size: var(--font-size-4);
+  border-collapse: collapse;
+}
+
+.fk-map th {
+  padding: 0 var(--space-4) var(--space-1) 0;
+  font-size: var(--font-size-3);
+  font-weight: 600;
+  color: var(--text-mute);
+  text-align: left;
+  text-transform: none;
+  letter-spacing: 0;
+  background: none;
+}
+
+.fk-map td {
+  padding: var(--space-1) var(--space-4) var(--space-1) 0;
+}
+
+.fk-arrow {
+  color: var(--text-mute);
+}
+
+/* Scoped under .asset to outrank the page's article ul rule */
+.asset .layout-list {
+  padding-left: var(--space-5);
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-4);
+}
+
+.asset .layout-list .mono {
+  font-size: var(--font-size-3);
 }
 </style>
