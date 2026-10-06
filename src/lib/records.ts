@@ -96,6 +96,18 @@ export async function fromGitHub(
   });
 }
 
+// additional_assets URLs may be relative to the record file (./README.md);
+// resolve them against the record's raw file in the catalog repo so every
+// consumer (page, copy button, JSON) gets a URL that works
+function resolveSidecars(record: unknown, base: string) {
+  const assets = (record as { additional_assets?: unknown })?.additional_assets;
+  if (!Array.isArray(assets)) return;
+  for (const asset of assets)
+    for (const loc of asset?.locations ?? [])
+      if (typeof loc?.url === "string" && !/^[a-z][a-z\d+.-]*:/i.test(loc.url))
+        loc.url = new URL(loc.url, base).href;
+}
+
 export function records(source: RecordsSource): Loader {
   return {
     name: "records",
@@ -122,12 +134,16 @@ export function records(source: RecordsSource): Loader {
         throw new Error("REQUIRE_RECORDS is set but zero records were loaded");
       store.clear();
       const decoder = new TextDecoder();
+      const repo = process.env.RECORDS_REPO ?? source.repo;
+      const ref = process.env.RECORDS_REF ?? "main";
       for (const f of files) {
         const id = f.path.replace(/\.ya?ml$/, "");
-        const data = await parseData({
-          id,
-          data: parse(decoder.decode(f.bytes)),
-        });
+        const record = parse(decoder.decode(f.bytes));
+        resolveSidecars(
+          record,
+          `https://raw.githubusercontent.com/${repo}/${ref}/${source.dir}/${f.path}`,
+        );
+        const data = await parseData({ id, data: record });
         // filePath is repo-relative, for "view source" links on record pages
         store.set({ id, data, filePath: `${source.dir}/${f.path}` });
       }
