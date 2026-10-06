@@ -1,14 +1,14 @@
 # yaml-language-server: $schema=../../spec/schemas/profiles/cdh.schema.json
-"$schema": https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/schemas/profiles/cdh.schema.json
-cdh_schema_version: "v0.3.0"
+cdh_schema_version: "v0.4.0"
 
 extensions:
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/extensions/cdh/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/extensions/datacube/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/extensions/agriculture/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/cdh/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/data-dictionary/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/agriculture/schema.json
 
 id: glw4-2020
 title: Gridded livestock density for 2020 (GLW4)
+version: "1"
 series:
   name: Gridded Livestock of the World (GLW)
   url: https://www.fao.org/livestock-systems/global-distributions/en/
@@ -49,14 +49,14 @@ contact:
     email: giuseppina.cinardi@fao.org
     organization: Food and Agriculture Organization of the United Nations
   - name: Brayden Youngberg
-    roles: [processor, custodian]
+    roles: [processor, maintainer]
     email: b.youngberg@cgiar.org
-    organization: The Alliance of Bioversity International and CIAT
+    organization: Alliance of Bioversity International and CIAT
 
 citation:
   title: "GLW 4: Gridded Livestock Density (Global - 2020 - 10 km)"
   authors:
-    - Food and Agriculture Organization of the United Nations
+    - organization: Food and Agriculture Organization of the United Nations
   date: "2024"
   publisher: FAO Agro-Informatic Data Catalog
   url: https://data.apps.fao.org/catalog/dataset/9d1e149b-d63f-4213-978b-317a8eb42d02
@@ -80,25 +80,43 @@ spatial:
 temporal:
   date: "2020" # static 2020 reference year (year precision)
 
-dimensions:
-  - name: species
-    type: species
-    description: The livestock species for which the data is provided
-    values: [buffalo, cattle, chicken, goat, pig, sheep]
-
 variables:
-  - name: Livestock Density
-    description: Number of livestock per km2
+  - name: buffalo
+    description: Modelled buffalo density.
     data_type: float32
-    unit: "{head}/km-1"
+    unit: "{head}/km2"
+  - name: cattle
+    description: Modelled cattle density.
+    data_type: float32
+    unit: "{head}/km2"
+  - name: chicken
+    description: Modelled chicken density.
+    data_type: float32
+    unit: "{head}/km2"
+  - name: goat
+    description: Modelled goat density.
+    data_type: float32
+    unit: "{head}/km2"
+  - name: pig
+    description: Modelled pig density.
+    data_type: float32
+    unit: "{head}/km2"
+  - name: sheep
+    description: Modelled sheep density.
+    data_type: float32
+    unit: "{head}/km2"
 
 cdh:
+  domain: [agricultural-production]
   usage:
+    intended_uses:
+      - global and regional analysis of livestock distribution
+      - livestock exposure layers for hazard, disease, and emissions assessment
+      - spatial targeting at national and sub-national scale
     not_recommended_for:
       - use: exact livestock counts
         reason: values are spatially modeled estimates derived from census and other data
         use_instead: official livestock census counts where available
-  domain: [agricultural-production]
 
 commodities: [buffalo, cattle, chickens, goats, swine, sheep]
 
@@ -130,20 +148,20 @@ data:
     file_size: 31.1 MB
   - name: cogs
     locations:
-      - url: https://digital-atlas.s3.amazonaws.com/cdh/data/glw4-2020/cogs/
+      - url: https://digital-atlas.s3.amazonaws.com/cdh/data/glw4-2020/cog/
         title: HTTPS
-      - url: s3://digital-atlas/cdh/data/glw4-2020/cogs/
+      - url: s3://digital-atlas/cdh/data/glw4-2020/cog/
         title: S3
-    href_template: "glw4-2020-{species}.tif"
+    href_template: "glw4-2020-{variable}.tif"
     processing_steps: [cloud-optimize]
     description: Cloud-optimized GeoTIFFs of GLW 4 2020
     nodata: -3.4028235e+38
     media_type: "image/tiff; application=geotiff; profile=cloud-optimized"
 
 additional_links:
-  - name: FAO Livestock Distributions
+  - title: FAO Livestock Distributions
     rel: related
     url: https://www.fao.org/livestock-systems/global-distributions/en/
-  - name: FAOSTAT Crop and Livestock Production
+  - title: FAOSTAT Crop and Livestock Production
     rel: related
     url: https://www.fao.org/faostat/en/#data/QCL

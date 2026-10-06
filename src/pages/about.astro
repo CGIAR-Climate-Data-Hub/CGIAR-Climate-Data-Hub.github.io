@@ -19,10 +19,7 @@ const skillCount = (await getCollection("skills")).length;
 const UNITS: Record<string, number> = { KB: 1e3, MB: 1e6, GB: 1e9, TB: 1e12 };
 const totalBytes = catalogEntries
   .flatMap((e) => [...e.data.data, ...e.data.additional_assets])
-  .reduce((sum, a) => {
-    const m = a.file_size?.match(/([\d.]+)\s*(KB|MB|GB|TB)/i);
-    return m ? sum + Number(m[1]) * UNITS[m[2].toUpperCase()] : sum;
-  }, 0);
+  .reduce((sum, a) => sum + (a.file_size ?? 0), 0);
 // Floor to one significant figure — sizes are a known undercount (not every
 // asset lists file_size), so a clean "500+ MB" is more honest than 531.
 const floorClean = (n: number) => {

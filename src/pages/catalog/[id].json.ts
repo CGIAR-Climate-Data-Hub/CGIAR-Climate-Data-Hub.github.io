@@ -2,11 +2,12 @@
 
 import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
+import { recordSlug } from "@/lib/catalog";
 
 export async function getStaticPaths() {
   const entries = await getCollection("catalog");
   return entries.map((entry) => ({
-    params: { id: entry.data.id },
+    params: { id: recordSlug(entry.data) },
     props: { record: entry.data },
   }));
 }

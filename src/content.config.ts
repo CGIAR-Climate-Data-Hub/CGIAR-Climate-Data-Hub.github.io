@@ -1,6 +1,7 @@
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
+import { SIZE_UNITS } from "./lib/catalog";
 import { WIKI_GROUPS } from "./lib/collections";
 import { notebooks } from "./lib/notebooks";
 import { records } from "./lib/records";
@@ -142,9 +143,24 @@ const contact = z.object({
   url: z.string().optional(),
 });
 
+// 0.4 authors are { family, given? } or { organization }; flattened for display
+const author = z
+  .union([
+    z.string(),
+    z.object({ family: z.string(), given: z.string().optional() }),
+    z.object({ organization: z.string() }),
+  ])
+  .transform((a) =>
+    typeof a === "string"
+      ? a
+      : "organization" in a
+        ? a.organization
+        : [a.given, a.family].filter(Boolean).join(" "),
+  );
+
 const citation = z.object({
-  title: z.string(),
-  authors: z.array(z.string()).default([]),
+  title: z.string().optional(),
+  authors: z.array(author).default([]),
   date: z.string().optional(),
   publisher: z.string().optional(),
   url: z.string().optional(),
@@ -155,10 +171,19 @@ const location = z.object({ url: z.string(), title: z.string().optional() });
 const asset = z.object({
   name: z.string(),
   description: z.string().optional(),
-  locations: z.array(location),
+  // Omitted when a file_index carries the locations
+  locations: z.array(location).default([]),
   href_template: z.string().optional(),
   media_type: z.string().optional(),
-  file_size: z.string().optional(),
+  // Whole bytes or "31.1 MB" (powers of 1000); stored as bytes
+  file_size: z
+    .union([z.number(), z.string()])
+    .transform((s) => {
+      if (typeof s === "number") return s;
+      const [, n, unit] = s.match(/^([\d.]+)\s?(\w+)$/) ?? [];
+      return Math.ceil(Number(n) * 1000 ** SIZE_UNITS.indexOf(unit));
+    })
+    .optional(),
   nodata: z.union([z.string(), z.number()]).optional(),
 });
 
@@ -175,7 +200,7 @@ const catalog = defineCollection({
       id: z.string(),
       title: z.string(),
       description: z.string(),
-      version: z.string().optional(),
+      version: z.string(),
       // Versioning per standard §4.7: snapshots are frozen records marked
       // deprecated; the chain links backward via previous_version ids
       previous_version: z.string().optional(),
@@ -206,8 +231,8 @@ const catalog = defineCollection({
       funding: z
         .array(z.object({ name: z.string(), url: z.string().optional() }))
         .default([]),
-      created: z.string().optional(),
-      updated: z.string().optional(),
+      created: z.string(),
+      updated: z.string(),
       spatial: z
         .object({
           // Either one bbox or a list of them, per the datacube extension
@@ -334,7 +359,16 @@ const catalog = defineCollection({
             code: z
               .object({ url: z.string(), version: z.string().optional() })
               .optional(),
-            derived_from: z.array(location).default([]),
+            // A Hub record id or a storage url, never both
+            derived_from: z
+              .array(
+                z.object({
+                  id: z.string().optional(),
+                  url: z.string().optional(),
+                  title: z.string().optional(),
+                }),
+              )
+              .default([]),
           }),
         )
         .default([]),

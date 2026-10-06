@@ -52,6 +52,15 @@ export function exampleTemplateFile(d: CatalogRecord, template: string) {
   return resolveTemplate(d, template)?.file;
 }
 
+export const SIZE_UNITS = ["B", "KB", "MB", "GB", "TB", "PB"];
+
+// Bytes as "31.1 MB", in the standard's powers of 1000
+export function formatBytes(n: number) {
+  let i = 0;
+  for (; n >= 1000 && i < SIZE_UNITS.length - 1; i++) n /= 1000;
+  return `${+n.toFixed(1)} ${SIZE_UNITS[i]}`;
+}
+
 export function humanize(slug: string) {
   return slug.charAt(0).toUpperCase() + slug.slice(1).replaceAll("-", " ");
 }
@@ -127,12 +136,12 @@ export function currentReleases(entries: CollectionEntry<"catalog">[]) {
   return entries.filter((e) => !e.data.deprecated);
 }
 
-// A URL that targets a Hub record page — relative or absolute — resolves to
-// its record id. Callers must check the id against the catalog; that lookup
-// is the real guard against false positives.
-export function hubRecordId(url: string) {
-  return url.match(/^(?:https?:\/\/[^/]+)?\/catalog\/([^/]+)\/?$/)?.[1];
-}
+// Releases share one id; <id>_<version> names one release, as the spec emits
+export const versionedSlug = (d: CatalogRecord) => `${d.id}_${d.version}`;
+
+// The current release lives at <id>; superseded ones at <id>_<version>
+export const recordSlug = (d: CatalogRecord) =>
+  d.deprecated ? versionedSlug(d) : d.id;
 
 // The licensor's organization (a required role in the standard) is
 // credited as the record's "source" — cards, page header, and rail alike
@@ -193,7 +202,7 @@ export function summarize(entry: CollectionEntry<"catalog">) {
       normalizeBboxes(d.spatial?.bbox)
       ?? geographyBboxes(d.spatial?.geography ?? []),
     series: d.series?.name,
-    updated: d.updated ?? d.created ?? "",
+    updated: d.updated,
   };
 }
 
@@ -229,7 +238,13 @@ export function normalizeBboxes(bbox?: number[] | number[][]) {
 // Flatten record metadata into the shared citation shape.
 export function citable(d: CatalogRecord): Citable | undefined {
   if (!d.citation) return undefined;
-  return { ...d.citation, doi: d.doi, key: d.id, version: d.version };
+  return {
+    ...d.citation,
+    title: d.citation.title ?? d.title,
+    doi: d.doi,
+    key: d.id,
+    version: d.version,
+  };
 }
 
 const STEP_LABELS: Record<string, string> = {
@@ -272,8 +287,8 @@ export function datasetMd(
       : `${d.temporal.start_date} to ${d.temporal.end_date ?? "ongoing"}`);
 
   const facts = [
-    `URL: ${abs(`/catalog/${d.id}/`)}`,
-    `Metadata (JSON): ${abs(`/catalog/${d.id}.json`)}`,
+    `URL: ${abs(`/catalog/${recordSlug(d)}/`)}`,
+    `Metadata (JSON): ${abs(`/catalog/${recordSlug(d)}.json`)}`,
     d.data.length && `STAC collection: ${stacCollectionUrl(d.id)}`,
     `Resource type: ${d.resource_type}`,
     `License: ${d.license}`,
@@ -357,7 +372,8 @@ export function datasetMd(
         c.baseline
           && `Baseline: ${c.baseline.start_date}${c.baseline.end_date ? ` to ${c.baseline.end_date}` : ""}`,
       ]),
-    citation && `Cite: ${citationText(citation, abs(`/catalog/${d.id}/`))}`,
+    citation
+      && `Cite: ${citationText(citation, abs(`/catalog/${recordSlug(d)}/`))}`,
   ].filter(Boolean);
 
   return blocks.join("\n\n");
@@ -416,7 +432,9 @@ export function datasetJsonLd(
               name: asset.description ?? asset.name,
               contentUrl: loc.url,
               ...(asset.media_type && { encodingFormat: asset.media_type }),
-              ...(asset.file_size && { contentSize: asset.file_size }),
+              ...(asset.file_size !== undefined && {
+                contentSize: formatBytes(asset.file_size),
+              }),
             })),
     ),
     ...(d.data.some((a) => a.href_template)
@@ -444,9 +462,9 @@ export function datasetJsonLd(
     // "Free" in the Dataset Search sense: openly retrievable, no gate
     isAccessibleForFree: (d.access ?? "public") === "public",
     ...(d.access_note && { conditionsOfAccess: d.access_note }),
-    ...(d.version && { version: d.version }),
-    ...(d.created && { dateCreated: d.created }),
-    ...(d.updated && { dateModified: d.updated }),
+    version: d.version,
+    dateCreated: d.created,
+    dateModified: d.updated,
     keywords: d.keywords.map((k) =>
       typeof k === "string"
         ? k
