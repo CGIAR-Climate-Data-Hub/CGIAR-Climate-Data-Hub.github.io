@@ -216,29 +216,32 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
       if (!url) return [];
       const label = INDEX_LABELS[ix.format] ?? ix.format;
       const source = asset.locations[0]?.url ?? "<source prefix>/";
-      // Only Kerchunk and Icechunk may be a directory, and then omit media_type
-      const isDir =
-        (ix.format === "kerchunk" || ix.format === "icechunk")
-        && !ix.media_type;
+      // An Icechunk repo, or any index given as a prefix, is not one file
+      const isDir = ix.format === "icechunk" || url.endsWith("/");
       const snippet = indexExample(ix.format, url, source);
       return [{ label, url, isDir, snippet }];
     });
   const index = indexes[0];
 
-  // Templated and indexed assets list their locations as file directories
-  const asDirs = Boolean(asset.href_template || index);
-  const others = [
-    ...indexes
-      .filter((ix) => ix !== index)
-      .map((ix) => ({ label: `${ix.label} index`, url: ix.url })),
-    ...(asDirs
-      ? asset.locations
-      : asset.locations.filter((l) => l !== primary)
-    ).map((loc) => ({
-      label: `${loc.title ?? (asDirs ? "Files" : "URL")}${asDirs ? " directory" : ""}`,
-      url: loc.url,
-    })),
-  ];
+  // An indexed asset lists its other indexes (each a file to download unless
+  // a directory); its files directory opens nothing, so it is left out. A
+  // templated asset lists its directories, which the picker builds URLs from.
+  const others = index
+    ? indexes
+        .filter((ix) => ix !== index)
+        .map((ix) => ({
+          label: `${ix.label} index`,
+          url: ix.url,
+          download: !ix.isDir,
+        }))
+    : (asset.href_template
+        ? asset.locations
+        : asset.locations.filter((l) => l !== primary)
+      ).map((loc) => ({
+        label: `${loc.title ?? "URL"}${asset.href_template ? " directory" : ""}`,
+        url: loc.url,
+        download: false,
+      }));
 
   const lastSegment = httpUrl?.split("/").pop() ?? "";
   return {
@@ -789,6 +792,11 @@ const jsonLd = datasetJsonLd(
                             ))}
                           </span>
                           <CopyButton copy={loc.url} label="Copy URL" />
+                          {loc.download && !restricted && (
+                            <a class="btn btn-ghost dl" download href={loc.url}>
+                              Download
+                            </a>
+                          )}
                         </div>
                       ))}
                     </details>
