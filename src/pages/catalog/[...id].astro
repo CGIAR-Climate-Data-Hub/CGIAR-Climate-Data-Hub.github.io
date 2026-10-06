@@ -1036,12 +1036,22 @@ const jsonLd = datasetJsonLd(
                       ))}
                     </div>
                   )}
-                  {(c.email || c.url) && (
+                  {(c.email || c.url || c.orcid || c.ror) && (
                     <div class="contact-links">
                       {c.email && <a href={`mailto:${c.email}`}>{c.email}</a>}
                       {c.url && (
                         <a href={c.url} rel="noreferrer">
                           {c.url.replace(/^https?:\/\//, "")} ↗
+                        </a>
+                      )}
+                      {c.orcid && (
+                        <a href={c.orcid} rel="noreferrer">
+                          ORCID ↗
+                        </a>
+                      )}
+                      {c.ror && (
+                        <a href={c.ror} rel="noreferrer">
+                          ROR ↗
                         </a>
                       )}
                     </div>

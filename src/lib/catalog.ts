@@ -409,15 +409,21 @@ function contactToSchemaOrg(c: CatalogRecord["contact"][number]) {
     return {
       "@type": "Person",
       name: c.name,
+      ...(c.orcid && { sameAs: c.orcid }),
       ...(c.email && { email: c.email }),
       ...(c.organization && {
-        affiliation: { "@type": "Organization", name: c.organization },
+        affiliation: {
+          "@type": "Organization",
+          name: c.organization,
+          ...(c.ror && { sameAs: c.ror }),
+        },
       }),
     };
   }
   return {
     "@type": "Organization",
     name: c.organization,
+    ...(c.ror && { sameAs: c.ror }),
     ...(c.url && { url: c.url }),
   };
 }

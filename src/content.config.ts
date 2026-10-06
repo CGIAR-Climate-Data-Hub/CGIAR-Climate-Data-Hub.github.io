@@ -141,6 +141,9 @@ const contact = z.object({
   roles: z.array(z.string()).default([]),
   email: z.string().optional(),
   url: z.string().optional(),
+  // Full https://orcid.org/ and https://ror.org/ URLs
+  orcid: z.string().optional(),
+  ror: z.string().optional(),
 });
 
 // A person or an organization, in citation order (CSL-JSON shape)
