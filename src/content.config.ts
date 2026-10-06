@@ -203,6 +203,8 @@ const asset = z.object({
   checksum: z.string().optional(),
   // Coverage of this asset alone, for picking files by area
   spatial: spatial.optional(),
+  // Names of the structures[] this file holds
+  structures: z.array(z.string()).default([]),
   // Index files that list or open this entry's files as one dataset
   file_index: z
     .array(
@@ -364,6 +366,29 @@ const catalog = defineCollection({
           scenarios: z.array(z.string()).default([]),
         })
         .optional(),
+      // Groups of variables sharing dimensions, for files that differ
+      structures: z
+        .array(
+          z.object({
+            name: z.string(),
+            dimensions: z.array(z.string()).default([]),
+            variables: z.array(z.string()),
+          }),
+        )
+        .default([]),
+      // Columns joining this table to another dataset (Frictionless shape)
+      foreign_keys: z
+        .array(
+          z.object({
+            fields: z.array(z.string()),
+            reference: z.object({
+              resource: z.string(),
+              asset: z.string().optional(),
+              fields: z.array(z.string()),
+            }),
+          }),
+        )
+        .default([]),
       commodities: z.array(z.string()).default([]),
       processing: z
         .array(

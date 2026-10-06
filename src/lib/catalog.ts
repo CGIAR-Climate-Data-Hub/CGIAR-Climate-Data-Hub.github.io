@@ -290,7 +290,7 @@ const UPDATE_LABELS: Record<string, string> = {
 export const updateLabel = (f: string) => `updated ${UPDATE_LABELS[f] ?? f}`;
 
 // "P3M" → "every 3 months" (steps are pipeline-validated ISO 8601 durations)
-function stepLabel(step: string) {
+export function stepLabel(step: string) {
   if (STEP_LABELS[step]) return STEP_LABELS[step];
   const m =
     step.match(/^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?(?:T(\d+)H)?$/) ?? [];

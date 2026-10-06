@@ -22,6 +22,7 @@ import {
   recordSlug,
   resolveTemplate,
   stacCollectionUrl,
+  stepLabel,
   templateInventory,
   temporalText,
   versionChain,
@@ -129,7 +130,31 @@ const crsHref =
   d.spatial?.crs && /^EPSG:\d+$/.test(d.spatial.crs)
     ? `https://epsg.io/${d.spatial.crs.split(":")[1]}`
     : undefined;
-const hasSchema = d.dimensions.length + d.variables.length > 0;
+const hasSchema =
+  d.dimensions.length + d.variables.length + d.foreign_keys.length > 0;
+// One variables table per structure, headed by its dimensions and the files
+// that hold it; a record without structures has one table
+const varGroups =
+  d.structures.length > 0
+    ? d.structures.map((s) => ({
+        name: s.name,
+        dims: s.dimensions.join(", ") || "none beyond the grid",
+        files: d.data
+          .filter((a) => a.structures.includes(s.name))
+          .map((a) => a.name)
+          .join(", "),
+        vars: d.variables.filter((v) => s.variables.includes(v.name)),
+      }))
+    : [{ name: "", dims: "", files: "", vars: d.variables }];
+// A foreign key's target: a Hub record by id, else its own URL
+const fkTarget = (resource: string) => {
+  const rec = resource.includes(":")
+    ? undefined
+    : catalog.find((e) => !e.data.deprecated && e.data.id === resource);
+  return rec
+    ? { href: `/catalog/${rec.data.id}/`, title: rec.data.title }
+    : { href: resource.includes(":") ? resource : undefined, title: resource };
+};
 const hasTemplated = d.data.some((a) => a.href_template);
 const stacUrl = stacCollectionUrl(d.id);
 // Record metadata lives in the catalog repo, so source + issue links point
@@ -572,6 +597,17 @@ const jsonLd = datasetJsonLd(
             {d.variables.length > 0 && (
               <div>
                 <h2>Variables</h2>
+                {varGroups.map((g) => (
+                <div class="var-group">
+                {g.name && (
+                  <>
+                    <h3 class="tech-title mono">{g.name}</h3>
+                    <p class="section-sub">
+                      Dimensions: {g.dims}
+                      {g.files && <> · Files: <span class="mono">{g.files}</span></>}
+                    </p>
+                  </>
+                )}
                 <div class="table-wrap">
                   <table>
                     <thead>
@@ -584,7 +620,7 @@ const jsonLd = datasetJsonLd(
                       </tr>
                     </thead>
                     <tbody>
-                      {d.variables.map((v) => (
+                      {g.vars.map((v) => (
                           <tr>
                             <td class="mono var-name">{v.name}</td>
                             <td class="mono">{v.data_type ?? "—"}</td>
@@ -617,6 +653,37 @@ const jsonLd = datasetJsonLd(
                     </tbody>
                   </table>
                 </div>
+                </div>
+                ))}
+              </div>
+            )}
+
+            {d.foreign_keys.length > 0 && (
+              <div>
+                <h2>Foreign keys</h2>
+                <p class="section-sub">Columns that join this table to another dataset.</p>
+                <ul class="fk-list">
+                  {d.foreign_keys.map((fk) => {
+                    const target = fkTarget(fk.reference.resource);
+                    return (
+                      <li>
+                        <span class="mono">{fk.fields.join(", ")}</span> →{" "}
+                        <span class="mono">{fk.reference.fields.join(", ")}</span> in{" "}
+                        {target.href ? (
+                          <a href={target.href} rel="noreferrer">{target.title}</a>
+                        ) : (
+                          <span class="mono">{target.title}</span>
+                        )}
+                        {fk.reference.asset && (
+                          <>
+                            {" "}
+                            (file <span class="mono">{fk.reference.asset}</span>)
+                          </>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
             )}
 
@@ -632,6 +699,12 @@ const jsonLd = datasetJsonLd(
                         {dim.type && <span class="label">{dim.type}</span>}
                       </div>
                       {dim.description && <p>{dim.description}</p>}
+                      {dim.extent && (
+                        <p class="mono">
+                          {dim.extent[0]} – {dim.extent[1]}
+                          {dim.step && `, ${stepLabel(dim.step)}`}
+                        </p>
+                      )}
                       {dim.values.length > 0 && (
                         <div class="chips">
                           {dim.values.map((v) => (
@@ -696,6 +769,12 @@ const jsonLd = datasetJsonLd(
                   {asset.nodata !== undefined && (
                     <p class="asset-fact">
                       <b>No Data:</b> <span class="mono">{asset.nodata}</span>
+                    </p>
+                  )}
+                  {asset.structures.length > 0 && (
+                    <p class="asset-fact">
+                      <b>Structures:</b>{" "}
+                      <span class="mono">{asset.structures.join(", ")}</span>
                     </p>
                   )}
                   {assetCoverage(asset.spatial) && (
@@ -1521,6 +1600,19 @@ if (tabs.length > 0) {
 
 .tech-title {
   margin-bottom: var(--space-3);
+}
+
+.var-group + .var-group {
+  margin-top: var(--space-5);
+}
+
+.var-group .tech-title {
+  margin: var(--space-4) 0 var(--space-1);
+}
+
+.fk-list {
+  padding-left: var(--space-5);
+  margin: var(--space-2) 0 0;
 }
 
 .class-list {
