@@ -93,14 +93,14 @@ const temporal = temporalText(
   d.dimensions.find((dim) => dim.type === "temporal")?.step,
 );
 const source = licensor(d);
-// Contact order: custodians (hub-side stewards), then licensors, then the rest
+// Contact order: maintainers (accountable for the record), then licensors, then the rest
 const roleRank = (c: (typeof d.contact)[number]) =>
-  c.roles.includes("custodian") ? 2 : c.roles.includes("licensor") ? 1 : 0;
+  c.roles.includes("maintainer") ? 2 : c.roles.includes("licensor") ? 1 : 0;
 const contacts = [...d.contact]
   .sort((a, b) => roleRank(b) - roleRank(a))
   .map((c) => ({
     ...c,
-    otherRoles: c.roles.filter((r) => r !== "custodian" && r !== "licensor"),
+    otherRoles: c.roles.filter((r) => r !== "maintainer" && r !== "licensor"),
   }));
 const recordUrl = new URL(`/catalog/${recordSlug(d)}/`, Astro.site).href;
 const restricted = Boolean(d.access && d.access !== "public");
@@ -969,12 +969,12 @@ const jsonLd = datasetJsonLd(
             </p>
             <div class="contact-cards">
               {contacts.map((c) => (
-                <div class:list={["contact-card", c.roles.includes("custodian") && "custodian"]}>
+                <div class:list={["contact-card", c.roles.includes("maintainer") && "maintainer"]}>
                   <div class="contact-head">
                     <b>{c.name ?? c.organization}</b>
                     <span class="badges">
-                      {c.roles.includes("custodian") && (
-                        <span class="role-badge custodian-badge">Hub custodian</span>
+                      {c.roles.includes("maintainer") && (
+                        <span class="role-badge maintainer-badge">Maintainer</span>
                       )}
                       {c.roles.includes("licensor") && (
                         <span class="role-badge licensor-badge">Licensor</span>
@@ -2083,7 +2083,7 @@ td.mono {
   border-radius: var(--radius-md);
 }
 
-.contact-card.custodian {
+.contact-card.maintainer {
   border-left: 3px solid var(--terra-500);
 }
 
@@ -2110,7 +2110,7 @@ td.mono {
   border-radius: var(--radius-md);
 }
 
-.custodian-badge {
+.maintainer-badge {
   color: var(--terra-700);
   background: var(--terra-50);
 }
