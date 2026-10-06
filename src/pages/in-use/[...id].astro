@@ -23,7 +23,10 @@ const date = entry.data.date.toISOString().slice(0, 10);
 
 // Resolve dataset ids to catalog entries for the "Built with" chips
 const datasets = (
-  await getCollection("catalog", (c) => entry.data.datasets.includes(c.data.id))
+  await getCollection(
+    "catalog",
+    (c) => !c.data.deprecated && entry.data.datasets.includes(c.data.id),
+  )
 ).map((c) => ({
   href: `/catalog/${c.data.id}/`,
   title: c.data.title,

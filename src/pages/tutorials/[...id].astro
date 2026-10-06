@@ -28,7 +28,7 @@ const isNotebook = entry.collection === "notebookTutorials";
 const notebookPath = `src/content/tutorials/${entry.id}.ipynb`;
 
 // Resolve linked catalog records for the "Data" line
-const catalog = await getCollection("catalog");
+const catalog = await getCollection("catalog", (c) => !c.data.deprecated);
 const datasets = entry.data.datasets.map((id) => ({
   id,
   title: catalog.find((c) => c.data.id === id)?.data.title ?? id,

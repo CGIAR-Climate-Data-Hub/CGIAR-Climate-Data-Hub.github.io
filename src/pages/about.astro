@@ -11,8 +11,11 @@ if (!entry) throw new Error("Missing src/content/pages/about.md");
 const { Content } = await render(entry);
 const { title, lede, missions, principles } = entry.data;
 
-// Derived from the catalog records and skills at build time
-const catalogEntries = await getCollection("catalog");
+// Derived from the current releases and skills at build time
+const catalogEntries = await getCollection(
+  "catalog",
+  (e) => !e.data.deprecated,
+);
 const datasetCount = catalogEntries.length;
 const skillCount = (await getCollection("skills")).length;
 
