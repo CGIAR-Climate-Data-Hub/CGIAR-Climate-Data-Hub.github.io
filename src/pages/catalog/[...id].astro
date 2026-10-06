@@ -947,7 +947,15 @@ const jsonLd = datasetJsonLd(
                     <ul>
                       {d.related_publications.map((pub) => (
                         <li>
-                          {pub.citation && `${pub.citation.authors.map(authorName).join(", ")} (${pub.citation.date}). ${pub.citation.title}. ${pub.citation.publisher}. `}
+                          {pub.citation
+                            && `${[
+                              pub.citation.authors.map(authorName).join(", "),
+                              `(${pub.citation.date}).`,
+                              pub.citation.title && `${pub.citation.title}.`,
+                              pub.citation.publisher && `${pub.citation.publisher}.`,
+                            ]
+                              .filter(Boolean)
+                              .join(" ")} `}
                           {pub.doi && <a href={`https://doi.org/${pub.doi}`}>doi:{pub.doi}</a>}
                         </li>
                       ))}
