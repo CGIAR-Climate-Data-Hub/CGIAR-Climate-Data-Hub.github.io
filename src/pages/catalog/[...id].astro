@@ -22,6 +22,7 @@ import {
   recordSlug,
   resolveTemplate,
   stacCollectionUrl,
+  templateInventory,
   temporalText,
   versionChain,
   versionedSlug,
@@ -251,6 +252,9 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
     tplFields,
     tplFile,
     tplUrl: tplFile && httpUrl ? httpUrl + tplFile : undefined,
+    // Every templated file as a cdh-inventory CSV, built by [asset]-files.csv
+    fileCount:
+      asset.href_template && templateInventory(d, asset.href_template)?.count,
     download:
       !restricted
       && !asset.href_template
@@ -644,7 +648,7 @@ const jsonLd = datasetJsonLd(
             <div>
               <h3 class="tech-title">{group.title}</h3>
             <div class="assets">
-              {group.items.map(({ asset, example, bestFor, primary, index, indexes, indexSnippets, others, tplFields, tplFile, tplUrl, download }) => (
+              {group.items.map(({ asset, example, bestFor, primary, index, indexes, indexSnippets, others, tplFields, tplFile, tplUrl, fileCount, download }) => (
                 <div class="asset">
                   <div class="asset-head">
                     <span class="mono asset-name">{asset.name}</span>
@@ -721,6 +725,16 @@ const jsonLd = datasetJsonLd(
                           ))}
                         </div>
                         <p class="mono selected-url" data-tpl-url>{tplUrl}</p>
+                        {fileCount && (
+                          <p class="asset-fact">
+                            <a
+                              download={`${asset.name}-files.csv`}
+                              href={`/catalog/${recordSlug(d)}/${asset.name}-files.csv`}
+                            >
+                              List all {fileCount.toLocaleString("en")} files (CSV)
+                            </a>
+                          </p>
+                        )}
                       </div>
                     )}
                   {index && (

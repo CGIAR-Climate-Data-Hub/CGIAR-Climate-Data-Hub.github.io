@@ -45,16 +45,39 @@ export function resolveTemplate(d: CatalogRecord, template: string) {
       const [min, max] = dim.extent;
       return { name, values: [min], date: { min, max, step: days } };
     }
-    const values = dim
-      ? axisValues(dim)
-      : name === "variable"
-        ? d.variables.map((v) => v.name)
-        : [];
-    return { name, values };
+    return { name, values: tokenValues(d, name) };
   });
   if (fields.some((f) => f.values.length === 0)) return undefined;
   const first = Object.fromEntries(fields.map((f) => [f.name, f.values[0]]));
   return { fields, file: fillTemplate(template, first) };
+}
+
+// Every value a template token takes: its dimension's, or variable names
+function tokenValues(d: CatalogRecord, name: string) {
+  const dim = d.dimensions.find((x) => x.name === name);
+  if (dim) return axisValues(dim);
+  return name === "variable" ? d.variables.map((v) => v.name) : [];
+}
+
+// Every file a template names, as a cdh-inventory CSV (RFC 4180): href, then
+// each file's value per token. Undefined unless every token resolves.
+export function templateInventory(d: CatalogRecord, template: string) {
+  const tokens = tokenNames(template);
+  const axes = tokens.map((name) => tokenValues(d, name));
+  if (axes.some((values) => values.length === 0)) return undefined;
+  let rows: string[][] = [[]];
+  for (const values of axes)
+    rows = rows.flatMap((row) => values.map((v) => [...row, v]));
+  const cell = (v: string) =>
+    /[",\r\n]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v;
+  const lines = rows.map((row) => {
+    const pick = Object.fromEntries(tokens.map((t, i) => [t, row[i]]));
+    return [fillTemplate(template, pick), ...row].map(cell).join(",");
+  });
+  return {
+    count: rows.length,
+    csv: `${[["href", ...tokens].join(","), ...lines].join("\r\n")}\r\n`,
+  };
 }
 
 // Fill every placeholder with its first valid value to name one real file.
