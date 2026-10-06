@@ -94,38 +94,20 @@ export function commodityLabel(id: string) {
   return commodity(id)?.label ?? humanize(id);
 }
 
-// Version chain per the standard (§4.7): records link backward via
-// previous_version; successors come from inverting those edges. Returns the
-// record's full chain newest-first. Chain integrity (dangling ids, forks,
-// cycles) is validated at catalog submission, not here — a bad edge just
-// ends the walk.
+// A record's releases newest-first: they share one id, the current one is
+// not deprecated, and each names its predecessor's version. Chain integrity
+// is validated at catalog submission; a bad edge just ends the walk.
 export function versionChain(
   id: string,
   entries: CollectionEntry<"catalog">[],
 ) {
-  const byId = new Map(entries.map((e) => [e.data.id, e]));
-  const successor = new Map(
-    entries.flatMap((e) =>
-      e.data.previous_version
-        ? [[e.data.previous_version, e.data.id] as const]
-        : [],
-    ),
-  );
-
-  // Walk forward to the newest release, then collect backward from there
-  const seen = new Set([id]);
-  let head = id;
-  while (successor.has(head) && !seen.has(successor.get(head) as string)) {
-    head = successor.get(head) as string;
-    seen.add(head);
-  }
+  const releases = entries.filter((e) => e.data.id === id);
   const chain: CollectionEntry<"catalog">[] = [];
-  const visited = new Set<string>();
-  let cursor: string | undefined = head;
-  while (cursor && byId.has(cursor) && !visited.has(cursor)) {
-    visited.add(cursor);
-    chain.push(byId.get(cursor) as CollectionEntry<"catalog">);
-    cursor = byId.get(cursor)?.data.previous_version;
+  let cursor = releases.find((e) => !e.data.deprecated);
+  while (cursor && !chain.includes(cursor)) {
+    chain.push(cursor);
+    const prev = cursor.data.previous_version;
+    cursor = releases.find((e) => e.data.version === prev);
   }
   return chain;
 }

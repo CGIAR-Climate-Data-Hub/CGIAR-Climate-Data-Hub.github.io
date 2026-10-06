@@ -63,7 +63,7 @@ const d = entry.data;
 const catalog = await getCollection("catalog");
 // Newest-first version chain; the head is the current release
 const chain = versionChain(d.id, catalog);
-const current = chain[0]?.data.id !== d.id ? chain[0] : undefined;
+const current = d.deprecated ? chain[0] : undefined;
 
 // Provenance cross-links: derived_from ids render as internal links, and
 // records derived from this one list in the rail. No drawn DAG.
@@ -293,7 +293,7 @@ const jsonLd = datasetJsonLd(
                   <div class="menu-list">
                     {chain.map((v, i) => (
                       <a
-                        aria-current={v.data.id === d.id ? "page" : undefined}
+                        aria-current={v.data.version === d.version ? "page" : undefined}
                         href={`/catalog/${recordSlug(v.data)}/`}
                       >
                         {v.data.version}
