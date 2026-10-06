@@ -1,5 +1,5 @@
 ---
-// Python/R code block with a language toggle. The chosen language syncs
+// Python/R/CLI code block with a language toggle. The chosen language syncs
 // across every instance on the page; a block missing that language keeps
 // showing the one it has. Single-language blocks render without a toggle.
 import { Code } from "astro:components";
@@ -8,38 +8,41 @@ import { codeHeader, shikiConfig } from "@/lib/code-block";
 interface Props {
   python?: string;
   r?: string;
+  sh?: string;
 }
 
-const { python, r } = Astro.props;
+const { python, r, sh } = Astro.props;
+const tabs = [
+  { lang: "python", label: "Python", code: python },
+  { lang: "r", label: "R", code: r },
+  { lang: "sh", label: "CLI", code: sh },
+].filter((t) => t.code) as {
+  lang: "python" | "r" | "sh";
+  label: string;
+  code: string;
+}[];
 ---
 
 <div class="snippet">
-  {python && r && (
+  {tabs.length > 1 && (
     <div class="seg">
-      <button aria-pressed="true" data-lang="python" type="button">Python</button>
-      <button aria-pressed="false" data-lang="r" type="button">R</button>
+      {tabs.map((t, i) => (
+        <button aria-pressed={i === 0 ? "true" : "false"} data-lang={t.lang} type="button">
+          {t.label}
+        </button>
+      ))}
     </div>
   )}
-  {python && (
-    <div data-snippet="python">
+  {tabs.map((t, i) => (
+    <div data-snippet={t.lang} hidden={i > 0}>
       <Code
-        code={python}
-        lang="python"
+        code={t.code}
+        lang={t.lang}
         theme={shikiConfig.theme}
-        transformers={[codeHeader("Python")]}
+        transformers={[codeHeader(t.label)]}
       />
     </div>
-  )}
-  {r && (
-    <div data-snippet="r" hidden={Boolean(python)}>
-      <Code
-        code={r}
-        lang="r"
-        theme={shikiConfig.theme}
-        transformers={[codeHeader("R")]}
-      />
-    </div>
-  )}
+  ))}
 </div>
 
 <script>

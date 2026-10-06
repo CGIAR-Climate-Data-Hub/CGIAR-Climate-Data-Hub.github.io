@@ -181,6 +181,16 @@ const asset = z.object({
   nodata: z.union([z.string(), z.number()]).optional(),
   // Single-file digest as <algorithm>:<hex>
   checksum: z.string().optional(),
+  // Index files that list or open this entry's files as one dataset
+  file_index: z
+    .array(
+      z.object({
+        format: z.string(),
+        locations: z.array(location),
+        title: z.string().optional(),
+      }),
+    )
+    .default([]),
 });
 
 const catalog = defineCollection({

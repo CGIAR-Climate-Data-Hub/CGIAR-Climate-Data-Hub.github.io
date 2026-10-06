@@ -30,7 +30,7 @@ import { authorName } from "@/lib/citation";
 import { shikiConfig } from "@/lib/code-block";
 import { allTutorials } from "@/lib/collections";
 import { blobUrl, editUrl, githubUrl } from "@/lib/github";
-import { assetExample, quickstarts } from "@/lib/snippets";
+import { assetExample, indexExample, quickstarts } from "@/lib/snippets";
 import { commodity } from "@/lib/vocab";
 import { CATALOG_REPO, SITE_NAME } from "@/site.config";
 
@@ -155,6 +155,16 @@ const tutorialLinks = (await allTutorials())
     title: t.data.title,
     meta: `${t.data.audience} · ${t.data.time}`,
   }));
+
+// file_index formats, as the standard's file index table names them
+const INDEX_LABELS: Record<string, string> = {
+  "stac-geoparquet": "STAC-GeoParquet",
+  gti: "GDAL Tile Index (GTI)",
+  vrt: "GDAL VRT",
+  kerchunk: "Kerchunk",
+  icechunk: "Icechunk",
+  "cdh-inventory": "CDH inventory",
+};
 
 // Long URLs wrap at path boundaries, not mid-token: each segment gets a
 // <wbr> break hint
@@ -720,6 +730,32 @@ const jsonLd = datasetJsonLd(
                       ))}
                     </details>
                   )}
+                  {asset.file_index.map((ix) => {
+                    const url =
+                      ix.locations.find((l) => l.url.startsWith("http"))?.url
+                      ?? ix.locations[0]?.url;
+                    const snippet = url && indexExample(ix.format, url);
+                    return (
+                      <div class="file-index">
+                        <p class="asset-fact">
+                          <b>File index:</b> {INDEX_LABELS[ix.format] ?? ix.format}
+                          {ix.title && ` — ${ix.title}`}
+                        </p>
+                        {url && (
+                          <p class="asset-fact">
+                            <span class="mono url">{url}</span>{" "}
+                            <CopyButton copy={url} label="Copy URL" />
+                          </p>
+                        )}
+                        {snippet && (
+                          <details class="index-example">
+                            <summary>Open it with Python, R, or the command line</summary>
+                            <SnippetTabs python={snippet.python} r={snippet.r} sh={snippet.sh} />
+                          </details>
+                        )}
+                      </div>
+                    );
+                  })}
                   {example && (
                     <div class="example-row">
                       <button class="example-btn" data-example-open type="button">
@@ -1889,6 +1925,16 @@ td.mono {
 
 .asset-fact .mono {
   font-size: var(--font-size-3);
+}
+
+.file-index {
+  margin-top: var(--space-3);
+}
+
+.index-example summary {
+  font-size: var(--font-size-3);
+  color: var(--text-soft);
+  cursor: pointer;
 }
 
 /* A 128-character sha512 must wrap rather than widen the card */
