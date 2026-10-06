@@ -1,7 +1,7 @@
 // Shared shaping of CDH catalog records for cards, facets, and JSON-LD.
 import type { CollectionEntry } from "astro:content";
 import formatVocab from "@/assets/format-vocab.json";
-import { type Citable, citationText } from "@/lib/citation";
+import { authorName, type Citable, citationText } from "@/lib/citation";
 import { axisValues, fillTemplate, tokenNames } from "@/lib/template";
 import {
   commodity,
@@ -347,6 +347,15 @@ export function datasetMd(
         .map((a) => a.locations[0]?.url)
         .filter(Boolean)
         .join(" · ")}`,
+    ...d.data.flatMap((a) => [
+      a.checksum && `Checksum (${a.name}): ${a.checksum}`,
+      ...a.file_index.map(
+        (ix) => `File index (${a.name}, ${ix.format}): ${ix.locations[0]?.url}`,
+      ),
+      a.href_template
+        && resolveTemplate(d, a.href_template)
+        && `File list (${a.name}, CSV): ${abs(`/catalog/${recordSlug(d)}/${a.name}-files.csv`)}`,
+    ]),
     ...d.additional_links.map((l) =>
       dash(`Link: ${l.title ?? l.url}`, l.title && l.url, l.description),
     ),
@@ -436,6 +445,14 @@ export function temporalText(t: CatalogRecord["temporal"], step?: string) {
   };
 }
 
+// resource_type → schema.org type, as the standard's vocab/resource_type.json maps it
+const SCHEMA_TYPES: Record<string, string> = {
+  dataset: "Dataset",
+  software: "SoftwareApplication",
+  service: "Service",
+  document: "CreativeWork",
+};
+
 function contactToSchemaOrg(c: CatalogRecord["contact"][number]) {
   if (c.name) {
     return {
@@ -456,6 +473,7 @@ function contactToSchemaOrg(c: CatalogRecord["contact"][number]) {
     "@type": "Organization",
     name: c.organization,
     ...(c.ror && { sameAs: c.ror }),
+    ...(c.email && { email: c.email }),
     ...(c.url && { url: c.url }),
   };
 }
@@ -467,15 +485,51 @@ export function datasetJsonLd(
   catalogUrl: string,
 ) {
   const boxes = normalizeBboxes(d.spatial?.bbox) ?? [];
-  const citation = citable(d);
-  const cite = citation && citationText(citation);
-  const creators = d.contact.filter((c) => c.roles.includes("producer"));
+  const withRole = (role: string) =>
+    d.contact.filter((c) => c.roles.includes(role)).map(contactToSchemaOrg);
+  const creators = withRole("producer");
+  const maintainers = withRole("maintainer");
+  const contributors = withRole("processor");
+  // Sources this record derives from: a Hub record (its pinned release when
+  // given) or a storage URL
+  const sources = d.processing.flatMap((step) =>
+    step.derived_from.flatMap((src) =>
+      src.id
+        ? [
+            new URL(
+              `${src.version ? `${src.id}_${src.version}` : src.id}/`,
+              catalogUrl,
+            ).href,
+          ]
+        : src.url
+          ? [src.url]
+          : [],
+    ),
+  );
+  // Publications to cite alongside the dataset: DOI URL, else citation text
+  const publications = d.related_publications.flatMap((p) =>
+    p.doi
+      ? [`https://doi.org/${p.doi}`]
+      : p.citation
+        ? [
+            `${p.citation.authors.map(authorName).join(", ")} (${p.citation.date}). ${p.citation.title ?? ""}`.trim(),
+          ]
+        : [],
+  );
+  const partOf = [
+    d.parent && new URL(`${d.parent}/`, catalogUrl).href,
+    d.series && {
+      "@type": "CreativeWorkSeries",
+      name: d.series.name,
+      ...(d.series.url && { url: d.series.url }),
+    },
+  ].filter(Boolean);
   // Distributions stay coarse, and only URLs a consumer can fetch directly
-  // (e.g. a Zarr root). Templated assets have no such URL — their prefix
-  // isn't retrievable — so the STAC Collection file index represents them.
+  // (e.g. a Zarr root). Templated and indexed assets have no such URL — their
+  // prefix isn't retrievable — so their file lists and indexes stand in.
   const distributions = [
     ...d.data.flatMap((asset) =>
-      asset.href_template
+      asset.href_template || asset.file_index.length > 0
         ? []
         : asset.locations
             .filter((loc) => loc.url.startsWith("http"))
@@ -499,11 +553,42 @@ export function datasetJsonLd(
           },
         ]
       : []),
+    // The site's list of every templated file, as CSV
+    ...d.data.flatMap((asset) =>
+      asset.href_template && resolveTemplate(d, asset.href_template)
+        ? [
+            {
+              "@type": "DataDownload",
+              name: `${asset.name}: list of all files (CSV)`,
+              contentUrl: new URL(`${asset.name}-files.csv`, url).href,
+              encodingFormat: "text/csv",
+            },
+          ]
+        : [],
+    ),
+    // Single-file indexes (not an Icechunk repo or a prefix)
+    ...d.data.flatMap((asset) =>
+      asset.file_index.flatMap((ix) => {
+        const href = ix.locations.find((l) => l.url.startsWith("http"))?.url;
+        return href && ix.format !== "icechunk" && !href.endsWith("/")
+          ? [
+              {
+                "@type": "DataDownload",
+                name: `${asset.name}: ${ix.title ?? `${ix.format} file index`}`,
+                contentUrl: href,
+                ...(ix.format === "cdh-inventory" && {
+                  encodingFormat: "text/csv",
+                }),
+              },
+            ]
+          : [];
+      }),
+    ),
   ];
 
   return {
     "@context": "https://schema.org",
-    "@type": "Dataset",
+    "@type": SCHEMA_TYPES[d.resource_type] ?? "Dataset",
     "@id": url,
     name: d.title,
     description: d.description,
@@ -541,7 +626,12 @@ export function datasetJsonLd(
         };
       }),
     }),
-    ...(creators.length > 0 && { creator: creators.map(contactToSchemaOrg) }),
+    ...(creators.length > 0 && { creator: creators }),
+    ...(maintainers.length > 0 && { maintainer: maintainers }),
+    ...(contributors.length > 0 && { contributor: contributors }),
+    ...(d.citation?.publisher && {
+      publisher: { "@type": "Organization", name: d.citation.publisher },
+    }),
     ...(d.funding.length > 0 && {
       funder: d.funding.map((f) => ({
         "@type": "Organization",
@@ -599,8 +689,9 @@ export function datasetJsonLd(
       })),
     }),
     ...(distributions.length > 0 && { distribution: distributions }),
-    ...(cite && { citation: cite }),
-    ...(d.parent && { isPartOf: new URL(`${d.parent}/`, catalogUrl).href }),
+    ...(publications.length > 0 && { citation: publications }),
+    ...(sources.length > 0 && { isBasedOn: sources }),
+    ...(partOf.length > 0 && { isPartOf: partOf }),
     includedInDataCatalog: { "@type": "DataCatalog", "@id": catalogUrl },
   };
 }
