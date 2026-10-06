@@ -59,10 +59,9 @@ function tokenValues(d: CatalogRecord, name: string) {
   return name === "variable" ? d.variables.map((v) => v.name) : [];
 }
 
-// Every file an asset's template names, in cdh-inventory columns (RFC 4180):
-// href, then each file's value per token. href is the full URL, not relative
-// as in an inventory, so the download works on its own. Undefined unless
-// every token resolves.
+// Every file an asset's template names, as a cdh-inventory CSV (RFC 4180):
+// href (the file's full URL), then each file's value per token. Undefined
+// unless every token resolves.
 export function templateInventory(
   d: CatalogRecord,
   template: string,
