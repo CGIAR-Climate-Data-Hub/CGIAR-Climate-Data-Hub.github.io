@@ -31,6 +31,7 @@ import { authorName } from "@/lib/citation";
 import { shikiConfig } from "@/lib/code-block";
 import { allTutorials } from "@/lib/collections";
 import { blobUrl, editUrl, githubUrl } from "@/lib/github";
+import { inventoryPreview } from "@/lib/inventory";
 import { assetExample, indexExample, quickstarts } from "@/lib/snippets";
 import { commodity } from "@/lib/vocab";
 import { CATALOG_REPO, SITE_NAME } from "@/site.config";
@@ -195,6 +196,24 @@ const quickstart = {
 //   single object, never templated collections, Zarr stores, or prefixes.
 //   Restricted records get no Download buttons at all (the click would just
 //   be refused); URLs and copy stay for users who hold credentials
+// An index's address: HTTPS when it has one
+const indexUrl = (ix: { locations: { url: string }[] }) =>
+  ix.locations.find((l) => l.url.startsWith("http"))?.url
+  ?? ix.locations[0]?.url;
+
+// The first rows of each cdh-inventory, fetched before the assets are shaped
+const previews = new Map(
+  await Promise.all(
+    d.data
+      .flatMap((a) => a.file_index)
+      .filter((ix) => ix.format === "cdh-inventory")
+      .map(async (ix) => {
+        const url = indexUrl(ix);
+        return [url, url ? await inventoryPreview(url) : undefined] as const;
+      }),
+  ),
+);
+
 const assets = [...d.data, ...d.additional_assets].map((asset) => {
   const httpUrl = asset.locations.find((l) => l.url.startsWith("http"))?.url;
   const primary =
@@ -211,9 +230,7 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
       (a, b) => INDEX_ORDER.indexOf(a.format) - INDEX_ORDER.indexOf(b.format),
     )
     .flatMap((ix) => {
-      const url =
-        ix.locations.find((l) => l.url.startsWith("http"))?.url
-        ?? ix.locations[0]?.url;
+      const url = indexUrl(ix);
       if (!url) return [];
       const label = INDEX_LABELS[ix.format] ?? ix.format;
       const source = asset.locations[0]?.url ?? "<source prefix>/";
@@ -222,7 +239,8 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
       // "cogs.vrt", or "suitability/" for a prefix
       const name = `${url.replace(/\/$/, "").split("/").pop()}${url.endsWith("/") ? "/" : ""}`;
       const snippet = indexExample(ix.format, url, source);
-      return [{ label, url, name, isDir, snippet }];
+      const preview = previews.get(url);
+      return [{ label, url, name, isDir, snippet, preview }];
     });
   const index = indexes[0];
 
@@ -803,6 +821,37 @@ const jsonLd = datasetJsonLd(
                             >
                               <summary class="index-head">{row}</summary>
                               <div class="index-body">
+                                {ix.preview && (
+                                  <div class="inventory-preview">
+                                    <table>
+                                      <thead>
+                                        <tr>
+                                          {ix.preview.header.map((h) => <th>{h}</th>)}
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {ix.preview.rows.map((row) => (
+                                          <tr>
+                                            {row.map((cell, i) =>
+                                              ix.preview?.header[i] === "href" ? (
+                                                <td>
+                                                  <a class="mono" href={cell} rel="noreferrer" title={cell}>
+                                                    {cell.split("/").pop()}
+                                                  </a>
+                                                </td>
+                                              ) : (
+                                                <td class="mono">{cell}</td>
+                                              ),
+                                            )}
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                    <p class="caption">
+                                      First {ix.preview.rows.length} files of the list
+                                    </p>
+                                  </div>
+                                )}
                                 <SnippetTabs
                                   python={ix.snippet.python}
                                   r={ix.snippet.r}
@@ -2061,6 +2110,29 @@ summary.index-head:hover {
 
 .index-body {
   padding: var(--space-1) 0 var(--space-3);
+}
+
+/* The inventory's first rows, before its snippet */
+.inventory-preview {
+  margin-bottom: var(--space-3);
+  overflow-x: auto;
+}
+
+.inventory-preview table {
+  font-size: var(--font-size-3);
+  border-collapse: collapse;
+}
+
+.inventory-preview th,
+.inventory-preview td {
+  padding: var(--space-1) var(--space-3) var(--space-1) 0;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.inventory-preview th {
+  font-weight: 600;
+  color: var(--text-soft);
 }
 
 /* A 128-character sha512 must wrap rather than widen the card */

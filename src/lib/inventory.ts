@@ -1,0 +1,79 @@
+// The first rows of a cdh-inventory CSV, read at build time. Only the first
+// 4 KB are fetched (an HTTP range request), so a page can show real files
+// without downloading the whole list. Any failure means no preview.
+import { open } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+
+const BYTES = 4096;
+const cache = new Map<string, Promise<Preview | undefined>>();
+
+export interface Preview {
+  header: string[];
+  rows: string[][];
+}
+
+// One CSV line into cells; quoted cells may hold commas and "" quotes
+const cells = (line: string) =>
+  [...line.matchAll(/("(?:[^"]|"")*"|[^,]*)(?:,|$)/g)]
+    .slice(0, -1)
+    .map(([, c]) =>
+      c.startsWith('"') ? c.slice(1, -1).replaceAll('""', '"') : c,
+    );
+
+async function readHead(url: string) {
+  if (url.startsWith("file:")) {
+    const file = await open(fileURLToPath(url));
+    try {
+      const { buffer, bytesRead } = await file.read({
+        buffer: Buffer.alloc(BYTES),
+      });
+      return {
+        text: buffer.subarray(0, bytesRead).toString("utf8"),
+        whole: bytesRead < BYTES,
+      };
+    } finally {
+      await file.close();
+    }
+  }
+  const res = await fetch(url, {
+    // A range of compressed bytes can't be unpacked on its own
+    headers: { "Accept-Encoding": "identity", Range: `bytes=0-${BYTES - 1}` },
+    signal: AbortSignal.timeout(5000),
+  });
+  if (!res.ok || !res.body) return undefined;
+  // A server that ignores Range sends everything; stop reading at 4 KB
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  while (size < BYTES) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    size += value.length;
+  }
+  await reader.cancel();
+  const text = new TextDecoder().decode(
+    Buffer.concat(chunks).subarray(0, BYTES),
+  );
+  return { text, whole: size < BYTES };
+}
+
+async function load(url: string, rows: number): Promise<Preview | undefined> {
+  try {
+    const head = await readHead(url);
+    if (!head) return undefined;
+    const lines = head.text.split(/\r?\n/);
+    // The last line of a cut-off read is partial
+    if (!head.whole) lines.pop();
+    const [header, ...body] = lines.filter(Boolean).map(cells);
+    if (!header?.includes("href")) return undefined;
+    return { header, rows: body.slice(0, rows) };
+  } catch {
+    return undefined;
+  }
+}
+
+export function inventoryPreview(url: string, rows = 5) {
+  if (!cache.has(url)) cache.set(url, load(url, rows));
+  return cache.get(url) as Promise<Preview | undefined>;
+}
