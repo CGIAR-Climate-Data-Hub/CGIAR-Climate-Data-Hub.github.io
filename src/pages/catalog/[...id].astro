@@ -139,6 +139,8 @@ const crsHref =
     ? `https://epsg.io/${d.spatial.crs.split(":")[1]}`
     : undefined;
 const hasSchema = d.structures.length > 0;
+// In-page anchor for an asset card; names may hold spaces
+const assetAnchor = (name: string) => `file-${name.replace(/[^\w-]+/g, "-")}`;
 // One data dictionary per structure; with several, each is headed by its
 // name and the files that hold it
 const multiStructure = d.structures.length > 1;
@@ -146,8 +148,7 @@ const structures = d.structures.map((s) => ({
   ...s,
   files: d.data
     .filter((a) => heldStructures(d, a).includes(s))
-    .map((a) => a.name)
-    .join(", "),
+    .map((a) => a.name),
   // The variables table grows a "No data" column only when one has a value
   varNodata: s.variables.some((v) => v.nodata !== undefined),
 }));
@@ -633,14 +634,20 @@ const jsonLd = datasetJsonLd(
             {structures.map((s) => (
               <div class="var-group">
                 {multiStructure && <h3 class="tech-title mono">{s.name}</h3>}
-                {(multiStructure || s.geometry_column) && (
-                  <p class="section-sub">
-                    {[
-                      multiStructure && s.files && `Files: ${s.files}`,
-                      s.geometry_column && `Geometry column: ${s.geometry_column}`,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
+                {s.files.length > 0 && (
+                  <p class="structure-files">
+                    Files:{" "}
+                    {s.files.map((name, i) => (
+                      <>
+                        {i > 0 && ", "}
+                        <a class="mono" href={`#${assetAnchor(name)}`}>{name}</a>
+                      </>
+                    ))}
+                  </p>
+                )}
+                {s.geometry_column && (
+                  <p class="structure-files">
+                    Geometry column: <span class="mono">{s.geometry_column}</span>
                   </p>
                 )}
                 {s.variables.length > 0 && (
@@ -847,7 +854,7 @@ const jsonLd = datasetJsonLd(
               <h3 class="tech-title">{group.title}</h3>
             <div class="assets">
               {group.items.map(({ asset, example, bestFor, primary, index, indexes, indexSnippets, others, tplFields, tplFile, tplUrl, fileCount, download }) => (
-                <div class="asset">
+                <div class="asset" id={assetAnchor(asset.name)}>
                   <div class="asset-head">
                     <span class="mono asset-name">{asset.name}</span>
                     {asset.roles.map((r) => <span class="label">{r}</span>)}
@@ -1645,14 +1652,19 @@ const panels = tabs
   .map((a) => document.getElementById(a.hash.slice(1)))
   .filter((el): el is HTMLElement => el !== null);
 
+// A hash may name a panel or something inside one (#file-zarr); show its panel
 function showPanel(id: string) {
-  const target = panels.some((s) => s.id === id) ? id : panels[0]?.id;
+  const el = id ? document.getElementById(id) : null;
+  const target = panels.find((s) => el && s.contains(el))?.id ?? panels[0]?.id;
   for (const s of panels) s.hidden = s.id !== target;
   for (const a of tabs)
     a.setAttribute("aria-current", String(a.hash === `#${target}`));
 }
-// Don't strand the reader mid-page: reveal the new panel top if it's off-screen
+// Don't strand the reader mid-page: reveal the new panel top if it's off-screen,
+// or the linked element when the hash points inside a panel
 function snapToPanel() {
+  const el = document.getElementById(location.hash.slice(1));
+  if (el && !panels.includes(el)) return el.scrollIntoView();
   const panel = panels.find((s) => !s.hidden);
   if (panel && panel.getBoundingClientRect().top < 130) panel.scrollIntoView();
 }
@@ -1673,6 +1685,7 @@ if (tabs.length > 0) {
     snapToPanel();
   });
   showPanel(location.hash.slice(1));
+  if (location.hash) snapToPanel();
 }
 </script>
 
@@ -1713,6 +1726,15 @@ if (tabs.length > 0) {
 
 .var-group .tech-title {
   margin: var(--space-4) 0 var(--space-1);
+  font-size: var(--font-size-8);
+}
+
+.structure-files {
+  margin: var(--space-1) 0 var(--space-3);
+}
+
+.asset:target {
+  border-color: var(--terra-500);
 }
 
 .class-list {
