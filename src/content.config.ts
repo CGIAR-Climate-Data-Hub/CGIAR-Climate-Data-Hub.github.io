@@ -200,7 +200,6 @@ const asset = z.object({
       return Math.ceil(Number(n) * 1000 ** SIZE_UNITS.indexOf(unit));
     })
     .optional(),
-  nodata: z.union([z.string(), z.number()]).optional(),
   // Single-file digest as <algorithm>:<hex>
   checksum: z.string().optional(),
   // Coverage of this asset alone, for picking files by area
@@ -247,7 +246,7 @@ const variable = z.object({
   data_type: z.string().optional(),
   unit: z.string().optional(),
   note: z.string().optional(),
-  // Fill value for this variable, replacing the asset's nodata
+  // Fill value marking missing data
   nodata: z.union([z.string(), z.number()]).optional(),
   categories: z.array(category).default([]),
 });
