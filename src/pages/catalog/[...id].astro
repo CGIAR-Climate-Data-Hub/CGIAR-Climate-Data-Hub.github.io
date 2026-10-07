@@ -471,7 +471,7 @@ const jsonLd = datasetJsonLd(
                 </svg>
               </summary>
               <div class="menu-list">
-                <a href={`/catalog/${d.id}.json`}>Raw record (JSON)</a>
+                <a href={`/catalog/${recordSlug(d)}.json`}>Raw record (JSON)</a>
                 {hasTemplated && (
                   <a href={stacUrl} rel="noreferrer">
                     STAC Collection ↗
