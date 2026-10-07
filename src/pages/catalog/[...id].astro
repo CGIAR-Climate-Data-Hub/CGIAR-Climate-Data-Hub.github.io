@@ -37,7 +37,12 @@ import { shikiConfig } from "@/lib/code-block";
 import { allTutorials } from "@/lib/collections";
 import { blobUrl, editUrl, githubUrl } from "@/lib/github";
 import { inventoryPreview } from "@/lib/inventory";
-import { assetExample, indexExample, quickstarts } from "@/lib/snippets";
+import {
+  assetExample,
+  authorExamples,
+  indexExample,
+  quickstarts,
+} from "@/lib/snippets";
 import { commodity } from "@/lib/vocab";
 import { CATALOG_REPO, SITE_NAME } from "@/site.config";
 
@@ -216,12 +221,18 @@ const INDEX_LABELS: Record<string, string> = {
 const urlParts = (url: string) => url.split(/(?<=\/)/);
 
 // Example code, from the template files in src/snippets (see lib/snippets).
-// The quick start stacks one short block per format; each asset card in
-// Access & use carries its own worked example (spatial clip / point sample).
+// The quick start stacks one short block per format, unless the record ships
+// its own example script for that language; each asset card in Access & use
+// carries its own worked example (spatial clip / point sample).
+const authored = await authorExamples(d);
 const quickstart = {
-  python: quickstarts(d, "py").join("\n\n"),
-  r: quickstarts(d, "R").join("\n\n"),
+  python: authored.py?.code ?? quickstarts(d, "py").join("\n\n"),
+  r: authored.R?.code ?? quickstarts(d, "R").join("\n\n"),
 };
+const authoredLinks = [
+  authored.py && { label: "Python", url: authored.py.url },
+  authored.R && { label: "R", url: authored.R.url },
+].filter((l): l is { label: string; url: string } => !!l);
 
 // Everything the asset card renders, derived once per asset:
 // - tplFields: one select per template token, options from the dimension's
@@ -537,6 +548,17 @@ const jsonLd = datasetJsonLd(
             <div>
               <h2>Quick start</h2>
               <SnippetTabs python={quickstart.python} r={quickstart.r} />
+              {authoredLinks.length > 0 && (
+                <p class="digest">
+                  Provided by the dataset authors:{" "}
+                  {authoredLinks.map((l, i) => (
+                    <>
+                      {i > 0 && ", "}
+                      <a href={l.url} rel="noreferrer">{l.label} example</a>
+                    </>
+                  ))}
+                </p>
+              )}
               <p class="digest">
                 <a href="#access">Full access details and endpoints</a>
               </p>

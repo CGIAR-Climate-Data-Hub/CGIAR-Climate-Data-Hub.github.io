@@ -84,3 +84,40 @@ export function assetExample(
   const r = render("subset", format, "R", url);
   return python || r ? { python, r } : undefined;
 }
+
+// A record's own example script per language: an additional asset with role
+// `example` and a script media type. It replaces the generated quick start
+// for that language. Notebooks stay links; a failed or oversized fetch falls
+// back to the generated code.
+const SCRIPT_TYPES = { py: "text/x-python", R: "text/x-r" } as const;
+const MAX_BYTES = 20_000;
+
+async function fetchScript(url: string) {
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    const code = res.ok ? (await res.text()).trim() : "";
+    return code && code.length <= MAX_BYTES ? code : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export async function authorExamples(d: CatalogRecord) {
+  const out: Partial<
+    Record<keyof typeof SCRIPT_TYPES, { code: string; url: string }>
+  > = {};
+  for (const [lang, type] of Object.entries(SCRIPT_TYPES) as [
+    keyof typeof SCRIPT_TYPES,
+    string,
+  ][]) {
+    const asset = d.additional_assets.find(
+      (a) =>
+        a.roles.includes("example")
+        && a.media_type?.toLowerCase().startsWith(type),
+    );
+    const url = asset?.locations[0]?.url;
+    const code = url && (await fetchScript(url));
+    if (url && code) out[lang] = { code, url };
+  }
+  return out;
+}
