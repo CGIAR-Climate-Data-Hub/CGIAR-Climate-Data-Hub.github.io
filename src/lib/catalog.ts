@@ -206,13 +206,16 @@ export const HORIZONTAL = ["xy", "x", "y"];
 // A grid step in words. Degrees convert exactly to arc-minutes or arc-seconds;
 // the km figure is approximate and holds only at the equator (111.32 km/°)
 export function spacingLabel(step: number, unit: string) {
-  if (!/^degree/.test(unit)) return `${+step.toPrecision(6)} ${unit}`;
+  // degree (UDUNITS-2) or deg (UCUM); any other unit prints as written
+  if (!/^deg/.test(unit)) return `${+step.toPrecision(6)} ${unit}`;
   const minutes = step * 60;
   const [n, word] =
     minutes >= 1 ? [minutes, "arc-minute"] : [minutes * 60, "arc-second"];
   const value = +n.toFixed(2);
-  const km = +(step * 111.32).toPrecision(2);
-  return `${value} ${word}${value === 1 ? "" : "s"} (~${km} km at the equator)`;
+  const km = step * 111.32;
+  const ground =
+    km >= 1 ? `${+km.toPrecision(2)} km` : `${+(km * 1000).toPrecision(2)} m`;
+  return `${value} ${word}${value === 1 ? "" : "s"} (~${ground} at the equator)`;
 }
 
 // A record's distinct grid spacings: each regular horizontal axis in its
