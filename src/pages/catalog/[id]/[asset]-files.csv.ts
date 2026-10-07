@@ -9,12 +9,12 @@ export async function getStaticPaths() {
   const entries = await getCollection("catalog");
   return entries.flatMap((entry) =>
     entry.data.data.flatMap((asset) => {
-      const inventory = templateInventory(entry.data, asset);
-      if (!inventory) return [];
+      const csv = templateInventory(entry.data, asset);
+      if (!csv) return [];
       return [
         {
           params: { id: recordSlug(entry.data), asset: asset.name },
-          props: { csv: inventory.csv },
+          props: { csv },
         },
       ];
     }),

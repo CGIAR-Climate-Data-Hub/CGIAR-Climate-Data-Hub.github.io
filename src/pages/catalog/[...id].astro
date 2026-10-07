@@ -27,7 +27,6 @@ import {
   spacingLabel,
   stacCollectionUrl,
   stepLabel,
-  templateInventory,
   temporalText,
   versionChain,
   versionedSlug,
@@ -310,16 +309,18 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
     // An indexed asset's root is a directory, not a file to open
     example: index ? undefined : assetExample(d, asset),
     bestFor: formatBestFor(asset.media_type),
+    extent: assetCoverage(asset.spatial),
     primary,
     index,
     indexes,
-    indexSnippets: indexes.filter((ix) => ix.snippet),
+    // The one index row that starts open
+    openIndex: indexes.find((ix) => ix.snippet),
     others,
     tplFields,
     tplFile,
     tplUrl: tplFile && httpUrl ? httpUrl + tplFile : undefined,
-    // Every templated file as a cdh-inventory CSV, built by [asset]-files.csv
-    fileCount: asset.href_template && templateInventory(d, asset)?.count,
+    // How many files the template names; [asset]-files.csv lists them
+    fileCount: tplFields?.reduce((n, f) => n * f.values.length, 1),
     download:
       !restricted
       && !asset.href_template
@@ -650,7 +651,7 @@ const jsonLd = datasetJsonLd(
             <div>
               <h3 class="tech-title">{group.title}</h3>
             <div class="assets">
-              {group.items.map(({ asset, example, bestFor, primary, index, indexes, indexSnippets, others, tplFields, tplFile, tplUrl, fileCount, download }) => (
+              {group.items.map(({ asset, example, bestFor, extent, primary, index, indexes, openIndex, others, tplFields, tplFile, tplUrl, fileCount, download }) => (
                 <div class="asset" id={anchor("file", asset.name)}>
                   <div class="asset-head">
                     <span class="mono asset-name">{asset.name}</span>
@@ -695,10 +696,9 @@ const jsonLd = datasetJsonLd(
                       </ul>
                     </div>
                   )}
-                  {assetCoverage(asset.spatial) && (
+                  {extent && (
                     <p class="asset-fact">
-                      <b>Coverage:</b>{" "}
-                      <span class="mono">{assetCoverage(asset.spatial)}</span>
+                      <b>Coverage:</b> <span class="mono">{extent}</span>
                     </p>
                   )}
                   {asset.checksum && (
@@ -740,7 +740,7 @@ const jsonLd = datasetJsonLd(
                         <div class="tpl-fields">
                           {(tplFields ?? []).map((f) =>
                             // One value is no choice: keep it for the URL, show no control
-                            (f.date ? f.date.min === f.date.max : f.values.length === 1) ? (
+                            f.values.length === 1 ? (
                               <input data-tpl-dim={f.name} type="hidden" value={f.values[0]} />
                             ) : (
                             // biome-ignore lint/a11y/noLabelWithoutControl: the control is inside, behind a ternary
@@ -831,7 +831,7 @@ const jsonLd = datasetJsonLd(
                             <details
                               class="index-row"
                               name={`index-${asset.name}`}
-                              open={ix === indexSnippets[0]}
+                              open={ix === openIndex}
                             >
                               <summary class="index-head">{row}</summary>
                               <div class="index-body">

@@ -7,8 +7,8 @@
 import type { CatalogRecord } from "@/lib/catalog";
 import {
   formatConcept as concept,
-  exampleTemplateFile,
   heldStructures,
+  resolveTemplate,
 } from "@/lib/catalog";
 
 const FILES = import.meta.glob("/src/snippets/*", {
@@ -36,7 +36,7 @@ function assetFormat(d: CatalogRecord, asset: CatalogRecord["data"][number]) {
 function exampleUrl(d: CatalogRecord, asset: CatalogRecord["data"][number]) {
   const root = asset.locations.find((l) => l.url.startsWith("http"))?.url;
   if (!root || !asset.href_template) return root;
-  const file = exampleTemplateFile(d, asset);
+  const file = resolveTemplate(d, asset)?.file;
   return file ? `${root}${file}` : undefined;
 }
 

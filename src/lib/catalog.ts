@@ -44,39 +44,30 @@ export const heldStructures = (d: CatalogRecord, asset: Asset) =>
     ? d.structures.filter((s) => asset.structures.includes(s.name))
     : d.structures.slice(0, 1);
 
-// Dimension a token names: the same in every held structure, so take the first
-const tokenDim = (d: CatalogRecord, asset: Asset, name: string) =>
-  heldStructures(d, asset)
-    .flatMap((s) => s.dimensions)
-    .find((x) => x.name === name);
-
-// An asset template's tokens with their values, plus one real file (first
-// value per token). {variable} is the one token backed by variable names.
+// An asset template's tokens with every value each takes (its dimension's,
+// or the held variable names for {variable}), plus one real file from the
+// first value per token. A daily axis also carries a date range, so the
+// picker can show a native date field instead of a list spanning decades.
 export function resolveTemplate(d: CatalogRecord, asset: Asset) {
   const template = asset.href_template;
   if (!template) return undefined;
+  const held = heldStructures(d, asset);
   const fields = tokenNames(template).map((name) => {
-    const dim = tokenDim(d, asset, name);
+    // The same dimension in every held structure, so the first will do
+    const dim = held.flatMap((s) => s.dimensions).find((x) => x.name === name);
+    const values = dim
+      ? axisValues(dim)
+      : name === "variable"
+        ? held.flatMap((s) => s.variables.map((v) => v.name))
+        : [];
     const days = dayStep(dim);
-    // A daily axis can span decades: a native date field, not a list
-    if (dim?.extent && days) {
-      const [min, max] = dim.extent;
-      return { name, values: [min], date: { min, max, step: days } };
-    }
-    return { name, values: tokenValues(d, asset, name) };
+    const date = dim?.extent
+      && days && { min: values[0], max: dim.extent[1], step: days };
+    return { name, values, date: date || undefined };
   });
   if (fields.some((f) => f.values.length === 0)) return undefined;
   const first = Object.fromEntries(fields.map((f) => [f.name, f.values[0]]));
   return { fields, file: fillTemplate(template, first) };
-}
-
-// Every value a template token takes: its dimension's, or the held variables
-function tokenValues(d: CatalogRecord, asset: Asset, name: string) {
-  const dim = tokenDim(d, asset, name);
-  if (dim) return axisValues(dim);
-  return name === "variable"
-    ? heldStructures(d, asset).flatMap((s) => s.variables.map((v) => v.name))
-    : [];
 }
 
 // Every file an asset's template names, as a cdh-inventory CSV (RFC 4180):
@@ -84,32 +75,22 @@ function tokenValues(d: CatalogRecord, asset: Asset, name: string) {
 // unless every token resolves.
 export function templateInventory(d: CatalogRecord, asset: Asset) {
   const { href_template: template, locations } = asset;
-  if (!template) return undefined;
+  const fields = resolveTemplate(d, asset)?.fields;
+  if (!template || !fields) return undefined;
   const base =
     locations.find((l) => l.url.startsWith("http"))?.url ?? locations[0]?.url;
-  const tokens = tokenNames(template);
-  const axes = tokens.map((name) => tokenValues(d, asset, name));
-  if (axes.some((values) => values.length === 0)) return undefined;
   let rows: string[][] = [[]];
-  for (const values of axes)
-    rows = rows.flatMap((row) => values.map((v) => [...row, v]));
+  for (const f of fields)
+    rows = rows.flatMap((row) => f.values.map((v) => [...row, v]));
   const cell = (v: string) =>
     /[",\r\n]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v;
   const lines = rows.map((row) => {
-    const pick = Object.fromEntries(tokens.map((t, i) => [t, row[i]]));
+    const pick = Object.fromEntries(fields.map((f, i) => [f.name, row[i]]));
     const href = `${base ?? ""}${fillTemplate(template, pick)}`;
     return [href, ...row].map(cell).join(",");
   });
-  const header = ["href", ...tokens].join(",");
-  return {
-    count: rows.length,
-    csv: `${[header, ...lines].join("\r\n")}\r\n`,
-  };
-}
-
-// Fill every placeholder with its first valid value to name one real file.
-export function exampleTemplateFile(d: CatalogRecord, asset: Asset) {
-  return resolveTemplate(d, asset)?.file;
+  const header = ["href", ...fields.map((f) => f.name)].join(",");
+  return `${[header, ...lines].join("\r\n")}\r\n`;
 }
 
 export const SIZE_UNITS = ["B", "KB", "MB", "GB", "TB", "PB"];
@@ -433,11 +414,10 @@ export function datasetMd(
   };
 
   // Names repeat across structures, so tag them with theirs when there are several
-  const at = (s: { name: string }) => (name: string) =>
+  const at = (s: { name: string }, name: string) =>
     d.structures.length > 1 ? `${s.name}/${name}` : name;
-  const inStructures = <T>(
-    pick: (s: CatalogRecord["structures"][number]) => T[],
-  ) => d.structures.flatMap((s) => pick(s).map((x) => [x, at(s)] as const));
+  const codes = (cats: { value: string; label: string }[]) =>
+    cats.map((c) => `${c.value} = ${c.label}`);
 
   const c = d.climate;
   const blocks = [
@@ -445,56 +425,65 @@ export function datasetMd(
     d.description.trim(),
     section(
       "Variables",
-      inStructures((s) => s.variables).map(([v, at]) =>
-        dash(
-          `${at(v.name)}${v.unit ? ` (${v.unit})` : ""}`,
-          v.description,
-          v.note,
+      d.structures.flatMap((s) =>
+        s.variables.map((v) =>
+          dash(
+            `${at(s, v.name)}${v.unit ? ` (${v.unit})` : ""}`,
+            v.description,
+            v.note,
+          ),
         ),
       ),
     ),
     section(
       "Dimensions",
-      inStructures((s) => s.dimensions).map(([dim, at]) =>
-        dash(
-          [
-            at(dim.name),
-            dim.extent
-              ? dim.extent.join(" to ")
-              : dim.categories.length > 0
-                ? values(dim.categories.map((c) => `${c.value} = ${c.label}`))
-                : values(dim.values),
-          ]
-            .filter(Boolean)
-            .join(": "),
-          dim.data_type && `type ${dim.data_type}`,
-          dim.step ? `step ${dim.step}` : undefined,
-          dim.unit && `unit ${dim.unit}`,
-          dim.reference_system && `coded against ${dim.reference_system}`,
-          dim.description,
+      d.structures.flatMap((s) =>
+        s.dimensions.map((dim) =>
+          dash(
+            [
+              at(s, dim.name),
+              dim.extent
+                ? dim.extent.join(" to ")
+                : values(
+                    dim.categories.length > 0
+                      ? codes(dim.categories)
+                      : dim.values,
+                  ),
+            ]
+              .filter(Boolean)
+              .join(": "),
+            dim.data_type && `type ${dim.data_type}`,
+            dim.step ? `step ${dim.step}` : undefined,
+            dim.unit && `unit ${dim.unit}`,
+            dim.reference_system && `coded against ${dim.reference_system}`,
+            dim.description,
+          ),
         ),
       ),
     ),
     section(
       "Categories",
-      inStructures((s) => s.variables)
-        .filter(([v]) => v.categories.length > 0)
-        .map(
-          ([v, at]) =>
-            `${at(v.name)}: ${v.categories.map((c) => `${c.value} = ${c.label}`).join("; ")}`,
-        ),
+      d.structures.flatMap((s) =>
+        s.variables
+          .filter((v) => v.categories.length > 0)
+          .map((v) => `${at(s, v.name)}: ${codes(v.categories).join("; ")}`),
+      ),
     ),
     section(
       "Geometry",
-      d.structures
-        .filter((s) => s.geometry_column)
-        .map((s) => `Geometry column: ${at(s)(s.geometry_column ?? "")}`),
+      d.structures.flatMap((s) =>
+        s.geometry_column
+          ? [`Geometry column: ${at(s, s.geometry_column)}`]
+          : [],
+      ),
     ),
     section(
       "Foreign keys",
-      inStructures((s) => s.foreign_keys).map(
-        ([fk, at]) =>
-          `${fk.fields.map(at).join(", ")} → ${fk.reference.resource}${fk.reference.asset ? ` (${fk.reference.asset})` : ""}: ${fk.reference.fields.join(", ")}`,
+      d.structures.flatMap((s) =>
+        s.foreign_keys.map(
+          (fk) =>
+            `${fk.fields.map((f) => at(s, f)).join(", ")} → ${fk.reference.resource}${fk.reference.asset ? ` (${fk.reference.asset})` : ""}: ${fk.reference.fields.join(", ")}`,
+        ),
       ),
     ),
     d.cdh
@@ -641,6 +630,35 @@ export function datasetJsonLd(
       ...(d.series.url && { url: d.series.url }),
     },
   ].filter(Boolean);
+  // Named places (with M49/ISO codes) alongside the bbox GeoShapes
+  const places = [
+    ...(d.spatial?.geography ?? []).map((g) => {
+      const c = geography(g);
+      return {
+        "@type": "Place",
+        name: c?.label ?? humanize(g),
+        ...(c && {
+          identifier: [
+            { "@type": "PropertyValue", propertyID: "UN M49", value: c.code },
+            ...(c.iso3
+              ? [
+                  {
+                    "@type": "PropertyValue",
+                    propertyID: "ISO 3166-1 alpha-3",
+                    value: c.iso3,
+                  },
+                ]
+              : []),
+          ],
+        }),
+      };
+    }),
+    // schema.org box is "minLat minLon maxLat maxLon"
+    ...boxes.map((b) => ({
+      "@type": "Place",
+      geo: { "@type": "GeoShape", box: `${b[1]} ${b[0]} ${b[3]} ${b[2]}` },
+    })),
+  ];
   // Distributions stay coarse, and only URLs a consumer can fetch directly
   // (e.g. a Zarr root). Templated and indexed assets have no such URL — their
   // prefix isn't retrievable — so their file lists and indexes stand in.
@@ -756,40 +774,7 @@ export function datasetJsonLd(
         ...(f.url && { url: f.url }),
       })),
     }),
-    ...(() => {
-      // Named places (with M49/ISO codes) alongside the bbox GeoShape
-      const places: object[] = (d.spatial?.geography ?? []).map((g) => {
-        const c = geography(g);
-        return {
-          "@type": "Place",
-          name: c?.label ?? humanize(g),
-          ...(c && {
-            identifier: [
-              { "@type": "PropertyValue", propertyID: "UN M49", value: c.code },
-              ...(c.iso3
-                ? [
-                    {
-                      "@type": "PropertyValue",
-                      propertyID: "ISO 3166-1 alpha-3",
-                      value: c.iso3,
-                    },
-                  ]
-                : []),
-            ],
-          }),
-        };
-      });
-      for (const b of boxes)
-        places.push({
-          "@type": "Place",
-          geo: {
-            "@type": "GeoShape",
-            // schema.org box is "minLat minLon maxLat maxLon"
-            box: `${b[1]} ${b[0]} ${b[3]} ${b[2]}`,
-          },
-        });
-      return places.length > 0 ? { spatialCoverage: places } : {};
-    })(),
+    ...(places.length > 0 && { spatialCoverage: places }),
     // schema.org accepts reduced-precision dates; ".." is its open-ended marker
     ...(d.temporal && {
       temporalCoverage:
