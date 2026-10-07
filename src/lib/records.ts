@@ -138,14 +138,16 @@ export function records(source: RecordsSource): Loader {
       const ref = process.env.RECORDS_REF ?? "main";
       for (const f of files) {
         const id = f.path.replace(/\.ya?ml$/, "");
-        const record = parse(decoder.decode(f.bytes));
+        const body = decoder.decode(f.bytes);
+        const record = parse(body);
         resolveSidecars(
           record,
           `https://raw.githubusercontent.com/${repo}/${ref}/${source.dir}/${f.path}`,
         );
         const data = await parseData({ id, data: record });
-        // filePath is repo-relative, for "view source" links on record pages
-        store.set({ id, data, filePath: `${source.dir}/${f.path}` });
+        // body is the file as authored, for the raw JSON endpoint; filePath is
+        // repo-relative, for "view source" links on record pages
+        store.set({ id, data, body, filePath: `${source.dir}/${f.path}` });
       }
       logger.info(`loaded ${files.length} records`);
     },
