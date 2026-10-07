@@ -175,7 +175,7 @@ const location = z.object({ url: z.string(), title: z.string().optional() });
 
 // The record's coverage, or one asset's (data[].spatial, same shape)
 const spatial = z.object({
-  // Either one bbox or a list of them, per the datacube extension
+  // Either one bbox or a list of them
   bbox: z.union([z.array(z.number()), z.array(z.array(z.number()))]).optional(),
   geography: z.array(z.string()).default([]),
   crs: z.string().optional(),
