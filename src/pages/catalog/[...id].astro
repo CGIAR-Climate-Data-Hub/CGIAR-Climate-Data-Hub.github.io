@@ -624,210 +624,6 @@ const jsonLd = datasetJsonLd(
           )}
       </section>
 
-      {hasSchema && (
-          <section id="schema">
-            <h2>Data dictionary</h2>
-            <p class="section-sub">
-              {multiStructure
-                ? "One dictionary per file layout: its dimensions, variables, and keys."
-                : "Dimensions, variables, and keys of the data."}
-            </p>
-            {structures.map((s) => (
-              <div class="var-group" id={anchor("structure", s.name)}>
-                {multiStructure && <h3 class="tech-title mono">{s.name}</h3>}
-                {s.files.length > 0 && (
-                  <p class="structure-files">
-                    Files:{" "}
-                    {s.files.map((name, i) => (
-                      <>
-                        {i > 0 && ", "}
-                        <a class="mono" href={`#${anchor("file", name)}`}>{name}</a>
-                      </>
-                    ))}
-                  </p>
-                )}
-                {s.geometry_column && (
-                  <p class="structure-files">
-                    Geometry column: <span class="mono">{s.geometry_column}</span>
-                  </p>
-                )}
-                {s.variables.length > 0 && (
-                  <>
-                <p class="label">Variables</p>
-                <div class="table-wrap">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Variable</th>
-                        <th>Type</th>
-                        <th>Unit</th>
-                        {s.varNodata && <th>No data</th>}
-                        <th>Description</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {s.variables.map((v) => (
-                          <tr>
-                            <td class="mono var-name">{v.name}</td>
-                            <td class="mono">{v.data_type ?? "—"}</td>
-                            <td class="mono">{v.unit ?? "—"}</td>
-                            {s.varNodata && <td class="mono">{v.nodata ?? "—"}</td>}
-                            <td>
-                              {v.description ?? "—"}
-                              {v.note && <div class="var-note">{v.note}</div>}
-                              {v.categories.length > 0 && (
-                                <dl class="class-list">
-                                  {v.categories.map((cv) => (
-                                    <>
-                                      <dt class="mono">{cv.value}</dt>
-                                      <dd>
-                                        {cv.label}
-                                        {cv.description && (
-                                          <span class="class-desc">
-                                            {" "}
-                                            — {cv.description}
-                                          </span>
-                                        )}
-                                      </dd>
-                                    </>
-                                  ))}
-                                </dl>
-                              )}
-                            </td>
-                          </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                  </>
-                )}
-                {s.dimensions.length > 0 && (
-                  <>
-                <p class="label">Dimensions</p>
-                <div class="dim-cards">
-                  {s.dimensions.map((dim) => (
-                    <div class="dim-card">
-                      <div class="dim-head">
-                        <span class="mono dim-name">{dim.name}</span>
-                        {dim.type && <span class="label">{dim.type}</span>}
-                      </div>
-                      {dim.description && <p>{dim.description}</p>}
-                      {dim.data_type && (
-                        <p>
-                          <b>Data type:</b> <span class="mono">{dim.data_type}</span>
-                        </p>
-                      )}
-                      {dim.unit && <p><b>Unit:</b> <span class="mono">{dim.unit}</span></p>}
-                      {dim.reference_system && (
-                        <p>
-                          <b>Coded against:</b>{" "}
-                          {/^https?:/.test(dim.reference_system) ? (
-                            <a class="mono" href={dim.reference_system} rel="noreferrer">
-                              {dim.reference_system}
-                            </a>
-                          ) : (
-                            dim.reference_system
-                          )}
-                        </p>
-                      )}
-                      {HORIZONTAL.includes(dim.type ?? "") && (
-                        <p>
-                          {typeof dim.step === "number" && dim.unit ? (
-                            <>
-                              <b>Grid spacing:</b> {spacingLabel(dim.step, dim.unit)}{" "}
-                              <span class="mono">
-                                ({dim.step} {dim.unit})
-                              </span>
-                            </>
-                          ) : (
-                            "Coordinate column"
-                          )}
-                        </p>
-                      )}
-                      {dim.extent && (
-                        <p class="mono">
-                          {dim.extent[0]} – {dim.extent[1]}
-                          {typeof dim.step === "string" && `, ${stepLabel(dim.step)}`}
-                        </p>
-                      )}
-                      {dim.values.length > 0 && (
-                        <div class="chips">
-                          {dim.values.map((v) => (
-                            <span class="chip mono">{v}</span>
-                          ))}
-                        </div>
-                      )}
-                      {dim.categories.length > 0 && (
-                        <dl class="class-list">
-                          {dim.categories.map((c) => (
-                            <>
-                              <dt class="mono">{c.value}</dt>
-                              <dd>
-                                {c.label}
-                                {c.description && <span class="class-desc"> — {c.description}</span>}
-                              </dd>
-                            </>
-                          ))}
-                        </dl>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                  </>
-                )}
-                {s.foreign_keys.length > 0 && (
-                  <>
-                <p class="label">Foreign keys</p>
-                <div class="dim-cards">
-                  {s.foreign_keys.map((fk) => {
-                    const target = fkTarget(fk.reference.resource);
-                    return (
-                      <div class="dim-card">
-                        <p class="fk-head">
-                          Joins to{" "}
-                          {target.href ? (
-                            <a href={target.href} rel="noreferrer">{target.title}</a>
-                          ) : (
-                            <b>{target.title}</b>
-                          )}
-                          {target.host && <span class="fk-host"> · {target.host}</span>}
-                          {fk.reference.asset && (
-                            <span class="fk-host">
-                              {" "}
-                              · file <span class="mono">{fk.reference.asset}</span>
-                            </span>
-                          )}
-                        </p>
-                        {/* Columns pair up by position */}
-                        <table class="fk-map">
-                          <thead>
-                            <tr>
-                              <th>This table</th>
-                              <th />
-                              <th>{target.title}</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {fk.fields.map((field, i) => (
-                              <tr>
-                                <td class="mono">{field}</td>
-                                <td class="fk-arrow">→</td>
-                                <td class="mono">{fk.reference.fields[i]}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })}
-                </div>
-                  </>
-                )}
-              </div>
-            ))}
-          </section>
-        )}
-
       {d.data.length > 0 && (
           <section id="access">
             <div>
@@ -1139,6 +935,210 @@ const jsonLd = datasetJsonLd(
               ))}
             </div>
             </div>
+            ))}
+          </section>
+        )}
+
+      {hasSchema && (
+          <section id="schema">
+            <h2>Data dictionary</h2>
+            <p class="section-sub">
+              {multiStructure
+                ? "One dictionary per file layout: its dimensions, variables, and keys."
+                : "Dimensions, variables, and keys of the data."}
+            </p>
+            {structures.map((s) => (
+              <div class="var-group" id={anchor("structure", s.name)}>
+                {multiStructure && <h3 class="tech-title mono">{s.name}</h3>}
+                {s.files.length > 0 && (
+                  <p class="structure-files">
+                    Files:{" "}
+                    {s.files.map((name, i) => (
+                      <>
+                        {i > 0 && ", "}
+                        <a class="mono" href={`#${anchor("file", name)}`}>{name}</a>
+                      </>
+                    ))}
+                  </p>
+                )}
+                {s.geometry_column && (
+                  <p class="structure-files">
+                    Geometry column: <span class="mono">{s.geometry_column}</span>
+                  </p>
+                )}
+                {s.variables.length > 0 && (
+                  <>
+                <p class="label">Variables</p>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Variable</th>
+                        <th>Type</th>
+                        <th>Unit</th>
+                        {s.varNodata && <th>No data</th>}
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {s.variables.map((v) => (
+                          <tr>
+                            <td class="mono var-name">{v.name}</td>
+                            <td class="mono">{v.data_type ?? "—"}</td>
+                            <td class="mono">{v.unit ?? "—"}</td>
+                            {s.varNodata && <td class="mono">{v.nodata ?? "—"}</td>}
+                            <td>
+                              {v.description ?? "—"}
+                              {v.note && <div class="var-note">{v.note}</div>}
+                              {v.categories.length > 0 && (
+                                <dl class="class-list">
+                                  {v.categories.map((cv) => (
+                                    <>
+                                      <dt class="mono">{cv.value}</dt>
+                                      <dd>
+                                        {cv.label}
+                                        {cv.description && (
+                                          <span class="class-desc">
+                                            {" "}
+                                            — {cv.description}
+                                          </span>
+                                        )}
+                                      </dd>
+                                    </>
+                                  ))}
+                                </dl>
+                              )}
+                            </td>
+                          </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                  </>
+                )}
+                {s.dimensions.length > 0 && (
+                  <>
+                <p class="label">Dimensions</p>
+                <div class="dim-cards">
+                  {s.dimensions.map((dim) => (
+                    <div class="dim-card">
+                      <div class="dim-head">
+                        <span class="mono dim-name">{dim.name}</span>
+                        {dim.type && <span class="label">{dim.type}</span>}
+                      </div>
+                      {dim.description && <p>{dim.description}</p>}
+                      {dim.data_type && (
+                        <p>
+                          <b>Data type:</b> <span class="mono">{dim.data_type}</span>
+                        </p>
+                      )}
+                      {dim.unit && <p><b>Unit:</b> <span class="mono">{dim.unit}</span></p>}
+                      {dim.reference_system && (
+                        <p>
+                          <b>Coded against:</b>{" "}
+                          {/^https?:/.test(dim.reference_system) ? (
+                            <a class="mono" href={dim.reference_system} rel="noreferrer">
+                              {dim.reference_system}
+                            </a>
+                          ) : (
+                            dim.reference_system
+                          )}
+                        </p>
+                      )}
+                      {HORIZONTAL.includes(dim.type ?? "") && (
+                        <p>
+                          {typeof dim.step === "number" && dim.unit ? (
+                            <>
+                              <b>Grid spacing:</b> {spacingLabel(dim.step, dim.unit)}{" "}
+                              <span class="mono">
+                                ({dim.step} {dim.unit})
+                              </span>
+                            </>
+                          ) : (
+                            "Coordinate column"
+                          )}
+                        </p>
+                      )}
+                      {dim.extent && (
+                        <p class="mono">
+                          {dim.extent[0]} – {dim.extent[1]}
+                          {typeof dim.step === "string" && `, ${stepLabel(dim.step)}`}
+                        </p>
+                      )}
+                      {dim.values.length > 0 && (
+                        <div class="chips">
+                          {dim.values.map((v) => (
+                            <span class="chip mono">{v}</span>
+                          ))}
+                        </div>
+                      )}
+                      {dim.categories.length > 0 && (
+                        <dl class="class-list">
+                          {dim.categories.map((c) => (
+                            <>
+                              <dt class="mono">{c.value}</dt>
+                              <dd>
+                                {c.label}
+                                {c.description && <span class="class-desc"> — {c.description}</span>}
+                              </dd>
+                            </>
+                          ))}
+                        </dl>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                  </>
+                )}
+                {s.foreign_keys.length > 0 && (
+                  <>
+                <p class="label">Foreign keys</p>
+                <div class="dim-cards">
+                  {s.foreign_keys.map((fk) => {
+                    const target = fkTarget(fk.reference.resource);
+                    return (
+                      <div class="dim-card">
+                        <p class="fk-head">
+                          Joins to{" "}
+                          {target.href ? (
+                            <a href={target.href} rel="noreferrer">{target.title}</a>
+                          ) : (
+                            <b>{target.title}</b>
+                          )}
+                          {target.host && <span class="fk-host"> · {target.host}</span>}
+                          {fk.reference.asset && (
+                            <span class="fk-host">
+                              {" "}
+                              · file <span class="mono">{fk.reference.asset}</span>
+                            </span>
+                          )}
+                        </p>
+                        {/* Columns pair up by position */}
+                        <table class="fk-map">
+                          <thead>
+                            <tr>
+                              <th>This table</th>
+                              <th />
+                              <th>{target.title}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {fk.fields.map((field, i) => (
+                              <tr>
+                                <td class="mono">{field}</td>
+                                <td class="fk-arrow">→</td>
+                                <td class="mono">{fk.reference.fields[i]}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })}
+                </div>
+                  </>
+                )}
+              </div>
             ))}
           </section>
         )}
