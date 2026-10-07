@@ -547,7 +547,11 @@ const jsonLd = datasetJsonLd(
         {(quickstart.python || quickstart.r) && (
             <div>
               <h2>Quick start</h2>
-              <SnippetTabs python={quickstart.python} r={quickstart.r} />
+              <SnippetTabs
+                first={authored.R && !authored.py ? "r" : undefined}
+                python={quickstart.python}
+                r={quickstart.r}
+              />
               {authoredLinks.length > 0 && (
                 <p class="digest">
                   Provided by the dataset authors:{" "}

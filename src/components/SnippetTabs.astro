@@ -9,14 +9,18 @@ interface Props {
   python?: string;
   r?: string;
   sh?: string;
+  // Language shown before the visitor picks one; defaults to the first given
+  first?: "python" | "r" | "sh";
 }
 
-const { python, r, sh } = Astro.props;
+const { python, r, sh, first } = Astro.props;
 const tabs = [
   { lang: "python", label: "Python", code: python },
   { lang: "r", label: "R", code: r },
   { lang: "sh", label: "CLI", code: sh },
-].filter((t) => t.code) as {
+]
+  .filter((t) => t.code)
+  .sort((a, b) => Number(b.lang === first) - Number(a.lang === first)) as {
   lang: "python" | "r" | "sh";
   label: string;
   code: string;
@@ -70,7 +74,7 @@ for (const btn of buttons) {
 
 // Returning visitors land on their language (same pattern as catalog-layout)
 const saved = localStorage.getItem("snippet-lang");
-if (saved && saved !== "python") setLang(saved);
+if (saved) setLang(saved);
 </script>
 
 <style>
