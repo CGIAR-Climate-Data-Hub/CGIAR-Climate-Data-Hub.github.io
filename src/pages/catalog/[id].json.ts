@@ -14,6 +14,7 @@ export async function getStaticPaths() {
 }
 
 export const GET: APIRoute = ({ props }) =>
-  new Response(JSON.stringify(parse(props.body), null, 2), {
+  // Same parse as the loader, so `<<` merge keys resolve here too
+  new Response(JSON.stringify(parse(props.body, { merge: true }), null, 2), {
     headers: { "Content-Type": "application/json" },
   });

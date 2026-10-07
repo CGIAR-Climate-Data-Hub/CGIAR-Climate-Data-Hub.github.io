@@ -139,7 +139,8 @@ export function records(source: RecordsSource): Loader {
       for (const f of files) {
         const id = f.path.replace(/\.ya?ml$/, "");
         const body = decoder.decode(f.bytes);
-        const record = parse(body);
+        // merge: records may share blocks with YAML anchors and `<<` merge keys
+        const record = parse(body, { merge: true });
         resolveSidecars(
           record,
           `https://raw.githubusercontent.com/${repo}/${ref}/${source.dir}/${f.path}`,
