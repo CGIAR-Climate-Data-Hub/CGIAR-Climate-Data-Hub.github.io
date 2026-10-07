@@ -1455,10 +1455,6 @@ const jsonLd = datasetJsonLd(
             )}
           </section>
         )}
-
-      <div class="footer-row">
-        <a class="back" href="/catalog/">← Back to the catalog</a>
-      </div>
     </article>
 
     <aside>
@@ -1588,6 +1584,10 @@ const jsonLd = datasetJsonLd(
           </div>
         )}
     </aside>
+
+    <div class="footer-row">
+      <a class="back" href="/catalog/">← Back to the catalog</a>
+    </div>
   </div>
 </Layout>
 
@@ -1992,15 +1992,24 @@ h1 {
 /* Tabbed panels (script-driven; without JS all sections stay stacked) */
 .body {
   display: grid;
+  /* The rail spans both rows, so the back link sits right under the article */
+  grid-template-rows: auto 1fr;
   grid-template-columns: 1fr 320px;
-  gap: 40px;
+  column-gap: 40px;
   padding-top: var(--space-6);
+}
+
+.body > .footer-row {
+  grid-column: 1;
+  align-self: start;
 }
 
 /* The rail follows the reader; align-self keeps sticky alive in the grid */
 .body > aside {
   position: sticky;
   top: calc(var(--nav-height) + 58px);
+  grid-row: 1 / span 2;
+  grid-column: 2;
   align-self: start;
 }
 
@@ -2738,9 +2747,18 @@ summary.index-head:hover {
   min-width: 0;
 }
 
+/* One column: article, rail, then the back link last */
 @media (width <= 960px) {
   .body {
+    grid-template-rows: none;
     grid-template-columns: 1fr;
+    row-gap: 40px;
+  }
+
+  .body > aside {
+    position: static;
+    grid-row: auto;
+    grid-column: auto;
   }
 }
 
