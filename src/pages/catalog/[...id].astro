@@ -139,8 +139,9 @@ const crsHref =
     ? `https://epsg.io/${d.spatial.crs.split(":")[1]}`
     : undefined;
 const hasSchema = d.structures.length > 0;
-// In-page anchor for an asset card; names may hold spaces
-const assetAnchor = (name: string) => `file-${name.replace(/[^\w-]+/g, "-")}`;
+// In-page anchors for asset cards and structures; names may hold spaces
+const anchor = (kind: string, name: string) =>
+  `${kind}-${name.replace(/[^\w-]+/g, "-")}`;
 // One data dictionary per structure; with several, each is headed by its
 // name and the files that hold it
 const multiStructure = d.structures.length > 1;
@@ -632,7 +633,7 @@ const jsonLd = datasetJsonLd(
                 : "Dimensions, variables, and keys of the data."}
             </p>
             {structures.map((s) => (
-              <div class="var-group">
+              <div class="var-group" id={anchor("structure", s.name)}>
                 {multiStructure && <h3 class="tech-title mono">{s.name}</h3>}
                 {s.files.length > 0 && (
                   <p class="structure-files">
@@ -640,7 +641,7 @@ const jsonLd = datasetJsonLd(
                     {s.files.map((name, i) => (
                       <>
                         {i > 0 && ", "}
-                        <a class="mono" href={`#${assetAnchor(name)}`}>{name}</a>
+                        <a class="mono" href={`#${anchor("file", name)}`}>{name}</a>
                       </>
                     ))}
                   </p>
@@ -854,7 +855,7 @@ const jsonLd = datasetJsonLd(
               <h3 class="tech-title">{group.title}</h3>
             <div class="assets">
               {group.items.map(({ asset, example, bestFor, primary, index, indexes, indexSnippets, others, tplFields, tplFile, tplUrl, fileCount, download }) => (
-                <div class="asset" id={assetAnchor(asset.name)}>
+                <div class="asset" id={anchor("file", asset.name)}>
                   <div class="asset-head">
                     <span class="mono asset-name">{asset.name}</span>
                     {asset.roles.map((r) => <span class="label">{r}</span>)}
@@ -882,7 +883,7 @@ const jsonLd = datasetJsonLd(
                           const s = structureByName.get(name);
                           return (
                             <li>
-                              <a class="mono" href="#schema">{name}</a>
+                              <a class="mono" href={`#${anchor("structure", name)}`}>{name}</a>
                               {s && (
                                 <>
                                   : <span class="mono">{s.variables.map((v) => v.name).join(", ")}</span>
