@@ -36,12 +36,7 @@ import { shikiConfig } from "@/lib/code-block";
 import { allTutorials } from "@/lib/collections";
 import { blobUrl, editUrl, githubUrl } from "@/lib/github";
 import { inventoryPreview } from "@/lib/inventory";
-import {
-  assetExample,
-  authorExamples,
-  indexExample,
-  quickstarts,
-} from "@/lib/snippets";
+import { assetExample, indexExample, quickstart } from "@/lib/snippets";
 import { commodity } from "@/lib/vocab";
 import { CATALOG_REPO, SITE_NAME } from "@/site.config";
 
@@ -225,15 +220,7 @@ const urlParts = (url: string) => url.split(/(?<=\/)/);
 // The quick start stacks one short block per format, unless the record ships
 // its own example script for that language; each asset card in Access & use
 // carries its own worked example (spatial clip / point sample).
-const authored = await authorExamples(d);
-const quickstart = {
-  python: authored.py?.code ?? quickstarts(d, "py").join("\n\n"),
-  r: authored.R?.code ?? quickstarts(d, "R").join("\n\n"),
-};
-const authoredLinks = [
-  authored.py && { label: "Python", url: authored.py.url },
-  authored.R && { label: "R", url: authored.R.url },
-].filter((l): l is { label: string; url: string } => !!l);
+const quick = await quickstart(d);
 
 // Everything the asset card renders, derived once per asset:
 // - tplFields: one select per template token, options from the dimension's
@@ -547,18 +534,15 @@ const jsonLd = datasetJsonLd(
             </div>
           )}
 
-        {(quickstart.python || quickstart.r) && (
+        {Object.keys(quick.code).length > 0 && (
             <div>
               <h2>Quick start</h2>
-              <SnippetTabs
-                first={authored.R && !authored.py ? "r" : undefined}
-                python={quickstart.python}
-                r={quickstart.r}
-              />
-              {authoredLinks.length > 0 && (
+              {/* Open on the authors' own language when they wrote one */}
+              <SnippetTabs code={quick.code} first={quick.authored[0]?.id} />
+              {quick.authored.length > 0 && (
                 <p class="digest">
                   Provided by the dataset authors:{" "}
-                  {authoredLinks.map((l, i) => (
+                  {quick.authored.map((l, i) => (
                     <>
                       {i > 0 && ", "}
                       <a href={l.url} rel="noreferrer">{l.label} example</a>
@@ -866,11 +850,7 @@ const jsonLd = datasetJsonLd(
                                     </p>
                                   </div>
                                 )}
-                                <SnippetTabs
-                                  python={ix.snippet.python}
-                                  r={ix.snippet.r}
-                                  sh={ix.snippet.sh}
-                                />
+                                <SnippetTabs code={ix.snippet} />
                               </div>
                             </details>
                           ) : (
@@ -928,7 +908,7 @@ const jsonLd = datasetJsonLd(
                   {example && (
                     <div class="asset-examples">
                       <p class="tpl-title">Usage examples</p>
-                      <SnippetTabs python={example.python} r={example.r} />
+                      <SnippetTabs code={example} />
                     </div>
                   )}
                 </div>

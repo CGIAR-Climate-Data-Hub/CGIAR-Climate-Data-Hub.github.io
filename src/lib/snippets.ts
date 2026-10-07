@@ -1,9 +1,11 @@
 // Example code for record pages, assembled from the template files in
-// src/snippets named (quickstart|subset)-<format>.{py,R}, where <format> is
-// a format-vocab concept id (or geoparquet, see assetFormat), or index-<file_index format>.{py,R,sh}, whose
-// __SOURCE__ gets the asset's own location (where Icechunk's virtual chunks live). The __URL__ placeholder gets the asset's root
-// URL, or one real file URL for templated assets. Supporting a new format =
-// a vocab entry + template files, nothing else.
+// src/snippets named (quickstart|subset)-<format>.<ext>, where <format> is a
+// format-vocab concept id (or geoparquet, see assetFormat), or
+// index-<file_index format>.<ext>, whose __SOURCE__ gets the asset's own
+// location (where Icechunk's virtual chunks live). <ext> is a LANGUAGES
+// extension. The __URL__ placeholder gets the asset's root URL, or one real
+// file URL for templated assets. A new format = a vocab entry + template
+// files; a new language = a LANGUAGES entry + template files.
 import type { CatalogRecord } from "@/lib/catalog";
 import {
   formatConcept as concept,
@@ -56,34 +58,45 @@ function formatAssets(d: CatalogRecord) {
   return out;
 }
 
+// Every language the examples come in, in tab order. To add one: an entry
+// here plus template files with its extension. `id` is also the Shiki
+// language; `script` is the media type of an author-provided example script.
+export const LANGUAGES = [
+  { id: "python", ext: "py", label: "Python", script: "text/x-python" },
+  { id: "r", ext: "R", label: "R", script: "text/x-r" },
+  { id: "sh", ext: "sh", label: "CLI" },
+];
+
+// Code per language id, for SnippetTabs
+export type Snippets = Record<string, string>;
+
 const render = (
   kind: string,
   format: string,
-  lang: string,
+  ext: string,
   url: string,
   source = "",
 ) =>
   TEMPLATES.find(
-    (t) => t.kind === kind && t.format === format && t.lang === lang,
+    (t) => t.kind === kind && t.format === format && t.lang === ext,
   )
     ?.code.replaceAll("__URL__", url)
     .replaceAll("__SOURCE__", source)
     .trim();
 
-// Quick start: one short block per format, stacked
-export function quickstarts(d: CatalogRecord, lang: string) {
-  return formatAssets(d)
-    .map((f) => render("quickstart", f.id, lang, f.url))
-    .filter((s): s is string => !!s);
+// One template in every language that has it; undefined when none does
+function renderAll(kind: string, format: string, url: string, source = "") {
+  const out: Snippets = {};
+  for (const l of LANGUAGES) {
+    const code = render(kind, format, l.ext, url, source);
+    if (code) out[l.id] = code;
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
 }
 
 // How to open one file index, for the formats that have templates
-export function indexExample(format: string, url: string, source: string) {
-  const python = render("index", format, "py", url, source);
-  const r = render("index", format, "R", url, source);
-  const sh = render("index", format, "sh", url, source);
-  return python || r || sh ? { python, r, sh } : undefined;
-}
+export const indexExample = (format: string, url: string, source: string) =>
+  renderAll("index", format, url, source);
 
 // Worked example for one asset, filled with that asset's own URL, in
 // whichever languages have a subset template for its format
@@ -93,45 +106,45 @@ export function assetExample(
 ) {
   const format = assetFormat(d, asset)?.id;
   const url = format && exampleUrl(d, asset);
-  if (!format || !url) return undefined;
-  const python = render("subset", format, "py", url);
-  const r = render("subset", format, "R", url);
-  return python || r ? { python, r } : undefined;
+  return format && url ? renderAll("subset", format, url) : undefined;
 }
 
-// A record's own example script per language: an additional asset with role
-// `example` and a script media type. It replaces the generated quick start
-// for that language. Notebooks stay links; a failed or oversized fetch falls
-// back to the generated code.
-const SCRIPT_TYPES = { py: "text/x-python", R: "text/x-r" } as const;
+// A record's own example script: an additional asset with role `example`
+// and the language's script media type. Notebooks stay links; a failed or
+// oversized fetch falls back to the generated code.
 const MAX_BYTES = 20_000;
 
-async function fetchScript(url: string) {
+async function authorExample(d: CatalogRecord, mediaType: string) {
+  const url = d.additional_assets.find(
+    (a) =>
+      a.roles.includes("example")
+      && a.media_type?.toLowerCase().startsWith(mediaType),
+  )?.locations[0]?.url;
+  if (!url) return undefined;
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
     const code = res.ok ? (await res.text()).trim() : "";
-    return code && code.length <= MAX_BYTES ? code : undefined;
+    return code && code.length <= MAX_BYTES ? { code, url } : undefined;
   } catch {
     return undefined;
   }
 }
 
-export async function authorExamples(d: CatalogRecord) {
-  const out: Partial<
-    Record<keyof typeof SCRIPT_TYPES, { code: string; url: string }>
-  > = {};
-  for (const [lang, type] of Object.entries(SCRIPT_TYPES) as [
-    keyof typeof SCRIPT_TYPES,
-    string,
-  ][]) {
-    const asset = d.additional_assets.find(
-      (a) =>
-        a.roles.includes("example")
-        && a.media_type?.toLowerCase().startsWith(type),
-    );
-    const url = asset?.locations[0]?.url;
-    const code = url && (await fetchScript(url));
-    if (url && code) out[lang] = { code, url };
+// Quick start per language: the authors' own script where the record ships
+// one, else one short generated block per format, stacked
+export async function quickstart(d: CatalogRecord) {
+  const code: Snippets = {};
+  const authored: { id: string; label: string; url: string }[] = [];
+  for (const l of LANGUAGES) {
+    const own = l.script ? await authorExample(d, l.script) : undefined;
+    if (own) authored.push({ id: l.id, label: l.label, url: own.url });
+    const block =
+      own?.code
+      ?? formatAssets(d)
+        .map((f) => render("quickstart", f.id, l.ext, f.url))
+        .filter(Boolean)
+        .join("\n\n");
+    if (block) code[l.id] = block;
   }
-  return out;
+  return { code, authored };
 }
