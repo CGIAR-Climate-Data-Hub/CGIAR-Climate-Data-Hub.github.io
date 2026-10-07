@@ -1,11 +1,15 @@
 // Example code for record pages, assembled from the template files in
 // src/snippets named (quickstart|subset)-<format>.{py,R}, where <format> is
-// a format-vocab concept id, or index-<file_index format>.{py,R,sh}, whose
+// a format-vocab concept id (or geoparquet, see assetFormat), or index-<file_index format>.{py,R,sh}, whose
 // __SOURCE__ gets the asset's own location (where Icechunk's virtual chunks live). The __URL__ placeholder gets the asset's root
 // URL, or one real file URL for templated assets. Supporting a new format =
 // a vocab entry + template files, nothing else.
 import type { CatalogRecord } from "@/lib/catalog";
-import { formatConcept as concept, exampleTemplateFile } from "@/lib/catalog";
+import {
+  formatConcept as concept,
+  exampleTemplateFile,
+  heldStructures,
+} from "@/lib/catalog";
 
 const FILES = import.meta.glob("/src/snippets/*", {
   eager: true,
@@ -17,6 +21,16 @@ const TEMPLATES = Object.entries(FILES).flatMap(([path, code]) => {
   const m = path.match(/(quickstart|subset|index)-([\w-]+)\.(\w+)$/);
   return m ? [{ kind: m[1], format: m[2], lang: m[3], code }] : [];
 });
+
+// An asset's snippet format: its vocab concept, except Parquet with a
+// geometry column in its structures, which is GeoParquet
+function assetFormat(d: CatalogRecord, asset: CatalogRecord["data"][number]) {
+  const c = concept(asset.media_type);
+  if (c?.id !== "parquet") return c;
+  return heldStructures(d, asset).some((s) => s.geometry_column)
+    ? { id: "geoparquet", label: "GeoParquet" }
+    : c;
+}
 
 // An asset's example URL: its root, or one real file when templated
 function exampleUrl(d: CatalogRecord, asset: CatalogRecord["data"][number]) {
@@ -32,7 +46,7 @@ function formatAssets(d: CatalogRecord) {
   const done = new Set<string>();
   const out: { id: string; label: string; url: string }[] = [];
   for (const asset of d.data) {
-    const c = concept(asset.media_type);
+    const c = assetFormat(d, asset);
     if (!c || done.has(c.id)) continue;
     const url = exampleUrl(d, asset);
     if (!url) continue;
@@ -77,7 +91,7 @@ export function assetExample(
   d: CatalogRecord,
   asset: CatalogRecord["data"][number],
 ) {
-  const format = concept(asset.media_type)?.id;
+  const format = assetFormat(d, asset)?.id;
   const url = format && exampleUrl(d, asset);
   if (!format || !url) return undefined;
   const python = render("subset", format, "py", url);
