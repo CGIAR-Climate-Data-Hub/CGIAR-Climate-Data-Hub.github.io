@@ -732,6 +732,11 @@ const jsonLd = datasetJsonLd(
                         {dim.type && <span class="label">{dim.type}</span>}
                       </div>
                       {dim.description && <p>{dim.description}</p>}
+                      {dim.data_type && (
+                        <p>
+                          <b>Data type:</b> <span class="mono">{dim.data_type}</span>
+                        </p>
+                      )}
                       {dim.unit && <p><b>Unit:</b> <span class="mono">{dim.unit}</span></p>}
                       {dim.reference_system && (
                         <p>
@@ -757,6 +762,19 @@ const jsonLd = datasetJsonLd(
                             <span class="chip mono">{v}</span>
                           ))}
                         </div>
+                      )}
+                      {dim.categories.length > 0 && (
+                        <dl class="class-list">
+                          {dim.categories.map((c) => (
+                            <>
+                              <dt class="mono">{c.value}</dt>
+                              <dd>
+                                {c.label}
+                                {c.description && <span class="class-desc"> — {c.description}</span>}
+                              </dd>
+                            </>
+                          ))}
+                        </dl>
                       )}
                     </div>
                   ))}

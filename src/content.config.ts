@@ -164,6 +164,13 @@ const citation = z.object({
   url: z.string().optional(),
 });
 
+// Code → label for a categorical variable or axis
+const category = z.object({
+  value: z.coerce.string(),
+  label: z.string(),
+  description: z.string().optional(),
+});
+
 const location = z.object({ url: z.string(), title: z.string().optional() });
 
 // The record's coverage, or one asset's (data[].spatial, same shape)
@@ -304,6 +311,10 @@ const catalog = defineCollection({
             // ISO 8601 duration between slices, on temporal axes
             step: z.string().optional(),
             unit: z.string().optional(),
+            // Stored type of the coordinate or key column
+            data_type: z.string().optional(),
+            // The axis's values with labels, in place of values
+            categories: z.array(category).default([]),
             // Vocabulary or vertical CRS the values are coded against
             reference_system: z.string().optional(),
           }),
@@ -319,16 +330,7 @@ const catalog = defineCollection({
             note: z.string().optional(),
             // Fill value for this variable, replacing the asset's nodata
             nodata: z.union([z.string(), z.number()]).optional(),
-            // Code → label for categorical values
-            categories: z
-              .array(
-                z.object({
-                  value: z.coerce.string(),
-                  label: z.string(),
-                  description: z.string().optional(),
-                }),
-              )
-              .default([]),
+            categories: z.array(category).default([]),
           }),
         )
         .default([]),

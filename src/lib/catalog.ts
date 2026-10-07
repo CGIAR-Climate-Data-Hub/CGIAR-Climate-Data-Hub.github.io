@@ -394,7 +394,17 @@ export function datasetMd(
       "Dimensions",
       d.dimensions.map((dim) =>
         dash(
-          `${dim.name}: ${dim.extent ? dim.extent.join(" to ") : values(dim.values)}`,
+          [
+            dim.name,
+            dim.extent
+              ? dim.extent.join(" to ")
+              : dim.categories.length > 0
+                ? values(dim.categories.map((c) => `${c.value} = ${c.label}`))
+                : values(dim.values),
+          ]
+            .filter(Boolean)
+            .join(": "),
+          dim.data_type && `type ${dim.data_type}`,
           dim.step && `step ${dim.step}`,
           dim.unit && `unit ${dim.unit}`,
           dim.reference_system && `coded against ${dim.reference_system}`,

@@ -3,6 +3,7 @@
 
 interface Axis {
   values?: string[];
+  categories?: { value: string }[];
   extent?: string[];
   step?: string;
 }
@@ -29,8 +30,9 @@ export const tokenNames = (template: string) => [
   ...new Set([...template.matchAll(TOKEN)].map((m) => m[1])),
 ];
 
-// An axis's values: listed, or [first, last] expanded by step
-export function axisValues({ values = [], extent, step }: Axis) {
+// An axis's values: listed, categorised, or [first, last] expanded by step
+export function axisValues({ values = [], categories, extent, step }: Axis) {
+  if (categories?.length) return categories.map((c) => c.value);
   if (values.length > 0 || !extent || !step) return values;
   const start = parts(extent[0]);
   const end = parts(extent[1]);
@@ -65,20 +67,12 @@ export function axisValues({ values = [], extent, step }: Axis) {
   return out;
 }
 
-// Only the directives the standard allows: %Y %m %d %H %M %j
+// Only the directives the standard allows: %Y %m %d
 export function strftime(iso: string, spec: string) {
-  const [y, mo = 1, d = 1, h = 0, mi = 0] = parts(iso)?.nums ?? [];
+  const [y, mo = 1, d = 1] = parts(iso)?.nums ?? [];
   const pad = (n: number, w = 2) => String(n).padStart(w, "0");
-  const doy = (Date.UTC(y, mo - 1, d) - Date.UTC(y, 0, 1)) / 864e5 + 1;
-  const by: Record<string, string> = {
-    Y: pad(y, 4),
-    m: pad(mo),
-    d: pad(d),
-    H: pad(h),
-    M: pad(mi),
-    j: pad(doy, 3),
-  };
-  return spec.replace(/%([YmdHMj])/g, (_, c) => by[c]);
+  const by: Record<string, string> = { Y: pad(y, 4), m: pad(mo), d: pad(d) };
+  return spec.replace(/%([Ymd])/g, (_, c) => by[c]);
 }
 
 // Fill each token with its picked value, formatted where the token says so
