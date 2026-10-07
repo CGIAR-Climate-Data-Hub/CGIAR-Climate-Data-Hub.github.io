@@ -3,7 +3,6 @@ cdh_schema_version: "v0.4.0"
 extensions:
   - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/cdh/schema.json
   - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/climate/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/data-dictionary/schema.json
   - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/agriculture/schema.json
 
 id: spam2020

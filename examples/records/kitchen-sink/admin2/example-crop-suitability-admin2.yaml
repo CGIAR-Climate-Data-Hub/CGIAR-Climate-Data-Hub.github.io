@@ -16,7 +16,6 @@
 cdh_schema_version: "v0.4.0"
 extensions:
   - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/cdh/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/data-dictionary/schema.json
   - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/agriculture/schema.json
 
 id: example-crop-suitability-admin2
@@ -186,7 +185,7 @@ additional_assets:
     description: Joins the table to the boundary record and maps mean suitability per admin-2 unit.
     locations:
       - url: https://example.org/data/example-crop-suitability/v2/admin2/join-admin2.ipynb
-    media_type: application/x-ipynb+json
+    media_type: application/vnd.jupyter
     roles: [example]
     file_size: 20 KB
 

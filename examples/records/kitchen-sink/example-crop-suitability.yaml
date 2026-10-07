@@ -16,7 +16,6 @@ cdh_schema_version: "v0.4.0"
 extensions:
   - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/cdh/schema.json
   - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/climate/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/data-dictionary/schema.json
   - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/agriculture/schema.json
 
 id: example-crop-suitability
@@ -142,9 +141,14 @@ dimensions:
     step: P20Y
   - name: crop
     type: crop
-    description: Example crop code. Full labels are in the dimension codes asset.
+    description: Example crop code; the {crop} token.
     reference_system: https://example.org/vocab/crop-codes
-    values: [maiz, rice, whea]
+    data_type: string
+    # categories in place of values: the codes, labelled.
+    categories:
+      - { value: maiz, label: Maize }
+      - { value: rice, label: Rice }
+      - { value: whea, label: Wheat }
   - name: scenario
     type: scenario
     description: Emissions scenario label.
@@ -272,7 +276,7 @@ data:
     description: The full cube clipped to western Farland, one NetCDF file.
     locations:
       - url: https://example.org/data/example-crop-suitability/v2/farland-west.nc
-    media_type: application/netcdf
+    media_type: application/x-netcdf
     nodata: -9999
     file_size: 90 MB
     checksum: sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
@@ -284,7 +288,7 @@ data:
     description: The full cube clipped to eastern Farland, one NetCDF file.
     locations:
       - url: https://example.org/data/example-crop-suitability/v2/farland-east.nc
-    media_type: application/netcdf
+    media_type: application/x-netcdf
     nodata: -9999
     file_size: 160 MB
     checksum: sha256:60303ae22b998861bce3b28f33eec1be758a213c86c93c076dbe9f558c11c752

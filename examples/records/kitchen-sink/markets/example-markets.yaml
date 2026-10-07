@@ -10,7 +10,6 @@
 cdh_schema_version: "v0.4.0"
 extensions:
   - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/cdh/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/data-dictionary/schema.json
 
 id: example-markets
 title: "Example Market Locations (SAMPLE - NOT REAL DATA)"
@@ -66,6 +65,7 @@ dimensions:
   - name: market_id
     type: location
     description: Market code, unique within Farland.
+    data_type: string # codes keep leading zeros
 
 variables:
   - name: market_name
