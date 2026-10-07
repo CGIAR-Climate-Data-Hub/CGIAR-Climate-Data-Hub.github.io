@@ -34,43 +34,57 @@ function dayStep(dim?: { extent?: string[]; step?: string }) {
   return days > 0 ? days : undefined;
 }
 
+type Asset = CatalogRecord["data"][number];
+
+// The structures an asset holds; its template tokens resolve against them
+export const heldStructures = (d: CatalogRecord, asset: Asset) =>
+  d.structures.filter((s) => asset.structures.includes(s.name));
+
+// Dimension a token names: the same in every held structure, so take the first
+const tokenDim = (d: CatalogRecord, asset: Asset, name: string) =>
+  heldStructures(d, asset)
+    .flatMap((s) => s.dimensions)
+    .find((x) => x.name === name);
+
 // An asset template's tokens with their values, plus one real file (first
 // value per token). {variable} is the one token backed by variable names.
-export function resolveTemplate(d: CatalogRecord, template: string) {
+export function resolveTemplate(d: CatalogRecord, asset: Asset) {
+  const template = asset.href_template;
+  if (!template) return undefined;
   const fields = tokenNames(template).map((name) => {
-    const dim = d.dimensions.find((x) => x.name === name);
+    const dim = tokenDim(d, asset, name);
     const days = dayStep(dim);
     // A daily axis can span decades: a native date field, not a list
     if (dim?.extent && days) {
       const [min, max] = dim.extent;
       return { name, values: [min], date: { min, max, step: days } };
     }
-    return { name, values: tokenValues(d, name) };
+    return { name, values: tokenValues(d, asset, name) };
   });
   if (fields.some((f) => f.values.length === 0)) return undefined;
   const first = Object.fromEntries(fields.map((f) => [f.name, f.values[0]]));
   return { fields, file: fillTemplate(template, first) };
 }
 
-// Every value a template token takes: its dimension's, or variable names
-function tokenValues(d: CatalogRecord, name: string) {
-  const dim = d.dimensions.find((x) => x.name === name);
+// Every value a template token takes: its dimension's, or the held variables
+function tokenValues(d: CatalogRecord, asset: Asset, name: string) {
+  const dim = tokenDim(d, asset, name);
   if (dim) return axisValues(dim);
-  return name === "variable" ? d.variables.map((v) => v.name) : [];
+  return name === "variable"
+    ? heldStructures(d, asset).flatMap((s) => s.variables.map((v) => v.name))
+    : [];
 }
 
 // Every file an asset's template names, as a cdh-inventory CSV (RFC 4180):
 // href (the file's full URL), then each file's value per token. Undefined
 // unless every token resolves.
-export function templateInventory(
-  d: CatalogRecord,
-  template: string,
-  locations: { url: string }[],
-) {
+export function templateInventory(d: CatalogRecord, asset: Asset) {
+  const { href_template: template, locations } = asset;
+  if (!template) return undefined;
   const base =
     locations.find((l) => l.url.startsWith("http"))?.url ?? locations[0]?.url;
   const tokens = tokenNames(template);
-  const axes = tokens.map((name) => tokenValues(d, name));
+  const axes = tokens.map((name) => tokenValues(d, asset, name));
   if (axes.some((values) => values.length === 0)) return undefined;
   let rows: string[][] = [[]];
   for (const values of axes)
@@ -90,8 +104,8 @@ export function templateInventory(
 }
 
 // Fill every placeholder with its first valid value to name one real file.
-export function exampleTemplateFile(d: CatalogRecord, template: string) {
-  return resolveTemplate(d, template)?.file;
+export function exampleTemplateFile(d: CatalogRecord, asset: Asset) {
+  return resolveTemplate(d, asset)?.file;
 }
 
 export const SIZE_UNITS = ["B", "KB", "MB", "GB", "TB", "PB"];
@@ -353,7 +367,7 @@ export function datasetMd(
         (ix) => `File index (${a.name}, ${ix.format}): ${ix.locations[0]?.url}`,
       ),
       a.href_template
-        && resolveTemplate(d, a.href_template)
+        && resolveTemplate(d, a)
         && `File list (${a.name}, CSV): ${abs(`/catalog/${recordSlug(d)}/${a.name}-files.csv`)}`,
     ]),
     ...d.additional_assets.map((a) =>
@@ -380,22 +394,33 @@ export function datasetMd(
       : undefined;
   };
 
+  // Names repeat across structures, so tag them with theirs when there are several
+  const at = (s: { name: string }) => (name: string) =>
+    d.structures.length > 1 ? `${s.name}/${name}` : name;
+  const inStructures = <T>(
+    pick: (s: CatalogRecord["structures"][number]) => T[],
+  ) => d.structures.flatMap((s) => pick(s).map((x) => [x, at(s)] as const));
+
   const c = d.climate;
   const blocks = [
     bullets(facts),
     d.description.trim(),
     section(
       "Variables",
-      d.variables.map((v) =>
-        dash(`${v.name}${v.unit ? ` (${v.unit})` : ""}`, v.description, v.note),
+      inStructures((s) => s.variables).map(([v, at]) =>
+        dash(
+          `${at(v.name)}${v.unit ? ` (${v.unit})` : ""}`,
+          v.description,
+          v.note,
+        ),
       ),
     ),
     section(
       "Dimensions",
-      d.dimensions.map((dim) =>
+      inStructures((s) => s.dimensions).map(([dim, at]) =>
         dash(
           [
-            dim.name,
+            at(dim.name),
             dim.extent
               ? dim.extent.join(" to ")
               : dim.categories.length > 0
@@ -414,12 +439,25 @@ export function datasetMd(
     ),
     section(
       "Categories",
-      d.variables
-        .filter((v) => v.categories.length > 0)
+      inStructures((s) => s.variables)
+        .filter(([v]) => v.categories.length > 0)
         .map(
-          (v) =>
-            `${v.name}: ${v.categories.map((c) => `${c.value} = ${c.label}`).join("; ")}`,
+          ([v, at]) =>
+            `${at(v.name)}: ${v.categories.map((c) => `${c.value} = ${c.label}`).join("; ")}`,
         ),
+    ),
+    section(
+      "Geometry",
+      d.structures
+        .filter((s) => s.geometry_column)
+        .map((s) => `Geometry column: ${at(s)(s.geometry_column ?? "")}`),
+    ),
+    section(
+      "Foreign keys",
+      inStructures((s) => s.foreign_keys).map(
+        ([fk, at]) =>
+          `${fk.fields.map(at).join(", ")} → ${fk.reference.resource}${fk.reference.asset ? ` (${fk.reference.asset})` : ""}: ${fk.reference.fields.join(", ")}`,
+      ),
     ),
     d.cdh
       && section("Intended use", [
@@ -521,6 +559,7 @@ export function datasetJsonLd(
   catalogUrl: string,
 ) {
   const boxes = normalizeBboxes(d.spatial?.bbox) ?? [];
+  const variables = d.structures.flatMap((s) => s.variables);
   const withRole = (role: string) =>
     d.contact.filter((c) => c.roles.includes(role)).map(contactToSchemaOrg);
   // The credited authors in citation order, else the producers
@@ -595,7 +634,7 @@ export function datasetJsonLd(
       : []),
     // The site's list of every templated file, as CSV
     ...d.data.flatMap((asset) =>
-      asset.href_template && resolveTemplate(d, asset.href_template)
+      resolveTemplate(d, asset)
         ? [
             {
               "@type": "DataDownload",
@@ -720,8 +759,8 @@ export function datasetJsonLd(
           ? d.temporal.date
           : `${d.temporal.start_date}/${d.temporal.end_date ?? ".."}`,
     }),
-    ...(d.variables.length > 0 && {
-      variableMeasured: d.variables.map((v) => ({
+    ...(variables.length > 0 && {
+      variableMeasured: variables.map((v) => ({
         "@type": "PropertyValue",
         name: v.name,
         ...(v.description && { description: v.description }),

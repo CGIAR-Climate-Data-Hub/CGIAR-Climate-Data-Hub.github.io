@@ -116,8 +116,6 @@ spatial:
   geography:
     - africa
   crs: EPSG:4326
-  # geometry_column is intentionally omitted: it applies to vector tables, not
-  # a gridded raster cube like this one.
   resolution:
     - type: xy
       unit: degree
@@ -131,77 +129,73 @@ temporal:
   end_date: "2050"
 
 # lat/lon come from spatial. Every other axis - the projection horizon (a temporal
-# dimension, with an ISO 8601 step) and the domain axes - is declared here.
-dimensions:
-  - name: time
-    type: temporal
-    description: Projection horizon (reference year).
-    # A regular axis gives [first, last] + step instead of listing every value.
-    extent: ["2030", "2050"] # ISO 8601 strings; a temporal axis takes no bare numbers
-    step: P20Y
-  - name: crop
-    type: crop
-    description: Example crop code; the {crop} token.
-    reference_system: https://example.org/vocab/crop-codes
-    data_type: string
-    # categories in place of values: the codes, labelled.
-    categories:
-      - { value: maiz, label: Maize }
-      - { value: rice, label: Rice }
-      - { value: whea, label: Wheat }
-  - name: scenario
-    type: scenario
-    description: Emissions scenario label.
-    reference_system: https://example.org/vocab/scenarios
-    values: [ssp245, ssp585]
-
-variables:
-  - name: suitability_index
-    description: Continuous modelled suitability, 0 (unsuitable) to 1 (optimal).
-    data_type: float32
-    unit: "1"
-    note: Dimensionless index; do not sum across cells.
-  - name: suitability_class
-    description: Categorical suitability derived by binning suitability_index.
-    data_type: uint8
-    unit: "1"
-    # This variable's fill value differs from the asset default (-9999, which no
-    # uint8 can hold), so it states its own. The float variable above takes the
-    # asset value.
-    nodata: 255
-    categories:
-      - value: 0
-        label: Unsuitable
-        description: Modelled suitability below 0.25.
-      - value: 1
-        label: Marginal
-        description: Modelled suitability 0.25 to 0.5.
-      - value: 2
-        label: Moderate
-        description: Modelled suitability 0.5 to 0.75.
-      - value: 3
-        label: High
-        description: Modelled suitability above 0.75.
-  - name: cropland_mask
-    description: Cells modelled as cropland; suitability is only meaningful where this is 1.
-    data_type: uint8
-    nodata: 255
-    categories:
-      - value: 0
-        label: Not cropland
-      - value: 1
-        label: Cropland
-
+# dimension, with an ISO 8601 step) and the domain axes - is declared in a structure.
 # The mask varies over the grid only, so it cannot share the projection axes.
-# Each structure groups variables with the same dimensions; every asset names
-# the structures it holds.
+# Each structure is its own data dictionary, like a Frictionless resource schema;
+# every asset names the structures it holds.
 structures:
   - name: projections
-    dimensions: [time, crop, scenario]
-    variables: [suitability_index, suitability_class]
+    dimensions:
+      - name: time
+        type: temporal
+        description: Projection horizon (reference year).
+        # A regular axis gives [first, last] + step instead of listing every value.
+        extent: ["2030", "2050"] # ISO 8601 strings; a temporal axis takes no bare numbers
+        step: P20Y
+      - name: crop
+        type: crop
+        description: Example crop code; the {crop} token.
+        reference_system: https://example.org/vocab/crop-codes
+        data_type: string
+        # categories in place of values: the codes, labelled.
+        categories:
+          - { value: maiz, label: Maize }
+          - { value: rice, label: Rice }
+          - { value: whea, label: Wheat }
+      - name: scenario
+        type: scenario
+        description: Emissions scenario label.
+        reference_system: https://example.org/vocab/scenarios
+        values: [ssp245, ssp585]
+    variables:
+      - name: suitability_index
+        description: Continuous modelled suitability, 0 (unsuitable) to 1 (optimal).
+        data_type: float32
+        unit: "1"
+        note: Dimensionless index; do not sum across cells.
+      - name: suitability_class
+        description: Categorical suitability derived by binning suitability_index.
+        data_type: uint8
+        unit: "1"
+        # This variable's fill value differs from the asset default (-9999, which no
+        # uint8 can hold), so it states its own. The float variable above takes the
+        # asset value.
+        nodata: 255
+        categories:
+          - value: 0
+            label: Unsuitable
+            description: Modelled suitability below 0.25.
+          - value: 1
+            label: Marginal
+            description: Modelled suitability 0.25 to 0.5.
+          - value: 2
+            label: Moderate
+            description: Modelled suitability 0.5 to 0.75.
+          - value: 3
+            label: High
+            description: Modelled suitability above 0.75.
   - name: static
     dimensions: []
-    variables: [cropland_mask]
+    variables:
+      - name: cropland_mask
+        description: Cells modelled as cropland; suitability is only meaningful where this is 1.
+        data_type: uint8
+        nodata: 255
+        categories:
+          - value: 0
+            label: Not cropland
+          - value: 1
+            label: Cropland
 
 cdh:
   domain: [agricultural-production, adaptation]

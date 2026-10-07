@@ -11,7 +11,7 @@
 # nothing is inherited from a parent. Nesting implies nothing either: the
 # derivation is stated explicitly in processing[].derived_from.
 # Aggregating a grid to polygons is lossy, which is why this is its own record
-# rather than a second spatial.resolution entry on the parent.
+# rather than a second structure on the parent.
 # ============================================================================
 cdh_schema_version: "v0.4.0"
 extensions:
@@ -80,60 +80,55 @@ spatial:
   geography:
     - africa
   crs: EPSG:4326
-  # One characterization, and it is the reporting unit rather than a grid spacing.
-  resolution:
-    - type: polygon
-      value: 2
-      unit: admin-level
-      label: Admin-2 units (Farland)
-      reference_system: Example GAUL-like boundaries 2024
+  # No resolution: the reporting unit is the adm2_code location dimension below.
 
 temporal:
   start_date: "2030"
   end_date: "2050"
 
 # The same axes as the grid, minus lat/lon: here they are table columns.
-dimensions:
-  - name: adm0_code
-    type: location
-    description: Example country code of the reporting unit.
-  - name: adm2_code
-    type: location
-    description: Example admin-2 code of the reporting unit.
-  - name: time
-    type: temporal
-    description: Projection horizon (reference year).
-    values: ["2030", "2050"] # ISO 8601 strings; a temporal axis takes no bare numbers
-    step: P20Y
-  - name: crop
-    type: crop
-    description: Example crop code.
-    reference_system: https://example.org/vocab/crop-codes
-    values: [maiz, rice, whea]
-  - name: scenario
-    type: scenario
-    description: Emissions scenario label.
-    reference_system: https://example.org/vocab/scenarios
-    values: [ssp245, ssp585]
-
-variables:
-  - name: suitability_index_mean
-    description: Area-weighted mean of the gridded suitability index over the reporting unit.
-    data_type: float32
-    unit: "1"
-    note: Dimensionless index; do not sum across units.
-  - name: cells_counted
-    description: Number of grid cells with data inside the reporting unit.
-    data_type: int32
-    unit: "1"
-    note: Low counts mean the mean rests on very few cells.
-
-foreign_keys:
-  - fields: [adm0_code, adm2_code]
-    reference:
-      resource: https://example.org/data/example-farland-admin2-boundaries
-      asset: boundaries
-      fields: [ADM0_CODE, ADM2_CODE]
+structures:
+  - name: main
+    dimensions:
+      - name: adm0_code
+        type: location
+        description: Example country code of the reporting unit.
+      - name: adm2_code
+        type: location
+        description: Example admin-2 unit of Farland, the reporting unit of every row.
+        reference_system: https://example.org/boundaries/farland-2024
+      - name: time
+        type: temporal
+        description: Projection horizon (reference year).
+        values: ["2030", "2050"] # ISO 8601 strings; a temporal axis takes no bare numbers
+        step: P20Y
+      - name: crop
+        type: crop
+        description: Example crop code.
+        reference_system: https://example.org/vocab/crop-codes
+        values: [maiz, rice, whea]
+      - name: scenario
+        type: scenario
+        description: Emissions scenario label.
+        reference_system: https://example.org/vocab/scenarios
+        values: [ssp245, ssp585]
+    variables:
+      - name: suitability_index_mean
+        description: Area-weighted mean of the gridded suitability index over the reporting unit.
+        data_type: float32
+        unit: "1"
+        note: Dimensionless index; do not sum across units.
+      - name: cells_counted
+        description: Number of grid cells with data inside the reporting unit.
+        data_type: int32
+        unit: "1"
+        note: Low counts mean the mean rests on very few cells.
+    foreign_keys:
+      - fields: [adm0_code, adm2_code]
+        reference:
+          resource: https://example.org/data/example-farland-admin2-boundaries
+          asset: boundaries
+          fields: [ADM0_CODE, ADM2_CODE]
 
 cdh:
   domain: [agricultural-production, adaptation]
@@ -169,6 +164,7 @@ processing:
 
 data:
   - name: table
+    structures: [main]
     description: Admin-2 suitability aggregates, one Parquet table.
     locations:
       - url: https://example.org/data/example-crop-suitability/v2/admin2/suitability_admin2.parquet

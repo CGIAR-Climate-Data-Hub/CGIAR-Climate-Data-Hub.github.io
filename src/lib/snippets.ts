@@ -22,7 +22,7 @@ const TEMPLATES = Object.entries(FILES).flatMap(([path, code]) => {
 function exampleUrl(d: CatalogRecord, asset: CatalogRecord["data"][number]) {
   const root = asset.locations.find((l) => l.url.startsWith("http"))?.url;
   if (!root || !asset.href_template) return root;
-  const file = exampleTemplateFile(d, asset.href_template);
+  const file = exampleTemplateFile(d, asset);
   return file ? `${root}${file}` : undefined;
 }
 

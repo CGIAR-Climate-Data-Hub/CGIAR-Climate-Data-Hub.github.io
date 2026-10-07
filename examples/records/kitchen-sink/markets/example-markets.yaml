@@ -3,8 +3,8 @@
 # ============================================================================
 # SAMPLE RECORD - NOT REAL DATA.
 # Vector data with embedded geometries: one GeoParquet file of market points
-# in the imaginary region of Farland. Shows spatial.geometry_column, a point
-# resolution, a place-key dimension, a coded variable with categories, and an
+# in the imaginary region of Farland. Shows a structure's geometry_column, a
+# place-key dimension, a coded variable with categories, and an
 # open-ended series refreshed each year.
 # ============================================================================
 cdh_schema_version: "v0.4.0"
@@ -51,37 +51,35 @@ spatial:
   bbox: [10, -5, 22, 8]
   geography: [africa]
   crs: EPSG:4326
-  geometry_column: geometry
-  resolution:
-    - type: point
-      label: One point per market
 
 temporal:
   start_date: "2026-06"
   end_date: null # still growing
   update_frequency: annual
 
-dimensions:
-  - name: market_id
-    type: location
-    description: Market code, unique within Farland.
-    data_type: string # codes keep leading zeros
-
-variables:
-  - name: market_name
-    description: Market name as used locally.
-    data_type: string
-  - name: market_type
-    description: Kind of market.
-    data_type: string
-    categories:
-      - value: rural
-        label: Rural periodic market
-      - value: urban
-        label: Urban daily market
-  - name: opened
-    description: Year the market opened.
-    data_type: int16
+structures:
+  - name: main
+    geometry_column: geometry
+    dimensions:
+      - name: market_id
+        type: location
+        description: Market code, unique within Farland.
+        data_type: string # codes keep leading zeros
+    variables:
+      - name: market_name
+        description: Market name as used locally.
+        data_type: string
+      - name: market_type
+        description: Kind of market.
+        data_type: string
+        categories:
+          - value: rural
+            label: Rural periodic market
+          - value: urban
+            label: Urban daily market
+      - name: opened
+        description: Year the market opened.
+        data_type: int16
 
 processing:
   - id: source
@@ -89,6 +87,7 @@ processing:
 
 data:
   - name: markets
+    structures: [main]
     description: Market points, GeoParquet.
     locations:
       - url: https://example.org/markets/farland-markets.parquet

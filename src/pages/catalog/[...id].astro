@@ -96,8 +96,6 @@ const children = catalog.filter(
 );
 
 const bboxes = normalizeBboxes(d.spatial?.bbox);
-// The variables table grows a "No data" column only when one has a value
-const varNodata = d.variables.some((v) => v.nodata !== undefined);
 // An asset's own coverage: place names, then bounding boxes (W, S, E, N)
 const assetCoverage = (s?: (typeof d.data)[number]["spatial"]) =>
   s
@@ -112,7 +110,9 @@ const resolution = d.spatial?.resolution
   .join(" · ");
 const temporal = temporalText(
   d.temporal,
-  d.dimensions.find((dim) => dim.type === "temporal")?.step,
+  d.structures
+    .flatMap((s) => s.dimensions)
+    .find((dim) => dim.type === "temporal")?.step,
 );
 const source = licensor(d);
 // Contact order: maintainers (accountable for the record), then licensors, then the rest
@@ -130,22 +130,19 @@ const crsHref =
   d.spatial?.crs && /^EPSG:\d+$/.test(d.spatial.crs)
     ? `https://epsg.io/${d.spatial.crs.split(":")[1]}`
     : undefined;
-const hasSchema =
-  d.dimensions.length + d.variables.length + d.foreign_keys.length > 0;
-// One variables table per structure, headed by its dimensions and the files
-// that hold it; a record without structures has one table
-const varGroups =
-  d.structures.length > 0
-    ? d.structures.map((s) => ({
-        name: s.name,
-        dims: s.dimensions.join(", "),
-        files: d.data
-          .filter((a) => a.structures.includes(s.name))
-          .map((a) => a.name)
-          .join(", "),
-        vars: d.variables.filter((v) => s.variables.includes(v.name)),
-      }))
-    : [{ name: "", dims: "", files: "", vars: d.variables }];
+const hasSchema = d.structures.length > 0;
+// One data dictionary per structure; with several, each is headed by its
+// name and the files that hold it
+const multiStructure = d.structures.length > 1;
+const structures = d.structures.map((s) => ({
+  ...s,
+  files: d.data
+    .filter((a) => a.structures.includes(s.name))
+    .map((a) => a.name)
+    .join(", "),
+  // The variables table grows a "No data" column only when one has a value
+  varNodata: s.variables.some((v) => v.nodata !== undefined),
+}));
 // A foreign key's target: a Hub record by id (its title), else its URL
 // shortened to the last path segment, with the host as a quiet hint
 const fkTarget = (resource: string) => {
@@ -260,9 +257,7 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
   const primary =
     asset.locations.find((l) => l.url === httpUrl) ?? asset.locations[0];
 
-  const resolved = asset.href_template
-    ? resolveTemplate(d, asset.href_template)
-    : undefined;
+  const resolved = resolveTemplate(d, asset);
   const tplFields = resolved?.fields;
   const tplFile = resolved?.file;
 
@@ -308,9 +303,7 @@ const assets = [...d.data, ...d.additional_assets].map((asset) => {
     tplFile,
     tplUrl: tplFile && httpUrl ? httpUrl + tplFile : undefined,
     // Every templated file as a cdh-inventory CSV, built by [asset]-files.csv
-    fileCount:
-      asset.href_template
-      && templateInventory(d, asset.href_template, asset.locations)?.count,
+    fileCount: asset.href_template && templateInventory(d, asset)?.count,
     download:
       !restricted
       && !asset.href_template
@@ -332,7 +325,7 @@ const SECTIONS = [
   ["overview", "Overview"],
   // Access & use first after Overview — it's the tab most visits are for
   d.data.length > 0 && ["access", "Access & use"],
-  hasSchema && ["schema", "Schema"],
+  hasSchema && ["schema", "Data dictionary"],
   (d.climate || d.spatial || d.temporal) && ["technical", "Technical metadata"],
   d.processing.length > 0 && ["provenance", "Provenance"],
   (cite || d.contact.length > 0) && [
@@ -602,24 +595,28 @@ const jsonLd = datasetJsonLd(
 
       {hasSchema && (
           <section id="schema">
-            {d.variables.length > 0 && (
-              <div>
-                <h2>Variables</h2>
-                {varGroups.map((g) => (
-                <div class="var-group">
-                {g.name && (
-                  <>
-                    <h3 class="tech-title mono">{g.name}</h3>
-                    <p class="section-sub">
-                      {[
-                        g.dims && `Dimensions: ${g.dims}`,
-                        g.files && `Files: ${g.files}`,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
-                  </>
+            <h2>Data dictionary</h2>
+            <p class="section-sub">
+              {multiStructure
+                ? "One dictionary per file layout: its dimensions, variables, and keys."
+                : "Dimensions, variables, and keys of the data."}
+            </p>
+            {structures.map((s) => (
+              <div class="var-group">
+                {multiStructure && <h3 class="tech-title mono">{s.name}</h3>}
+                {(multiStructure || s.geometry_column) && (
+                  <p class="section-sub">
+                    {[
+                      multiStructure && s.files && `Files: ${s.files}`,
+                      s.geometry_column && `Geometry column: ${s.geometry_column}`,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
                 )}
+                {s.variables.length > 0 && (
+                  <>
+                <p class="label">Variables</p>
                 <div class="table-wrap">
                   <table>
                     <thead>
@@ -627,17 +624,17 @@ const jsonLd = datasetJsonLd(
                         <th>Variable</th>
                         <th>Type</th>
                         <th>Unit</th>
-                        {varNodata && <th>No data</th>}
+                        {s.varNodata && <th>No data</th>}
                         <th>Description</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {g.vars.map((v) => (
+                      {s.variables.map((v) => (
                           <tr>
                             <td class="mono var-name">{v.name}</td>
                             <td class="mono">{v.data_type ?? "—"}</td>
                             <td class="mono">{v.unit ?? "—"}</td>
-                            {varNodata && <td class="mono">{v.nodata ?? "—"}</td>}
+                            {s.varNodata && <td class="mono">{v.nodata ?? "—"}</td>}
                             <td>
                               {v.description ?? "—"}
                               {v.note && <div class="var-note">{v.note}</div>}
@@ -665,67 +662,13 @@ const jsonLd = datasetJsonLd(
                     </tbody>
                   </table>
                 </div>
-                </div>
-                ))}
-              </div>
-            )}
-
-            {d.foreign_keys.length > 0 && (
-              <div>
-                <h2>Foreign keys</h2>
-                <p class="section-sub">Columns that join this table to another dataset.</p>
+                  </>
+                )}
+                {s.dimensions.length > 0 && (
+                  <>
+                <p class="label">Dimensions</p>
                 <div class="dim-cards">
-                  {d.foreign_keys.map((fk) => {
-                    const target = fkTarget(fk.reference.resource);
-                    return (
-                      <div class="dim-card">
-                        <p class="fk-head">
-                          Joins to{" "}
-                          {target.href ? (
-                            <a href={target.href} rel="noreferrer">{target.title}</a>
-                          ) : (
-                            <b>{target.title}</b>
-                          )}
-                          {target.host && <span class="fk-host"> · {target.host}</span>}
-                          {fk.reference.asset && (
-                            <span class="fk-host">
-                              {" "}
-                              · file <span class="mono">{fk.reference.asset}</span>
-                            </span>
-                          )}
-                        </p>
-                        {/* Columns pair up by position */}
-                        <table class="fk-map">
-                          <thead>
-                            <tr>
-                              <th>This table</th>
-                              <th />
-                              <th>{target.title}</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {fk.fields.map((field, i) => (
-                              <tr>
-                                <td class="mono">{field}</td>
-                                <td class="fk-arrow">→</td>
-                                <td class="mono">{fk.reference.fields[i]}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {d.dimensions.length > 0 && (
-              <div>
-                <h2>Dimensions</h2>
-                <p class="section-sub">Axes of the cube — spatial, temporal, and domain axes.</p>
-                <div class="dim-cards">
-                  {d.dimensions.map((dim) => (
+                  {s.dimensions.map((dim) => (
                     <div class="dim-card">
                       <div class="dim-head">
                         <span class="mono dim-name">{dim.name}</span>
@@ -779,8 +722,58 @@ const jsonLd = datasetJsonLd(
                     </div>
                   ))}
                 </div>
+                  </>
+                )}
+                {s.foreign_keys.length > 0 && (
+                  <>
+                <p class="label">Foreign keys</p>
+                <div class="dim-cards">
+                  {s.foreign_keys.map((fk) => {
+                    const target = fkTarget(fk.reference.resource);
+                    return (
+                      <div class="dim-card">
+                        <p class="fk-head">
+                          Joins to{" "}
+                          {target.href ? (
+                            <a href={target.href} rel="noreferrer">{target.title}</a>
+                          ) : (
+                            <b>{target.title}</b>
+                          )}
+                          {target.host && <span class="fk-host"> · {target.host}</span>}
+                          {fk.reference.asset && (
+                            <span class="fk-host">
+                              {" "}
+                              · file <span class="mono">{fk.reference.asset}</span>
+                            </span>
+                          )}
+                        </p>
+                        {/* Columns pair up by position */}
+                        <table class="fk-map">
+                          <thead>
+                            <tr>
+                              <th>This table</th>
+                              <th />
+                              <th>{target.title}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {fk.fields.map((field, i) => (
+                              <tr>
+                                <td class="mono">{field}</td>
+                                <td class="fk-arrow">→</td>
+                                <td class="mono">{fk.reference.fields[i]}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })}
+                </div>
+                  </>
+                )}
               </div>
-            )}
+            ))}
           </section>
         )}
 
@@ -847,10 +840,10 @@ const jsonLd = datasetJsonLd(
                               <a class="mono" href="#schema">{name}</a>
                               {s && (
                                 <>
-                                  : <span class="mono">{s.variables.join(", ")}</span>
+                                  : <span class="mono">{s.variables.map((v) => v.name).join(", ")}</span>
                                   <span class="layout-dims">
                                     {s.dimensions.length > 0
-                                      && ` by ${s.dimensions.join(" × ")}`}
+                                      && ` by ${s.dimensions.map((x) => x.name).join(" × ")}`}
                                   </span>
                                 </>
                               )}
@@ -1142,19 +1135,12 @@ const jsonLd = datasetJsonLd(
                       <dd>{coverage}</dd>
                     </>
                   )}
-                  {d.spatial.geometry_column && (
-                    <>
-                      <dt>Geometry column</dt>
-                      <dd class="mono">{d.spatial.geometry_column}</dd>
-                    </>
-                  )}
                   {d.spatial.resolution.map((r) => (
                     <>
                       <dt>Resolution{r.type ? ` (${r.type})` : ""}</dt>
                       <dd>
                         {r.label
                           ?? [r.value, r.unit].filter(Boolean).join(" ")}
-                        {r.reference_system && ` — ${r.reference_system}`}
                       </dd>
                     </>
                   ))}

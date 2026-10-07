@@ -173,7 +173,8 @@ const category = z.object({
 
 const location = z.object({ url: z.string(), title: z.string().optional() });
 
-// The record's coverage, or one asset's (data[].spatial, same shape)
+// The record's coverage, or one asset's (data[].spatial, same shape).
+// resolution is grid spacing only
 const spatial = z.object({
   // Either one bbox or a list of them
   bbox: z.union([z.array(z.number()), z.array(z.array(z.number()))]).optional(),
@@ -184,15 +185,11 @@ const spatial = z.object({
       z.object({
         type: z.string().optional(),
         unit: z.string().optional(),
-        value: z.number().optional(),
+        value: z.union([z.number(), z.string()]).optional(),
         label: z.string().optional(),
-        // Reporting-unit system for non-grid resolutions (GAUL 2015, GADM)
-        reference_system: z.string().optional(),
       }),
     )
     .default([]),
-  // The geometry column of a vector table
-  geometry_column: z.string().optional(),
 });
 
 const asset = z.object({
@@ -230,6 +227,57 @@ const asset = z.object({
       }),
     )
     .default([]),
+});
+
+// A record's data dictionary: one structure per file layout, each with its
+// own dimensions, variables, and foreign keys (Frictionless resource schema)
+const dimension = z.object({
+  name: z.string(),
+  type: z.string().optional(),
+  description: z.string().optional(),
+  // The standard allows bare numbers (years); the site works in strings
+  values: z.array(z.coerce.string()).default([]),
+  // [first, last] of a regular temporal axis, in place of values
+  extent: z.array(z.string()).optional(),
+  // ISO 8601 duration between slices, on temporal axes
+  step: z.string().optional(),
+  unit: z.string().optional(),
+  // Stored type of the coordinate or key column
+  data_type: z.string().optional(),
+  // The axis's values with labels, in place of values
+  categories: z.array(category).default([]),
+  // Vocabulary or vertical CRS the values are coded against
+  reference_system: z.string().optional(),
+});
+
+const variable = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  data_type: z.string().optional(),
+  unit: z.string().optional(),
+  note: z.string().optional(),
+  // Fill value for this variable, replacing the asset's nodata
+  nodata: z.union([z.string(), z.number()]).optional(),
+  categories: z.array(category).default([]),
+});
+
+// Columns joining this table to another dataset (Frictionless shape)
+const foreignKey = z.object({
+  fields: z.array(z.string()),
+  reference: z.object({
+    resource: z.string(),
+    asset: z.string().optional(),
+    fields: z.array(z.string()),
+  }),
+});
+
+const structure = z.object({
+  name: z.string(),
+  dimensions: z.array(dimension).default([]),
+  variables: z.array(variable),
+  foreign_keys: z.array(foreignKey).default([]),
+  // The geometry column of a vector table
+  geometry_column: z.string().optional(),
 });
 
 const catalog = defineCollection({
@@ -298,42 +346,6 @@ const catalog = defineCollection({
           }),
         ])
         .optional(),
-      dimensions: z
-        .array(
-          z.object({
-            name: z.string(),
-            type: z.string().optional(),
-            description: z.string().optional(),
-            // The standard allows bare numbers (years); the site works in strings
-            values: z.array(z.coerce.string()).default([]),
-            // [first, last] of a regular temporal axis, in place of values
-            extent: z.array(z.string()).optional(),
-            // ISO 8601 duration between slices, on temporal axes
-            step: z.string().optional(),
-            unit: z.string().optional(),
-            // Stored type of the coordinate or key column
-            data_type: z.string().optional(),
-            // The axis's values with labels, in place of values
-            categories: z.array(category).default([]),
-            // Vocabulary or vertical CRS the values are coded against
-            reference_system: z.string().optional(),
-          }),
-        )
-        .default([]),
-      variables: z
-        .array(
-          z.object({
-            name: z.string(),
-            description: z.string().optional(),
-            data_type: z.string().optional(),
-            unit: z.string().optional(),
-            note: z.string().optional(),
-            // Fill value for this variable, replacing the asset's nodata
-            nodata: z.union([z.string(), z.number()]).optional(),
-            categories: z.array(category).default([]),
-          }),
-        )
-        .default([]),
       cdh: z
         .object({
           domain: z.array(z.string()).default([]),
@@ -379,29 +391,7 @@ const catalog = defineCollection({
           scenarios: z.array(z.string()).default([]),
         })
         .optional(),
-      // Groups of variables sharing dimensions, for files that differ
-      structures: z
-        .array(
-          z.object({
-            name: z.string(),
-            dimensions: z.array(z.string()).default([]),
-            variables: z.array(z.string()),
-          }),
-        )
-        .default([]),
-      // Columns joining this table to another dataset (Frictionless shape)
-      foreign_keys: z
-        .array(
-          z.object({
-            fields: z.array(z.string()),
-            reference: z.object({
-              resource: z.string(),
-              asset: z.string().optional(),
-              fields: z.array(z.string()),
-            }),
-          }),
-        )
-        .default([]),
+      structures: z.array(structure).default([]),
       commodities: z.array(z.string()).default([]),
       processing: z
         .array(

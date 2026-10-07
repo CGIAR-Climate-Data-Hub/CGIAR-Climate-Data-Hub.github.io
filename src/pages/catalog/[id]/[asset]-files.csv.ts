@@ -9,9 +9,7 @@ export async function getStaticPaths() {
   const entries = await getCollection("catalog");
   return entries.flatMap((entry) =>
     entry.data.data.flatMap((asset) => {
-      const inventory =
-        asset.href_template
-        && templateInventory(entry.data, asset.href_template, asset.locations);
+      const inventory = templateInventory(entry.data, asset);
       if (!inventory) return [];
       return [
         {

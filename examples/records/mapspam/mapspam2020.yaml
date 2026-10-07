@@ -91,85 +91,86 @@ spatial:
 temporal:
   date: "2020" # static 2020 reference year (year precision)
 
-dimensions:
-  - name: crop
-    type: crop
-    description: MAPSPAM crop code. Full labels are provided in the dimension codes asset.
-    values:
-      - whea
-      - rice
-      - maiz
-      - barl
-      - mill
-      - pmil
-      - sorg
-      - ocer
-      - pota
-      - swpo
-      - yams
-      - cass
-      - orts
-      - bean
-      - chic
-      - cowp
-      - pige
-      - lent
-      - opul
-      - soyb
-      - grou
-      - cnut
-      - oilp
-      - sunf
-      - rape
-      - sesa
-      - ooil
-      - sugc
-      - sugb
-      - cott
-      - ofib
-      - coff
-      - rcof
-      - coco
-      - teas
-      - toba
-      - bana
-      - plnt
-      - citr
-      - trof
-      - temf
-      - toma
-      - onio
-      - vege
-      - rubb
-      - rest
+structures:
+  - name: main
+    dimensions:
+      - name: crop
+        type: crop
+        description: MAPSPAM crop code. Full labels are provided in the dimension codes asset.
+        values:
+          - whea
+          - rice
+          - maiz
+          - barl
+          - mill
+          - pmil
+          - sorg
+          - ocer
+          - pota
+          - swpo
+          - yams
+          - cass
+          - orts
+          - bean
+          - chic
+          - cowp
+          - pige
+          - lent
+          - opul
+          - soyb
+          - grou
+          - cnut
+          - oilp
+          - sunf
+          - rape
+          - sesa
+          - ooil
+          - sugc
+          - sugb
+          - cott
+          - ofib
+          - coff
+          - rcof
+          - coco
+          - teas
+          - toba
+          - bana
+          - plnt
+          - citr
+          - trof
+          - temf
+          - toma
+          - onio
+          - vege
+          - rubb
+          - rest
 
-  - name: technology
-    type: technology
-    description:
-      MAPSPAM production system code. Full labels are provided in the dimension codes asset.
-    values: [all, irrigated, rainfed]
-
-variables:
-  - name: physical_area
-    description: Physical crop area allocated to each grid cell.
-    data_type: float32
-    unit: ha
-  - name: harvested_area
-    description: Harvested crop area allocated to each grid cell.
-    data_type: float32
-    unit: ha
-  - name: production
-    description: Crop production allocated to each grid cell.
-    data_type: float32
-    unit: t
-    note: Absolute quantity; regional summaries should sum values across cells.
-  - name: yield
-    description: Crop yield for each grid cell.
-    data_type: float32
-    unit: t ha-1
-    note: >
-      Relative quantity; do not sum yield values across grid cells. Regional summaries should use a
-      weighted mean with harvested_area as the weight.
+      - name: technology
+        type: technology
+        description:
+          MAPSPAM production system code. Full labels are provided in the dimension codes asset.
+        values: [all, irrigated, rainfed]
+    variables:
+      - name: physical_area
+        description: Physical crop area allocated to each grid cell.
+        data_type: float32
+        unit: ha
+      - name: harvested_area
+        description: Harvested crop area allocated to each grid cell.
+        data_type: float32
+        unit: ha
+      - name: production
+        description: Crop production allocated to each grid cell.
+        data_type: float32
+        unit: t
+        note: Absolute quantity; regional summaries should sum values across cells.
+      - name: yield
+        description: Crop yield for each grid cell.
+        data_type: float32
+        unit: t ha-1
+        note: >
+          Relative quantity; do not sum yield values across grid cells. Regional summaries should
+          use a weighted mean with harvested_area as the weight.
 
 cdh:
   domain: [agricultural-production]
@@ -251,6 +252,7 @@ processing:
 
 data:
   - name: zarr
+    structures: [main]
     locations:
       - url: https://digital-atlas.s3.amazonaws.com/cdh/data/mapspam2020-v2r2/spam2020-v2r2.zarr
         title: HTTPS
@@ -262,6 +264,7 @@ data:
     media_type: application/vnd.zarr; version=3
     file_size: 500 MB
   - name: cogs
+    structures: [main]
     locations:
       - url: https://digital-atlas.s3.amazonaws.com/cdh/data/mapspam2020-v2r2/cog/
         title: HTTPS

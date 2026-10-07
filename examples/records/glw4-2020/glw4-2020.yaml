@@ -79,31 +79,33 @@ spatial:
 temporal:
   date: "2020" # static 2020 reference year (year precision)
 
-variables:
-  - name: buffalo
-    description: Modelled buffalo density.
-    data_type: float32
-    unit: "{head}/km2"
-  - name: cattle
-    description: Modelled cattle density.
-    data_type: float32
-    unit: "{head}/km2"
-  - name: chicken
-    description: Modelled chicken density.
-    data_type: float32
-    unit: "{head}/km2"
-  - name: goat
-    description: Modelled goat density.
-    data_type: float32
-    unit: "{head}/km2"
-  - name: pig
-    description: Modelled pig density.
-    data_type: float32
-    unit: "{head}/km2"
-  - name: sheep
-    description: Modelled sheep density.
-    data_type: float32
-    unit: "{head}/km2"
+structures:
+  - name: main
+    variables:
+      - name: buffalo
+        description: Modelled buffalo density.
+        data_type: float32
+        unit: "{head}/km2"
+      - name: cattle
+        description: Modelled cattle density.
+        data_type: float32
+        unit: "{head}/km2"
+      - name: chicken
+        description: Modelled chicken density.
+        data_type: float32
+        unit: "{head}/km2"
+      - name: goat
+        description: Modelled goat density.
+        data_type: float32
+        unit: "{head}/km2"
+      - name: pig
+        description: Modelled pig density.
+        data_type: float32
+        unit: "{head}/km2"
+      - name: sheep
+        description: Modelled sheep density.
+        data_type: float32
+        unit: "{head}/km2"
 
 cdh:
   domain: [agricultural-production]
@@ -135,6 +137,7 @@ processing:
 
 data:
   - name: zarr
+    structures: [main]
     locations:
       - url: https://digital-atlas.s3.amazonaws.com/cdh/data/glw4-2020/glw4-2020.zarr
         title: HTTPS
@@ -146,6 +149,7 @@ data:
     media_type: application/vnd.zarr; version=3
     file_size: 31.1 MB
   - name: cogs
+    structures: [main]
     locations:
       - url: https://digital-atlas.s3.amazonaws.com/cdh/data/glw4-2020/cog/
         title: HTTPS

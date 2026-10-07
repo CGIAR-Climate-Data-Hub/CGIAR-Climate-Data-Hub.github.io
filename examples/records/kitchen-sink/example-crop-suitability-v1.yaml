@@ -75,22 +75,23 @@ temporal:
   end_date: "2050"
 
 # lat/lon come from spatial; the projection horizon and domain axes are declared here.
-dimensions:
-  - name: time
-    type: temporal
-    description: Projection horizon (reference year).
-    values: ["2030", "2050"] # ISO 8601 strings; a temporal axis takes no bare numbers
-    step: P20Y
-  - name: crop
-    type: crop
-    description: Example crop code.
-    values: [maiz, rice]
-
-variables:
-  - name: suitability_index
-    description: Continuous modelled suitability, 0 (unsuitable) to 1 (optimal).
-    data_type: float32
-    unit: "1"
+structures:
+  - name: main
+    dimensions:
+      - name: time
+        type: temporal
+        description: Projection horizon (reference year).
+        values: ["2030", "2050"] # ISO 8601 strings; a temporal axis takes no bare numbers
+        step: P20Y
+      - name: crop
+        type: crop
+        description: Example crop code.
+        values: [maiz, rice]
+    variables:
+      - name: suitability_index
+        description: Continuous modelled suitability, 0 (unsuitable) to 1 (optimal).
+        data_type: float32
+        unit: "1"
 
 cdh:
   domain: [agricultural-production]
@@ -116,6 +117,7 @@ processing:
 
 data:
   - name: zarr
+    structures: [main]
     description: Zarr representation of the v1 suitability cube.
     locations:
       - url: https://example.org/data/example-crop-suitability/v1/cube.zarr
@@ -127,6 +129,7 @@ data:
   # checksum) of full URLs, a stac-geoparquet index for STAC clients, and
   # a GDAL VRT that opens the COGs as one raster in GDAL, QGIS, or rasterio.
   - name: cogs
+    structures: [main]
     description: Cloud Optimized GeoTIFFs of the v1 cube, one per horizon and crop.
     locations:
       - url: https://example.org/data/example-crop-suitability/v1/cogs/
