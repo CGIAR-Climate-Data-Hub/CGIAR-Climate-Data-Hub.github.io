@@ -148,8 +148,12 @@ const contact = z.object({
 
 // A person or an organization, in citation order (CSL-JSON shape)
 const author = z.union([
-  z.object({ family: z.string(), given: z.string().optional() }),
-  z.object({ organization: z.string() }),
+  z.object({
+    family: z.string(),
+    given: z.string().optional(),
+    orcid: z.string().optional(),
+  }),
+  z.object({ organization: z.string(), ror: z.string().optional() }),
 ]);
 
 const citation = z.object({

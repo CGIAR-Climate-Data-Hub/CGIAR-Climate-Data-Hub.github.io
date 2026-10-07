@@ -4,8 +4,8 @@ import { SITE_PUBLISHER_NAME } from "@/site.config";
 // Record authors are objects; docs page authors are plain names
 export type Author =
   | string
-  | { family: string; given?: string }
-  | { organization: string };
+  | { family: string; given?: string; orcid?: string }
+  | { organization: string; ror?: string };
 
 export const authorName = (a: Author) =>
   typeof a === "string"

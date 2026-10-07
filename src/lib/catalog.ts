@@ -486,6 +486,24 @@ function contactToSchemaOrg(c: CatalogRecord["contact"][number]) {
   };
 }
 
+function authorToSchemaOrg(
+  a: NonNullable<CatalogRecord["citation"]>["authors"][number],
+) {
+  return "organization" in a
+    ? {
+        "@type": "Organization",
+        name: a.organization,
+        ...(a.ror && { sameAs: a.ror }),
+      }
+    : {
+        "@type": "Person",
+        name: authorName(a),
+        familyName: a.family,
+        ...(a.given && { givenName: a.given }),
+        ...(a.orcid && { sameAs: a.orcid }),
+      };
+}
+
 // schema.org/Dataset JSON-LD, mapped from the CDH record (Google Dataset Search friendly).
 export function datasetJsonLd(
   d: CatalogRecord,
@@ -495,7 +513,11 @@ export function datasetJsonLd(
   const boxes = normalizeBboxes(d.spatial?.bbox) ?? [];
   const withRole = (role: string) =>
     d.contact.filter((c) => c.roles.includes(role)).map(contactToSchemaOrg);
-  const creators = withRole("producer");
+  // The credited authors in citation order, else the producers
+  const creators =
+    d.citation && d.citation.authors.length > 0
+      ? d.citation.authors.map(authorToSchemaOrg)
+      : withRole("producer");
   const maintainers = withRole("maintainer");
   const contributors = withRole("processor");
   // Sources this record derives from: a Hub record (its pinned release when
