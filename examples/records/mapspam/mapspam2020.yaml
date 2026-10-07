@@ -82,19 +82,21 @@ spatial:
   geography:
     - world
   crs: EPSG:4326
-  resolution:
-    - type: xy
-      unit: degree
-      value: 0.08333333
-      label: 5 arc-minutes (~10km at equator)
 
 temporal:
   date: "2020" # static 2020 reference year (year precision)
 
 structures:
-  - name: main
+  - name: zarr
     dimensions:
-      - name: crop
+      - &cell
+        name: cell
+        type: xy
+        description: 5 arc-minutes (~10km at equator).
+        step: 0.08333333
+        unit: degree
+      - &crop
+        name: crop
         type: crop
         description: MAPSPAM crop code. Full labels are provided in the dimension codes asset.
         values:
@@ -145,26 +147,59 @@ structures:
           - rubb
           - rest
 
-      - name: technology
+      - &technology
+        name: technology
         type: technology
         description:
           MAPSPAM production system code. Full labels are provided in the dimension codes asset.
         values: [all, irrigated, rainfed]
     variables:
       - name: physical_area
+        nodata: "NaN"
         description: Physical crop area allocated to each grid cell.
         data_type: float32
         unit: ha
       - name: harvested_area
+        nodata: "NaN"
         description: Harvested crop area allocated to each grid cell.
         data_type: float32
         unit: ha
       - name: production
+        nodata: "NaN"
         description: Crop production allocated to each grid cell.
         data_type: float32
         unit: t
         note: Absolute quantity; regional summaries should sum values across cells.
       - name: yield
+        nodata: "NaN"
+        description: Crop yield for each grid cell.
+        data_type: float32
+        unit: t ha-1
+        note: >
+          Relative quantity; do not sum yield values across grid cells. Regional summaries should
+          use a weighted mean with harvested_area as the weight.
+
+  - name: cogs
+    dimensions: [*cell, *crop, *technology]
+    variables:
+      - name: physical_area
+        nodata: -9999
+        description: Physical crop area allocated to each grid cell.
+        data_type: float32
+        unit: ha
+      - name: harvested_area
+        nodata: -9999
+        description: Harvested crop area allocated to each grid cell.
+        data_type: float32
+        unit: ha
+      - name: production
+        nodata: -9999
+        description: Crop production allocated to each grid cell.
+        data_type: float32
+        unit: t
+        note: Absolute quantity; regional summaries should sum values across cells.
+      - name: yield
+        nodata: -9999
         description: Crop yield for each grid cell.
         data_type: float32
         unit: t ha-1
@@ -252,7 +287,7 @@ processing:
 
 data:
   - name: zarr
-    structures: [main]
+    structures: [zarr]
     locations:
       - url: https://digital-atlas.s3.amazonaws.com/cdh/data/mapspam2020-v2r2/spam2020-v2r2.zarr
         title: HTTPS
@@ -260,11 +295,10 @@ data:
         title: S3
     processing_steps: [cloud-optimize]
     description: Zarr representation of the source MAPSPAM files.
-    nodata: "NaN"
     media_type: application/vnd.zarr; version=3
     file_size: 500 MB
   - name: cogs
-    structures: [main]
+    structures: [cogs]
     locations:
       - url: https://digital-atlas.s3.amazonaws.com/cdh/data/mapspam2020-v2r2/cog/
         title: HTTPS
@@ -273,7 +307,6 @@ data:
     href_template: "spam2020-{variable}-{technology}.tif"
     processing_steps: [cloud-optimize]
     description: Cloud Optimized GeoTIFFs of the MAPSPAM files.
-    nodata: -9999
     media_type: "image/tiff; application=geotiff; profile=cloud-optimized"
 
 additional_assets:

@@ -27,18 +27,22 @@ export function stacCollectionUrl(id: string) {
 }
 
 // Days between values on a date-precision extent (P1D, P1W, P10D…)
-function dayStep(dim?: { extent?: string[]; step?: string }) {
+function dayStep(dim?: { extent?: string[]; step?: string | number }) {
   if (!dim?.extent || !/^\d{4}-\d{2}-\d{2}$/.test(dim.extent[0])) return;
-  const m = dim.step?.match(/^P(?:(\d+)W)?(?:(\d+)D)?$/);
+  if (typeof dim.step !== "string") return;
+  const m = dim.step.match(/^P(?:(\d+)W)?(?:(\d+)D)?$/);
   const days = m ? Number(m[1] ?? 0) * 7 + Number(m[2] ?? 0) : 0;
   return days > 0 ? days : undefined;
 }
 
 type Asset = CatalogRecord["data"][number];
 
-// The structures an asset holds; its template tokens resolve against them
+// The structures an asset holds; its template tokens resolve against them.
+// With one structure an asset may omit the list: it holds that one
 export const heldStructures = (d: CatalogRecord, asset: Asset) =>
-  d.structures.filter((s) => asset.structures.includes(s.name));
+  asset.structures.length > 0
+    ? d.structures.filter((s) => asset.structures.includes(s.name))
+    : d.structures.slice(0, 1);
 
 // Dimension a token names: the same in every held structure, so take the first
 const tokenDim = (d: CatalogRecord, asset: Asset, name: string) =>
@@ -197,6 +201,35 @@ function scaleOf(tags: string[]) {
   return depth <= 4 ? "regional" : "national";
 }
 
+export const HORIZONTAL = ["xy", "x", "y"];
+
+// A grid step in words. Degrees convert exactly to arc-minutes or arc-seconds;
+// the km figure is approximate and holds only at the equator (111.32 km/°)
+export function spacingLabel(step: number, unit: string) {
+  if (!/^degree/.test(unit)) return `${+step.toPrecision(6)} ${unit}`;
+  const minutes = step * 60;
+  const [n, word] =
+    minutes >= 1 ? [minutes, "arc-minute"] : [minutes * 60, "arc-second"];
+  const value = +n.toFixed(2);
+  const km = +(step * 111.32).toPrecision(2);
+  return `${value} ${word}${value === 1 ? "" : "s"} (~${km} km at the equator)`;
+}
+
+// A record's distinct grid spacings: each regular horizontal axis in its
+// structures. Coordinate columns (no step) are not a grid
+export function gridSpacings(d: CatalogRecord) {
+  const labels = d.structures.flatMap((s) =>
+    s.dimensions.flatMap((x) =>
+      HORIZONTAL.includes(x.type ?? "") && typeof x.step === "number" && x.unit
+        ? [
+            `${x.type === "xy" ? "" : `${x.type}: `}${spacingLabel(x.step, x.unit)}`,
+          ]
+        : [],
+    ),
+  );
+  return [...new Set(labels)];
+}
+
 export function summarize(entry: CollectionEntry<"catalog">) {
   const d = entry.data;
   return {
@@ -212,7 +245,7 @@ export function summarize(entry: CollectionEntry<"catalog">) {
     keywords: d.keywords.map((k) => (typeof k === "string" ? k : k.term)),
     coverage: d.spatial?.geography.map(geoLabel).join(", ") || undefined,
     // Short form for card meta rows — full label lives on the detail page
-    resolution: d.spatial?.resolution[0]?.label?.split(" (")[0],
+    resolution: gridSpacings(d)[0]?.split(" (")[0],
     temporal: temporalText(d.temporal)?.main,
     domains: d.cdh?.domain ?? [],
     // Tags plus their broader concepts, so filtering by a group rolls up;
@@ -351,6 +384,8 @@ export function datasetMd(
     temporal && `Temporal coverage: ${temporal}`,
     d.spatial?.geography.length
       && `Geography: ${d.spatial.geography.join(", ")}`,
+    gridSpacings(d).length > 0
+      && `Grid spacing: ${gridSpacings(d).join(" · ")}`,
     d.commodities.length && `Commodities: ${d.commodities.join(", ")}`,
     d.keywords.length
       && `Keywords: ${d.keywords
@@ -430,7 +465,7 @@ export function datasetMd(
             .filter(Boolean)
             .join(": "),
           dim.data_type && `type ${dim.data_type}`,
-          dim.step && `step ${dim.step}`,
+          dim.step ? `step ${dim.step}` : undefined,
           dim.unit && `unit ${dim.unit}`,
           dim.reference_system && `coded against ${dim.reference_system}`,
           dim.description,

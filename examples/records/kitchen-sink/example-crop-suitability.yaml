@@ -116,11 +116,6 @@ spatial:
   geography:
     - africa
   crs: EPSG:4326
-  resolution:
-    - type: xy
-      unit: degree
-      value: 0.05
-      label: 3 arc-minutes (~5 km at equator)
 
 temporal:
   # Coverage span (year precision). The two projection horizons are a temporal
@@ -128,14 +123,19 @@ temporal:
   start_date: "2030"
   end_date: "2050"
 
-# lat/lon come from spatial. Every other axis - the projection horizon (a temporal
-# dimension, with an ISO 8601 step) and the domain axes - is declared in a structure.
+# Every axis is declared in a structure: the grid (xy with a numeric step), the
+# projection horizon (temporal, with an ISO 8601 step), and the domain axes.
 # The mask varies over the grid only, so it cannot share the projection axes.
 # Each structure is its own data dictionary, like a Frictionless resource schema;
 # every asset names the structures it holds.
 structures:
   - name: projections
     dimensions:
+      - name: cell
+        type: xy
+        description: 3 arc-minutes (~5 km at equator).
+        step: 0.05
+        unit: degree
       - name: time
         type: temporal
         description: Projection horizon (reference year).
@@ -161,15 +161,14 @@ structures:
       - name: suitability_index
         description: Continuous modelled suitability, 0 (unsuitable) to 1 (optimal).
         data_type: float32
+        nodata: -9999
         unit: "1"
         note: Dimensionless index; do not sum across cells.
       - name: suitability_class
         description: Categorical suitability derived by binning suitability_index.
         data_type: uint8
         unit: "1"
-        # This variable's fill value differs from the asset default (-9999, which no
-        # uint8 can hold), so it states its own. The float variable above takes the
-        # asset value.
+        # A uint8 cannot hold -9999, so this variable has its own fill value.
         nodata: 255
         categories:
           - value: 0
@@ -185,7 +184,12 @@ structures:
             label: High
             description: Modelled suitability above 0.75.
   - name: static
-    dimensions: []
+    dimensions:
+      - name: cell
+        type: xy
+        description: 3 arc-minutes (~5 km at equator).
+        step: 0.05
+        unit: degree
     variables:
       - name: cropland_mask
         description: Cells modelled as cropland; suitability is only meaningful where this is 1.
@@ -260,7 +264,6 @@ data:
       - url: s3://example-bucket/example-crop-suitability/v2/cube.zarr
         title: S3
     media_type: application/vnd.zarr; version=3
-    nodata: -9999
     file_size: 250 MB
     processing_steps: [cloud-optimize]
     structures: [projections, static]
@@ -271,7 +274,6 @@ data:
     locations:
       - url: https://example.org/data/example-crop-suitability/v2/farland-west.nc
     media_type: application/x-netcdf
-    nodata: -9999
     file_size: 90 MB
     checksum: sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
     spatial:
@@ -283,7 +285,6 @@ data:
     locations:
       - url: https://example.org/data/example-crop-suitability/v2/farland-east.nc
     media_type: application/x-netcdf
-    nodata: -9999
     file_size: 160 MB
     checksum: sha256:60303ae22b998861bce3b28f33eec1be758a213c86c93c076dbe9f558c11c752
     spatial:
@@ -299,7 +300,6 @@ data:
         title: S3
     href_template: "suit_{scenario}_{crop}_{variable}.tif"
     media_type: "image/tiff; application=geotiff; profile=cloud-optimized"
-    nodata: -9999
     file_size: 3 MB
     processing_steps: [cloud-optimize]
     structures: [projections]

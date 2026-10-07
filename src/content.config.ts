@@ -174,22 +174,12 @@ const category = z.object({
 const location = z.object({ url: z.string(), title: z.string().optional() });
 
 // The record's coverage, or one asset's (data[].spatial, same shape).
-// resolution is grid spacing only
+// Grid spacing is the step of a structure's horizontal axis, not here
 const spatial = z.object({
   // Either one bbox or a list of them
   bbox: z.union([z.array(z.number()), z.array(z.array(z.number()))]).optional(),
   geography: z.array(z.string()).default([]),
   crs: z.string().optional(),
-  resolution: z
-    .array(
-      z.object({
-        type: z.string().optional(),
-        unit: z.string().optional(),
-        value: z.union([z.number(), z.string()]).optional(),
-        label: z.string().optional(),
-      }),
-    )
-    .default([]),
 });
 
 const asset = z.object({
@@ -239,8 +229,9 @@ const dimension = z.object({
   values: z.array(z.coerce.string()).default([]),
   // [first, last] of a regular temporal axis, in place of values
   extent: z.array(z.string()).optional(),
-  // ISO 8601 duration between slices, on temporal axes
-  step: z.string().optional(),
+  // Spacing between values: an ISO 8601 duration on a temporal axis, a
+  // number in unit on a horizontal (xy, x, y) axis
+  step: z.union([z.string(), z.number()]).optional(),
   unit: z.string().optional(),
   // Stored type of the coordinate or key column
   data_type: z.string().optional(),

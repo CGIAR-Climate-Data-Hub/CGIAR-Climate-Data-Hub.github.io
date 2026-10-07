@@ -64,20 +64,20 @@ spatial:
   geography:
     - africa
   crs: EPSG:4326
-  resolution:
-    - type: xy
-      unit: degree
-      value: 0.1
-      label: 6 arc-minutes (~10 km at equator)
 
 temporal:
   start_date: "2030"
   end_date: "2050"
 
-# lat/lon come from spatial; the projection horizon and domain axes are declared here.
+# Every axis is declared here: the grid, the projection horizon, and the domain axes.
 structures:
   - name: main
     dimensions:
+      - name: cell
+        type: xy
+        description: 6 arc-minutes (~10 km at equator).
+        step: 0.1
+        unit: degree
       - name: time
         type: temporal
         description: Projection horizon (reference year).
@@ -91,6 +91,7 @@ structures:
       - name: suitability_index
         description: Continuous modelled suitability, 0 (unsuitable) to 1 (optimal).
         data_type: float32
+        nodata: -9999
         unit: "1"
 
 cdh:
@@ -117,19 +118,16 @@ processing:
 
 data:
   - name: zarr
-    structures: [main]
     description: Zarr representation of the v1 suitability cube.
     locations:
       - url: https://example.org/data/example-crop-suitability/v1/cube.zarr
         title: HTTPS
     media_type: application/vnd.zarr; version=3
-    nodata: -9999
   # v1 COG names followed no single pattern, so no href_template fits. Indexes
   # list the files instead: a cdh-inventory (CSV columns href, time, crop,
   # checksum) of full URLs, a stac-geoparquet index for STAC clients, and
   # a GDAL VRT that opens the COGs as one raster in GDAL, QGIS, or rasterio.
   - name: cogs
-    structures: [main]
     description: Cloud Optimized GeoTIFFs of the v1 cube, one per horizon and crop.
     locations:
       - url: https://example.org/data/example-crop-suitability/v1/cogs/
@@ -146,4 +144,3 @@ data:
         locations:
           - url: https://example.org/data/example-crop-suitability/v1/cogs.vrt
     media_type: "image/tiff; application=geotiff; profile=cloud-optimized"
-    nodata: -9999

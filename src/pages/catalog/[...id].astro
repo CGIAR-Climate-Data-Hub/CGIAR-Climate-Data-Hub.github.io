@@ -15,12 +15,16 @@ import {
   formatBytes,
   formatLabel,
   geoLabel,
+  gridSpacings,
+  HORIZONTAL,
+  heldStructures,
   humanize,
   licenseUrl,
   licensor,
   normalizeBboxes,
   recordSlug,
   resolveTemplate,
+  spacingLabel,
   stacCollectionUrl,
   stepLabel,
   templateInventory,
@@ -104,15 +108,14 @@ const assetCoverage = (s?: (typeof d.data)[number]["spatial"]) =>
     ...(normalizeBboxes(s.bbox) ?? []).map((b) => `[${b.join(", ")}]`),
   ].join(" · ");
 const coverage = d.spatial?.geography.map(geoLabel).join(", ");
-const resolution = d.spatial?.resolution
-  .map((r) => r.label)
-  .filter(Boolean)
-  .join(" · ");
+const spacings = gridSpacings(d);
+const resolution = spacings.join(" · ");
 const temporal = temporalText(
   d.temporal,
   d.structures
     .flatMap((s) => s.dimensions)
-    .find((dim) => dim.type === "temporal")?.step,
+    .map((dim) => (dim.type === "temporal" ? dim.step : undefined))
+    .find((step) => typeof step === "string"),
 );
 const source = licensor(d);
 // Contact order: maintainers (accountable for the record), then licensors, then the rest
@@ -137,7 +140,7 @@ const multiStructure = d.structures.length > 1;
 const structures = d.structures.map((s) => ({
   ...s,
   files: d.data
-    .filter((a) => a.structures.includes(s.name))
+    .filter((a) => heldStructures(d, a).includes(s))
     .map((a) => a.name)
     .join(", "),
   // The variables table grows a "No data" column only when one has a value
@@ -693,10 +696,24 @@ const jsonLd = datasetJsonLd(
                           )}
                         </p>
                       )}
+                      {HORIZONTAL.includes(dim.type ?? "") && (
+                        <p>
+                          {typeof dim.step === "number" && dim.unit ? (
+                            <>
+                              <b>Grid spacing:</b> {spacingLabel(dim.step, dim.unit)}{" "}
+                              <span class="mono">
+                                ({dim.step} {dim.unit})
+                              </span>
+                            </>
+                          ) : (
+                            "Coordinate column"
+                          )}
+                        </p>
+                      )}
                       {dim.extent && (
                         <p class="mono">
                           {dim.extent[0]} – {dim.extent[1]}
-                          {dim.step && `, ${stepLabel(dim.step)}`}
+                          {typeof dim.step === "string" && `, ${stepLabel(dim.step)}`}
                         </p>
                       )}
                       {dim.values.length > 0 && (
@@ -1135,13 +1152,10 @@ const jsonLd = datasetJsonLd(
                       <dd>{coverage}</dd>
                     </>
                   )}
-                  {d.spatial.resolution.map((r) => (
+                  {spacings.map((label) => (
                     <>
-                      <dt>Resolution{r.type ? ` (${r.type})` : ""}</dt>
-                      <dd>
-                        {r.label
-                          ?? [r.value, r.unit].filter(Boolean).join(" ")}
-                      </dd>
+                      <dt>Grid spacing</dt>
+                      <dd>{label}</dd>
                     </>
                   ))}
                 </dl>

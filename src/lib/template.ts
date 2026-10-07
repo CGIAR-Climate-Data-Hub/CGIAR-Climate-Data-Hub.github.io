@@ -5,7 +5,7 @@ interface Axis {
   values?: string[];
   categories?: { value: string }[];
   extent?: string[];
-  step?: string;
+  step?: string | number;
 }
 
 // {token} or {token:strftime}, as the standard's cross-field check reads it
@@ -33,7 +33,7 @@ export const tokenNames = (template: string) => [
 // An axis's values: listed, categorised, or [first, last] expanded by step
 export function axisValues({ values = [], categories, extent, step }: Axis) {
   if (categories?.length) return categories.map((c) => c.value);
-  if (values.length > 0 || !extent || !step) return values;
+  if (values.length > 0 || !extent || typeof step !== "string") return values;
   const start = parts(extent[0]);
   const end = parts(extent[1]);
   const dur = step

@@ -86,7 +86,7 @@ temporal:
   start_date: "2030"
   end_date: "2050"
 
-# The same axes as the grid, minus lat/lon: here they are table columns.
+# The same axes as the grid, minus the xy cell axis: here they are table columns.
 structures:
   - name: main
     dimensions:
@@ -164,7 +164,6 @@ processing:
 
 data:
   - name: table
-    structures: [main]
     description: Admin-2 suitability aggregates, one Parquet table.
     locations:
       - url: https://example.org/data/example-crop-suitability/v2/admin2/suitability_admin2.parquet

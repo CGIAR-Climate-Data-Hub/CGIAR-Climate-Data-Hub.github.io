@@ -87,7 +87,6 @@ processing:
 
 data:
   - name: markets
-    structures: [main]
     description: Market points, GeoParquet.
     locations:
       - url: https://example.org/markets/farland-markets.parquet
