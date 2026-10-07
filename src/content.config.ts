@@ -175,6 +175,8 @@ const spatial = z.object({
         unit: z.string().optional(),
         value: z.number().optional(),
         label: z.string().optional(),
+        // Reporting-unit system for non-grid resolutions (GAUL 2015, GADM)
+        reference_system: z.string().optional(),
       }),
     )
     .default([]),
@@ -189,6 +191,8 @@ const asset = z.object({
   locations: z.array(location).default([]),
   href_template: z.string().optional(),
   media_type: z.string().optional(),
+  // What a supporting file is for: describedby, agents, example…
+  roles: z.array(z.string()).default([]),
   // Whole bytes or "31.1 MB" (powers of 1000); stored as bytes
   file_size: z
     .union([z.number(), z.string()])
@@ -295,6 +299,9 @@ const catalog = defineCollection({
             extent: z.array(z.string()).optional(),
             // ISO 8601 duration between slices, on temporal axes
             step: z.string().optional(),
+            unit: z.string().optional(),
+            // Vocabulary or vertical CRS the values are coded against
+            reference_system: z.string().optional(),
           }),
         )
         .default([]),

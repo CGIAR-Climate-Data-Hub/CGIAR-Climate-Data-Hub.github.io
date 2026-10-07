@@ -732,6 +732,19 @@ const jsonLd = datasetJsonLd(
                         {dim.type && <span class="label">{dim.type}</span>}
                       </div>
                       {dim.description && <p>{dim.description}</p>}
+                      {dim.unit && <p><b>Unit:</b> <span class="mono">{dim.unit}</span></p>}
+                      {dim.reference_system && (
+                        <p>
+                          <b>Coded against:</b>{" "}
+                          {/^https?:/.test(dim.reference_system) ? (
+                            <a class="mono" href={dim.reference_system} rel="noreferrer">
+                              {dim.reference_system}
+                            </a>
+                          ) : (
+                            dim.reference_system
+                          )}
+                        </p>
+                      )}
                       {dim.extent && (
                         <p class="mono">
                           {dim.extent[0]} – {dim.extent[1]}
@@ -783,6 +796,7 @@ const jsonLd = datasetJsonLd(
                 <div class="asset">
                   <div class="asset-head">
                     <span class="mono asset-name">{asset.name}</span>
+                    {asset.roles.map((r) => <span class="label">{r}</span>)}
                     {asset.file_size !== undefined && <span class="mono asset-size">{formatBytes(asset.file_size)}</span>}
                     {download && (
                       <a class="btn btn-ghost dl" download href={download}>
@@ -1122,6 +1136,7 @@ const jsonLd = datasetJsonLd(
                       <dd>
                         {r.label
                           ?? [r.value, r.unit].filter(Boolean).join(" ")}
+                        {r.reference_system && ` — ${r.reference_system}`}
                       </dd>
                     </>
                   ))}

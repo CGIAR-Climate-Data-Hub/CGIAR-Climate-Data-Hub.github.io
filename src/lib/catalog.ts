@@ -356,6 +356,12 @@ export function datasetMd(
         && resolveTemplate(d, a.href_template)
         && `File list (${a.name}, CSV): ${abs(`/catalog/${recordSlug(d)}/${a.name}-files.csv`)}`,
     ]),
+    ...d.additional_assets.map((a) =>
+      dash(
+        `Additional asset (${a.name}${a.roles.length ? `; roles: ${a.roles.join(", ")}` : ""}): ${a.locations[0]?.url}`,
+        a.description,
+      ),
+    ),
     ...d.additional_links.map((l) =>
       dash(`Link: ${l.title ?? l.url}`, l.title && l.url, l.description),
     ),
@@ -390,6 +396,8 @@ export function datasetMd(
         dash(
           `${dim.name}: ${values(dim.values)}`,
           dim.step && `step ${dim.step}`,
+          dim.unit && `unit ${dim.unit}`,
+          dim.reference_system && `coded against ${dim.reference_system}`,
           dim.description,
         ),
       ),
