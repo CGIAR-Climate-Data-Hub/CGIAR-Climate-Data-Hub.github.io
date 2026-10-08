@@ -1,0 +1,623 @@
+---
+// One distribution or supporting file: facts, access routes, the template
+// picker, file indexes, and worked examples. Data shaping lives in lib/assets.
+import CopyButton from "@/components/CopyButton.astro";
+import SnippetTabs from "@/components/SnippetTabs.astro";
+import { anchor, shapeAsset, urlParts } from "@/lib/assets";
+import {
+  type Asset,
+  type CatalogRecord,
+  formatBytes,
+  formatLabel,
+  humanize,
+  recordSlug,
+} from "@/lib/catalog";
+
+interface Props {
+  record: CatalogRecord;
+  asset: Asset;
+  restricted: boolean;
+}
+
+const { record: d, asset, restricted } = Astro.props;
+const {
+  example,
+  bestFor,
+  extent,
+  primary,
+  index,
+  indexes,
+  openIndex,
+  others,
+  tplFields,
+  tplFile,
+  tplUrl,
+  fileCount,
+  download,
+} = await shapeAsset(d, asset, restricted);
+const structureByName = new Map(d.structures.map((s) => [s.name, s]));
+---
+
+<div class="card asset" id={anchor("file", asset.name)}>
+  <div class="head">
+    <span>
+      <span class="mono asset-name">{asset.name}</span>
+      {asset.roles.map((r) => <> <span class="label">{r}</span></>)}
+    </span>
+    {asset.file_size !== undefined && <span class="mono asset-size">{formatBytes(asset.file_size)}</span>}
+  </div>
+  {asset.description && <p class="asset-desc">{asset.description}</p>}
+  {asset.media_type && (
+    <p class="asset-fact">
+      <b>Format:</b> {formatLabel(asset.media_type)}
+      {bestFor && (
+        <span class="best-for"> — best for {bestFor}</span>
+      )}
+    </p>
+  )}
+  {asset.structures.length > 0 && (
+    <div class="asset-fact">
+      <b>Holds:</b>
+      <ul class="layout-list">
+        {asset.structures.map((name) => {
+          const s = structureByName.get(name);
+          return (
+            <li>
+              <a class="mono" href={`#${anchor("structure", name)}`}>{name}</a>
+              {s && (
+                <>
+                  : <span class="mono">{s.variables.map((v) => v.name).join(", ")}</span>
+                  <span class="layout-dims">
+                    {s.dimensions.length > 0
+                      && ` by ${s.dimensions.map((x) => x.name).join(" × ")}`}
+                  </span>
+                </>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  )}
+  {extent && (
+    <p class="asset-fact">
+      <b>Coverage:</b> <span class="mono">{extent}</span>
+    </p>
+  )}
+  {asset.checksum && (
+    <p class="asset-fact">
+      <b>Checksum:</b>{" "}
+      <span class="mono" title={asset.checksum}>
+        {asset.checksum.replace(/^((?:\w+:)?.{12}).+/, "$1…")}
+      </span>{" "}
+      <CopyButton copy={asset.checksum} label="Copy checksum" />
+    </p>
+  )}
+  {tplUrl && (
+      <div
+        class="tpl-picker"
+        data-file={tplFile}
+        data-root={primary.url}
+        data-template={asset.href_template}
+      >
+        {fileCount && (
+          <p class="head">
+            <span class="tech-title">
+              List of files{" "}
+              <span class="tpl-count">
+                {fileCount.toLocaleString("en")} files
+              </span>
+            </span>
+            <a
+              class="btn btn-ghost dl"
+              download={`${asset.name}-files.csv`}
+              href={`/catalog/${recordSlug(d)}/${asset.name}-files.csv`}
+            >
+              Download CSV
+            </a>
+          </p>
+        )}
+        <p class="head file-head">
+          <span class="tech-title">Individual file</span>
+        </p>
+        {/* The selectors, with the actions on the file they pick */}
+        <div class="tpl-row">
+        <div class="tpl-fields">
+          {(tplFields ?? []).map((f) =>
+            // One value is no choice: keep it for the URL, show no control
+            f.values.length === 1 ? (
+              <input data-tpl-dim={f.name} type="hidden" value={f.values[0]} />
+            ) : (
+            // biome-ignore lint/a11y/noLabelWithoutControl: the control is inside, behind a ternary
+            <label class="tpl-field">
+              <span class="tpl-field-label">{humanize(f.name)}</span>
+              {f.date ? (
+                <input
+                  data-tpl-dim={f.name}
+                  max={f.date.max}
+                  min={f.date.min}
+                  required
+                  step={f.date.step}
+                  type="date"
+                  value={f.date.min}
+                />
+              ) : (
+                <select data-tpl-dim={f.name}>
+                  {f.values.map((v) => (
+                    <option value={v}>{f.labels?.[v] ?? v}</option>
+                  ))}
+                </select>
+              )}
+            </label>
+            ),
+          )}
+        </div>
+          <CopyButton
+            copy={tplUrl}
+            label="Copy selected file URL"
+          />
+          {!restricted && (
+            <a
+              class="btn btn-ghost dl"
+              data-tpl-download
+              download
+              href={tplUrl}
+            >
+              Download
+            </a>
+          )}
+        </div>
+        <p class="mono selected-url" data-tpl-url>{tplUrl}</p>
+      </div>
+    )}
+  {index && (
+    <div class="access-panel">
+      <p class="head">
+        <span class="tech-title">File indexes</span>
+      </p>
+      {/* One row per index; a row with a snippet expands to
+          show it, one open at a time (details sharing a name) */}
+      <div class="index-list">
+        {indexes.map((ix) => {
+          const row = (
+            <>
+              <span class="index-format">{ix.label}</span>
+              <a class="mono index-file" href={ix.url} rel="noreferrer" title={ix.url}>
+                {ix.name}
+              </a>
+              <CopyButton copy={ix.url} label={`Copy ${ix.label} URL`} />
+              {ix.isDir || restricted ? (
+                <span />
+              ) : (
+                <a
+                  aria-label={`Download ${ix.label}`}
+                  class="code-copy"
+                  download
+                  href={ix.url}
+                  title={`Download ${ix.label}`}
+                >
+                  <svg
+                    fill="none"
+                    height="13"
+                    role="img"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="13"
+                  >
+                    <title>Download {ix.label}</title>
+                    <path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14" />
+                  </svg>
+                </a>
+              )}
+            </>
+          );
+          return ix.snippet ? (
+            <details
+              class="index-row"
+              name={`index-${asset.name}`}
+              open={ix === openIndex}
+            >
+              <summary class="index-head">{row}</summary>
+              <div class="index-body">
+                {ix.preview && (
+                  <div class="inventory-preview">
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          {ix.preview.header.map((h) => <th>{h}</th>)}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {ix.preview.rows.map((row) => (
+                          <tr>
+                            {row.map((cell, i) =>
+                              ix.preview?.header[i] === "href" ? (
+                                <td>
+                                  <a class="mono" href={cell} rel="noreferrer" title={cell}>
+                                    {cell.split("/").pop()}
+                                  </a>
+                                </td>
+                              ) : (
+                                <td class="mono">{cell}</td>
+                              ),
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <p class="caption">
+                      First {ix.preview.rows.length} files of the list
+                    </p>
+                  </div>
+                )}
+                <SnippetTabs code={ix.snippet} />
+              </div>
+            </details>
+          ) : (
+            <div class="index-row">
+              <div class="index-head">{row}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  )}
+  {!asset.href_template && !index && primary && (
+    <div class="access-panel">
+      <p class="head">
+        <span class="tech-title">Access the data</span>
+        <CopyButton copy={primary.url} label="Copy URL" />
+        {download && (
+          <a class="btn btn-ghost dl" download href={download}>
+            Download
+          </a>
+        )}
+      </p>
+      <p class="asset-fact">
+        <span class="mono url">
+          {urlParts(primary.url).map((part) => (
+            <>
+              {part}
+              <wbr />
+            </>
+          ))}
+        </span>
+      </p>
+    </div>
+  )}
+  {others.length > 0 && (
+    <details class="alt-access">
+      <summary>Other access methods</summary>
+      {asset.href_template && (
+        <p class="asset-fact">
+          <b>File pattern:</b>{" "}
+          <span class="mono">{asset.href_template}</span>
+        </p>
+      )}
+      {others.map((loc) => (
+        <div class="endpoint">
+          <span class="proto">{loc.label}:</span>
+          <span class="mono url">
+            {urlParts(loc.url).map((part) => (
+              <>
+                {part}
+                <wbr />
+              </>
+            ))}
+          </span>
+          <CopyButton copy={loc.url} label="Copy URL" />
+        </div>
+      ))}
+    </details>
+  )}
+  {example && (
+    <div class="asset-examples">
+      <p class="tech-title">Usage examples</p>
+      <SnippetTabs code={example} />
+    </div>
+  )}
+</div>
+
+<script>
+import { fillTemplate } from "@/lib/template";
+
+// Template pickers: the selects and date fields fill the asset's
+// href_template; the built URL feeds the row's copy button and download link
+for (const picker of document.querySelectorAll<HTMLElement>(".tpl-picker")) {
+  const fields = [
+    ...picker.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+      "[data-tpl-dim]",
+    ),
+  ];
+  const update = () => {
+    // A cleared date field names no file
+    if (fields.some((f) => !f.value)) return;
+    const file = fillTemplate(
+      picker.dataset.template ?? "",
+      Object.fromEntries(fields.map((f) => [f.dataset.tplDim, f.value])),
+    );
+    const url = (picker.dataset.root ?? "") + file;
+    const urlEl = picker.querySelector<HTMLElement>("[data-tpl-url]");
+    if (urlEl) urlEl.textContent = url;
+    const copyBtn =
+      picker.querySelector<HTMLButtonElement>("button[data-copy]");
+    if (copyBtn) copyBtn.dataset.copy = url;
+    const dl = picker.querySelector<HTMLAnchorElement>("[data-tpl-download]");
+    if (dl) dl.href = url;
+    // The usage example bakes in the previous selection's filename — swap it
+    // wherever it appears in the card's examples so they stay live
+    const prev = picker.dataset.file;
+    const examples = picker.closest(".asset")?.querySelector(".asset-examples");
+    if (examples && prev && prev !== file) {
+      const walker = document.createTreeWalker(examples, NodeFilter.SHOW_TEXT);
+      while (walker.nextNode()) {
+        const node = walker.currentNode;
+        if (node.nodeValue?.includes(prev))
+          node.nodeValue = node.nodeValue.replaceAll(prev, file);
+      }
+    }
+    picker.dataset.file = file;
+  };
+  picker.addEventListener("change", update);
+  update();
+}
+</script>
+
+<style>
+.asset:target {
+  border-color: var(--terra-500);
+}
+
+/* The card's border is the only box line — inside, whitespace separates.
+   Visual weight: name → download → selectors → URL → technical facts */
+.asset p,
+.alt-access,
+.asset-examples {
+  margin-top: var(--space-2);
+}
+
+/* Name + description read as one unit; the breathing room sits below them */
+.asset-desc {
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-3);
+  font-size: var(--font-size-5);
+  color: var(--text-soft);
+}
+
+.asset-name {
+  font-size: var(--font-size-6);
+  font-weight: 700;
+  color: var(--cdh-blue-950);
+}
+
+.asset-size {
+  font-size: var(--font-size-2);
+  color: var(--text-mute);
+}
+
+/* One download style everywhere, height-matched to the copy buttons */
+.dl {
+  height: 26px;
+  padding: 0 var(--space-3);
+  font-size: var(--font-size-3);
+}
+
+/* Per-asset facts — light labels, darker values; mono only on literals */
+.asset-fact {
+  font-size: var(--font-size-4);
+  color: var(--text);
+}
+
+.asset-fact b {
+  font-weight: 500;
+  color: var(--text-mute);
+}
+
+.asset-fact .mono {
+  font-size: var(--font-size-3);
+}
+
+/* Index rows: caret | format | file name | copy | download. A fixed format
+   column keeps rows aligned, since each row is its own grid */
+.index-list {
+  margin-top: var(--space-3);
+}
+
+.index-row + .index-row {
+  border-top: 1px solid var(--border);
+}
+
+.index-head {
+  display: grid;
+  grid-template-columns: 1rem 10rem minmax(0, 1fr) auto auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-2) var(--space-1);
+  list-style: none;
+}
+
+.index-head::-webkit-details-marker {
+  display: none;
+}
+
+/* Caret only on rows that expand; plain rows keep the column empty */
+.index-head::before {
+  font-size: var(--font-size-5);
+  color: var(--text-soft);
+  content: "";
+}
+
+summary.index-head {
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+summary.index-head::before {
+  content: "▸";
+}
+
+details[open] > summary.index-head::before {
+  content: "▾";
+}
+
+summary.index-head:hover {
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+}
+
+.index-format {
+  font-size: var(--font-size-4);
+  font-weight: 500;
+}
+
+.index-file {
+  font-size: var(--font-size-3);
+  color: var(--text-soft);
+  overflow-wrap: anywhere;
+}
+
+.index-body {
+  padding: var(--space-1) 0 var(--space-3);
+}
+
+/* The inventory's first rows, before its snippet */
+.inventory-preview {
+  margin-bottom: var(--space-3);
+  overflow-x: auto;
+}
+
+.inventory-preview .data-table {
+  font-size: var(--font-size-3);
+}
+
+.best-for {
+  font-family: var(--sans);
+  color: var(--text-mute);
+}
+
+.tpl-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  margin-top: var(--space-3);
+}
+
+/* Label above its control */
+.tpl-field {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.tpl-field-label {
+  font-size: var(--font-size-3);
+  color: var(--text-mute);
+}
+
+.tpl-field select,
+.tpl-field input {
+  padding: 2px 6px;
+  font-size: var(--font-size-3);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+/* Quieter than the asset name — it labels a control group, not content */
+/* Panel headings: the card's sub-sections, one step under the asset name */
+.tpl-count {
+  font-weight: 400;
+  color: var(--text-mute);
+}
+
+/* Interactive units — a tinted inset panel groups the file picker (or the
+   spotlighted access URL) against the card's white surface */
+.tpl-picker,
+.access-panel {
+  padding: var(--space-4);
+  margin-top: var(--space-3);
+  background: var(--bg);
+  border-radius: var(--radius-md);
+}
+
+/* The panel's padding is its top edge; drop the card's paragraph margin */
+.tpl-picker > :first-child,
+.access-panel > :first-child {
+  margin-top: 0;
+}
+
+/* Plain URL line, wrapping normally — same voice as every card URL */
+.selected-url {
+  padding-left: var(--space-1);
+  margin-top: var(--space-2);
+  font-size: var(--font-size-3);
+  color: var(--text-soft);
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Selectors left, the picked file's copy and Download right */
+.tpl-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: flex-end;
+  margin-top: var(--space-3);
+}
+
+.tpl-row .tpl-fields {
+  margin-top: 0;
+  margin-right: auto;
+}
+
+/* The individual-file section, divided from the file list above */
+.file-head {
+  padding-top: var(--space-4);
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.alt-access summary {
+  font-size: var(--font-size-3);
+  color: var(--text-mute);
+  cursor: pointer;
+  user-select: none;
+}
+
+.alt-access summary:hover {
+  color: var(--cdh-blue-700);
+}
+
+.endpoint {
+  display: grid;
+  grid-template-columns: minmax(56px, max-content) 1fr auto;
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-1) 0;
+  margin-top: var(--space-2);
+}
+
+/* Same voice as the fact labels (Format, No Data) — sans, light, muted */
+.proto {
+  font-size: var(--font-size-3);
+  font-weight: 500;
+  color: var(--text-mute);
+}
+
+.layout-dims {
+  color: var(--text-mute);
+}
+
+.layout-list {
+  padding-left: var(--space-5);
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-4);
+}
+
+.layout-list .mono {
+  font-size: var(--font-size-3);
+}
+</style>

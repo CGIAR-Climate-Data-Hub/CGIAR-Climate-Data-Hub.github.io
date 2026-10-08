@@ -77,7 +77,11 @@ export function resolveTemplate(d: CatalogRecord, asset: Asset) {
     const date = dim?.extent
       && typeof dim.extent[1] === "string"
       && days && { min: values[0], max: dim.extent[1], step: days };
-    return { name, values, date: date || undefined };
+    // Coded axes show their labels in the picker; the code still fills the URL
+    const labels = dim?.categories.length
+      ? Object.fromEntries(dim.categories.map((c) => [c.value, c.label]))
+      : undefined;
+    return { name, values, labels, date: date || undefined };
   });
   if (fields.some((f) => f.values.length === 0)) return undefined;
   const first = Object.fromEntries(fields.map((f) => [f.name, f.values[0]]));
@@ -545,7 +549,7 @@ export function datasetMd(
 export function temporalText(t: CatalogRecord["temporal"], step?: string) {
   if (!t) return undefined;
   const year = (date: string) => date.slice(0, 4);
-  if ("date" in t) return { main: year(t.date), sub: "static snapshot" };
+  if ("date" in t) return { main: year(t.date) };
   const sub = [
     step && stepLabel(step),
     t.update_frequency && updateLabel(t.update_frequency),
