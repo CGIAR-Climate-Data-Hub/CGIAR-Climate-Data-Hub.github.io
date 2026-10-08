@@ -1280,6 +1280,12 @@ article > section {
   flex-direction: column;
   gap: var(--space-5);
   padding-bottom: var(--space-4);
+}
+
+/* Anything linked by hash (a tab, a layout row, an asset card) lands below
+   the sticky header and section nav */
+article > section,
+article :global([id]) {
   scroll-margin-top: calc(var(--nav-height) + 58px);
 }
 
