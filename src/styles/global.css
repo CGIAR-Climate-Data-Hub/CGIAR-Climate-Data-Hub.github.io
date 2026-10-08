@@ -180,7 +180,7 @@ hr {
   padding: var(--space-4);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
 }
 
 /* Card or panel head: the first child is the title, the rest sit at the right */

@@ -337,7 +337,7 @@ const jsonLd = datasetJsonLd(
                     <path d="M6 9l6 6 6-6" />
                   </svg>
               </button>
-                <div class="menu-list" id="version-menu" popover>
+                <div class="card menu-list" id="version-menu" popover>
                   {chain.map((v, i) => (
                     <a
                       aria-current={v.data.version === d.version ? "page" : undefined}
@@ -406,7 +406,7 @@ const jsonLd = datasetJsonLd(
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
-            <div class="menu-list" id="meta-menu" popover>
+            <div class="card menu-list" id="meta-menu" popover>
               <a href={`/catalog/${recordSlug(d)}.json`}>Raw record (JSON)</a>
               {stacUrl && (
                   <a href={stacUrl} rel="noreferrer">
@@ -1088,9 +1088,6 @@ h1 {
   min-width: 170px;
   margin: 6px 0 0;
   padding: var(--space-2);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-menu);
 }
 

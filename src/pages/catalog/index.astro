@@ -160,7 +160,7 @@ const catalogSchema = {
 
   <section class="container body">
     <aside aria-label="Filters" class="facets">
-      <details class="bbox-box" open={OPEN_FILTERS.includes("spatial")}>
+      <details class="card bbox-box" open={OPEN_FILTERS.includes("spatial")}>
         <summary>
           <span class="bbox-title">
             <svg
@@ -594,9 +594,6 @@ apply();
 .bbox-box {
   padding: 0;
   margin-bottom: 20px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
 }
 
 .bbox-box summary {

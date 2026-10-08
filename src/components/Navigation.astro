@@ -60,7 +60,7 @@ const isActive = (href: string) => path.startsWith(href);
                 <path d="M6 9l6 6 6-6"></path>
               </svg>
             </a>
-            <div class="menu">
+            <div class="card menu">
               {item.items.map((link) => (
                 <a href={link.href} class:list={["menu-item", { "is-active": isActive(link.href) }]}>
                   <span class="menu-label">{link.label}</span>
@@ -287,9 +287,6 @@ nav {
   flex-direction: column;
   min-width: 250px;
   padding: 7px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-menu);
 }
 

@@ -15,7 +15,7 @@ const facts = [
 ];
 ---
 
-<article class="ds-card">
+<article class="card ds-card">
   <span class="label type">
     <DataGlyph size={13} type={d.type} />
     {d.type === "spatial" ? "Spatial" : "Tabular"}
@@ -35,10 +35,6 @@ const facts = [
   flex-direction: column;
   gap: var(--space-3);
   height: 100%;
-  padding: 22px 22px 18px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
   transition: border-color 0.12s;
 }
 

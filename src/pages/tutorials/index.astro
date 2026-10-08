@@ -104,7 +104,7 @@ const description =
       <ul class="grid">
         {tutorials.map((t) => (
             <li data-audience={t.data.audience} data-topic={t.data.topic} data-tutorial>
-              <a class="card" href={`/tutorials/${t.id}/`} style={`--level-color: ${AUDIENCE_COLORS[t.data.audience]}`}>
+              <a class="card tutorial-card" href={`/tutorials/${t.id}/`} style={`--level-color: ${AUDIENCE_COLORS[t.data.audience]}`}>
                 <span class="card-top">
                   <span class="pill level">{t.data.audience}</span>
                   <span class="mono caption">{t.data.time}</span>
@@ -206,20 +206,16 @@ facetFilter([...document.querySelectorAll<HTMLElement>("li[data-tutorial]")]);
   list-style: none;
 }
 
-.card {
+.tutorial-card {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
   height: 100%;
-  padding: 20px;
   color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
   transition: border-color 0.12s;
 }
 
-.card:hover {
+.tutorial-card:hover {
   text-decoration: none;
   border-color: var(--level-color);
 }

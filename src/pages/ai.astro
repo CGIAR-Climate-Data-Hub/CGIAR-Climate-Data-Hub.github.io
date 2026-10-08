@@ -109,7 +109,7 @@ const ENDPOINTS = [
       {skills.map((s) => (
           <li>
             <a
-              class="skill-card"
+              class="card skill-card"
               href={`${SKILLS_SITE}skills/${s.id}/`}
               title={s.data.description}
             >
@@ -130,7 +130,7 @@ const ENDPOINTS = [
     />
     <ul class="grid">
       {ENDPOINTS.map((e) => (
-          <li class="skill-card">
+          <li class="card skill-card">
             <span class="mono skill-name">
               {e.href ? <a href={e.href}>{e.path}</a> : e.path}
             </span>
@@ -194,11 +194,7 @@ const ENDPOINTS = [
   flex-direction: column;
   gap: var(--space-2);
   height: 100%;
-  padding: 20px;
   color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
 }
 
 a.skill-card {

@@ -50,7 +50,7 @@ const jsonLd = {
           <h1>{title}</h1>
           <p>{lede}</p>
         </div>
-        <aside class="glance">
+        <aside class="card glance">
           <div class="label">At a glance</div>
           <dl>
             <dt>Datasets</dt>
@@ -195,10 +195,7 @@ h1 {
 }
 
 .glance {
-  padding: 20px;
   background: var(--bg); /* the hero backdrop is --surface, so invert */
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
 }
 
 .glance .label {
