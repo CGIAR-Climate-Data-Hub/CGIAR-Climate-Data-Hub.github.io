@@ -137,41 +137,23 @@ const catalogSchema = {
             type="search"
           >
         </div>
-        <div class="results-meta">
-          <span role="status"
-            ><b id="match-count">{datasets.length}</b>{" "}
-            <span id="match-label">datasets</span></span
+        <span class="pill spatial mono series-tag" hidden id="series-active">
+          Series: <b id="series-name"></b>
+          <button
+            aria-label="Clear series filter"
+            id="series-clear"
+            type="button"
           >
-          <span class="pill spatial mono series-tag" hidden id="series-active">
-            Series: <b id="series-name"></b>
-            <button
-              aria-label="Clear series filter"
-              id="series-clear"
-              type="button"
-            >
-              ×
-            </button>
-          </span>
-          <button hidden id="clear-filters" type="button">
-            Clear all filters
+            ×
           </button>
-        </div>
-        <div class="layout-wrap">
-          <fieldset aria-label="Result layout" class="seg">
-            {[
-            ["grid", "Cards"],
-            ["table", "Table"],
-          ].map(([key, label]) => (
-            <button
-              aria-pressed={key === "grid" ? "true" : "false"}
-              data-layout={key}
-              type="button"
-            >
-              {label}
-            </button>
-          ))}
-          </fieldset>
-        </div>
+        </span>
+        <button hidden id="clear-filters" type="button">
+          Clear all filters
+        </button>
+        <span class="results-meta" role="status">
+          <b id="match-count">{datasets.length}</b>{" "}
+          of {datasets.length} {datasets.length === 1 ? "dataset" : "datasets"}
+        </span>
       </div>
     </div>
   </section>
@@ -311,14 +293,6 @@ const catalogSchema = {
     </aside>
 
     <div>
-      <div class="mono table-head">
-        <span>Type</span>
-        <span>Name</span>
-        <span>Coverage</span>
-        <span>Resolution</span>
-        <span>Temporal</span>
-        <span>Updated</span>
-      </div>
       <ul class="grid" data-pagefind-ignore id="results">
         {datasets.map((d) => (
             <li
@@ -335,21 +309,6 @@ const catalogSchema = {
               data-series={d.series}
             >
               <DatasetCard dataset={d} />
-              <a class="row-table" href={`/catalog/${d.id}/`}>
-                <span>
-                  <span class:list={["pill", "dot", d.type]}
-                    >{d.type === "spatial" ? "Spatial" : "Tabular"}</span
-                  >
-                </span>
-                <span class="row-text">
-                  <span class="row-title">{d.title}</span>
-                  <span class="row-desc">{d.description}</span>
-                </span>
-                <span class="mono">{d.coverage ?? "—"}</span>
-                <span class="mono">{d.resolution ?? "—"}</span>
-                <span class="mono">{d.temporal ?? "—"}</span>
-                <span class="mono">{d.updated.slice(0, 10) || "—"}</span>
-              </a>
             </li>
           ))}
       </ul>
@@ -365,23 +324,7 @@ const catalogSchema = {
 import { projectLonLat, unprojectPoint } from "@/lib/coordinates";
 import { facetFilter } from "@/lib/facets";
 
-// Layout switcher — a display preference, so it persists locally, not in the URL
-const layoutButtons = [
-  ...document.querySelectorAll<HTMLButtonElement>("[data-layout]"),
-];
-const results = document.querySelector("#results");
-function setLayout(layout: string) {
-  results?.classList.toggle("layout-table", layout === "table");
-  for (const b of layoutButtons)
-    b.setAttribute("aria-pressed", String(b.dataset.layout === layout));
-  localStorage.setItem("catalog-layout", layout);
-}
-for (const b of layoutButtons)
-  b.addEventListener("click", () => setLayout(b.dataset.layout ?? "grid"));
-if (localStorage.getItem("catalog-layout") === "table") setLayout("table");
-
 const search = document.querySelector<HTMLInputElement>("#catalog-search");
-const matchLabel = document.querySelector("#match-label");
 // Filters beyond the facets: text, a series deep link, a drawn bbox
 const state: { q: string; bbox: number[] | null; series: string } = {
   q: "",
@@ -435,9 +378,7 @@ const {
       state.series = "";
       if (search) search.value = "";
     },
-    onApply: (matched) => {
-      if (matchLabel)
-        matchLabel.textContent = matched === 1 ? "dataset" : "datasets";
+    onApply: () => {
       if (seriesTag) seriesTag.hidden = !state.series;
       if (seriesName) seriesName.textContent = state.series;
       syncBboxUi();
@@ -728,12 +669,11 @@ apply();
   border: 0;
 }
 
+/* "5 of 6 datasets" at the row's end; tabular digits keep it from shifting */
 .results-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  align-items: center;
+  margin-left: auto;
   font-size: var(--font-size-4);
+  font-variant-numeric: tabular-nums;
   color: var(--text-soft);
 }
 
@@ -763,113 +703,7 @@ apply();
   content-visibility: visible;
 }
 
-/* ---- Layout switcher ---- */
-.layout-wrap {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-left: auto;
-}
-
-/* ---- Table layout ---- */
-/* Cards render both variants; the list's class picks one. */
-.row-table,
-.table-head {
-  display: none;
-}
-
-.grid.layout-table {
-  display: block;
-  overflow: hidden;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-top: 0;
-  border-radius: 0 0 var(--radius-md) var(--radius-md);
-}
-
-.grid.layout-table :global(.ds-card) {
-  display: none;
-}
-
-.grid.layout-table li + li {
-  border-top: 1px solid var(--border);
-}
-
-.row-table:hover {
-  text-decoration: none;
-  background: var(--grey-1);
-}
-
-.row-text {
-  display: block;
-  min-width: 0;
-}
-
-.row-title {
-  display: block;
-  font-size: var(--font-size-6);
-  font-weight: 600;
-  color: var(--cdh-blue-950);
-}
-
-.row-desc {
-  display: block;
-  margin-top: 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: var(--font-size-4);
-  color: var(--text-soft);
-  white-space: nowrap;
-}
-
-.table-head,
-.row-table {
-  grid-template-columns: 108px 2fr 1fr 1fr 100px 96px;
-  gap: 14px;
-  align-items: center;
-  padding: 10px 14px;
-}
-
-.table-head {
-  font-size: var(--font-size-2);
-  font-weight: 700;
-  color: var(--text-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  background: var(--grey-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
-}
-
-.table-head:has(+ .grid.layout-table) {
-  display: grid;
-}
-
-.row-table {
-  padding: 13px 14px;
-  font-size: var(--font-size-2);
-  color: var(--text-mute);
-}
-
-.grid.layout-table .row-table {
-  display: grid;
-}
-
-.row-table .row-desc {
-  font-size: var(--font-size-4);
-}
-
 @media (width <= 860px) {
-  .table-head,
-  .row-table {
-    grid-template-columns: 90px 2fr 1fr;
-  }
-
-  .table-head span:nth-child(n + 4),
-  .row-table > :nth-child(n + 4) {
-    display: none;
-  }
-
   .body {
     grid-template-columns: 1fr;
   }
@@ -880,7 +714,7 @@ apply();
     position: static;
   }
 
-  /* Search takes the first line; count + layout switcher wrap below it */
+  /* Search takes the first line; the count wraps below it */
   .searchbox {
     flex-basis: 100%;
     max-width: none;

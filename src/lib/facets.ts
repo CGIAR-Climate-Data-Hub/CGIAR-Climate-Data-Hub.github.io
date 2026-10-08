@@ -9,7 +9,7 @@ interface Hooks {
   // Page-specific filters in effect, which keep the Clear button shown
   active?: () => boolean;
   onClear?: () => void;
-  onApply?: (matched: number) => void;
+  onApply?: () => void;
 }
 
 export function facetFilter(cards: HTMLElement[], hooks: Hooks = {}) {
@@ -44,7 +44,7 @@ export function facetFilter(cards: HTMLElement[], hooks: Hooks = {}) {
         String(state[b.dataset.facet ?? ""] === b.dataset.value),
       );
     if (clear) clear.hidden = keys.every((k) => !state[k]) && !hooks.active?.();
-    hooks.onApply?.(matched);
+    hooks.onApply?.();
   }
 
   for (const b of buttons)
