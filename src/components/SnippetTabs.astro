@@ -23,7 +23,7 @@ const tabs = LANGUAGES.flatMap((l) =>
   {tabs.length > 1 && (
     <div class="seg">
       {tabs.map((t, i) => (
-        <button aria-pressed={i === 0 ? "true" : "false"} data-lang={t.id} type="button">
+        <button aria-pressed={i === 0} data-lang={t.id} type="button">
           {t.label}
         </button>
       ))}
@@ -42,8 +42,6 @@ const tabs = LANGUAGES.flatMap((l) =>
 </div>
 
 <script>
-const buttons = document.querySelectorAll<HTMLButtonElement>("[data-lang]");
-
 function setLang(lang: string) {
   for (const snip of document.querySelectorAll<HTMLElement>(".snippet")) {
     const panels = [...snip.querySelectorAll<HTMLElement>("[data-snippet]")];
@@ -56,15 +54,15 @@ function setLang(lang: string) {
   }
 }
 
-for (const btn of buttons) {
-  btn.addEventListener("click", () => {
-    const lang = btn.dataset.lang ?? "python";
-    localStorage.setItem("snippet-lang", lang);
-    setLang(lang);
-  });
-}
+document.addEventListener("click", (e) => {
+  const lang = (e.target as Element).closest<HTMLElement>("[data-lang]")
+    ?.dataset.lang;
+  if (!lang) return;
+  localStorage.setItem("snippet-lang", lang);
+  setLang(lang);
+});
 
-// Returning visitors land on their language (same pattern as catalog-layout)
+// Returning visitors land on their language
 const saved = localStorage.getItem("snippet-lang");
 if (saved) setLang(saved);
 </script>

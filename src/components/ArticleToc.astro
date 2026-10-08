@@ -14,7 +14,7 @@ for (const h of headings) {
   if (h.depth <= 2 || groups.length === 0) {
     groups.push({ heading: h, children: [] });
   } else {
-    groups[groups.length - 1].children.push(h);
+    groups.at(-1)?.children.push(h);
   }
 }
 ---
@@ -24,11 +24,11 @@ for (const h of headings) {
       <div class="label">On this page</div>
       {groups.map((g) => (
         <div class="sec">
-          <a href={`#${g.heading.slug}`} class:list={[`depth-${g.heading.depth}`]}>
+          <a class={`depth-${g.heading.depth}`} href={`#${g.heading.slug}`}>
             {g.heading.text}
           </a>
           {g.children.map((h) => (
-            <a href={`#${h.slug}`} class:list={[`depth-${h.depth}`]}>
+            <a class={`depth-${h.depth}`} href={`#${h.slug}`}>
               {h.text}
             </a>
           ))}

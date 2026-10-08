@@ -5,7 +5,8 @@
 // instead. Tutorial frontmatter lives in the notebook's metadata under the
 // "cdh" key, with the same fields as a markdown tutorial.
 import { readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { basename, join } from "node:path";
+import { stripVTControlCharacters } from "node:util";
 import type { Loader } from "astro/loaders";
 
 interface Output {
@@ -23,9 +24,6 @@ interface Cell {
 // Notebook JSON stores text as line arrays
 const text = (s?: string | string[]) =>
   Array.isArray(s) ? s.join("") : (s ?? "");
-
-// Terminal colour codes in stream/traceback output
-const ansi = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, "g");
 
 function cellToMd(cell: Cell) {
   if (cell.cell_type === "markdown") return text(cell.source);
@@ -55,7 +53,7 @@ function cellToMd(cell: Cell) {
       );
     } else if (plain) {
       parts.push(
-        `\`\`\`\n${text(plain).replaceAll(ansi, "").trimEnd()}\n\`\`\``,
+        `\`\`\`\n${stripVTControlCharacters(text(plain)).trimEnd()}\n\`\`\``,
       );
     }
   }
@@ -69,7 +67,7 @@ export function notebooks(dir: string): Loader {
       store.clear();
       for (const file of await readdir(dir)) {
         if (!file.endsWith(".ipynb")) continue;
-        const id = file.replace(/\.ipynb$/, "").toLowerCase();
+        const id = basename(file, ".ipynb").toLowerCase();
         const nb = JSON.parse(await readFile(join(dir, file), "utf8"));
         if (!nb.metadata?.cdh) {
           logger.warn(`${file} has no "cdh" metadata block — skipped`);

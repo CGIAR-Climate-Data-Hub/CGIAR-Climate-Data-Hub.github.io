@@ -14,7 +14,7 @@ const TOKEN = /\{([^}:]+)(?::([^}]*))?\}/g;
 // Year, month, day, hour, minute, second, plus any offset suffix ("Z", "+01:00")
 const ISO =
   /^(\d{4})(?:-(\d{2})(?:-(\d{2})(?:T(\d{2}):(\d{2}):(\d{2}))?)?)?(.*)$/;
-const DURATION =
+export const DURATION =
   /^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/;
 
 function parts(iso: string) {
@@ -98,7 +98,7 @@ export function axisValues({ values = [], categories, extent, step }: Axis) {
 }
 
 // Only the directives the standard allows: %Y %m %d
-export function strftime(iso: string, spec: string) {
+function strftime(iso: string, spec: string) {
   const [y, mo = 1, d = 1] = parts(iso)?.nums ?? [];
   const pad = (n: number, w = 2) => String(n).padStart(w, "0");
   const by: Record<string, string> = { Y: pad(y, 4), m: pad(mo), d: pad(d) };

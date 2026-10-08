@@ -4,7 +4,7 @@
 
 const BYTES = 4096;
 
-export interface Preview {
+interface Preview {
   header: string[];
   rows: string[][];
 }
@@ -19,7 +19,6 @@ const cells = (line: string) =>
 
 export async function inventoryPreview(
   url: string,
-  rows = 5,
 ): Promise<Preview | undefined> {
   try {
     const res = await fetch(url, {
@@ -29,13 +28,13 @@ export async function inventoryPreview(
     });
     // Only an honoured range: a server that ignores it would send the whole list
     if (res.status !== 206) return undefined;
-    const bytes = new Uint8Array(await res.arrayBuffer());
+    const bytes = await res.arrayBuffer();
     const lines = new TextDecoder().decode(bytes).split(/\r?\n/);
     // The last line of a cut-off read is partial
-    if (bytes.length >= BYTES) lines.pop();
+    if (bytes.byteLength >= BYTES) lines.pop();
     const [header, ...body] = lines.filter(Boolean).map(cells);
     if (!header?.includes("href")) return undefined;
-    return { header, rows: body.slice(0, rows) };
+    return { header, rows: body.slice(0, 5) };
   } catch {
     return undefined;
   }

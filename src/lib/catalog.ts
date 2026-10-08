@@ -4,6 +4,7 @@ import formatVocab from "@/assets/format-vocab.json";
 import { authorName, type Citable, citationText } from "@/lib/citation";
 import {
   axisValues,
+  DURATION,
   fileCoordinates,
   fillTemplate,
   tokenNames,
@@ -47,12 +48,16 @@ function dayStep(dim?: {
   )
     return;
   if (typeof dim.step !== "string") return;
-  const m = dim.step.match(/^P(?:(\d+)W)?(?:(\d+)D)?$/);
-  const days = m ? Number(m[1] ?? 0) * 7 + Number(m[2] ?? 0) : 0;
+  const m = dim.step.match(DURATION);
+  const days = m ? Number(m[3] ?? 0) * 7 + Number(m[4] ?? 0) : 0;
   return days > 0 ? days : undefined;
 }
 
 export type Asset = CatalogRecord["data"][number];
+
+// An asset's or index's HTTPS address, when it has one
+export const httpUrl = (locations: { url: string }[]) =>
+  locations.find((l) => l.url.startsWith("http"))?.url;
 
 // The structures an asset holds; its template tokens resolve against them.
 // With one structure an asset may omit the list: it holds that one
@@ -104,8 +109,7 @@ export function templateInventory(
     name: f.name,
     ...fileCoordinates(template, f.name, f.values),
   }));
-  const base =
-    locations.find((l) => l.url.startsWith("http"))?.url ?? locations[0]?.url;
+  const base = httpUrl(locations) ?? locations[0]?.url;
   let rows: string[][] = [[]];
   for (const f of fields)
     rows = rows.flatMap((row) => f.values.map((v) => [...row, v]));
@@ -156,7 +160,7 @@ export const formatBestFor = (mediaType?: string) =>
   formatConcept(mediaType)?.best_for;
 
 // Stable facet token: vocab id, else the bare media subtype ("csv")
-export const formatId = (mediaType?: string) =>
+const formatId = (mediaType?: string) =>
   formatConcept(mediaType)?.id ?? mediaType?.split(";")[0]?.split("/").pop();
 
 export const formatIdLabel = (id: string) =>
@@ -222,7 +226,7 @@ export const HORIZONTAL = ["xy", "x", "y"];
 
 // A grid step in words. Degrees convert exactly to arc-minutes or arc-seconds;
 // the km figure is approximate and holds only at the equator (111.32 km/°)
-export function spacingLabel(step: number, unit: string) {
+function spacingLabel(step: number, unit: string) {
   // degree (UDUNITS-2) or deg (UCUM); any other unit prints as written
   if (!/^deg/.test(unit)) return `${+step.toPrecision(6)} ${unit}`;
   const minutes = step * 60;
@@ -250,8 +254,13 @@ export function gridSpacings(d: CatalogRecord) {
   return [...new Set(labels)];
 }
 
+// Keyword strings, with ontology terms reduced to their label
+const terms = (d: CatalogRecord) =>
+  d.keywords.map((k) => (typeof k === "string" ? k : k.term));
+
 export function summarize(entry: CollectionEntry<"catalog">) {
   const d = entry.data;
+  const commodities = [...new Set(d.commodities.flatMap(commodityWithParents))];
   return {
     id: d.id,
     title: d.title,
@@ -262,7 +271,7 @@ export function summarize(entry: CollectionEntry<"catalog">) {
     // Distribution formats of the data assets, as facet tokens
     formats: [...new Set(d.data.flatMap((a) => formatId(a.media_type) ?? []))],
     access: d.access && d.access !== "public" ? "restricted" : "open",
-    keywords: d.keywords.map((k) => (typeof k === "string" ? k : k.term)),
+    keywords: terms(d),
     coverage: d.spatial?.geography.map(geoLabel).join(", ") || undefined,
     // Short form for card meta rows — full label lives on the detail page
     resolution: gridSpacings(d)[0]?.split(" (")[0],
@@ -270,12 +279,8 @@ export function summarize(entry: CollectionEntry<"catalog">) {
     domains: d.cdh?.domain ?? [],
     // Tags plus their broader concepts, so filtering by a group rolls up;
     // the group tier of the closure feeds the facet
-    commodities: [...new Set(d.commodities.flatMap(commodityWithParents))],
-    commodityGroups: [
-      ...new Set(
-        d.commodities.flatMap(commodityWithParents).filter(isCommodityGroup),
-      ),
-    ],
+    commodities,
+    commodityGroups: commodities.filter(isCommodityGroup),
     // Tags plus their M49 ancestors, so filtering by a region rolls up —
     // except the "world" root, which stays only when explicitly tagged:
     // the catalog filter reads world as "global, matches every region",
@@ -354,14 +359,21 @@ const UPDATE_LABELS: Record<string, string> = {
 };
 
 // "monthly" → "updated monthly"
-export const updateLabel = (f: string) => `updated ${UPDATE_LABELS[f] ?? f}`;
+const updateLabel = (f: string) => `updated ${UPDATE_LABELS[f] ?? f}`;
 
 // "P3M" → "every 3 months" (steps are pipeline-validated ISO 8601 durations)
 export function stepLabel(step: string) {
   if (STEP_LABELS[step]) return STEP_LABELS[step];
-  const m =
-    step.match(/^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?(?:T(\d+)H)?$/) ?? [];
-  const parts = ["year", "month", "day", "hour"].flatMap((unit, i) =>
+  const m = step.match(DURATION) ?? [];
+  const parts = [
+    "year",
+    "month",
+    "week",
+    "day",
+    "hour",
+    "minute",
+    "second",
+  ].flatMap((unit, i) =>
     m[i + 1] ? `${m[i + 1]} ${unit}${+m[i + 1] > 1 ? "s" : ""}` : [],
   );
   return `every ${parts.join(" ")}`;
@@ -373,12 +385,11 @@ export function datasetMd(
   site: URL | undefined,
   sectionDepth = 4,
 ) {
+  const grid = gridSpacings(d);
   const abs = (path: string) => new URL(path, site).href;
   const citation = citable(d);
   const values = (v: string[]) =>
-    v.length > 8
-      ? `${v[0]} … ${v[v.length - 1]} (${v.length} values)`
-      : v.join(", ");
+    v.length > 8 ? `${v[0]} … ${v.at(-1)} (${v.length} values)` : v.join(", ");
   const dash = (...parts: (string | undefined)[]) =>
     parts.filter(Boolean).join(" — ");
   const temporal =
@@ -405,13 +416,9 @@ export function datasetMd(
     temporal && `Temporal coverage: ${temporal}`,
     d.spatial?.geography.length
       && `Geography: ${d.spatial.geography.join(", ")}`,
-    gridSpacings(d).length > 0
-      && `Grid spacing: ${gridSpacings(d).join(" · ")}`,
+    grid.length > 0 && `Grid spacing: ${grid.join(" · ")}`,
     d.commodities.length && `Commodities: ${d.commodities.join(", ")}`,
-    d.keywords.length
-      && `Keywords: ${d.keywords
-        .map((k) => (typeof k === "string" ? k : k.term))
-        .join(", ")}`,
+    d.keywords.length && `Keywords: ${terms(d).join(", ")}`,
     d.data.length
       && `Data: ${d.data
         .map((a) => a.locations[0]?.url)
@@ -745,7 +752,7 @@ export function datasetJsonLd(
     // Single-file indexes (not an Icechunk repo or a prefix)
     ...d.data.flatMap((asset) =>
       asset.file_index.flatMap((ix) => {
-        const href = ix.locations.find((l) => l.url.startsWith("http"))?.url;
+        const href = httpUrl(ix.locations);
         return href && ix.format !== "icechunk" && !href.endsWith("/")
           ? [
               {

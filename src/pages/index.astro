@@ -20,7 +20,7 @@ const wikis = (await getCollection("wikis"))
   .filter((w) => w.data.order !== undefined)
   .sort(
     (a, b) =>
-      (a.data.order ?? 0) - (b.data.order ?? 0)
+      Number(a.data.order) - Number(b.data.order)
       || a.data.title.localeCompare(b.data.title),
   )
   .slice(0, 2);
@@ -156,7 +156,7 @@ const PRINCIPLES = [
               <span class="essential-kind">
                 <span class="essential-glyph">
                   {item.glyph ? (
-                    <DataGlyph size={19} type={item.glyph} />
+                    <DataGlyph type={item.glyph} />
                   ) : (
                     <svg aria-hidden="true" fill="none" height="19" stroke="currentColor" stroke-linecap="round" stroke-width="1.6" viewBox="0 0 24 24" width="19">
                       <path d="M7 3h7l5 5v13H7V3Zm7 0v5h5M10 12h6M10 16h6" />

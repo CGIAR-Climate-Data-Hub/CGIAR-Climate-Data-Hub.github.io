@@ -5,7 +5,7 @@ import { allTutorials } from "@/lib/collections";
 import { treeUrl } from "@/lib/github";
 import { SITE_NAME, SITE_REPO } from "@/site.config";
 
-const AUDIENCES = ["Anyone", "Python & R", "GIS"];
+const AUDIENCES = ["Anyone", "Python & R", "GIS"] as const;
 const AUDIENCE_COLORS: Record<string, string> = {
   Anyone: "var(--cdh-blue-800)",
   "Python & R": "var(--cdh-blue-700)",
@@ -17,25 +17,23 @@ const tutorials = (await allTutorials()).sort(
     AUDIENCES.indexOf(a.data.audience) - AUDIENCES.indexOf(b.data.audience)
     || a.data.title.localeCompare(b.data.title),
 );
-const topics = [...new Set(tutorials.map((t) => t.data.topic))].sort();
-
+const byAudience = Map.groupBy(tutorials, (t) => t.data.audience);
+const byTopic = Map.groupBy(tutorials, (t) => t.data.topic);
 const facets = [
   {
     key: "audience",
     title: "For",
-    values: AUDIENCES.filter((a) =>
-      tutorials.some((t) => t.data.audience === a),
-    ).map((a) => ({
-      value: a,
-      count: tutorials.filter((t) => t.data.audience === a).length,
+    values: AUDIENCES.filter((a) => byAudience.has(a)).map((value) => ({
+      value,
+      count: byAudience.get(value)?.length ?? 0,
     })),
   },
   {
     key: "topic",
     title: "Topic",
-    values: topics.map((topic) => ({
-      value: topic,
-      count: tutorials.filter((t) => t.data.topic === topic).length,
+    values: [...byTopic.keys()].sort().map((value) => ({
+      value,
+      count: byTopic.get(value)?.length ?? 0,
     })),
   },
 ];

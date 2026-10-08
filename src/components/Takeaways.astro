@@ -2,15 +2,14 @@
 // Terracotta-notch takeaway list (2-up when there are more than two items).
 interface Props {
   items: string[];
-  label?: string;
 }
 
-const { items, label = "Key takeaways" } = Astro.props;
+const { items } = Astro.props;
 ---
 
 {items.length > 0 && (
     <div class="takeaways">
-      {label && <div class="label">{label}</div>}
+      <div class="label">Key takeaways</div>
       <div class="grid" style={`--cols: ${items.length > 2 ? 2 : 1}`}>
         {items.map((item) => (
           <div class="item">

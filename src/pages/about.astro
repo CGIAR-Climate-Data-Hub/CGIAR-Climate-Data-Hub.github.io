@@ -3,7 +3,7 @@ import { getCollection, getEntry, render } from "astro:content";
 import JsonLd from "@/components/JsonLd.astro";
 import SectionHeader from "@/components/SectionHeader.astro";
 import Layout from "@/layouts/Layout.astro";
-import { formatBytes } from "@/lib/catalog";
+import { currentReleases, formatBytes } from "@/lib/catalog";
 import { SITE_NAME } from "@/site.config";
 
 // Copy lives in src/content/pages/about.md — sections in frontmatter, prose in the body
@@ -13,10 +13,7 @@ const { Content } = await render(entry);
 const { title, lede, missions, principles } = entry.data;
 
 // Derived from the current releases and skills at build time
-const catalogEntries = await getCollection(
-  "catalog",
-  (e) => !e.data.deprecated,
-);
+const catalogEntries = currentReleases(await getCollection("catalog"));
 const datasetCount = catalogEntries.length;
 const skillCount = (await getCollection("skills")).length;
 

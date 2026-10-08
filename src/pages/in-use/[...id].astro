@@ -6,6 +6,7 @@ import DataGlyph from "@/components/DataGlyph.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import Takeaways from "@/components/Takeaways.astro";
 import Layout from "@/layouts/Layout.astro";
+import { currentReleases } from "@/lib/catalog";
 import { editUrl } from "@/lib/github";
 import { SITE_NAME, SITE_PUBLISHER_NAME, SITE_REPO } from "@/site.config";
 
@@ -22,16 +23,13 @@ const { Content, headings } = await render(entry);
 const date = entry.data.date.toISOString().slice(0, 10);
 
 // Resolve dataset ids to catalog entries for the "Built with" chips
-const datasets = (
-  await getCollection(
-    "catalog",
-    (c) => !c.data.deprecated && entry.data.datasets.includes(c.data.id),
-  )
-).map((c) => ({
-  href: `/catalog/${c.data.id}/`,
-  title: c.data.title,
-  type: c.data.spatial ? ("spatial" as const) : ("tabular" as const),
-}));
+const datasets = currentReleases(await getCollection("catalog"))
+  .filter((c) => entry.data.datasets.includes(c.data.id))
+  .map((c) => ({
+    href: `/catalog/${c.data.id}/`,
+    title: c.data.title,
+    type: c.data.spatial ? ("spatial" as const) : ("tabular" as const),
+  }));
 
 const jsonLd = {
   "@context": "https://schema.org",

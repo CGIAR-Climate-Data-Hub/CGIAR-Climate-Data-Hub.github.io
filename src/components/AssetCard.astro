@@ -69,7 +69,7 @@ const layouts = heldStructures(d, asset).map((s) => ({
       {s.shown.length > 0 && (
         <p class="asset-fact">
           <b>Variables:</b> <span class="mono">{s.shown.join(", ")}</span>
-          {s.more > 0 && <span class="layout-more"> +{s.more} more</span>}
+          {s.more > 0 && <span class="caption"> +{s.more} more</span>}
         </p>
       )}
       {s.dimensions.length > 0 && (
@@ -134,7 +134,7 @@ const layouts = heldStructures(d, asset).map((s) => ({
             ) : (
             // biome-ignore lint/a11y/noLabelWithoutControl: the control is inside, behind a ternary
             <label class="tpl-field">
-              <span class="tpl-field-label">{humanize(f.name)}</span>
+              <span class="caption">{humanize(f.name)}</span>
               {f.date ? (
                 <input
                   data-tpl-dim={f.name}
@@ -515,11 +515,6 @@ summary.index-head:hover {
   gap: var(--space-1);
 }
 
-.tpl-field-label {
-  font-size: var(--font-size-3);
-  color: var(--text-mute);
-}
-
 .tpl-field select,
 .tpl-field input {
   padding: 2px 6px;
@@ -614,11 +609,6 @@ summary.index-head:hover {
 /* A named layout opens its own small block of facts */
 .asset .layout-name {
   margin-top: var(--space-3);
-  font-size: var(--font-size-3);
-  color: var(--text-mute);
-}
-
-.layout-more {
   font-size: var(--font-size-3);
   color: var(--text-mute);
 }

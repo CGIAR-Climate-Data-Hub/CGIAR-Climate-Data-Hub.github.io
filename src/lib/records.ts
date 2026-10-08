@@ -8,7 +8,7 @@ import { join, relative, sep } from "node:path";
 import type { Loader } from "astro/loaders";
 import { parse } from "yaml";
 
-interface RecordsSource {
+export interface RepoSource {
   repo: string;
   dir: string;
 }
@@ -25,7 +25,7 @@ export async function fromLocal(dir: string, match = /./) {
     entries
       .filter((e) => e.isFile())
       .map((e) =>
-        relative(dir, join(e.parentPath, e.name)).split(sep).join("/"),
+        relative(dir, join(e.parentPath, e.name)).replaceAll(sep, "/"),
       )
       .filter((f) => match.test(f))
       .map(async (f): Promise<SourceFile> => {
@@ -59,7 +59,7 @@ async function mapLimit<T, R>(
 }
 
 export async function fromGitHub(
-  { repo, dir }: RecordsSource,
+  { repo, dir }: RepoSource,
   ref: string,
   match = /./,
 ) {
@@ -117,19 +117,17 @@ function resolveSidecars(record: unknown, base: string) {
         loc.url = new URL(loc.url, base).href;
 }
 
-export function records(source: RecordsSource): Loader {
+export function records(source: RepoSource): Loader {
   return {
     name: "records",
     async load({ store, parseData, logger }) {
+      const repo = process.env.RECORDS_REPO ?? source.repo;
+      const ref = process.env.RECORDS_REF ?? "main";
       let files: SourceFile[];
       try {
         files = process.env.RECORDS_DIR
           ? await fromLocal(process.env.RECORDS_DIR, /\.ya?ml$/)
-          : await fromGitHub(
-              { ...source, repo: process.env.RECORDS_REPO ?? source.repo },
-              process.env.RECORDS_REF ?? "main",
-              /\.ya?ml$/,
-            );
+          : await fromGitHub({ ...source, repo }, ref, /\.ya?ml$/);
       } catch (err) {
         // With REQUIRE_RECORDS set (deploy workflow), an unavailable catalog
         // fails the build instead of deploying without records
@@ -143,8 +141,6 @@ export function records(source: RecordsSource): Loader {
         throw new Error("REQUIRE_RECORDS is set but zero records were loaded");
       store.clear();
       const decoder = new TextDecoder();
-      const repo = process.env.RECORDS_REPO ?? source.repo;
-      const ref = process.env.RECORDS_REF ?? "main";
       for (const f of files) {
         const id = f.path.replace(/\.ya?ml$/, "");
         const body = decoder.decode(f.bytes);

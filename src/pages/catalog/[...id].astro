@@ -13,6 +13,7 @@ import Layout from "@/layouts/Layout.astro";
 import { anchor } from "@/lib/assets";
 import {
   citable,
+  currentReleases,
   datasetJsonLd,
   formatLabel,
   geoLabel,
@@ -74,28 +75,24 @@ const current = d.deprecated ? chain[0] : undefined;
 // Provenance cross-links: derived_from ids render as internal links, and
 // records derived from this one list in the rail. No drawn DAG.
 // A pinned version links that release's permanent URL
+const live = currentReleases(catalog);
+const liveById = new Map(live.map((e) => [e.data.id, e]));
 const hubSource = (src: { id?: string; version?: string }) => {
-  const rec = catalog.find((e) => !e.data.deprecated && e.data.id === src.id);
+  const rec = src.id && liveById.get(src.id);
   const slug = src.version ? `${src.id}_${src.version}` : src.id;
   return rec && { href: `/catalog/${slug}/`, title: rec.data.title };
 };
-const derivatives = catalog
-  .filter(
-    (e) =>
-      !e.data.deprecated
-      && e.data.processing.some((s) =>
-        s.derived_from.some((src) => src.id === d.id),
-      ),
+const derivatives = live
+  .filter((e) =>
+    e.data.processing.some((s) =>
+      s.derived_from.some((src) => src.id === d.id),
+    ),
   )
   .map((e) => ({ href: `/catalog/${e.data.id}/`, title: e.data.title }));
 
 // Parent and child representations, linked by the child's `parent` id
-const parent = catalog.find(
-  (e) => !e.data.deprecated && e.data.id === d.parent,
-);
-const children = catalog.filter(
-  (e) => !e.data.deprecated && e.data.parent === d.id,
-);
+const parent = d.parent && liveById.get(d.parent);
+const children = live.filter((e) => e.data.parent === d.id);
 
 const bboxes = normalizeBboxes(d.spatial?.bbox);
 const coverage = d.spatial?.geography.map(geoLabel).join(", ");
@@ -198,7 +195,6 @@ const varTable = (ss: Structure[]) => {
   };
 };
 
-const names = (xs: { name: string }[]) => xs.map((x) => x.name).join(", ");
 // Each layout as a row of the files table: the files that hold it, their
 // formats, and what is inside. Long variable lists fold past four.
 const layouts = d.structures.map((s) => {
@@ -212,7 +208,10 @@ const layouts = d.structures.map((s) => {
       ", ",
     ),
     summary:
-      names(s.variables.slice(0, 4))
+      s.variables
+        .slice(0, 4)
+        .map((v) => v.name)
+        .join(", ")
       + (s.variables.length > 4 ? ` +${s.variables.length - 4} more` : ""),
     axes: s.dimensions.map((x) => x.name).join(" × "),
     nodata:
@@ -247,9 +246,7 @@ const groups = [
 // shortened to the last path segment, with the host as a quiet hint
 const fkTarget = (resource: string) => {
   if (!resource.includes(":")) {
-    const rec = catalog.find(
-      (e) => !e.data.deprecated && e.data.id === resource,
-    );
+    const rec = liveById.get(resource);
     return rec
       ? { href: `/catalog/${rec.data.id}/`, title: rec.data.title, host: "" }
       : { href: undefined, title: resource, host: "" };
@@ -396,7 +393,7 @@ const techBlocks = [
     ],
   },
 ]
-  .flatMap((block) => (block ? [block] : []))
+  .filter((block) => !!block)
   .map((block) => ({
     ...block,
     facts: block.facts.flatMap((f) =>
@@ -412,7 +409,7 @@ const SECTIONS = [
   hasSchema && ["schema", "Data dictionary"],
   techBlocks.length > 0 && ["technical", "Technical metadata"],
   d.processing.length > 0 && ["provenance", "Provenance"],
-  (cite || d.contact.length > 0) && [
+  (cite || d.attribution || d.contact.length > 0) && [
     "citation",
     cite && d.contact.length > 0
       ? "Citation & contacts"
@@ -892,12 +889,14 @@ const jsonLd = datasetJsonLd(
                           ))}
                         </ul>
                       )}
-                      <details class="legend-more">
-                        <summary>
-                          <span class="when-closed">Show all {legend.length} values</span>
-                          <span class="when-open">Show fewer</span>
-                        </summary>
-                      </details>
+                      {legend.length > 12 && (
+                        <details class="legend-more">
+                          <summary>
+                            <span class="when-closed">Show all {legend.length} values</span>
+                            <span class="when-open">Show fewer</span>
+                          </summary>
+                        </details>
+                      )}
                     </div>
                     );
                   })}
@@ -1350,13 +1349,6 @@ if (tabs.length > 0) {
 }
 
 /* Promoted h4→h3 for heading order; keep the smaller h4-like size */
-.tech-title,
-.related-pubs h3,
-.attribution h3 {
-  font-size: var(--font-size-5);
-  font-weight: 700;
-}
-
 /* The credit line quoted, as the prose style does it; the section grid
    gap spaces it, so no margin of its own */
 .attribution blockquote {
@@ -1395,6 +1387,8 @@ if (tabs.length > 0) {
 .class-desc,
 .version-row .label,
 .fact-label,
+.fk-host,
+.fk-arrow,
 .kv dt {
   color: var(--text-mute);
 }
@@ -1785,13 +1779,8 @@ a.chip:hover {
 
 /* The fold: the first twelve entries always show; the toggle appears only
    when there are more, and hides the rest until opened */
-.legend-more,
 .dim-card:has(.legend-more:not([open])) .legend li:nth-child(n + 13) {
   display: none;
-}
-
-.dim-card:has(.legend li:nth-child(13)) .legend-more {
-  display: block;
 }
 
 .legend-more summary {
@@ -2007,13 +1996,5 @@ a.chip:hover {
 .fk-head {
   margin: 0;
   font-size: var(--font-size-5);
-}
-
-.fk-host {
-  color: var(--text-mute);
-}
-
-.fk-arrow {
-  color: var(--text-mute);
 }
 </style>

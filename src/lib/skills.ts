@@ -4,17 +4,17 @@
 // SKILLS_REPO fork. On fetch failure the previously loaded skills are kept.
 import type { Loader } from "astro/loaders";
 import { parse } from "yaml";
-import { fromGitHub, fromLocal, type SourceFile } from "@/lib/records";
+import {
+  fromGitHub,
+  fromLocal,
+  type RepoSource,
+  type SourceFile,
+} from "@/lib/records";
 import { createSkillArtifact } from "@/lib/tar";
-
-interface SkillsSource {
-  repo: string;
-  dir: string;
-}
 
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---/;
 
-export function skills(source: SkillsSource): Loader {
+export function skills(source: RepoSource): Loader {
   return {
     name: "skills",
     async load({ store, parseData, logger }) {

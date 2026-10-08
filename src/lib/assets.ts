@@ -4,6 +4,7 @@ import {
   type CatalogRecord,
   formatBestFor,
   geoLabel,
+  httpUrl,
   normalizeBboxes,
   resolveTemplate,
   templateInventory,
@@ -20,11 +21,6 @@ const INDEX_LABELS: Record<string, string> = {
   icechunk: "Icechunk",
   "cdh-inventory": "CDH inventory",
 };
-
-// An index's address: HTTPS when it has one
-const indexUrl = (ix: { locations: { url: string }[] }) =>
-  ix.locations.find((l) => l.url.startsWith("http"))?.url
-  ?? ix.locations[0]?.url;
 
 // An asset's own coverage: place names, then bounding boxes (W, S, E, N)
 const assetCoverage = (s?: Asset["spatial"]) =>
@@ -60,9 +56,9 @@ export async function shapeAsset(
   asset: Asset,
   restricted: boolean,
 ) {
-  const httpUrl = asset.locations.find((l) => l.url.startsWith("http"))?.url;
+  const http = httpUrl(asset.locations);
   const primary =
-    asset.locations.find((l) => l.url === httpUrl) ?? asset.locations[0];
+    asset.locations.find((l) => l.url === http) ?? asset.locations[0];
 
   const resolved = resolveTemplate(d, asset);
   const tplFields = resolved?.fields;
@@ -71,7 +67,7 @@ export async function shapeAsset(
   const indexes = (
     await Promise.all(
       asset.file_index.map(async (ix) => {
-        const url = indexUrl(ix);
+        const url = httpUrl(ix.locations) ?? ix.locations[0]?.url;
         if (!url) return undefined;
         const label = INDEX_LABELS[ix.format] ?? ix.format;
         const source = asset.locations[0]?.url ?? "<source prefix>/";
@@ -102,7 +98,7 @@ export async function shapeAsset(
         url: loc.url,
       }));
 
-  const lastSegment = httpUrl?.split("/").pop() ?? "";
+  const lastSegment = http?.split("/").pop() ?? "";
   return {
     // An indexed asset's root is a directory, not a file to open
     example: index ? undefined : assetExample(d, asset),
@@ -116,17 +112,17 @@ export async function shapeAsset(
     others,
     tplFields,
     tplFile,
-    tplUrl: tplFile && httpUrl ? httpUrl + tplFile : undefined,
+    tplUrl: tplFile && http ? http + tplFile : undefined,
     // How many files the template names; [asset]-files.csv lists them
     fileCount: templateInventory(d, asset, resolved)?.count,
     download:
       !restricted
       && !asset.href_template
-      && httpUrl
-      && !httpUrl.endsWith("/")
+      && http
+      && !http.endsWith("/")
       && lastSegment.includes(".")
       && !lastSegment.endsWith(".zarr")
-        ? httpUrl
+        ? http
         : undefined,
   };
 }

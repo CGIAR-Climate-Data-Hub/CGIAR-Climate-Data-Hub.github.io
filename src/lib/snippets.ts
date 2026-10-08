@@ -10,6 +10,7 @@ import type { CatalogRecord } from "@/lib/catalog";
 import {
   formatConcept as concept,
   heldStructures,
+  httpUrl,
   resolveTemplate,
 } from "@/lib/catalog";
 
@@ -36,7 +37,7 @@ function assetFormat(d: CatalogRecord, asset: CatalogRecord["data"][number]) {
 
 // An asset's example URL: its root, or one real file when templated
 function exampleUrl(d: CatalogRecord, asset: CatalogRecord["data"][number]) {
-  const root = asset.locations.find((l) => l.url.startsWith("http"))?.url;
+  const root = httpUrl(asset.locations);
   if (!root || !asset.href_template) return root;
   const file = resolveTemplate(d, asset)?.file;
   return file ? `${root}${file}` : undefined;

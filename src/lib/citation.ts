@@ -2,7 +2,7 @@
 import { SITE_PUBLISHER_NAME } from "@/site.config";
 
 // Record authors are objects; docs page authors are plain names
-export type Author =
+type Author =
   | string
   | { family: string; given?: string; orcid?: string }
   | { organization: string; ror?: string };

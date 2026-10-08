@@ -15,18 +15,9 @@ const { activeId } = Astro.props;
 // holding the current page always opens regardless.
 const DEFAULT_OPEN = new Set(["Data standards", "Methods", "Concepts"]);
 
-type Item = { title: string; href?: string; id?: string; soon?: boolean };
-
 const nav = groupWikis(await getCollection("wikis")).map((group) => ({
   label: group.label,
-  items: group.entries.map(
-    (e): Item => ({
-      title: e.data.title,
-      href: e.data.soon ? undefined : `/wikis/${e.id}/`,
-      id: e.id,
-      soon: e.data.soon,
-    }),
-  ),
+  items: group.entries,
   open:
     DEFAULT_OPEN.has(group.label)
     || group.entries.some((e) => e.id === activeId),
@@ -38,15 +29,15 @@ const nav = groupWikis(await getCollection("wikis")).map((group) => ({
   {nav.map((group) => (
       <details class="group" open={group.open}>
         <summary class="group-label">{group.label}</summary>
-        {group.items.map((item) =>
-          item.soon ? (
+        {group.items.map((e) =>
+          e.data.soon ? (
             <span class="item soon">
-              {item.title}
+              {e.data.title}
               <span class="mono soon-tag">SOON</span>
             </span>
           ) : (
-            <a href={item.href} class:list={["item", { "is-active": item.id !== undefined && item.id === activeId }]}>
-              {item.title}
+            <a href={`/wikis/${e.id}/`} class:list={["item", { "is-active": e.id === activeId }]}>
+              {e.data.title}
             </a>
           ),
         )}

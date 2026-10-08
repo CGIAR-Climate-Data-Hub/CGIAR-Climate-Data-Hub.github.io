@@ -5,6 +5,7 @@ import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import Citation from "@/components/Citation.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import Layout from "@/layouts/Layout.astro";
+import { currentReleases } from "@/lib/catalog";
 import { citationText } from "@/lib/citation";
 import { allTutorials, pageCitable } from "@/lib/collections";
 import { editUrl } from "@/lib/github";
@@ -28,7 +29,7 @@ const isNotebook = entry.collection === "notebookTutorials";
 const notebookPath = `src/content/tutorials/${entry.id}.ipynb`;
 
 // Resolve linked catalog records for the "Data" line
-const catalog = await getCollection("catalog", (c) => !c.data.deprecated);
+const catalog = currentReleases(await getCollection("catalog"));
 const datasets = entry.data.datasets.map((id) => ({
   id,
   title: catalog.find((c) => c.data.id === id)?.data.title ?? id,
@@ -47,7 +48,7 @@ const jsonLd = {
   url: pageUrl,
   audience: { "@type": "Audience", audienceType: entry.data.audience },
   ...(timeRequired && { timeRequired }),
-  dateModified: entry.data.updated.toISOString().slice(0, 10),
+  dateModified: cite.date,
   author: entry.data.author.length
     ? entry.data.author.map((name) => ({ "@type": "Person", name }))
     : { "@type": "Organization", name: SITE_PUBLISHER_NAME },
