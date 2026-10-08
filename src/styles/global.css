@@ -184,14 +184,14 @@ hr {
 }
 
 /* Card or panel head: the first child is the title, the rest sit at the right */
-.head {
+.card-head {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
   align-items: baseline;
 }
 
-.head > :first-child {
+.card-head > :first-child {
   margin-right: auto;
 }
 
@@ -341,6 +341,14 @@ hr {
   background: currentColor;
   border-radius: 50%;
   opacity: 0.7;
+}
+
+/* A parked action: a disabled button, or a link with its href pulled */
+.btn:disabled,
+a.btn:not([href]),
+.code-copy:disabled {
+  pointer-events: none;
+  opacity: 0.5;
 }
 
 .btn {

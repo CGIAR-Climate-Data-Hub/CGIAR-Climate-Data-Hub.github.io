@@ -1,32 +1,27 @@
 ---
 import { getCollection } from "astro:content";
-import { isDeepStrictEqual } from "node:util";
 import { satteri } from "@astrojs/markdown-satteri";
 import AssetCard from "@/components/AssetCard.astro";
 import BboxMap from "@/components/BboxMap.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import Citation from "@/components/Citation.astro";
 import CopyButton from "@/components/CopyButton.astro";
+import DataDictionary from "@/components/DataDictionary.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import SnippetTabs from "@/components/SnippetTabs.astro";
 import Layout from "@/layouts/Layout.astro";
-import { anchor } from "@/lib/assets";
 import {
   citable,
   currentReleases,
   datasetJsonLd,
-  formatLabel,
   geoLabel,
   gridSpacings,
-  HORIZONTAL,
-  heldStructures,
   humanize,
   licenseUrl,
   licensor,
   normalizeBboxes,
   recordSlug,
   stacCollectionUrl,
-  stepLabel,
   temporalText,
   versionChain,
   versionedSlug,
@@ -122,141 +117,6 @@ const crsHref =
     ? `https://epsg.io/${d.spatial.crs.split(":")[1]}`
     : undefined;
 const hasSchema = d.structures.length > 0;
-const multiStructure = d.structures.length > 1;
-type Structure = (typeof d.structures)[number];
-type Variable = Structure["variables"][number];
-// A dimension's domain as legend entries: coded values with labels, or bare ones
-const legendItems = (dim: Structure["dimensions"][number]) =>
-  dim.categories.length > 0
-    ? dim.categories
-    : dim.values.map((value) => ({
-        value,
-        label: undefined,
-        description: undefined,
-      }));
-
-// Structures are usually the same cube in different file formats, so what
-// every one of them shares renders once; each layout keeps only its own parts.
-const [first, ...rest] = d.structures;
-const sameDim = (
-  dims: Structure["dimensions"],
-  dim: Structure["dimensions"][number],
-) => dims.some((x) => isDeepStrictEqual(x, dim));
-const sharedDims = multiStructure
-  ? first.dimensions.filter((dim) =>
-      rest.every((s) => sameDim(s.dimensions, dim)),
-    )
-  : [];
-
-// Variables merge into one table when the layouts list the same ones; a
-// scalar that differs between layouts gets a column per layout
-const SCALARS = { data_type: "Type", unit: "Unit", nodata: "No data" };
-type Scalar = keyof typeof SCALARS;
-const sansScalars = ({ data_type, unit, nodata, ...v }: Variable) => v;
-const mergeVars =
-  multiStructure
-  && rest.every((s) =>
-    isDeepStrictEqual(
-      s.variables.map(sansScalars),
-      first.variables.map(sansScalars),
-    ),
-  );
-// One fill value across a layout's variables is a fact about the layout,
-// stated in the layouts table rather than repeated down a column
-const uniformNodata = (s: Structure) => {
-  const values = new Set(s.variables.map((v) => v.nodata));
-  return values.size === 1 && !values.has(undefined)
-    ? s.variables[0].nodata
-    : undefined;
-};
-const varTable = (ss: Structure[]) => {
-  if (!ss[0]?.variables.length) return undefined;
-  const columns = (Object.keys(SCALARS) as Scalar[]).flatMap((field) => {
-    // Layouts whose nodata the table above already states need no column
-    const vary =
-      field === "nodata"
-        ? ss.filter((s) => uniformNodata(s) === undefined)
-        : ss;
-    if (!vary.some((s) => s.variables.some((v) => v[field] !== undefined)))
-      return [];
-    const agree = ss[0].variables.every(
-      (_, i) => new Set(vary.map((s) => s.variables[i][field])).size === 1,
-    );
-    return agree && vary.length === ss.length
-      ? [{ field, label: SCALARS[field], s: vary[0] }]
-      : vary.map((s) => ({ field, label: `${SCALARS[field]} (${s.name})`, s }));
-  });
-  return {
-    columns,
-    rows: ss[0].variables.map((v, i) => ({
-      ...v,
-      cells: columns.map((c) => c.s.variables[i][c.field] ?? "—"),
-    })),
-  };
-};
-
-// Each layout as a row of the files table: the files that hold it, their
-// formats, and what is inside. Long variable lists fold past four.
-const layouts = d.structures.map((s) => {
-  const assets = d.data.filter((a) => heldStructures(d, a).includes(s));
-  const vars = mergeVars ? undefined : varTable([s]);
-  const dimensions = s.dimensions.filter((dim) => !sameDim(sharedDims, dim));
-  return {
-    ...s,
-    files: assets.map((a) => a.name),
-    formats: [...new Set(assets.map((a) => formatLabel(a.media_type)))].join(
-      ", ",
-    ),
-    summary:
-      s.variables
-        .slice(0, 4)
-        .map((v) => v.name)
-        .join(", ")
-      + (s.variables.length > 4 ? ` +${s.variables.length - 4} more` : ""),
-    axes: s.dimensions.map((x) => x.name).join(" × "),
-    nodata:
-      uniformNodata(s)
-      ?? (s.variables.some((v) => v.nodata !== undefined)
-        ? "varies"
-        : undefined),
-    vars,
-    dimensions,
-    // Anything beyond the shared parts earns the layout its own section
-    own: Boolean(vars || dimensions.length > 0 || s.foreign_keys.length > 0),
-  };
-});
-// Table columns show only when some layout has the fact
-const layoutCols = {
-  nodata: layouts.some((l) => l.nodata !== undefined),
-  geometry: layouts.some((l) => l.geometry_column),
-};
-// What every layout shares, then each layout that adds to it
-const shared = {
-  name: undefined,
-  files: [],
-  vars: mergeVars ? varTable(d.structures) : undefined,
-  dimensions: sharedDims,
-  foreign_keys: [],
-};
-const groups = [
-  ...(shared.vars || shared.dimensions.length > 0 ? [shared] : []),
-  ...layouts.filter((l) => l.own),
-];
-// A foreign key's target: a Hub record by id (its title), else its URL
-// shortened to the last path segment, with the host as a quiet hint
-const fkTarget = (resource: string) => {
-  if (!resource.includes(":")) {
-    const rec = liveById.get(resource);
-    return rec
-      ? { href: `/catalog/${rec.data.id}/`, title: rec.data.title, host: "" }
-      : { href: undefined, title: resource, host: "" };
-  }
-  return {
-    href: resource,
-    title: lastSegment(resource),
-    host: new URL(resource).host,
-  };
-};
 // A URL's last path segment, or its host when the path is empty
 function lastSegment(url: string) {
   const u = new URL(url);
@@ -736,223 +596,7 @@ const jsonLd = datasetJsonLd(
                 variables, the dimensions they vary over, and any keys.
               </p>
             </header>
-            <section class="var-group">
-              <h3 class="tech-title">File layouts</h3>
-              <div class="card table-wrap">
-                <table class="data-table">
-                  <thead>
-                    <tr>
-                      <th>Files</th>
-                      <th>Format</th>
-                      <th>Variables</th>
-                      <th>Dimensions</th>
-                      {layoutCols.nodata && <th>No data</th>}
-                      {layoutCols.geometry && <th>Geometry column</th>}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {layouts.map((l) => (
-                      <tr id={anchor("structure", l.name)}>
-                        <td class="var-name">
-                          {l.files.map((name, i) => (
-                            <>
-                              {i > 0 && ", "}
-                              <a class="mono" href={`#${anchor("file", name)}`}>{name}</a>
-                            </>
-                          ))}
-                        </td>
-                        <td>{l.formats}</td>
-                        <td class="mono">{l.summary}</td>
-                        <td class="mono">{l.axes || "—"}</td>
-                        {layoutCols.nodata && <td class="mono">{l.nodata ?? "—"}</td>}
-                        {layoutCols.geometry && <td class="mono">{l.geometry_column ?? "—"}</td>}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-            {groups.map((g) => (
-              <section class="var-group">
-                {multiStructure && (
-                  <h3 class="tech-title group-title">
-                    {g.name ? `Only in ${g.files.join(", ") || g.name}` : "In every file"}
-                  </h3>
-                )}
-                {g.vars && (
-                  <>
-                <h3 class="tech-title">Variables</h3>
-                <div class="card table-wrap">
-                  <table class="data-table">
-                    <thead>
-                      <tr>
-                        <th>Variable</th>
-                        {g.vars.columns.map((c) => (
-                          <th>{c.label}</th>
-                        ))}
-                        <th>Description</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {g.vars.rows.map((v) => (
-                          <tr>
-                            <td class="mono var-name">{v.name}</td>
-                            {v.cells.map((cell) => (
-                              <td class="mono">{cell}</td>
-                            ))}
-                            <td>
-                              {v.description ?? "—"}
-                              {v.note && <div class="var-note">{v.note}</div>}
-                              {v.categories.length > 0 && (
-                                <dl class="class-list">
-                                  {v.categories.map((cv) => (
-                                    <>
-                                      <dt class="mono">{cv.value}</dt>
-                                      <dd>
-                                        {cv.label}
-                                        {cv.description && (
-                                          <span class="class-desc">
-                                            {" "}
-                                            — {cv.description}
-                                          </span>
-                                        )}
-                                      </dd>
-                                    </>
-                                  ))}
-                                </dl>
-                              )}
-                            </td>
-                          </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                  </>
-                )}
-                {g.dimensions.length > 0 && (
-                  <>
-                <h3 class="tech-title">Dimensions</h3>
-                <div class="dim-cards">
-                  {g.dimensions.map((dim) => {
-                    const legend = legendItems(dim);
-                    return (
-                    <div class="card dim-card">
-                      <div class="head">
-                        <span class="mono dim-name">{dim.name}</span>
-                        {dim.type && dim.type !== dim.name && <span class="label">{dim.type}</span>}
-                      </div>
-                      {dim.description && <p>{dim.description}</p>}
-                      {dim.data_type && (
-                        <p>
-                          <b>Type:</b> <span class="mono">{dim.data_type}</span>
-                        </p>
-                      )}
-                      {/* Grid spacing carries the unit, so it stands in for the unit line */}
-                      {!HORIZONTAL.includes(dim.type ?? "") ? (
-                        dim.unit && <p><b>Unit:</b> <span class="mono">{dim.unit}</span></p>
-                      ) : typeof dim.step === "number" && dim.unit ? (
-                        <p>
-                          <b>Grid spacing:</b> <span class="mono">{dim.step} {dim.unit}</span>
-                        </p>
-                      ) : (
-                        <p>Coordinate column</p>
-                      )}
-                      {dim.reference_system && (
-                        <p>
-                          <b>Coded against:</b>{" "}
-                          {/^https?:/.test(dim.reference_system) ? (
-                            <a class="mono" href={dim.reference_system} rel="noreferrer">
-                              {dim.reference_system}
-                            </a>
-                          ) : (
-                            dim.reference_system
-                          )}
-                        </p>
-                      )}
-                      {dim.extent && (
-                        <p>
-                          <b>Range:</b>{" "}
-                          <span class="mono">
-                            {dim.extent[0]} – {dim.extent[1]}
-                            {typeof dim.step === "string" && `, ${stepLabel(dim.step)}`}
-                          </span>
-                        </p>
-                      )}
-                      {/* The axis's domain as a legend: code, then its label when coded.
-                          Past twelve entries the list folds behind the toggle (CSS below) */}
-                      {legend.length > 0 && (
-                        <ul class="legend">
-                          {legend.map((c) => (
-                            <li title={c.description}>
-                              <code>{c.value}</code> {c.label}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                      {legend.length > 12 && (
-                        <details class="legend-more">
-                          <summary>
-                            <span class="when-closed">Show all {legend.length} values</span>
-                            <span class="when-open">Show fewer</span>
-                          </summary>
-                        </details>
-                      )}
-                    </div>
-                    );
-                  })}
-                </div>
-                  </>
-                )}
-                {g.foreign_keys.length > 0 && (
-                  <>
-                <h3 class="tech-title">Foreign keys</h3>
-                <div class="dim-cards">
-                  {g.foreign_keys.map((fk) => {
-                    const target = fkTarget(fk.reference.resource);
-                    return (
-                      <div class="card dim-card">
-                        <p class="fk-head">
-                          Joins to{" "}
-                          {target.href ? (
-                            <a href={target.href} rel="noreferrer">{target.title}</a>
-                          ) : (
-                            <b>{target.title}</b>
-                          )}
-                          {target.host && <span class="fk-host"> · {target.host}</span>}
-                          {fk.reference.asset && (
-                            <span class="fk-host">
-                              {" "}
-                              · file <span class="mono">{fk.reference.asset}</span>
-                            </span>
-                          )}
-                        </p>
-                        {/* Columns pair up by position */}
-                        <table class="data-table">
-                          <thead>
-                            <tr>
-                              <th>This table</th>
-                              <th />
-                              <th>{target.title}</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {fk.fields.map((field, i) => (
-                              <tr>
-                                <td class="mono">{field}</td>
-                                <td class="fk-arrow">→</td>
-                                <td class="mono">{fk.reference.fields[i]}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })}
-                </div>
-                  </>
-                )}
-              </section>
-            ))}
+            <DataDictionary liveById={liveById} record={d} />
           </section>
         )}
       {techBlocks.length > 0 && (
@@ -992,7 +636,7 @@ const jsonLd = datasetJsonLd(
               {d.processing.map((step) => (
                 <li>
                   <div class="card step">
-                    <div class="head">
+                    <div class="card-head">
                       <span class="mono step-id">{step.id}</span>
                       {step.date && <span class="label">{step.date.slice(0, 10)}</span>}
                     </div>
@@ -1093,7 +737,7 @@ const jsonLd = datasetJsonLd(
             <div class="contact-cards">
               {contacts.map((c) => (
                 <div class="card contact-card">
-                  <div class="head">
+                  <div class="card-head">
                     <b>{c.name ?? c.organization}</b>
                     <span class="badges">
                       {c.roles.includes("maintainer") && (
@@ -1317,6 +961,8 @@ if (tabs.length > 0) {
   // replaceState instead of a real navigation — skips the browser's anchor jump
   for (const a of tabs) {
     a.addEventListener("click", (e) => {
+      // A modified click opens the section in a new tab or window
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
       e.preventDefault();
       history.replaceState(null, "", a.hash);
       showPanel(a.hash.slice(1));
@@ -1358,37 +1004,8 @@ if (tabs.length > 0) {
   border-left: 3px solid var(--cdh-blue-700);
 }
 
-/* A file layout groups several blocks, spaced like the tab's own */
-.var-group {
-  gap: var(--space-5);
-}
-
-/* "All layouts" and "<layout> only" head the groups, above their block titles */
-.group-title {
-  font-size: var(--font-size-8);
-}
-
-.class-list {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--space-1) var(--space-2);
-  margin: var(--space-2) 0 0;
-  font-size: var(--font-size-4);
-}
-
-.class-list dt {
-  color: var(--text-soft);
-}
-
-.class-list dd {
-  margin: 0;
-}
-
-.class-desc,
 .version-row .label,
 .fact-label,
-.fk-host,
-.fk-arrow,
 .kv dt {
   color: var(--text-mute);
 }
@@ -1754,68 +1371,6 @@ a.chip:hover {
   background: var(--cdh-blue-150);
 }
 
-.dim-cards {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.dim-card p {
-  margin-top: var(--space-2);
-  font-size: var(--font-size-5);
-  color: var(--text-soft);
-}
-
-/* As many columns as fit, so long code lists read down then across */
-.dim-card .legend {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
-  gap: var(--space-1) var(--space-4);
-  padding: 0;
-  margin-top: var(--space-2);
-  font-size: var(--font-size-4);
-  list-style: none;
-}
-
-/* The fold: the first twelve entries always show; the toggle appears only
-   when there are more, and hides the rest until opened */
-.dim-card:has(.legend-more:not([open])) .legend li:nth-child(n + 13) {
-  display: none;
-}
-
-.legend-more summary {
-  margin-top: var(--space-2);
-  font-size: var(--font-size-3);
-  color: var(--text-soft);
-  cursor: pointer;
-}
-
-.legend-more[open] .when-closed,
-.legend-more:not([open]) .when-open {
-  display: none;
-}
-
-.dim-name {
-  font-weight: 700;
-  color: var(--cdh-blue-700);
-}
-
-.table-wrap {
-  padding: 0;
-  overflow-x: auto;
-}
-
-.var-name {
-  font-weight: 600;
-  color: var(--cdh-blue-700);
-}
-
-.var-note {
-  margin-top: var(--space-1);
-  font-size: var(--font-size-3);
-  color: var(--text-mute);
-}
-
 .assets {
   display: flex;
   flex-direction: column;
@@ -1991,10 +1546,5 @@ a.chip:hover {
   article > section {
     scroll-margin-top: var(--nav-height);
   }
-}
-
-.fk-head {
-  margin: 0;
-  font-size: var(--font-size-5);
 }
 </style>

@@ -359,11 +359,14 @@ const {
 } = facetFilter(
   [...document.querySelectorAll<HTMLElement>("li[data-dataset]")],
   {
-    // A card may carry several values; global datasets cover every geography
+    // A card may carry several values; global datasets cover every geography.
+    // A whole-value match first, so "MIT OR Apache-2.0" survives the split
     match: (card, k, value) => {
-      const values = (card.dataset[k] ?? "").split(" ");
+      const raw = card.dataset[k] ?? "";
+      const values = raw.split(" ");
       return (
-        (k === "geography" && values.includes("world"))
+        raw === value
+        || (k === "geography" && values.includes("world"))
         || values.includes(value)
       );
     },

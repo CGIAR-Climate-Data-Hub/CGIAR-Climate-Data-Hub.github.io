@@ -71,10 +71,11 @@ export async function shapeAsset(
         if (!url) return undefined;
         const label = INDEX_LABELS[ix.format] ?? ix.format;
         const source = asset.locations[0]?.url ?? "<source prefix>/";
+        const path = URL.parse(url)?.pathname ?? url;
         // An Icechunk repo, or any index given as a prefix, is not one file
-        const isDir = ix.format === "icechunk" || url.endsWith("/");
+        const isDir = ix.format === "icechunk" || path.endsWith("/");
         // "cogs.vrt", or "suitability/" for a prefix
-        const name = `${url.replace(/\/$/, "").split("/").pop()}${url.endsWith("/") ? "/" : ""}`;
+        const name = `${path.replace(/\/$/, "").split("/").pop()}${path.endsWith("/") ? "/" : ""}`;
         const snippet = indexExample(ix.format, url, source);
         const preview =
           ix.format === "cdh-inventory"
@@ -98,7 +99,9 @@ export async function shapeAsset(
         url: loc.url,
       }));
 
-  const lastSegment = http?.split("/").pop() ?? "";
+  // The path alone: a query or fragment must not hide a directory or .zarr
+  const path = http ? (URL.parse(http)?.pathname ?? http) : "";
+  const lastSegment = path.split("/").pop() ?? "";
   return {
     // An indexed asset's root is a directory, not a file to open
     example: index ? undefined : assetExample(d, asset),
@@ -119,7 +122,7 @@ export async function shapeAsset(
       !restricted
       && !asset.href_template
       && http
-      && !http.endsWith("/")
+      && !path.endsWith("/")
       && lastSegment.includes(".")
       && !lastSegment.endsWith(".zarr")
         ? http

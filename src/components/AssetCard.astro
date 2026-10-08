@@ -47,7 +47,7 @@ const layouts = heldStructures(d, asset).map((s) => ({
 ---
 
 <div class="card asset" id={anchor("file", asset.name)}>
-  <div class="head">
+  <div class="card-head">
     <span>
       <span class="mono asset-name">{asset.name}</span>
       {asset.roles.map((r) => <> <span class="label">{r}</span></>)}
@@ -63,7 +63,7 @@ const layouts = heldStructures(d, asset).map((s) => ({
       )}
     </p>
   )}
-  {asset.structures.length > 0 && layouts.map((s) => (
+  {d.data.includes(asset) && layouts.map((s) => (
     <div class="layout">
       {s.named && <p class="layout-name mono">{s.name}</p>}
       {s.shown.length > 0 && (
@@ -105,7 +105,7 @@ const layouts = heldStructures(d, asset).map((s) => ({
         data-template={asset.href_template}
       >
         {fileCount && (
-          <p class="head">
+          <p class="card-head">
             <span class="tech-title">
               List of files{" "}
               <span class="tpl-count">
@@ -121,7 +121,7 @@ const layouts = heldStructures(d, asset).map((s) => ({
             </a>
           </p>
         )}
-        <p class="head file-head">
+        <p class="card-head file-head">
           <span class="tech-title">Individual file</span>
         </p>
         {/* The selectors, with the actions on the file they pick */}
@@ -176,7 +176,7 @@ const layouts = heldStructures(d, asset).map((s) => ({
     )}
   {index && (
     <div class="access-panel">
-      <p class="head">
+      <p class="card-head">
         <span class="tech-title">File indexes</span>
       </p>
       {/* One row per index; a row with a snippet expands to
@@ -271,7 +271,7 @@ const layouts = heldStructures(d, asset).map((s) => ({
   )}
   {!asset.href_template && !index && primary && (
     <div class="access-panel">
-      <p class="head">
+      <p class="card-head">
         <span class="tech-title">Access the data</span>
         <CopyButton copy={primary.url} label="Copy URL" />
         {download && (
@@ -336,20 +336,23 @@ for (const picker of document.querySelectorAll<HTMLElement>(".tpl-picker")) {
       "[data-tpl-dim]",
     ),
   ];
+  const copyBtn = picker.querySelector<HTMLButtonElement>("button[data-copy]");
+  const dl = picker.querySelector<HTMLAnchorElement>("[data-tpl-download]");
+  const urlEl = picker.querySelector<HTMLElement>("[data-tpl-url]");
   const update = () => {
-    // A cleared date field names no file
-    if (fields.some((f) => !f.value)) return;
+    // A cleared or out-of-range date names no file: park the actions
+    const valid = fields.every((f) => f.value && f.validity.valid);
+    if (copyBtn) copyBtn.disabled = !valid;
+    // An anchor without href is no link, so the download stops too
+    if (dl && !valid) dl.removeAttribute("href");
+    if (!valid) return;
     const file = fillTemplate(
       picker.dataset.template ?? "",
       Object.fromEntries(fields.map((f) => [f.dataset.tplDim, f.value])),
     );
     const url = (picker.dataset.root ?? "") + file;
-    const urlEl = picker.querySelector<HTMLElement>("[data-tpl-url]");
     if (urlEl) urlEl.textContent = url;
-    const copyBtn =
-      picker.querySelector<HTMLButtonElement>("button[data-copy]");
     if (copyBtn) copyBtn.dataset.copy = url;
-    const dl = picker.querySelector<HTMLAnchorElement>("[data-tpl-download]");
     if (dl) dl.href = url;
     // The usage example bakes in the previous selection's filename — swap it
     // wherever it appears in the card's examples so they stay live
