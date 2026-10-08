@@ -18,7 +18,7 @@ const text = citationText(cite, viaUrl);
 const bib = bibtex(cite, viaUrl);
 ---
 
-<div class="cite-block">
+<div class="stack cite-block">
   <h2>How to cite</h2>
   {note && <p class="cite-note">{note}</p>}
   <blockquote class="card cite">
@@ -40,12 +40,6 @@ const bib = bibtex(cite, viaUrl);
 </div>
 
 <style>
-.cite-block {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
 h2 {
   font-size: var(--font-size-8);
   line-height: 1.3;

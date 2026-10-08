@@ -453,7 +453,7 @@ const jsonLd = datasetJsonLd(
         </header>
 
         {d.keywords.length > 0 && (
-            <div class="keywords">
+            <div class="chips">
               {d.keywords.map((k) =>
                 typeof k === "string" ? (
                   <a class="pill mono" href={`/catalog/?q=${encodeURIComponent(k)}`}>
@@ -511,7 +511,7 @@ const jsonLd = datasetJsonLd(
         {d.cdh && d.cdh.usage.not_recommended_for.length > 0 && (
             <section>
               <h2>Not recommended for</h2>
-              <div class="warn-cards">
+              <div class="stack">
                 {d.cdh.usage.not_recommended_for.map((n) => (
                   <div class="card warn-card">
                     <b>{n.use}</b>
@@ -574,7 +574,7 @@ const jsonLd = datasetJsonLd(
             {assetGroups.map((group) => (
               <section>
                 <h3 class="tech-title">{group.title}</h3>
-                <div class="assets">
+                <div class="stack assets">
                   {group.items.map((asset) => (
                     <AssetCard asset={asset} record={d} restricted={restricted} />
                   ))}
@@ -736,7 +736,7 @@ const jsonLd = datasetJsonLd(
                 <div class="card contact-card">
                   <div class="card-head">
                     <b>{c.name ?? c.organization}</b>
-                    <span class="badges">
+                    <span class="chips">
                       {c.roles.includes("maintainer") && (
                         <span class="pill terra caps">Maintainer</span>
                       )}
@@ -1021,12 +1021,6 @@ h1 {
   font-size: clamp(25px, 2.6vw, 31px);
 }
 
-.keywords {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
 .ctas {
   display: flex;
   flex-wrap: wrap;
@@ -1278,12 +1272,6 @@ article ul {
   line-height: 1.65;
 }
 
-.warn-cards {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
 .uses {
   padding-left: 1.2em;
   font-size: var(--font-size-5);
@@ -1313,16 +1301,7 @@ article ul {
   color: var(--cdh-blue-800);
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
 .assets {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
   margin-top: var(--space-2);
 }
 
@@ -1408,12 +1387,6 @@ article ul {
 
 .contact-card .chips {
   margin-top: var(--space-2);
-}
-
-.badges {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
 }
 
 .contact-org {

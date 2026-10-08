@@ -253,7 +253,7 @@ const fkTarget = (resource: string) => {
                 {g.dimensions.length > 0 && (
                   <>
                 <h3 class="tech-title">Dimensions</h3>
-                <div class="dim-cards">
+                <div class="stack">
                   {g.dimensions.map((dim) => {
                     const legend = legendItems(dim);
                     return (
@@ -327,7 +327,7 @@ const fkTarget = (resource: string) => {
                 {g.foreign_keys.length > 0 && (
                   <>
                 <h3 class="tech-title">Foreign keys</h3>
-                <div class="dim-cards">
+                <div class="stack">
                   {g.foreign_keys.map((fk) => {
                     const target = fkTarget(fk.reference.resource);
                     return (
@@ -402,12 +402,6 @@ const fkTarget = (resource: string) => {
 
 .class-list dd {
   margin: 0;
-}
-
-.dim-cards {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
 }
 
 .dim-card p {
