@@ -69,6 +69,12 @@ export const LANGUAGES = [
   { id: "sh", ext: "sh", label: "CLI" },
 ];
 
+// The language an author's script is in, by its media type
+export const scriptLanguage = (mediaType?: string) =>
+  LANGUAGES.find(
+    (l) => l.script && mediaType?.toLowerCase().startsWith(l.script),
+  );
+
 // Code per language id, for SnippetTabs
 export type Snippets = Record<string, string>;
 
@@ -111,25 +117,30 @@ export function assetExample(
   return format && url ? renderAll("subset", format, url) : undefined;
 }
 
-// A record's own example script: an additional asset with role `example`
-// and the language's script media type. Notebooks stay links; a failed or
-// oversized fetch falls back to the generated code.
+// An author's script, fetched at build time; a failed or oversized fetch
+// yields nothing, and the callers fall back to links or generated code
 const MAX_BYTES = 20_000;
 
+export async function fetchScript(url: string) {
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    const code = res.ok ? (await res.text()).trim() : "";
+    return code && code.length <= MAX_BYTES ? code : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// A record's own example script: an additional asset with role `example`
+// and the language's script media type. Notebooks stay links.
 async function authorExample(d: CatalogRecord, mediaType: string) {
   const url = d.additional_assets.find(
     (a) =>
       a.roles.includes("example")
       && a.media_type?.toLowerCase().startsWith(mediaType),
   )?.locations[0]?.url;
-  if (!url) return undefined;
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
-    const code = res.ok ? (await res.text()).trim() : "";
-    return code && code.length <= MAX_BYTES ? { code, url } : undefined;
-  } catch {
-    return undefined;
-  }
+  const code = url && (await fetchScript(url));
+  return code ? { code, url } : undefined;
 }
 
 // Quick start per language: the authors' own script where the record ships

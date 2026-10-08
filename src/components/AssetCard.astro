@@ -13,6 +13,7 @@ import {
   humanize,
   recordSlug,
 } from "@/lib/catalog";
+import { fetchScript, scriptLanguage } from "@/lib/snippets";
 
 interface Props {
   record: CatalogRecord;
@@ -44,6 +45,11 @@ const layouts = heldStructures(d, asset).map((s) => ({
   shown: s.variables.slice(0, 6).map((v) => v.name),
   more: Math.max(0, s.variables.length - 6),
 }));
+// An author's example script previews in place; notebooks stay downloads
+const lang = asset.roles.includes("example")
+  ? scriptLanguage(asset.media_type)
+  : undefined;
+const script = lang && primary && (await fetchScript(primary.url));
 ---
 
 <div class="card asset" id={anchor("file", asset.name)}>
@@ -265,6 +271,12 @@ const layouts = heldStructures(d, asset).map((s) => ({
         <span class="mono url">{primary.url}</span>
       </p>
     </div>
+  )}
+  {script && lang && (
+    <details class="alt-access">
+      <summary class="caption">Preview code</summary>
+      <SnippetTabs code={{ [lang.id]: script }} />
+    </details>
   )}
   {others.length > 0 && (
     <details class="alt-access">
@@ -543,6 +555,10 @@ summary.index-head:hover {
 
 .alt-access summary:hover {
   color: var(--cdh-blue-700);
+}
+
+.alt-access :global(.snippet) {
+  margin-top: var(--space-2);
 }
 
 .endpoint {
