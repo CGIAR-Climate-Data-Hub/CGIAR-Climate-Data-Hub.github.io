@@ -176,6 +176,23 @@ hr {
 }
 
 /* Bordered surface box: asset, dimension, and contact cards, rail boxes */
+/* Label/value rows: Coverage · Africa, CRS · EPSG:4326 */
+.kv {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  font-size: var(--font-size-4);
+}
+
+.kv dt {
+  color: var(--text-mute);
+}
+
+.kv dd {
+  margin: 0;
+}
+
 /* A wrapping row of pills or links */
 .chips {
   display: flex;

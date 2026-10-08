@@ -52,7 +52,7 @@ const jsonLd = {
         </div>
         <aside class="card glance">
           <div class="label">At a glance</div>
-          <dl>
+          <dl class="kv">
             <dt>Datasets</dt>
             <dd>{datasetCount}</dd>
             <dt>Data volume</dt>
@@ -201,23 +201,6 @@ h1 {
 .glance .label {
   margin-bottom: var(--space-3);
   color: var(--terra-700);
-}
-
-dl {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--space-2) var(--space-4);
-  margin: 0;
-  font-size: var(--font-size-4);
-}
-
-dt {
-  color: var(--text-mute);
-}
-
-dd {
-  margin: 0;
-  color: var(--text);
 }
 
 @media (width <= 860px) {
