@@ -27,8 +27,12 @@ const formatsById = new Map(
 // If the pipeline publishes elsewhere, this is the one place to change.
 const STAC_ROOT = "https://digital-atlas.s3.amazonaws.com/cdh/stac";
 
+// Collections aren't published yet: flip this once the pipeline writes them
+// and every STAC link on the site comes back
+const STAC_LIVE = false;
+
 export function stacCollectionUrl(id: string) {
-  return `${STAC_ROOT}/${id}/collection.json`;
+  return STAC_LIVE ? `${STAC_ROOT}/${id}/collection.json` : undefined;
 }
 
 // Days between values on a date-precision extent (P1D, P1W, P10D…)
@@ -387,10 +391,11 @@ export function datasetMd(
             : ""
         }`);
 
+  const stac = stacCollectionUrl(d.id);
   const facts = [
     `URL: ${abs(`/catalog/${recordSlug(d)}/`)}`,
     `Metadata (JSON): ${abs(`/catalog/${recordSlug(d)}.json`)}`,
-    d.data.length && `STAC collection: ${stacCollectionUrl(d.id)}`,
+    d.data.length && stac && `STAC collection: ${stac}`,
     `Resource type: ${d.resource_type}`,
     `License: ${d.license}`,
     d.attribution && `Attribution: ${d.attribution}`,
@@ -621,6 +626,7 @@ export function datasetJsonLd(
   catalogUrl: string,
 ) {
   const boxes = normalizeBboxes(d.spatial?.bbox) ?? [];
+  const stac = stacCollectionUrl(d.id);
   const variables = d.structures.flatMap((s) => s.variables);
   const withRole = (role: string) =>
     d.contact.filter((c) => c.roles.includes(role)).map(contactToSchemaOrg);
@@ -713,12 +719,12 @@ export function datasetJsonLd(
               }),
             })),
     ),
-    ...(d.data.some((a) => a.href_template)
+    ...(stac && d.data.some((a) => a.href_template)
       ? [
           {
             "@type": "DataDownload",
             name: "STAC Collection (machine-readable index of all files)",
-            contentUrl: stacCollectionUrl(d.id),
+            contentUrl: stac,
             encodingFormat: "application/json",
           },
         ]

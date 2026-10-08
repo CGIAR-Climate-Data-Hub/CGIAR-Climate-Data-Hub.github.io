@@ -266,8 +266,10 @@ function lastSegment(url: string) {
   return u.pathname.split("/").filter(Boolean).pop() ?? u.host;
 }
 // An asset's layout: each structure it holds, its variables and dimensions
-const hasTemplated = d.data.some((a) => a.href_template);
-const stacUrl = stacCollectionUrl(d.id);
+// The STAC collection indexes templated files, so only those records link it
+const stacUrl = d.data.some((a) => a.href_template)
+  ? stacCollectionUrl(d.id)
+  : undefined;
 // Record metadata lives in the catalog repo, so source + issue links point
 // there. Flat strings on purpose: Biome's Astro frontmatter parser trips on
 // template literals nested two deep.
@@ -551,7 +553,7 @@ const jsonLd = datasetJsonLd(
               </summary>
               <div class="menu-list">
                 <a href={`/catalog/${recordSlug(d)}.json`}>Raw record (JSON)</a>
-                {hasTemplated && (
+                {stacUrl && (
                   <a href={stacUrl} rel="noreferrer">
                     STAC Collection ↗
                   </a>
@@ -701,7 +703,7 @@ const jsonLd = datasetJsonLd(
               <p class="section-sub">
                 Files, endpoints, and worked examples for each distribution.
               </p>
-              {hasTemplated && (
+              {stacUrl && (
                 <p class="section-sub">
                   Machine-readable file index:{" "}
                   <a href={stacUrl} rel="noreferrer">STAC Collection</a>
