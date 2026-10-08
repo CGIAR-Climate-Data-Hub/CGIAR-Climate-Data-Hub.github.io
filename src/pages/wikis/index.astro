@@ -47,7 +47,7 @@ const description = `Long-form reference for how the ${SITE_NAME} works — stan
                     <span class="row-title">{wiki.data.title}</span>
                     <span class="row-summary">{wiki.data.description}</span>
                   </span>
-                  <span class="mono row-date">{wiki.data.updated.toISOString().slice(0, 10)}</span>
+                  <span class="mono caption row-date">{wiki.data.updated.toISOString().slice(0, 10)}</span>
                 </a>
               ))}
             </div>
@@ -147,8 +147,6 @@ h2 {
 }
 
 .row-date {
-  font-size: var(--font-size-2);
-  color: var(--text-mute);
   white-space: nowrap;
 }
 

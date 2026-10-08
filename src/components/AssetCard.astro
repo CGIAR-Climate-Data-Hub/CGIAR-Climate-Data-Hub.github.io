@@ -52,7 +52,7 @@ const layouts = heldStructures(d, asset).map((s) => ({
       <span class="mono asset-name">{asset.name}</span>
       {asset.roles.map((r) => <> <span class="label">{r}</span></>)}
     </span>
-    {asset.file_size !== undefined && <span class="mono asset-size">{formatBytes(asset.file_size)}</span>}
+    {asset.file_size !== undefined && <span class="mono caption">{formatBytes(asset.file_size)}</span>}
   </div>
   {asset.description && <p class="asset-desc">{asset.description}</p>}
   {asset.media_type && (
@@ -65,7 +65,7 @@ const layouts = heldStructures(d, asset).map((s) => ({
   )}
   {d.data.includes(asset) && layouts.map((s) => (
     <div class="layout">
-      {s.named && <p class="layout-name mono">{s.name}</p>}
+      {s.named && <p class="layout-name mono caption">{s.name}</p>}
       {s.shown.length > 0 && (
         <p class="asset-fact">
           <b>Variables:</b> <span class="mono">{s.shown.join(", ")}</span>
@@ -171,7 +171,7 @@ const layouts = heldStructures(d, asset).map((s) => ({
             </a>
           )}
         </div>
-        <p class="mono selected-url" data-tpl-url>{tplUrl}</p>
+        <p class="mono url selected-url" data-tpl-url>{tplUrl}</p>
       </div>
     )}
   {index && (
@@ -186,7 +186,7 @@ const layouts = heldStructures(d, asset).map((s) => ({
           const row = (
             <>
               <span class="index-format">{ix.label}</span>
-              <a class="mono index-file" href={ix.url} rel="noreferrer" title={ix.url}>
+              <a class="mono caption index-file" href={ix.url} rel="noreferrer" title={ix.url}>
                 {ix.name}
               </a>
               <CopyButton copy={ix.url} label={`Copy ${ix.label} URL`} />
@@ -268,7 +268,7 @@ const layouts = heldStructures(d, asset).map((s) => ({
   )}
   {others.length > 0 && (
     <details class="alt-access">
-      <summary>Other access methods</summary>
+      <summary class="caption">Other access methods</summary>
       {asset.href_template && (
         <p class="asset-fact">
           <b>File pattern:</b>{" "}
@@ -277,7 +277,7 @@ const layouts = heldStructures(d, asset).map((s) => ({
       )}
       {others.map((loc) => (
         <div class="endpoint">
-          <span class="proto">{loc.label}:</span>
+          <span class="caption">{loc.label}:</span>
           <span class="mono url">{loc.url}</span>
           <CopyButton copy={loc.url} label="Copy URL" />
         </div>
@@ -367,11 +367,6 @@ for (const picker of document.querySelectorAll<HTMLElement>(".tpl-picker")) {
   color: var(--cdh-blue-950);
 }
 
-.asset-size {
-  font-size: var(--font-size-2);
-  color: var(--text-mute);
-}
-
 /* One download style everywhere, height-matched to the copy buttons */
 .dl {
   height: 26px;
@@ -447,8 +442,6 @@ summary.index-head:hover {
 }
 
 .index-file {
-  font-size: var(--font-size-3);
-  color: var(--text-soft);
   overflow-wrap: anywhere;
 }
 
@@ -518,14 +511,8 @@ summary.index-head:hover {
   margin-top: 0;
 }
 
-/* Plain URL line, wrapping normally — same voice as every card URL */
 .selected-url {
-  padding-left: var(--space-1);
   margin-top: var(--space-2);
-  font-size: var(--font-size-3);
-  color: var(--text-soft);
-  word-break: normal;
-  overflow-wrap: anywhere;
 }
 
 /* Selectors left, the picked file's copy and Download right */
@@ -550,8 +537,6 @@ summary.index-head:hover {
 }
 
 .alt-access summary {
-  font-size: var(--font-size-3);
-  color: var(--text-mute);
   cursor: pointer;
   user-select: none;
 }
@@ -569,17 +554,8 @@ summary.index-head:hover {
   margin-top: var(--space-2);
 }
 
-/* Same voice as the fact labels (Format, No Data) — sans, light, muted */
-.proto {
-  font-size: var(--font-size-3);
-  font-weight: 500;
-  color: var(--text-mute);
-}
-
 /* A named layout opens its own small block of facts */
 .asset .layout-name {
   margin-top: var(--space-3);
-  font-size: var(--font-size-3);
-  color: var(--text-mute);
 }
 </style>

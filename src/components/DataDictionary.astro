@@ -223,7 +223,7 @@ const fkTarget = (resource: string) => {
                             ))}
                             <td>
                               {v.description ?? "—"}
-                              {v.note && <div class="var-note">{v.note}</div>}
+                              {v.note && <div class="caption var-note">{v.note}</div>}
                               {v.categories.length > 0 && (
                                 <dl class="class-list">
                                   {v.categories.map((cv) => (
@@ -312,7 +312,7 @@ const fkTarget = (resource: string) => {
                       )}
                       {legend.length > 12 && (
                         <details class="legend-more">
-                          <summary>
+                          <summary class="caption">
                             <span class="when-closed">Show all {legend.length} values</span>
                             <span class="when-open">Show fewer</span>
                           </summary>
@@ -436,8 +436,6 @@ const fkTarget = (resource: string) => {
 
 .legend-more summary {
   margin-top: var(--space-2);
-  font-size: var(--font-size-3);
-  color: var(--text-soft);
   cursor: pointer;
 }
 
@@ -463,8 +461,6 @@ const fkTarget = (resource: string) => {
 
 .var-note {
   margin-top: var(--space-1);
-  font-size: var(--font-size-3);
-  color: var(--text-mute);
 }
 
 .class-desc,

@@ -83,7 +83,7 @@ const description =
               {facet.values.map((v) => (
                 <button aria-pressed="false" class="facet-option" data-facet={facet.key} data-value={v.value} type="button">
                   <span>{v.value}</span>
-                  <span class="mono count">{v.count}</span>
+                  <span class="mono caption">{v.count}</span>
                 </button>
               ))}
             </div>
@@ -107,10 +107,10 @@ const description =
               <a class="card" href={`/tutorials/${t.id}/`} style={`--level-color: ${AUDIENCE_COLORS[t.data.audience]}`}>
                 <span class="card-top">
                   <span class="pill level">{t.data.audience}</span>
-                  <span class="mono time">{t.data.time}</span>
+                  <span class="mono caption">{t.data.time}</span>
                 </span>
                 <span class="card-title">{t.data.title}</span>
-                <span class="mono card-format">Format · {t.data.format}</span>
+                <span class="mono caption">Format · {t.data.format}</span>
                 {t.data.outcomes.length > 0 && (
                   <span class="outcomes">
                     <span class="label">You’ll be able to</span>
@@ -151,7 +151,7 @@ const description =
             <a href={`/tutorials/${t.id}/`}>
               <span class="mono step-n">0{i + 1} · {t.data.audience}</span>
               <span class="step-title">{t.data.title}</span>
-              <span class="mono step-time">{t.data.time}</span>
+              <span class="mono caption">{t.data.time}</span>
             </a>
           ))}
         </div>
@@ -235,22 +235,12 @@ facetFilter([...document.querySelectorAll<HTMLElement>("li[data-tutorial]")]);
   background: var(--level-color);
 }
 
-.time {
-  font-size: var(--font-size-2);
-  color: var(--text-mute);
-}
-
 .card-title {
   font-family: var(--sans);
   font-size: var(--font-size-8);
   font-weight: 700;
   line-height: 1.3;
   color: var(--cdh-blue-950);
-}
-
-.card-format {
-  font-size: var(--font-size-2);
-  color: var(--text-mute);
 }
 
 .outcomes {
@@ -334,11 +324,6 @@ facetFilter([...document.querySelectorAll<HTMLElement>("li[data-tutorial]")]);
   font-weight: 700;
   line-height: 1.3;
   color: var(--cdh-blue-950);
-}
-
-.step-time {
-  font-size: var(--font-size-2);
-  color: var(--text-mute);
 }
 
 /* ---- Footer row ---- */

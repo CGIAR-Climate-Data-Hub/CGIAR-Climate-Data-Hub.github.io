@@ -155,7 +155,7 @@ const description = `How to contribute a dataset, edit the docs, submit a use ca
               <li>
                 <a class="kind" href={href} rel="noreferrer">
                   <b>{label}</b>
-                  <span>{hint}</span>
+                  <span class="caption">{hint}</span>
                 </a>
               </li>
             ))}
@@ -429,9 +429,7 @@ aside {
 }
 
 .kinds span {
-  font-size: var(--font-size-3);
   line-height: 1.4;
-  color: var(--text-mute);
 }
 
 .report-tip {

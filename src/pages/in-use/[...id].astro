@@ -62,9 +62,9 @@ const jsonLd = {
       <div class="meta">
         <span class="label kind">{entry.data.kind}</span>
         <span aria-hidden="true" class="sep"></span>
-        <span class="mono">{entry.data.country}</span>
+        <span class="mono caption">{entry.data.country}</span>
         <span aria-hidden="true" class="sep"></span>
-        <span class="mono">{date.slice(0, 7)}</span>
+        <span class="mono caption">{date.slice(0, 7)}</span>
       </div>
       <h1>{entry.data.title}</h1>
       <div class="partner">{entry.data.partner}</div>
@@ -144,11 +144,6 @@ article {
   height: 3px;
   background: var(--grey-3);
   border-radius: 50%;
-}
-
-.meta .mono {
-  font-size: var(--font-size-3);
-  color: var(--text-mute);
 }
 
 h1 {

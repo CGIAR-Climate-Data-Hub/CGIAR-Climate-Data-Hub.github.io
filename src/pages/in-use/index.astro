@@ -44,7 +44,7 @@ const monthOf = (d: Date) => d.toISOString().slice(0, 7);
             {i === 0 && <div class="label featured">Featured</div>}
             <div class:list={["label", "kind", { muted: i === 0 }]}>{uc.data.kind}</div>
             <div class="mono country">{uc.data.country}</div>
-            <div class="mono date">{monthOf(uc.data.date)}</div>
+            <div class="mono caption date">{monthOf(uc.data.date)}</div>
             <div class="partner caption">{uc.data.partner}</div>
           </div>
           <div class="body">
@@ -141,8 +141,6 @@ h1 {
 
 .date {
   margin-top: 3px;
-  font-size: var(--font-size-3);
-  color: var(--text-mute);
 }
 
 .partner {
