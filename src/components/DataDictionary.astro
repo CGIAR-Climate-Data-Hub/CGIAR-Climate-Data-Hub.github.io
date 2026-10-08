@@ -10,6 +10,7 @@ import {
   formatLabel,
   HORIZONTAL,
   heldStructures,
+  lastSegment,
   stepLabel,
 } from "@/lib/catalog";
 
@@ -154,11 +155,6 @@ const fkTarget = (resource: string) => {
     host: new URL(resource).host,
   };
 };
-// A URL's last path segment, or its host when the path is empty
-function lastSegment(url: string) {
-  const u = new URL(url);
-  return u.pathname.split("/").filter(Boolean).pop() ?? u.host;
-}
 ---
 
 <section class="var-group">

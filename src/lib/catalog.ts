@@ -326,6 +326,12 @@ export function licenseUrl(license: string) {
     : undefined;
 }
 
+// A URL's last path segment, or its host when the path is empty
+export function lastSegment(url: string) {
+  const u = new URL(url);
+  return u.pathname.split("/").filter(Boolean).pop() ?? u.host;
+}
+
 // Records store one bbox or a list of them; normalize to a list.
 export function normalizeBboxes(bbox?: number[] | number[][]) {
   if (!bbox || bbox.length === 0) return undefined;

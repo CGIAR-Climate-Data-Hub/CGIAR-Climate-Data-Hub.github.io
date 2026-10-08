@@ -17,6 +17,7 @@ import {
   geoLabel,
   gridSpacings,
   humanize,
+  lastSegment,
   licenseUrl,
   licensor,
   normalizeBboxes,
@@ -117,12 +118,6 @@ const crsHref =
     ? `https://epsg.io/${d.spatial.crs.split(":")[1]}`
     : undefined;
 const hasSchema = d.structures.length > 0;
-// A URL's last path segment, or its host when the path is empty
-function lastSegment(url: string) {
-  const u = new URL(url);
-  return u.pathname.split("/").filter(Boolean).pop() ?? u.host;
-}
-// An asset's layout: each structure it holds, its variables and dimensions
 // The STAC collection indexes templated files, so only those records link it
 const stacUrl = d.data.some((a) => a.href_template)
   ? stacCollectionUrl(d.id)
@@ -271,11 +266,7 @@ const SECTIONS = [
   d.processing.length > 0 && ["provenance", "Provenance"],
   (cite || d.attribution || d.contact.length > 0) && [
     "citation",
-    cite && d.contact.length > 0
-      ? "Citation & contacts"
-      : cite
-        ? "Citation"
-        : "Contacts",
+    "Citation & contacts",
   ],
 ].filter(Boolean) as [string, string][];
 
@@ -991,7 +982,6 @@ if (tabs.length > 0) {
   border-radius: var(--radius-sm);
 }
 
-/* Promoted h4→h3 for heading order; keep the smaller h4-like size */
 /* The credit line quoted, as the prose style does it; the section grid
    gap spaces it, so no margin of its own */
 .attribution blockquote {
@@ -1121,14 +1111,6 @@ h1 {
   transform: rotate(180deg);
 }
 
-.version-menu {
-  anchor-name: --version-menu;
-}
-
-.meta-menu {
-  anchor-name: --meta-menu;
-}
-
 #version-menu {
   position-anchor: --version-menu;
 }
@@ -1178,10 +1160,12 @@ h1 {
   gap: var(--space-2);
   padding: var(--space-1) var(--space-3);
   font-size: var(--font-size-4);
+  anchor-name: --version-menu;
 }
 
 .meta-menu {
   gap: var(--space-2);
+  anchor-name: --meta-menu;
 }
 
 /* No popover support (pre-2024 browser): hide the menu rather than render
