@@ -1030,7 +1030,7 @@ const jsonLd = datasetJsonLd(
                         {step.code.version && (
                           <>
                             {" "}
-                            <span class="label">{step.code.version}</span>
+                            <span class="label">@ {step.code.version}</span>
                           </>
                         )}
                       </p>
@@ -1079,10 +1079,10 @@ const jsonLd = datasetJsonLd(
                 <p class="section-sub">
                   Reproduce this credit line wherever you reuse the data.
                 </p>
-                <p>
+                <blockquote>
                   {d.attribution}{" "}
                   <CopyButton copy={d.attribution} label="Copy attribution" />
-                </p>
+                </blockquote>
               </section>
             )}
             {d.contact.length > 0 && (
@@ -1093,7 +1093,7 @@ const jsonLd = datasetJsonLd(
             </p>
             <div class="contact-cards">
               {contacts.map((c) => (
-                <div class:list={["card", "contact-card", c.roles.includes("maintainer") && "maintainer"]}>
+                <div class="card contact-card">
                   <div class="head">
                     <b>{c.name ?? c.organization}</b>
                     <span class="badges">
@@ -1355,6 +1355,15 @@ if (tabs.length > 0) {
 .attribution h3 {
   font-size: var(--font-size-5);
   font-weight: 700;
+}
+
+/* The credit line quoted, as the prose style does it; the section grid
+   gap spaces it, so no margin of its own */
+.attribution blockquote {
+  padding: var(--space-1) var(--space-4);
+  margin: 0;
+  font-size: var(--font-size-5);
+  border-left: 3px solid var(--cdh-blue-700);
 }
 
 /* A file layout groups several blocks, spaced like the tab's own */
@@ -1909,10 +1918,6 @@ a.chip:hover {
 
 .contact-card .chips {
   margin-top: var(--space-2);
-}
-
-.contact-card.maintainer {
-  border-left: 3px solid var(--terra-500);
 }
 
 .badges {
