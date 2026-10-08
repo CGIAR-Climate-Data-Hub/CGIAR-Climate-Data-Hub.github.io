@@ -9,6 +9,7 @@ import {
   type CatalogRecord,
   formatBytes,
   formatLabel,
+  heldStructures,
   humanize,
   recordSlug,
 } from "@/lib/catalog";
@@ -35,7 +36,14 @@ const {
   fileCount,
   download,
 } = await shapeAsset(d, asset, restricted);
-const structureByName = new Map(d.structures.map((s) => [s.name, s]));
+// The layouts this file holds; named only when the name tells the reader
+// something the file name doesn't. Long variable lists fold past six.
+const layouts = heldStructures(d, asset).map((s) => ({
+  ...s,
+  named: asset.structures.length > 1 || s.name !== asset.name,
+  shown: s.variables.slice(0, 6).map((v) => v.name),
+  more: Math.max(0, s.variables.length - 6),
+}));
 ---
 
 <div class="card asset" id={anchor("file", asset.name)}>
@@ -55,30 +63,26 @@ const structureByName = new Map(d.structures.map((s) => [s.name, s]));
       )}
     </p>
   )}
-  {asset.structures.length > 0 && (
-    <div class="asset-fact">
-      <b>Holds:</b>
-      <ul class="layout-list">
-        {asset.structures.map((name) => {
-          const s = structureByName.get(name);
-          return (
-            <li>
-              <a class="mono" href={`#${anchor("structure", name)}`}>{name}</a>
-              {s && (
-                <>
-                  : <span class="mono">{s.variables.map((v) => v.name).join(", ")}</span>
-                  <span class="layout-dims">
-                    {s.dimensions.length > 0
-                      && ` by ${s.dimensions.map((x) => x.name).join(" × ")}`}
-                  </span>
-                </>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+  {asset.structures.length > 0 && layouts.map((s) => (
+    <div class="layout">
+      {s.named && <p class="layout-name mono">{s.name}</p>}
+      {s.shown.length > 0 && (
+        <p class="asset-fact">
+          <b>Variables:</b> <span class="mono">{s.shown.join(", ")}</span>
+          {s.more > 0 && <span class="layout-more"> +{s.more} more</span>}
+        </p>
+      )}
+      {s.dimensions.length > 0 && (
+        <p class="asset-fact">
+          <b>Dimensions:</b>{" "}
+          <span class="mono">{s.dimensions.map((x) => x.name).join(" × ")}</span>
+        </p>
+      )}
+      <p class="asset-fact">
+        <a href={`#${anchor("structure", s.name)}`}>Data dictionary →</a>
+      </p>
     </div>
-  )}
+  ))}
   {extent && (
     <p class="asset-fact">
       <b>Coverage:</b> <span class="mono">{extent}</span>
@@ -607,17 +611,15 @@ summary.index-head:hover {
   color: var(--text-mute);
 }
 
-.layout-dims {
+/* A named layout opens its own small block of facts */
+.asset .layout-name {
+  margin-top: var(--space-3);
+  font-size: var(--font-size-3);
   color: var(--text-mute);
 }
 
-.layout-list {
-  padding-left: var(--space-5);
-  margin: var(--space-1) 0 0;
-  font-size: var(--font-size-4);
-}
-
-.layout-list .mono {
+.layout-more {
   font-size: var(--font-size-3);
+  color: var(--text-mute);
 }
 </style>
