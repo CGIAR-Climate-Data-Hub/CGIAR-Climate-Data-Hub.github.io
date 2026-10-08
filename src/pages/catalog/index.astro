@@ -363,6 +363,7 @@ const catalogSchema = {
 
 <script>
 import { projectLonLat, unprojectPoint } from "@/lib/coordinates";
+import { facetFilter } from "@/lib/facets";
 
 // Layout switcher — a display preference, so it persists locally, not in the URL
 const layoutButtons = [
@@ -379,31 +380,10 @@ for (const b of layoutButtons)
   b.addEventListener("click", () => setLayout(b.dataset.layout ?? "grid"));
 if (localStorage.getItem("catalog-layout") === "table") setLayout("table");
 
-const cards = [...document.querySelectorAll<HTMLElement>("li[data-dataset]")];
-const buttons = [
-  ...document.querySelectorAll<HTMLButtonElement>(".facet-option"),
-];
 const search = document.querySelector<HTMLInputElement>("#catalog-search");
-const clear = document.querySelector<HTMLButtonElement>("#clear-filters");
-const count = document.querySelector("#match-count");
 const matchLabel = document.querySelector("#match-label");
-const empty = document.querySelector<HTMLElement>("#empty-state");
-
-const facetKeys = [
-  "domain",
-  "geography",
-  "scale",
-  "commodity",
-  "format",
-  "license",
-  "access",
-] as const;
-const state: {
-  q: string;
-  bbox: number[] | null;
-  series: string;
-  [key: string]: unknown;
-} = {
+// Filters beyond the facets: text, a series deep link, a drawn bbox
+const state: { q: string; bbox: number[] | null; series: string } = {
   q: "",
   bbox: null,
   series: "",
@@ -429,73 +409,57 @@ function matchesBbox(card: HTMLElement) {
     .some((b) => bboxIntersects(b.split(" ").map(Number), drawn));
 }
 
-function apply() {
-  let matched = 0;
-  for (const card of cards) {
-    const show =
-      facetKeys.every((k) => {
-        if (!state[k]) return true;
-        const values = (card.dataset[k] ?? "").split(" ");
-        // Global datasets cover every geography
-        if (k === "geography" && values.includes("world")) return true;
-        return values.includes(state[k] as string);
-      })
-      && (!state.q || (card.dataset.search ?? "").includes(state.q))
+const {
+  state: facets,
+  keys,
+  apply,
+} = facetFilter(
+  [...document.querySelectorAll<HTMLElement>("li[data-dataset]")],
+  {
+    // A card may carry several values; global datasets cover every geography
+    match: (card, k, value) => {
+      const values = (card.dataset[k] ?? "").split(" ");
+      return (
+        (k === "geography" && values.includes("world"))
+        || values.includes(value)
+      );
+    },
+    extra: (card) =>
+      (!state.q || (card.dataset.search ?? "").includes(state.q))
       && (!state.series || card.dataset.series === state.series)
-      && matchesBbox(card);
-    card.hidden = !show;
-    if (show) matched++;
-  }
-  if (count) count.textContent = String(matched);
-  if (matchLabel)
-    matchLabel.textContent = matched === 1 ? "dataset" : "datasets";
-  if (empty) empty.hidden = matched > 0;
-  for (const b of buttons) {
-    b.setAttribute(
-      "aria-pressed",
-      String(state[b.dataset.facet ?? ""] === b.dataset.value),
-    );
-  }
-  if (clear)
-    clear.hidden =
-      !state.q
-      && !state.bbox
-      && !state.series
-      && facetKeys.every((k) => !state[k]);
-  if (seriesTag) seriesTag.hidden = !state.series;
-  if (seriesName) seriesName.textContent = state.series;
-  syncBboxUi();
+      && matchesBbox(card),
+    active: () => Boolean(state.q || state.bbox || state.series),
+    onClear: () => {
+      state.q = "";
+      state.bbox = null;
+      state.series = "";
+      if (search) search.value = "";
+    },
+    onApply: (matched) => {
+      if (matchLabel)
+        matchLabel.textContent = matched === 1 ? "dataset" : "datasets";
+      if (seriesTag) seriesTag.hidden = !state.series;
+      if (seriesName) seriesName.textContent = state.series;
+      syncBboxUi();
 
-  // Keep filters shareable
-  const params = new URLSearchParams();
-  if (state.q) params.set("q", state.q);
-  for (const k of facetKeys) if (state[k]) params.set(k, state[k] as string);
-  if (state.series) params.set("series", state.series);
-  if (state.bbox)
-    params.set("bbox", state.bbox.map((n) => n.toFixed(2)).join(","));
-  history.replaceState(
-    null,
-    "",
-    params.size ? `?${params}` : location.pathname,
-  );
-}
+      // Keep filters shareable
+      const params = new URLSearchParams();
+      if (state.q) params.set("q", state.q);
+      for (const k of keys) if (facets[k]) params.set(k, facets[k]);
+      if (state.series) params.set("series", state.series);
+      if (state.bbox)
+        params.set("bbox", state.bbox.map((n) => n.toFixed(2)).join(","));
+      history.replaceState(
+        null,
+        "",
+        params.size ? `?${params}` : location.pathname,
+      );
+    },
+  },
+);
 
-for (const b of buttons) {
-  b.addEventListener("click", () => {
-    state[b.dataset.facet ?? ""] = b.dataset.value ?? "";
-    apply();
-  });
-}
 search?.addEventListener("input", () => {
   state.q = search.value.trim().toLowerCase();
-  apply();
-});
-clear?.addEventListener("click", () => {
-  for (const k of facetKeys) state[k] = "";
-  state.q = "";
-  state.bbox = null;
-  state.series = "";
-  if (search) search.value = "";
   apply();
 });
 seriesClear?.addEventListener("click", () => {
@@ -593,18 +557,11 @@ bboxClear?.addEventListener("click", () => {
 });
 
 // ---- Init from URL ----
-// Filters start collapsed on small screens so results stay above the fold
-if (matchMedia("(max-width: 860px)").matches) {
-  for (const d of document.querySelectorAll("aside details[open]")) {
-    d.removeAttribute("open");
-  }
-}
-
 const params = new URLSearchParams(location.search);
 state.q = (params.get("q") ?? "").trim().toLowerCase();
 state.series = params.get("series") ?? "";
 if (search) search.value = params.get("q") ?? "";
-for (const k of facetKeys) state[k] = params.get(k) ?? "";
+for (const k of keys) facets[k] = params.get(k) ?? "";
 const urlBbox = params.get("bbox")?.split(",").map(Number);
 if (urlBbox?.length === 4 && urlBbox.every((n) => !Number.isNaN(n)))
   state.bbox = urlBbox;

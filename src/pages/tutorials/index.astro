@@ -170,54 +170,9 @@ const description =
 </Layout>
 
 <script>
-const cards = [...document.querySelectorAll<HTMLElement>("li[data-tutorial]")];
-const buttons = [
-  ...document.querySelectorAll<HTMLButtonElement>(".facet-option"),
-];
-const clear = document.querySelector<HTMLButtonElement>("#clear-filters");
-const count = document.querySelector("#match-count");
-const empty = document.querySelector<HTMLElement>("#empty-state");
+import { facetFilter } from "@/lib/facets";
 
-const facetKeys = ["audience", "topic"] as const;
-const state: Record<string, string> = {};
-
-function apply() {
-  let matched = 0;
-  for (const card of cards) {
-    const show = facetKeys.every(
-      (k) => !state[k] || card.dataset[k] === state[k],
-    );
-    card.hidden = !show;
-    if (show) matched++;
-  }
-  if (count) count.textContent = String(matched);
-  if (empty) empty.hidden = matched > 0;
-  for (const b of buttons) {
-    b.setAttribute(
-      "aria-pressed",
-      String(state[b.dataset.facet ?? ""] === b.dataset.value),
-    );
-  }
-  if (clear) clear.hidden = facetKeys.every((k) => !state[k]);
-}
-
-for (const b of buttons) {
-  b.addEventListener("click", () => {
-    state[b.dataset.facet ?? ""] = b.dataset.value ?? "";
-    apply();
-  });
-}
-// Filters start collapsed on small screens so results stay above the fold
-if (matchMedia("(max-width: 860px)").matches) {
-  for (const d of document.querySelectorAll("aside details[open]")) {
-    d.removeAttribute("open");
-  }
-}
-
-clear?.addEventListener("click", () => {
-  for (const k of facetKeys) state[k] = "";
-  apply();
-});
+facetFilter([...document.querySelectorAll<HTMLElement>("li[data-tutorial]")]);
 </script>
 
 <style>
