@@ -3,7 +3,7 @@
 // picker, file indexes, and worked examples. Data shaping lives in lib/assets.
 import CopyButton from "@/components/CopyButton.astro";
 import SnippetTabs from "@/components/SnippetTabs.astro";
-import { anchor, shapeAsset, urlParts } from "@/lib/assets";
+import { anchor, shapeAsset } from "@/lib/assets";
 import {
   type Asset,
   type CatalogRecord,
@@ -193,27 +193,8 @@ const layouts = heldStructures(d, asset).map((s) => ({
               {ix.isDir || restricted ? (
                 <span />
               ) : (
-                <a
-                  aria-label={`Download ${ix.label}`}
-                  class="code-copy"
-                  download
-                  href={ix.url}
-                  title={`Download ${ix.label}`}
-                >
-                  <svg
-                    fill="none"
-                    height="13"
-                    role="img"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                    width="13"
-                  >
-                    <title>Download {ix.label}</title>
-                    <path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14" />
-                  </svg>
+                <a class="btn btn-ghost dl" download href={ix.url}>
+                  Download
                 </a>
               )}
             </>
@@ -281,14 +262,7 @@ const layouts = heldStructures(d, asset).map((s) => ({
         )}
       </p>
       <p class="asset-fact">
-        <span class="mono url">
-          {urlParts(primary.url).map((part) => (
-            <>
-              {part}
-              <wbr />
-            </>
-          ))}
-        </span>
+        <span class="mono url">{primary.url}</span>
       </p>
     </div>
   )}
@@ -304,14 +278,7 @@ const layouts = heldStructures(d, asset).map((s) => ({
       {others.map((loc) => (
         <div class="endpoint">
           <span class="proto">{loc.label}:</span>
-          <span class="mono url">
-            {urlParts(loc.url).map((part) => (
-              <>
-                {part}
-                <wbr />
-              </>
-            ))}
-          </span>
+          <span class="mono url">{loc.url}</span>
           <CopyButton copy={loc.url} label="Copy URL" />
         </div>
       ))}

@@ -34,10 +34,6 @@ const assetCoverage = (s?: Asset["spatial"]) =>
 export const anchor = (kind: string, name: string) =>
   `${kind}-${name.replace(/[^\w-]+/g, "-")}`;
 
-// Long URLs wrap at path boundaries, not mid-token: each segment gets a
-// <wbr> break hint
-export const urlParts = (url: string) => url.split(/(?<=\/)/);
-
 // - tplFields: one select per template token, options from the dimension's
 //   values or extent (or variable names); undefined unless every one resolves
 // - tplFile/tplUrl: the picker's prerendered default (first value per field)

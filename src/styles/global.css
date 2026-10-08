@@ -201,13 +201,12 @@ hr {
   font-weight: 700;
 }
 
-/* A wrapped URL: <wbr> hints break at slashes; break-word is the last resort
-   for a single segment wider than the column */
+/* A wrapped URL: breaks anywhere rather than overflow the column */
 .url {
   padding-left: var(--space-1);
   font-size: var(--font-size-3);
   color: var(--text-soft);
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 
 /* Data table: uppercase column heads, cells sized to content, and the last
