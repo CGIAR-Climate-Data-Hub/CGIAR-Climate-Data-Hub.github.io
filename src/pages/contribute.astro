@@ -79,7 +79,7 @@ const description = `How to contribute a dataset, edit the docs, submit a use ca
         </a>
       </nav>
 
-      <div class="rail-box">
+      <div class="card rail-box">
         <div class="label">Hub standards</div>
         {STANDARDS_LINKS.map(([label, href]) => <a class="rail-link" href={href}>{label}</a>)}
       </div>
@@ -257,34 +257,9 @@ aside {
   background: var(--cdh-blue-800);
 }
 
+/* The standards box follows the intent nav */
 .rail-box {
-  padding: var(--space-4);
   margin-top: var(--space-5);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-}
-
-.rail-box .label {
-  margin-bottom: 6px;
-  color: var(--text-mute);
-}
-
-.rail-link {
-  display: block;
-  padding: var(--space-2) 0;
-  font-size: var(--font-size-4);
-  color: var(--text);
-  border-bottom: 1px solid var(--border);
-}
-
-.rail-link:last-child {
-  border-bottom: 0;
-}
-
-.rail-link:hover {
-  color: var(--cdh-blue-700);
-  text-decoration: none;
 }
 
 .guides {
