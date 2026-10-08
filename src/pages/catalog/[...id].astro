@@ -324,7 +324,7 @@ const jsonLd = datasetJsonLd(
                 type="button"
               >
                   {d.version}
-                  {!current && <span class="latest">LATEST</span>}
+                  {!current && <span class="pill blue caps">LATEST</span>}
                   <svg
                     aria-hidden="true"
                     fill="none"
@@ -344,7 +344,7 @@ const jsonLd = datasetJsonLd(
                       href={`/catalog/${recordSlug(v.data)}/`}
                     >
                       {v.data.version}
-                      {i === 0 && <span class="latest">LATEST</span>}
+                      {i === 0 && <span class="pill blue caps">LATEST</span>}
                     </a>
                   ))}
                 </div>
@@ -353,7 +353,7 @@ const jsonLd = datasetJsonLd(
               <span class="version-single">{d.version}</span>
             )}
             {restricted && (
-              <span class="mono access-flag">
+              <span class="pill terra outline mono">
                 {humanize(d.access ?? "")} access
               </span>
             )}
@@ -456,11 +456,11 @@ const jsonLd = datasetJsonLd(
             <div class="keywords">
               {d.keywords.map((k) =>
                 typeof k === "string" ? (
-                  <a class="mono keyword" href={`/catalog/?q=${encodeURIComponent(k)}`}>
+                  <a class="pill mono" href={`/catalog/?q=${encodeURIComponent(k)}`}>
                     #{k}
                   </a>
                 ) : (
-                  <a class="mono keyword ontology" href={k.uri ?? k.scheme} rel="noreferrer" title={`${k.scheme ?? "ontology"} concept`}>
+                  <a class="pill blue outline mono" href={k.uri ?? k.scheme} rel="noreferrer" title={`${k.scheme ?? "ontology"} concept`}>
                     {k.term} ↗
                   </a>
                 ),
@@ -538,11 +538,11 @@ const jsonLd = datasetJsonLd(
                 {d.commodities.map((id) => {
                   const c = commodity(id);
                   return c?.uri ? (
-                    <a class="chip" href={c.uri} rel="noreferrer" title={`AGROVOC ${c.code}`}>
+                    <a class="pill blue" href={c.uri} rel="noreferrer" title={`AGROVOC ${c.code}`}>
                       {c.label} ↗
                     </a>
                   ) : (
-                    <span class="chip">{c?.label ?? humanize(id)}</span>
+                    <span class="pill blue">{c?.label ?? humanize(id)}</span>
                   );
                 })}
               </div>
@@ -738,10 +738,10 @@ const jsonLd = datasetJsonLd(
                     <b>{c.name ?? c.organization}</b>
                     <span class="badges">
                       {c.roles.includes("maintainer") && (
-                        <span class="role-badge maintainer-badge">Maintainer</span>
+                        <span class="pill terra caps">Maintainer</span>
                       )}
                       {c.roles.includes("licensor") && (
-                        <span class="role-badge licensor-badge">Licensor</span>
+                        <span class="pill blue caps">Licensor</span>
                       )}
                     </span>
                   </div>
@@ -751,7 +751,7 @@ const jsonLd = datasetJsonLd(
                   {c.otherRoles.length > 0 && (
                     <div class="chips">
                       {c.otherRoles.map((r) => (
-                        <span class="chip">{humanize(r)}</span>
+                        <span class="pill blue">{humanize(r)}</span>
                       ))}
                     </div>
                   )}
@@ -973,15 +973,6 @@ if (tabs.length > 0) {
   background: var(--surface);
 }
 
-/* Outline only: a caution tag that doesn't outweigh the version beside it */
-.access-flag {
-  padding: 2px var(--space-2);
-  font-size: var(--font-size-3);
-  color: var(--terra-700);
-  border: 1px solid var(--terra-300);
-  border-radius: var(--radius-sm);
-}
-
 /* The credit line quoted, as the prose style does it; the section grid
    gap spaces it, so no margin of its own */
 .attribution blockquote {
@@ -1036,25 +1027,6 @@ h1 {
   gap: var(--space-2);
 }
 
-.keyword {
-  padding: 2px var(--space-2);
-  font-size: var(--font-size-1);
-  color: var(--text-soft);
-  background: var(--grey-1);
-  border-radius: var(--radius-md);
-}
-
-.keyword:hover {
-  text-decoration: none;
-  background: var(--grey-2);
-}
-
-.keyword.ontology {
-  color: var(--cdh-blue-700);
-  background: transparent;
-  border: 1px solid var(--cdh-blue-150);
-}
-
 .ctas {
   display: flex;
   flex-wrap: wrap;
@@ -1088,16 +1060,6 @@ h1 {
 .version-single {
   font-size: var(--font-size-4);
   color: var(--text);
-}
-
-.latest {
-  padding: 1px 5px;
-  font-size: var(--font-size-1);
-  font-weight: 700;
-  color: var(--cdh-blue-700);
-  letter-spacing: 0.04em;
-  background: var(--cdh-blue-50);
-  border-radius: var(--radius-md);
 }
 
 /* Shared dropdown (version switcher, metadata menu): a native popover
@@ -1360,19 +1322,6 @@ article ul {
   gap: var(--space-2);
 }
 
-.chip {
-  padding: var(--space-1) var(--space-2);
-  font-size: var(--font-size-3);
-  color: var(--cdh-blue-800);
-  background: var(--cdh-blue-50);
-  border-radius: var(--radius-md);
-}
-
-a.chip:hover {
-  text-decoration: none;
-  background: var(--cdh-blue-150);
-}
-
 .assets {
   display: flex;
   flex-direction: column;
@@ -1468,25 +1417,6 @@ a.chip:hover {
   display: inline-flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-}
-
-.role-badge {
-  padding: 1px 6px;
-  font-size: var(--font-size-1);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-radius: var(--radius-md);
-}
-
-.maintainer-badge {
-  color: var(--terra-700);
-  background: var(--terra-50);
-}
-
-.licensor-badge {
-  color: var(--cdh-blue-700);
-  background: var(--cdh-blue-50);
 }
 
 .contact-org {

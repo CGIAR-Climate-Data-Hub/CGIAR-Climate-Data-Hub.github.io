@@ -69,12 +69,12 @@ const description = `How to contribute a dataset, edit the docs, submit a use ca
         <div class="label">I want to…</div>
         {guides.map((g) => (
             <a href={`#${g.id}`}>
-              <span class="mono chip">{g.icon}</span>
+              <span class="pill mono">{g.icon}</span>
               {g.label}
             </a>
           ))}
         <a href="#report">
-          <span class="mono chip">BUG</span>
+          <span class="pill mono">BUG</span>
           Report a bug or issue
         </a>
       </nav>
@@ -232,17 +232,8 @@ aside {
   border-color: var(--cdh-blue-950);
 }
 
-.intent .chip {
-  display: flex;
+.intent .pill {
   flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 6px;
-  font-size: var(--font-size-1);
-  color: var(--text-soft);
-  letter-spacing: 0.06em;
-  background: var(--grey-1);
-  border-radius: var(--radius-md);
 }
 
 .intent a[aria-current="true"] {
@@ -252,7 +243,7 @@ aside {
   border-color: var(--cdh-blue-950);
 }
 
-.intent a[aria-current="true"] .chip {
+.intent a[aria-current="true"] .pill {
   color: var(--cdh-blue-150);
   background: var(--cdh-blue-800);
 }

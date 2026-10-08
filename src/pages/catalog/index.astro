@@ -137,7 +137,7 @@ const catalogSchema = {
             type="search"
           >
         </div>
-        <span class="pill spatial mono series-tag" hidden id="series-active">
+        <span class="pill blue mono series-tag" hidden id="series-active">
           Series: <b id="series-name"></b>
           <button
             aria-label="Clear series filter"
@@ -654,10 +654,6 @@ apply();
 }
 
 /* Reuses the global .pill.spatial look; only the clear button is local */
-.series-tag {
-  border: 1px solid var(--cdh-blue-150);
-}
-
 .series-tag button {
   padding: 0 2px;
   font-size: var(--font-size-4);

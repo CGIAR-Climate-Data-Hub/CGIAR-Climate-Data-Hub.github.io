@@ -104,7 +104,7 @@ a:hover {
 /* Inline links need a non-colour cue; standalone navigation and controls keep
    their component treatments. */
 :where(p, :where(.prose, .answer) :where(li, td, dd), .cite-block li, .fact)
-a:not(.btn, .pill, .chip) {
+a:not(.btn, .pill) {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -255,6 +255,10 @@ hr {
   letter-spacing: 0.14em;
 }
 
+.label.terra {
+  color: var(--terra-700);
+}
+
 /* Sidebar box: an eyebrow title over a list of links or short entries */
 .rail-box {
   margin-bottom: var(--space-4);
@@ -318,7 +322,8 @@ hr {
   border-radius: var(--radius-sm);
 }
 
-.pill.spatial {
+.pill.spatial,
+.pill.blue {
   color: var(--cdh-blue-800);
   background: var(--cdh-blue-50);
 }
@@ -326,6 +331,29 @@ hr {
 .pill.warn {
   color: var(--terra-900);
   background: var(--terra-50);
+}
+
+.pill.terra {
+  color: var(--terra-700);
+  background: var(--terra-50);
+}
+
+/* Outlined: the text colour, faded, draws the border */
+.pill.outline {
+  background: transparent;
+  border-color: color-mix(in srgb, currentColor 35%, transparent);
+}
+
+/* Status stamps (LATEST, Maintainer, SOON) */
+.pill.caps {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+a.pill:hover {
+  text-decoration: none;
+  filter: brightness(0.95);
 }
 
 .pill.dot::before {

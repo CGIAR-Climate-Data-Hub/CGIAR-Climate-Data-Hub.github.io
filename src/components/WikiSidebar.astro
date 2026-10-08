@@ -33,7 +33,7 @@ const nav = groupWikis(await getCollection("wikis")).map((group) => ({
           e.data.soon ? (
             <span class="item soon">
               {e.data.title}
-              <span class="mono soon-tag">SOON</span>
+              <span class="pill caps">SOON</span>
             </span>
           ) : (
             <a href={`/wikis/${e.id}/`} class:list={["item", { "is-active": e.id === activeId }]}>
@@ -136,11 +136,6 @@ details[open] > .group-label::after {
   justify-content: space-between;
   color: var(--text-mute);
   cursor: default;
-}
-
-.soon-tag {
-  font-size: var(--font-size-1);
-  letter-spacing: 0.1em;
 }
 
 .contribute {
