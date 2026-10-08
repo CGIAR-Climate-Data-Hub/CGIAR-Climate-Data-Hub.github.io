@@ -4,7 +4,7 @@
 interface Axis {
   values?: string[];
   categories?: { value: string }[];
-  extent?: string[];
+  extent?: string[] | number[];
   step?: string | number;
 }
 
@@ -30,10 +30,40 @@ export const tokenNames = (template: string) => [
   ...new Set([...template.matchAll(TOKEN)].map((m) => m[1])),
 ];
 
+// File coordinates at the precision used by every occurrence of this token.
+// Repeated tokens can supply different date parts (year={date:%Y}/{date:%m}).
+export function fileCoordinates(
+  template: string,
+  name: string,
+  values: string[],
+) {
+  const formats = [...template.matchAll(TOKEN)]
+    .filter((m) => m[1] === name)
+    .map((m) => m[2]);
+  if (formats.some((f) => !f)) return { values, column: true };
+  const format = formats.join("");
+  // Values cut to the finest part used, kept as ISO so they fill the template
+  const month = format.includes("%m");
+  const day = format.includes("%d");
+  const iso = day ? "%Y-%m-%d" : month ? "%Y-%m" : "%Y";
+  return {
+    values: [...new Set(values.map((v) => strftime(v, iso)))],
+    // A month without a year, or a day without a month, is not one ISO period
+    column: format.includes("%Y") && (month || !day),
+  };
+}
+
 // An axis's values: listed, categorised, or [first, last] expanded by step
 export function axisValues({ values = [], categories, extent, step }: Axis) {
   if (categories?.length) return categories.map((c) => c.value);
-  if (values.length > 0 || !extent || typeof step !== "string") return values;
+  if (
+    values.length > 0
+    || !extent
+    || typeof extent[0] !== "string"
+    || typeof extent[1] !== "string"
+    || typeof step !== "string"
+  )
+    return values;
   const start = parts(extent[0]);
   const end = parts(extent[1]);
   const dur = step

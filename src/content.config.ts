@@ -226,8 +226,8 @@ const dimension = z.object({
   description: z.string().optional(),
   // The standard allows bare numbers (years); the site works in strings
   values: z.array(z.coerce.string()).default([]),
-  // [first, last] of a regular temporal axis, in place of values
-  extent: z.array(z.string()).optional(),
+  // Temporal [first, last] dates, or horizontal [min, max] coordinates
+  extent: z.union([z.array(z.string()), z.array(z.number())]).optional(),
   // Spacing between values: an ISO 8601 duration on a temporal axis, a
   // number in unit on a horizontal (xy, x, y) axis
   step: z.union([z.string(), z.number()]).optional(),

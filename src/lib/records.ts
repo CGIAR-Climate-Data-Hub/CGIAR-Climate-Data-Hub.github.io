@@ -96,13 +96,22 @@ export async function fromGitHub(
   });
 }
 
-// additional_assets URLs may be relative to the record file (./README.md);
-// resolve them against the record's raw file in the catalog repo so every
-// consumer (page, copy button, JSON) gets a URL that works
+// Supporting assets and cdh-inventory indexes may be relative to the record
+// file. Resolve them against its raw URL for pages, copy buttons, and snippets.
 function resolveSidecars(record: unknown, base: string) {
-  const assets = (record as { additional_assets?: unknown })?.additional_assets;
-  if (!Array.isArray(assets)) return;
-  for (const asset of assets)
+  const doc = record as { additional_assets?: unknown; data?: unknown };
+  const assets = Array.isArray(doc?.additional_assets)
+    ? doc.additional_assets
+    : [];
+  const indexes = Array.isArray(doc?.data)
+    ? doc.data.flatMap((asset) => {
+        const indexes = asset?.file_index;
+        return Array.isArray(indexes)
+          ? indexes.filter((index) => index?.format === "cdh-inventory")
+          : [];
+      })
+    : [];
+  for (const asset of [...assets, ...indexes])
     for (const loc of asset?.locations ?? [])
       if (typeof loc?.url === "string" && !/^[a-z][a-z\d+.-]*:/i.test(loc.url))
         loc.url = new URL(loc.url, base).href;

@@ -2,7 +2,12 @@
 import type { CollectionEntry } from "astro:content";
 import formatVocab from "@/assets/format-vocab.json";
 import { authorName, type Citable, citationText } from "@/lib/citation";
-import { axisValues, fillTemplate, tokenNames } from "@/lib/template";
+import {
+  axisValues,
+  fileCoordinates,
+  fillTemplate,
+  tokenNames,
+} from "@/lib/template";
 import {
   commodity,
   commodityWithParents,
@@ -27,15 +32,23 @@ export function stacCollectionUrl(id: string) {
 }
 
 // Days between values on a date-precision extent (P1D, P1W, P10D…)
-function dayStep(dim?: { extent?: string[]; step?: string | number }) {
-  if (!dim?.extent || !/^\d{4}-\d{2}-\d{2}$/.test(dim.extent[0])) return;
+function dayStep(dim?: {
+  extent?: string[] | number[];
+  step?: string | number;
+}) {
+  if (
+    !dim?.extent
+    || typeof dim.extent[0] !== "string"
+    || !/^\d{4}-\d{2}-\d{2}$/.test(dim.extent[0])
+  )
+    return;
   if (typeof dim.step !== "string") return;
   const m = dim.step.match(/^P(?:(\d+)W)?(?:(\d+)D)?$/);
   const days = m ? Number(m[1] ?? 0) * 7 + Number(m[2] ?? 0) : 0;
   return days > 0 ? days : undefined;
 }
 
-type Asset = CatalogRecord["data"][number];
+export type Asset = CatalogRecord["data"][number];
 
 // The structures an asset holds; its template tokens resolve against them.
 // With one structure an asset may omit the list: it holds that one
@@ -62,6 +75,7 @@ export function resolveTemplate(d: CatalogRecord, asset: Asset) {
         : [];
     const days = dayStep(dim);
     const date = dim?.extent
+      && typeof dim.extent[1] === "string"
       && days && { min: values[0], max: dim.extent[1], step: days };
     return { name, values, date: date || undefined };
   });
@@ -70,27 +84,41 @@ export function resolveTemplate(d: CatalogRecord, asset: Asset) {
   return { fields, file: fillTemplate(template, first) };
 }
 
-// Every file an asset's template names, as a cdh-inventory CSV (RFC 4180):
-// href (the file's full URL), then each file's value per token. Undefined
-// unless every token resolves.
-export function templateInventory(d: CatalogRecord, asset: Asset) {
+// One row per distinct URL. Only serialize CSV when requested, not for counts.
+export function templateInventory(
+  d: CatalogRecord,
+  asset: Asset,
+  resolved = resolveTemplate(d, asset),
+) {
   const { href_template: template, locations } = asset;
-  const fields = resolveTemplate(d, asset)?.fields;
-  if (!template || !fields) return undefined;
+  if (!template || !resolved) return undefined;
+  const fields = resolved.fields.map((f) => ({
+    name: f.name,
+    ...fileCoordinates(template, f.name, f.values),
+  }));
   const base =
     locations.find((l) => l.url.startsWith("http"))?.url ?? locations[0]?.url;
   let rows: string[][] = [[]];
   for (const f of fields)
     rows = rows.flatMap((row) => f.values.map((v) => [...row, v]));
-  const cell = (v: string) =>
-    /[",\r\n]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v;
-  const lines = rows.map((row) => {
+  const files = new Map<string, string[]>();
+  for (const row of rows) {
     const pick = Object.fromEntries(fields.map((f, i) => [f.name, row[i]]));
     const href = `${base ?? ""}${fillTemplate(template, pick)}`;
-    return [href, ...row].map(cell).join(",");
-  });
-  const header = ["href", ...fields.map((f) => f.name)].join(",");
-  return `${[header, ...lines].join("\r\n")}\r\n`;
+    files.set(href, [href, ...row.filter((_, i) => fields[i].column)]);
+  }
+  return {
+    count: files.size,
+    get csv() {
+      const header = [
+        "href",
+        ...fields.filter((f) => f.column).map((f) => f.name),
+      ];
+      const cell = (v: string) =>
+        /[",\r\n]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v;
+      return `${[header, ...files.values()].map((row) => row.map(cell).join(",")).join("\r\n")}\r\n`;
+    },
+  };
 }
 
 export const SIZE_UNITS = ["B", "KB", "MB", "GB", "TB", "PB"];

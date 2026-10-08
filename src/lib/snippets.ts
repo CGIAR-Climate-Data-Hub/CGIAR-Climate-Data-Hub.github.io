@@ -48,6 +48,7 @@ function formatAssets(d: CatalogRecord) {
   const done = new Set<string>();
   const out: { id: string; label: string; url: string }[] = [];
   for (const asset of d.data) {
+    if (asset.file_index.length > 0) continue;
     const c = assetFormat(d, asset);
     if (!c || done.has(c.id)) continue;
     const url = exampleUrl(d, asset);
