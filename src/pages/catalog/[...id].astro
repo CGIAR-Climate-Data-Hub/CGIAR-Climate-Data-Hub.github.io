@@ -326,8 +326,12 @@ const jsonLd = datasetJsonLd(
           <div class="version-row">
             <span class="label">Version</span>
             {chain.length > 1 ? (
-              <details class="drop-menu version-menu">
-                <summary class="btn btn-ghost">
+              <>
+              <button
+                class="btn btn-ghost drop-menu version-menu"
+                popovertarget="version-menu"
+                type="button"
+              >
                   {d.version}
                   {!current && <span class="latest">LATEST</span>}
                   <svg
@@ -341,8 +345,8 @@ const jsonLd = datasetJsonLd(
                   >
                     <path d="M6 9l6 6 6-6" />
                   </svg>
-                </summary>
-                <div class="menu-list">
+              </button>
+                <div class="menu-list" id="version-menu" popover>
                   {chain.map((v, i) => (
                     <a
                       aria-current={v.data.version === d.version ? "page" : undefined}
@@ -353,7 +357,7 @@ const jsonLd = datasetJsonLd(
                     </a>
                   ))}
                 </div>
-              </details>
+              </>
             ) : (
               <span class="version-single">{d.version}</span>
             )}
@@ -393,44 +397,46 @@ const jsonLd = datasetJsonLd(
             <a class="btn btn-primary" href="#access">
               {restricted ? "Request access" : "Access the data"}
             </a>
-            <details class="drop-menu meta-menu">
-              <summary class="btn btn-ghost">
-                Metadata
-                <svg
-                  aria-hidden="true"
-                  fill="none"
-                  height="10"
-                  stroke="currentColor"
-                  stroke-width="2.4"
-                  viewBox="0 0 24 24"
-                  width="10"
-                >
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </summary>
-              <div class="menu-list">
-                <a href={`/catalog/${recordSlug(d)}.json`}>Raw record (JSON)</a>
-                {stacUrl && (
+            <button
+              class="btn btn-ghost drop-menu meta-menu"
+              popovertarget="meta-menu"
+              type="button"
+            >
+              Metadata
+              <svg
+                aria-hidden="true"
+                fill="none"
+                height="10"
+                stroke="currentColor"
+                stroke-width="2.4"
+                viewBox="0 0 24 24"
+                width="10"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="menu-list" id="meta-menu" popover>
+              <a href={`/catalog/${recordSlug(d)}.json`}>Raw record (JSON)</a>
+              {stacUrl && (
                   <a href={stacUrl} rel="noreferrer">
                     STAC Collection ↗
                   </a>
                 )}
-                {entry.filePath && (
+              {entry.filePath && (
                   <a
                     class="menu-split"
                     href={editUrl(CATALOG_REPO, entry.filePath)}
                     >Suggest an edit ↗</a
                   >
                 )}
-                <a
-                  href={reportUrl}
-                  rel="noreferrer"
-                  class:list={[{ "menu-split": !entry.filePath }]}
-                >
-                  Report a problem ↗
-                </a>
-              </div>
-            </details>
+              <a
+                href={reportUrl}
+                rel="noreferrer"
+                class:list={[{ "menu-split": !entry.filePath }]}
+              >
+                Report a problem ↗
+              </a>
+            </div>
           </div>
         </div>
 
@@ -922,15 +928,6 @@ const jsonLd = datasetJsonLd(
 </Layout>
 
 <script>
-// Dropdowns (version switcher, metadata menu): <details> handles open/toggle
-// natively; this only adds light-dismiss on outside clicks.
-const menus =
-  document.querySelectorAll<HTMLDetailsElement>("details.drop-menu");
-document.addEventListener("click", (e) => {
-  for (const menu of menus)
-    if (menu.open && !menu.contains(e.target as Node)) menu.open = false;
-});
-
 // Hash-driven tabs: all panels stay in the DOM (crawlers see everything);
 // the hash picks the visible one, so /catalog/<id>#access deep-links work.
 const tabs = [
@@ -1113,32 +1110,39 @@ h1 {
   border-radius: var(--radius-md);
 }
 
-/* Shared details-dropdown (version switcher, metadata menu) */
-.drop-menu {
-  position: relative;
-  display: inline-block;
-}
-
-.drop-menu summary {
-  cursor: pointer;
-  list-style: none;
-}
-
-.drop-menu summary svg {
+/* Shared dropdown (version switcher, metadata menu): a native popover
+   anchored under its button, so outside-click and Escape dismiss it */
+.drop-menu svg {
   color: var(--text-mute);
   transition: transform 0.15s;
 }
 
-.drop-menu[open] summary svg {
+.drop-menu:has(+ :popover-open) svg {
   transform: rotate(180deg);
 }
 
+.version-menu {
+  anchor-name: --version-menu;
+}
+
+.meta-menu {
+  anchor-name: --meta-menu;
+}
+
+#version-menu {
+  position-anchor: --version-menu;
+}
+
+#meta-menu {
+  position-anchor: --meta-menu;
+}
+
 .menu-list {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 20;
+  position-area: bottom span-right;
+  position-try-fallbacks: flip-block, flip-inline;
+  inset: auto;
   min-width: 170px;
+  margin: 6px 0 0;
   padding: var(--space-2);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1170,14 +1174,22 @@ h1 {
 }
 
 /* Compact btn-ghost — the shared button recipe, sized down */
-.version-menu summary {
+.version-menu {
   gap: var(--space-2);
   padding: var(--space-1) var(--space-3);
   font-size: var(--font-size-4);
 }
 
-.meta-menu summary {
+.meta-menu {
   gap: var(--space-2);
+}
+
+/* No popover support (pre-2024 browser): hide the menu rather than render
+   it permanently expanded in the page flow */
+@supports not selector(:popover-open) {
+  .menu-list {
+    display: none;
+  }
 }
 
 /* Divider between the record's representations and its maintenance actions */
