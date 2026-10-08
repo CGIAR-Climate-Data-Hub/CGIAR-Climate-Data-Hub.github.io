@@ -545,10 +545,13 @@ export function datasetMd(
   return blocks.join("\n\n");
 }
 
+// Record dates are ISO 8601 at any precision ("2020", "1981-01", full
+// timestamps), so the year is always the first four characters
+export const year = (date: string) => date.slice(0, 4);
+
 // Snapshot (date) or span; `step` is the time dimension's, labels the cadence
 export function temporalText(t: CatalogRecord["temporal"], step?: string) {
   if (!t) return undefined;
-  const year = (date: string) => date.slice(0, 4);
   if ("date" in t) return { main: year(t.date) };
   const sub = [
     step && stepLabel(step),

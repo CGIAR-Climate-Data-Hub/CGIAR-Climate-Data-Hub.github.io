@@ -1,5 +1,6 @@
 ---
 import { getCollection } from "astro:content";
+import { isDeepStrictEqual } from "node:util";
 import { satteri } from "@astrojs/markdown-satteri";
 import AssetCard from "@/components/AssetCard.astro";
 import BboxMap from "@/components/BboxMap.astro";
@@ -9,10 +10,11 @@ import CopyButton from "@/components/CopyButton.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import SnippetTabs from "@/components/SnippetTabs.astro";
 import Layout from "@/layouts/Layout.astro";
-import { anchor, urlParts } from "@/lib/assets";
+import { anchor } from "@/lib/assets";
 import {
   citable,
   datasetJsonLd,
+  formatLabel,
   geoLabel,
   gridSpacings,
   HORIZONTAL,
@@ -27,6 +29,7 @@ import {
   temporalText,
   versionChain,
   versionedSlug,
+  year,
 } from "@/lib/catalog";
 import { authorName } from "@/lib/citation";
 import { shikiConfig } from "@/lib/code-block";
@@ -122,13 +125,11 @@ const crsHref =
     ? `https://epsg.io/${d.spatial.crs.split(":")[1]}`
     : undefined;
 const hasSchema = d.structures.length > 0;
-// One data dictionary per structure; with several, each is headed by its
-// name and the files that hold it
 const multiStructure = d.structures.length > 1;
+type Structure = (typeof d.structures)[number];
+type Variable = Structure["variables"][number];
 // A dimension's domain as legend entries: coded values with labels, or bare ones
-const legendItems = (
-  dim: (typeof d.structures)[number]["dimensions"][number],
-) =>
+const legendItems = (dim: Structure["dimensions"][number]) =>
   dim.categories.length > 0
     ? dim.categories
     : dim.values.map((value) => ({
@@ -137,14 +138,111 @@ const legendItems = (
         description: undefined,
       }));
 
-const structures = d.structures.map((s) => ({
-  ...s,
-  files: d.data
-    .filter((a) => heldStructures(d, a).includes(s))
-    .map((a) => a.name),
-  // The variables table grows a "No data" column only when one has a value
-  varNodata: s.variables.some((v) => v.nodata !== undefined),
-}));
+// Structures are usually the same cube in different file formats, so what
+// every one of them shares renders once; each layout keeps only its own parts.
+const [first, ...rest] = d.structures;
+const sameDim = (
+  dims: Structure["dimensions"],
+  dim: Structure["dimensions"][number],
+) => dims.some((x) => isDeepStrictEqual(x, dim));
+const sharedDims = multiStructure
+  ? first.dimensions.filter((dim) =>
+      rest.every((s) => sameDim(s.dimensions, dim)),
+    )
+  : [];
+
+// Variables merge into one table when the layouts list the same ones; a
+// scalar that differs between layouts gets a column per layout
+const SCALARS = { data_type: "Type", unit: "Unit", nodata: "No data" };
+type Scalar = keyof typeof SCALARS;
+const sansScalars = ({ data_type, unit, nodata, ...v }: Variable) => v;
+const mergeVars =
+  multiStructure
+  && rest.every((s) =>
+    isDeepStrictEqual(
+      s.variables.map(sansScalars),
+      first.variables.map(sansScalars),
+    ),
+  );
+// One fill value across a layout's variables is a fact about the layout,
+// stated in the layouts table rather than repeated down a column
+const uniformNodata = (s: Structure) => {
+  const values = new Set(s.variables.map((v) => v.nodata));
+  return values.size === 1 && !values.has(undefined)
+    ? s.variables[0].nodata
+    : undefined;
+};
+const varTable = (ss: Structure[]) => {
+  if (!ss[0]?.variables.length) return undefined;
+  const columns = (Object.keys(SCALARS) as Scalar[]).flatMap((field) => {
+    // Layouts whose nodata the table above already states need no column
+    const vary =
+      field === "nodata"
+        ? ss.filter((s) => uniformNodata(s) === undefined)
+        : ss;
+    if (!vary.some((s) => s.variables.some((v) => v[field] !== undefined)))
+      return [];
+    const agree = ss[0].variables.every(
+      (_, i) => new Set(vary.map((s) => s.variables[i][field])).size === 1,
+    );
+    return agree && vary.length === ss.length
+      ? [{ field, label: SCALARS[field], s: vary[0] }]
+      : vary.map((s) => ({ field, label: `${SCALARS[field]} (${s.name})`, s }));
+  });
+  return {
+    columns,
+    rows: ss[0].variables.map((v, i) => ({
+      ...v,
+      cells: columns.map((c) => c.s.variables[i][c.field] ?? "—"),
+    })),
+  };
+};
+
+const names = (xs: { name: string }[]) => xs.map((x) => x.name).join(", ");
+// Each layout as a row of the files table: the files that hold it, their
+// formats, and what is inside. Long variable lists fold past four.
+const layouts = d.structures.map((s) => {
+  const assets = d.data.filter((a) => heldStructures(d, a).includes(s));
+  const vars = mergeVars ? undefined : varTable([s]);
+  const dimensions = s.dimensions.filter((dim) => !sameDim(sharedDims, dim));
+  return {
+    ...s,
+    files: assets.map((a) => a.name),
+    formats: [...new Set(assets.map((a) => formatLabel(a.media_type)))].join(
+      ", ",
+    ),
+    summary:
+      names(s.variables.slice(0, 4))
+      + (s.variables.length > 4 ? ` +${s.variables.length - 4} more` : ""),
+    axes: s.dimensions.map((x) => x.name).join(" × "),
+    nodata:
+      uniformNodata(s)
+      ?? (s.variables.some((v) => v.nodata !== undefined)
+        ? "varies"
+        : undefined),
+    vars,
+    dimensions,
+    // Anything beyond the shared parts earns the layout its own section
+    own: Boolean(vars || dimensions.length > 0 || s.foreign_keys.length > 0),
+  };
+});
+// Table columns show only when some layout has the fact
+const layoutCols = {
+  nodata: layouts.some((l) => l.nodata !== undefined),
+  geometry: layouts.some((l) => l.geometry_column),
+};
+// What every layout shares, then each layout that adds to it
+const shared = {
+  name: undefined,
+  files: [],
+  vars: mergeVars ? varTable(d.structures) : undefined,
+  dimensions: sharedDims,
+  foreign_keys: [],
+};
+const groups = [
+  ...(shared.vars || shared.dimensions.length > 0 ? [shared] : []),
+  ...layouts.filter((l) => l.own),
+];
 // A foreign key's target: a Hub record by id (its title), else its URL
 // shortened to the last path segment, with the host as a quiet hint
 const fkTarget = (resource: string) => {
@@ -156,10 +254,17 @@ const fkTarget = (resource: string) => {
       ? { href: `/catalog/${rec.data.id}/`, title: rec.data.title, host: "" }
       : { href: undefined, title: resource, host: "" };
   }
-  const u = new URL(resource);
-  const name = u.pathname.split("/").filter(Boolean).pop() ?? u.host;
-  return { href: resource, title: name, host: u.host };
+  return {
+    href: resource,
+    title: lastSegment(resource),
+    host: new URL(resource).host,
+  };
 };
+// A URL's last path segment, or its host when the path is empty
+function lastSegment(url: string) {
+  const u = new URL(url);
+  return u.pathname.split("/").filter(Boolean).pop() ?? u.host;
+}
 // An asset's layout: each structure it holds, its variables and dimensions
 const hasTemplated = d.data.some((a) => a.href_template);
 const stacUrl = stacCollectionUrl(d.id);
@@ -210,12 +315,100 @@ const assetGroups = [
   { title: "Additional assets", items: d.additional_assets },
 ].filter((g) => g.items.length > 0);
 
+// Technical facts as label/value rows; empty values drop out, empty blocks too
+const joined = (parts: (string | undefined)[], sep: string) =>
+  parts.filter(Boolean).join(sep);
+const techBlocks = [
+  d.spatial && {
+    title: "Spatial",
+    facts: [
+      { label: "CRS", value: d.spatial.crs, href: crsHref },
+      {
+        label: "Extent (W S E N)",
+        value: bboxes?.map((b) => `[${b.join(", ")}]`).join("  "),
+        mono: true,
+      },
+      { label: "Coverage", value: coverage },
+      ...spacings.map((value) => ({ label: "Grid spacing", value })),
+    ],
+  },
+  d.temporal && {
+    title: "Temporal",
+    facts:
+      "date" in d.temporal
+        ? [{ label: "Reference date", value: d.temporal.date, mono: true }]
+        : [
+            { label: "Start", value: d.temporal.start_date, mono: true },
+            {
+              label: "End",
+              value: d.temporal.end_date ?? "open (present)",
+              mono: true,
+            },
+            {
+              label: "Updates",
+              value:
+                d.temporal.update_frequency
+                && humanize(d.temporal.update_frequency),
+            },
+          ],
+  },
+  d.climate && {
+    title: "Climate methods",
+    facts: [
+      { label: "MIP era", value: d.climate.mip_era },
+      { label: "Models", value: d.climate.models.join(", "), mono: true },
+      { label: "Scenarios", value: d.climate.scenarios.join(", "), mono: true },
+      {
+        label: "Baseline",
+        value:
+          d.climate.baseline
+          && joined(
+            [
+              year(d.climate.baseline.start_date),
+              d.climate.baseline.end_date && year(d.climate.baseline.end_date),
+            ],
+            " – ",
+          ),
+      },
+      {
+        label: "Bias adjustment",
+        value:
+          d.climate.bias_adjustment
+          && joined(
+            [
+              d.climate.bias_adjustment.method,
+              d.climate.bias_adjustment.reference_dataset,
+            ],
+            " · ",
+          ),
+      },
+      {
+        label: "Downscaling",
+        value:
+          d.climate.downscaling
+          && joined(
+            [d.climate.downscaling.method, d.climate.downscaling.resolution],
+            " · ",
+          ),
+      },
+    ],
+  },
+]
+  .flatMap((block) => (block ? [block] : []))
+  .map((block) => ({
+    ...block,
+    facts: block.facts.flatMap((f) =>
+      f.value ? [{ ...f, value: f.value }] : [],
+    ),
+  }))
+  .filter((block) => block.facts.length > 0);
+
 const SECTIONS = [
   ["overview", "Overview"],
   // Access & use first after Overview — it's the tab most visits are for
   d.data.length > 0 && ["access", "Access & use"],
   hasSchema && ["schema", "Data dictionary"],
-  (d.climate || d.spatial || d.temporal) && ["technical", "Technical metadata"],
+  techBlocks.length > 0 && ["technical", "Technical metadata"],
   d.processing.length > 0 && ["provenance", "Provenance"],
   (cite || d.contact.length > 0) && [
     "citation",
@@ -327,6 +520,10 @@ const jsonLd = datasetJsonLd(
                 <a href={`https://doi.org/${d.doi}`}>{d.doi}</a>
               </span>
             )}
+            <span class="fact">
+              <span class="fact-label">created</span>
+              {d.created}
+            </span>
             <span class="fact">
               <span class="fact-label">updated</span>
               {d.updated}
@@ -502,8 +699,7 @@ const jsonLd = datasetJsonLd(
             <header>
               <h2>Access &amp; use</h2>
               <p class="section-sub">
-                Cloud-optimised distributions — read just the window you need directly from object
-                storage.
+                Files, endpoints, and worked examples for each distribution.
               </p>
               {hasTemplated && (
                 <p class="section-sub">
@@ -537,31 +733,54 @@ const jsonLd = datasetJsonLd(
             <header>
               <h2>Data dictionary</h2>
               <p class="section-sub">
-                {multiStructure
-                  ? "One dictionary per file layout: its dimensions, variables, and keys."
-                  : "Dimensions, variables, and keys of the data."}
+                What each file holds. A layout describes how the data is stored in a file: its
+                variables, the dimensions they vary over, and any keys.
               </p>
             </header>
-            {structures.map((s) => (
-              <section class="var-group" id={anchor("structure", s.name)}>
-                {multiStructure && <h3 class="tech-title mono">{s.name}</h3>}
-                {s.files.length > 0 && (
-                  <p class="structure-files">
-                    Files:{" "}
-                    {s.files.map((name, i) => (
-                      <>
-                        {i > 0 && ", "}
-                        <a class="mono" href={`#${anchor("file", name)}`}>{name}</a>
-                      </>
+            <section class="var-group">
+              <h3 class="tech-title">File layouts</h3>
+              <div class="card table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Files</th>
+                      <th>Format</th>
+                      <th>Variables</th>
+                      <th>Dimensions</th>
+                      {layoutCols.nodata && <th>No data</th>}
+                      {layoutCols.geometry && <th>Geometry column</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {layouts.map((l) => (
+                      <tr id={anchor("structure", l.name)}>
+                        <td class="var-name">
+                          {l.files.map((name, i) => (
+                            <>
+                              {i > 0 && ", "}
+                              <a class="mono" href={`#${anchor("file", name)}`}>{name}</a>
+                            </>
+                          ))}
+                        </td>
+                        <td>{l.formats}</td>
+                        <td class="mono">{l.summary}</td>
+                        <td class="mono">{l.axes || "—"}</td>
+                        {layoutCols.nodata && <td class="mono">{l.nodata ?? "—"}</td>}
+                        {layoutCols.geometry && <td class="mono">{l.geometry_column ?? "—"}</td>}
+                      </tr>
                     ))}
-                  </p>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            {groups.map((g) => (
+              <section class="var-group">
+                {multiStructure && (
+                  <h3 class="tech-title group-title">
+                    {g.name ? `Only in ${g.files.join(", ") || g.name}` : "In every file"}
+                  </h3>
                 )}
-                {s.geometry_column && (
-                  <p class="structure-files">
-                    Geometry column: <span class="mono">{s.geometry_column}</span>
-                  </p>
-                )}
-                {s.variables.length > 0 && (
+                {g.vars && (
                   <>
                 <h3 class="tech-title">Variables</h3>
                 <div class="card table-wrap">
@@ -569,19 +788,19 @@ const jsonLd = datasetJsonLd(
                     <thead>
                       <tr>
                         <th>Variable</th>
-                        <th>Type</th>
-                        <th>Unit</th>
-                        {s.varNodata && <th>No data</th>}
+                        {g.vars.columns.map((c) => (
+                          <th>{c.label}</th>
+                        ))}
                         <th>Description</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {s.variables.map((v) => (
+                      {g.vars.rows.map((v) => (
                           <tr>
                             <td class="mono var-name">{v.name}</td>
-                            <td class="mono">{v.data_type ?? "—"}</td>
-                            <td class="mono">{v.unit ?? "—"}</td>
-                            {s.varNodata && <td class="mono">{v.nodata ?? "—"}</td>}
+                            {v.cells.map((cell) => (
+                              <td class="mono">{cell}</td>
+                            ))}
                             <td>
                               {v.description ?? "—"}
                               {v.note && <div class="var-note">{v.note}</div>}
@@ -611,23 +830,34 @@ const jsonLd = datasetJsonLd(
                 </div>
                   </>
                 )}
-                {s.dimensions.length > 0 && (
+                {g.dimensions.length > 0 && (
                   <>
                 <h3 class="tech-title">Dimensions</h3>
                 <div class="dim-cards">
-                  {s.dimensions.map((dim) => (
+                  {g.dimensions.map((dim) => {
+                    const legend = legendItems(dim);
+                    return (
                     <div class="card dim-card">
                       <div class="head">
                         <span class="mono dim-name">{dim.name}</span>
-                        {dim.type && <span class="label">{dim.type}</span>}
+                        {dim.type && dim.type !== dim.name && <span class="label">{dim.type}</span>}
                       </div>
                       {dim.description && <p>{dim.description}</p>}
                       {dim.data_type && (
                         <p>
-                          <b>Data type:</b> <span class="mono">{dim.data_type}</span>
+                          <b>Type:</b> <span class="mono">{dim.data_type}</span>
                         </p>
                       )}
-                      {dim.unit && <p><b>Unit:</b> <span class="mono">{dim.unit}</span></p>}
+                      {/* Grid spacing carries the unit, so it stands in for the unit line */}
+                      {!HORIZONTAL.includes(dim.type ?? "") ? (
+                        dim.unit && <p><b>Unit:</b> <span class="mono">{dim.unit}</span></p>
+                      ) : typeof dim.step === "number" && dim.unit ? (
+                        <p>
+                          <b>Grid spacing:</b> <span class="mono">{dim.step} {dim.unit}</span>
+                        </p>
+                      ) : (
+                        <p>Coordinate column</p>
+                      )}
                       {dim.reference_system && (
                         <p>
                           <b>Coded against:</b>{" "}
@@ -640,31 +870,20 @@ const jsonLd = datasetJsonLd(
                           )}
                         </p>
                       )}
-                      {HORIZONTAL.includes(dim.type ?? "") && (
-                        <p>
-                          {typeof dim.step === "number" && dim.unit ? (
-                            <>
-                              <b>Grid spacing:</b>{" "}
-                              <span class="mono">
-                                {dim.step} {dim.unit}
-                              </span>
-                            </>
-                          ) : (
-                            "Coordinate column"
-                          )}
-                        </p>
-                      )}
                       {dim.extent && (
-                        <p class="mono">
-                          {dim.extent[0]} – {dim.extent[1]}
-                          {typeof dim.step === "string" && `, ${stepLabel(dim.step)}`}
+                        <p>
+                          <b>Range:</b>{" "}
+                          <span class="mono">
+                            {dim.extent[0]} – {dim.extent[1]}
+                            {typeof dim.step === "string" && `, ${stepLabel(dim.step)}`}
+                          </span>
                         </p>
                       )}
                       {/* The axis's domain as a legend: code, then its label when coded.
                           Past twelve entries the list folds behind the toggle (CSS below) */}
-                      {legendItems(dim).length > 0 && (
+                      {legend.length > 0 && (
                         <ul class="legend">
-                          {legendItems(dim).map((c) => (
+                          {legend.map((c) => (
                             <li title={c.description}>
                               <code>{c.value}</code> {c.label}
                             </li>
@@ -673,20 +892,21 @@ const jsonLd = datasetJsonLd(
                       )}
                       <details class="legend-more">
                         <summary>
-                          <span class="when-closed">Show all {legendItems(dim).length} values</span>
+                          <span class="when-closed">Show all {legend.length} values</span>
                           <span class="when-open">Show fewer</span>
                         </summary>
                       </details>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
                   </>
                 )}
-                {s.foreign_keys.length > 0 && (
+                {g.foreign_keys.length > 0 && (
                   <>
                 <h3 class="tech-title">Foreign keys</h3>
                 <div class="dim-cards">
-                  {s.foreign_keys.map((fk) => {
+                  {g.foreign_keys.map((fk) => {
                     const target = fkTarget(fk.reference.resource);
                     return (
                       <div class="card dim-card">
@@ -734,8 +954,7 @@ const jsonLd = datasetJsonLd(
             ))}
           </section>
         )}
-
-      {(d.climate || d.spatial || d.temporal) && (
+      {techBlocks.length > 0 && (
           <section id="technical">
             <header>
               <h2>Technical metadata</h2>
@@ -744,148 +963,21 @@ const jsonLd = datasetJsonLd(
                 summaries elsewhere on this page.
               </p>
             </header>
-            {d.spatial && (
+            {techBlocks.map((block) => (
               <section>
-                <h3 class="tech-title">Spatial</h3>
+                <h3 class="tech-title">{block.title}</h3>
                 <dl class="kv">
-                  {d.spatial.crs && (
+                  {block.facts.map((f) => (
                     <>
-                      <dt>CRS</dt>
-                      <dd>
-                        {crsHref ? (
-                          <a href={crsHref} rel="noreferrer">{d.spatial.crs}</a>
-                        ) : (
-                          d.spatial.crs
-                        )}
+                      <dt>{f.label}</dt>
+                      <dd class:list={{ mono: f.mono }}>
+                        {f.href ? <a href={f.href} rel="noreferrer">{f.value}</a> : f.value}
                       </dd>
-                    </>
-                  )}
-                  {bboxes && (
-                    <>
-                      <dt>Extent (W S E N)</dt>
-                      <dd class="mono">
-                        {bboxes.map((b) => `[${b.join(", ")}]`).join("  ")}
-                      </dd>
-                    </>
-                  )}
-                  {coverage && (
-                    <>
-                      <dt>Coverage</dt>
-                      <dd>{coverage}</dd>
-                    </>
-                  )}
-                  {spacings.map((label) => (
-                    <>
-                      <dt>Grid spacing</dt>
-                      <dd>{label}</dd>
                     </>
                   ))}
                 </dl>
               </section>
-            )}
-
-            {d.temporal && (
-              <section>
-                <h3 class="tech-title">Temporal</h3>
-                <dl class="kv">
-                  {"date" in d.temporal ? (
-                    <>
-                      <dt>Reference date</dt>
-                      <dd class="mono">{d.temporal.date}</dd>
-                    </>
-                  ) : (
-                    <>
-                      <dt>Start</dt>
-                      <dd class="mono">{d.temporal.start_date}</dd>
-                      <dt>End</dt>
-                      <dd class="mono">
-                        {d.temporal.end_date ?? "open (present)"}
-                      </dd>
-                      {d.temporal.update_frequency && (
-                        <>
-                          <dt>Updates</dt>
-                          <dd>{humanize(d.temporal.update_frequency)}</dd>
-                        </>
-                      )}
-                    </>
-                  )}
-                </dl>
-              </section>
-            )}
-
-            {d.climate && (
-            <section>
-              <h3 class="tech-title">Climate methods</h3>
-              <dl class="kv">
-                  {d.climate.mip_era && (
-                    <>
-                      <dt>MIP era</dt>
-                      <dd>{d.climate.mip_era}</dd>
-                    </>
-                  )}
-                  {d.climate.models.length > 0 && (
-                    <>
-                      <dt>Models</dt>
-                      <dd class="mono">{d.climate.models.join(", ")}</dd>
-                    </>
-                  )}
-                  {d.climate.scenarios.length > 0 && (
-                    <>
-                      <dt>Scenarios</dt>
-                      <dd class="mono">{d.climate.scenarios.join(", ")}</dd>
-                    </>
-                  )}
-                  {d.climate.baseline && (
-                    <>
-                      <dt>Baseline</dt>
-                      <dd>
-                        {d.climate.baseline.start_date.slice(0, 4)}
-                        {d.climate.baseline.end_date
-                          && ` – ${d.climate.baseline.end_date.slice(0, 4)}`}
-                      </dd>
-                    </>
-                  )}
-                  {d.climate.bias_adjustment && (
-                    <>
-                      <dt>Bias adjustment</dt>
-                      <dd>
-                        {[
-                          d.climate.bias_adjustment.method,
-                          d.climate.bias_adjustment.reference_dataset,
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </dd>
-                    </>
-                  )}
-                  {d.climate.downscaling && (
-                    <>
-                      <dt>Downscaling</dt>
-                      <dd>
-                        {[
-                          d.climate.downscaling.method,
-                          d.climate.downscaling.resolution,
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </dd>
-                    </>
-                  )}
-              </dl>
-            </section>
-            )}
-
-            <section>
-              <h3 class="tech-title">Record</h3>
-              <dl class="kv">
-                <dt>Resource type</dt>
-                <dd>{d.resource_type}</dd>
-                <dt>Created</dt>
-                <dd class="mono">{d.created}</dd>
-                <dt>Updated</dt>
-                <dd class="mono">{d.updated}</dd>
-              </dl>
-            </section>
+            ))}
           </section>
         )}
 
@@ -928,17 +1020,17 @@ const jsonLd = datasetJsonLd(
                       </p>
                     )}
                     {step.code && (
-                      <p class="step-meta mono">
-                        code:{" "}
-                        <a href={step.code.url} rel="noreferrer">
-                          {urlParts(step.code.url).map((part) => (
-                            <>
-                              {part}
-                              <wbr />
-                            </>
-                          ))}
+                      <p class="step-meta">
+                        Code:{" "}
+                        <a class="mono" href={step.code.url} rel="noreferrer" title={step.code.url}>
+                          {lastSegment(step.code.url)} ↗
                         </a>
-                        {step.code.version && <span> @ {step.code.version}</span>}
+                        {step.code.version && (
+                          <>
+                            {" "}
+                            <span class="label">{step.code.version}</span>
+                          </>
+                        )}
                       </p>
                     )}
                   </div>
@@ -1268,8 +1360,8 @@ if (tabs.length > 0) {
   gap: var(--space-5);
 }
 
-/* The layout's name heads the group, so it outranks its block titles */
-.tech-title.mono {
+/* "All layouts" and "<layout> only" head the groups, above their block titles */
+.group-title {
   font-size: var(--font-size-8);
 }
 
