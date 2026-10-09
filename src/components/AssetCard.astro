@@ -46,9 +46,10 @@ const layouts = heldStructures(d, asset).map((s) => ({
   more: Math.max(0, s.variables.length - 6),
 }));
 // A supporting file (guide, script, notebook) is a page to open, not a
-// store to point tools at: its URL links, and text reads in the browser
+// store to point tools at: its URL links. Text opens in the browser; the
+// download attribute is ignored cross-origin, so only binaries say Download
 const supporting = !d.data.includes(asset);
-const readable = /^text\/(markdown|html|plain)/.test(asset.media_type ?? "");
+const readable = (asset.media_type ?? "").startsWith("text/");
 // An author's example script previews in place; notebooks stay downloads
 const lang = asset.roles.includes("example")
   ? scriptLanguage(asset.media_type)
