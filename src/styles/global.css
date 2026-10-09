@@ -533,7 +533,7 @@ a.btn:not([href]),
   opacity: 0.8;
 }
 
-/* Article footer: back link + edit-on-GitHub (wikis, tutorials, use cases) */
+/* Article footer: back link + edit-on-GitHub (wikis, tutorials) */
 .footer-row {
   display: flex;
   flex-wrap: wrap;

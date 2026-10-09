@@ -79,23 +79,6 @@ const pages = defineCollection({
   }),
 });
 
-const useCases = defineCollection({
-  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/use-cases" }),
-  schema: z.object({
-    title: z.string(),
-    kind: z.enum(["Impact", "Adoption"]).default("Impact"),
-    partner: z.string(),
-    sector: z.string(),
-    country: z.string(),
-    description: z.string(),
-    impact: z.array(z.string()).default([]),
-    // Catalog record ids (data.id) this story draws on
-    datasets: z.array(z.string()).default([]),
-    date: z.coerce.date(),
-    featured: z.boolean().default(false),
-  }),
-});
-
 const contributionGuides = defineCollection({
   loader: glob({
     pattern: "**/*.{yaml,yml}",
@@ -444,7 +427,6 @@ export const collections = {
   tutorials,
   notebookTutorials,
   wikis,
-  useCases,
   contributionGuides,
   catalog,
   faq,

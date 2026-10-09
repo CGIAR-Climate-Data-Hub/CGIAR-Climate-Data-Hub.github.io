@@ -16,7 +16,6 @@ export const GET: APIRoute = async ({ site }) => {
   const faq = (await getCollection("faq")).sort(
     (a, b) => a.data.order - b.data.order,
   );
-  const useCases = await getCollection("useCases");
 
   const datasets = catalog.map(
     (c) => `### ${c.data.title}\n\n${datasetMd(c.data, site)}`,
@@ -55,10 +54,6 @@ ${tutorials.map((t) => doc(t.data.title, `/tutorials/${t.id}/`, t.body ?? t.data
 ## FAQ
 
 ${faq.map((f) => `### ${f.data.question}\n\n${(f.body ?? "").trim()}`).join("\n\n")}
-
-## Use cases
-
-${useCases.map((u) => doc(u.data.title, `/in-use/${u.id}/`, u.body ?? u.data.description)).join("\n\n")}
 `;
 
   return new Response(md, {

@@ -15,7 +15,6 @@ export async function getStaticPaths() {
   const docs = [
     ...(await getCollection("wikis")).map((e) => ({ e, base: "wikis" })),
     ...(await allTutorials()).map((e) => ({ e, base: "tutorials" })),
-    ...(await getCollection("useCases")).map((e) => ({ e, base: "in-use" })),
   ]
     .filter(({ e }) => e.filePath?.endsWith(".md") && e.body)
     .map(({ e, base }) => ({
@@ -24,11 +23,8 @@ export async function getStaticPaths() {
         md: [
           `# ${e.data.title}`,
           e.body,
-          e.collection !== "useCases"
-            && `Cite: ${citationText(pageCitable(e, `${SITE_URL}/${base}/${e.id}/`))}`,
-        ]
-          .filter(Boolean)
-          .join("\n\n"),
+          `Cite: ${citationText(pageCitable(e, `${SITE_URL}/${base}/${e.id}/`))}`,
+        ].join("\n\n"),
       },
     }));
 
