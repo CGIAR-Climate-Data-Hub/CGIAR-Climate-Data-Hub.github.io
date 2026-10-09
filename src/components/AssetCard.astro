@@ -274,7 +274,7 @@ const script = lang && primary && (await fetchScript(primary.url));
   )}
   {script && lang && (
     <details class="alt-access">
-      <summary class="caption">Preview code</summary>
+      <summary class="caption">View example</summary>
       <SnippetTabs code={{ [lang.id]: script }} />
     </details>
   )}
