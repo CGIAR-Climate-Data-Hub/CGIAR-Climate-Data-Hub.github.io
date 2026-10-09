@@ -1,0 +1,38 @@
+---
+// One <details> per facet: an All button, then one button per value with its
+// count. lib/facets wires the clicks; the styles are global (.facets)
+interface Props {
+  facets: {
+    key: string;
+    title: string;
+    open?: boolean;
+    values: { value: string; label?: string; count: number }[];
+  }[];
+  total: number;
+}
+
+const { facets, total } = Astro.props;
+---
+
+{facets.map((facet) => (
+  <details open={facet.open ?? true}>
+    <summary>
+      <span class="label">{facet.title}</span>
+      <svg aria-hidden="true" class="chev" fill="none" height="11" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" width="11">
+        <path d="M6 9l6 6 6-6" />
+      </svg>
+    </summary>
+    <div class="options">
+      <button aria-pressed="true" class="facet-option" data-facet={facet.key} data-value="" type="button">
+        <span>All</span>
+        <span class="mono caption">{total}</span>
+      </button>
+      {facet.values.map((v) => (
+        <button aria-pressed="false" class="facet-option" data-facet={facet.key} data-value={v.value} type="button">
+          <span>{v.label ?? v.value}</span>
+          <span class="mono caption">{v.count}</span>
+        </button>
+      ))}
+    </div>
+  </details>
+))}
