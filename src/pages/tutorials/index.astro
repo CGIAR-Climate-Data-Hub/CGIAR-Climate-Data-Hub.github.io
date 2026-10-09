@@ -7,11 +7,6 @@ import { treeUrl } from "@/lib/github";
 import { SITE_NAME, SITE_REPO } from "@/site.config";
 
 const AUDIENCES = ["Anyone", "Python & R", "GIS"] as const;
-const AUDIENCE_COLORS: Record<string, string> = {
-  Anyone: "var(--cdh-blue-800)",
-  "Python & R": "var(--cdh-blue-700)",
-  GIS: "var(--cdh-blue-950)",
-};
 
 const tutorials = (await allTutorials()).sort(
   (a, b) =>
@@ -84,7 +79,7 @@ const description =
       <ul class="grid">
         {tutorials.map((t) => (
             <li data-audience={t.data.audience} data-topic={t.data.topic} data-tutorial>
-              <a class="card tutorial-card" href={`/tutorials/${t.id}/`} style={`--level-color: ${AUDIENCE_COLORS[t.data.audience]}`}>
+              <a class="card tutorial-card" href={`/tutorials/${t.id}/`}>
                 <span class="card-top">
                   <span class="pill level">{t.data.audience}</span>
                   <span class="mono caption">{t.data.time}</span>
@@ -197,7 +192,7 @@ facetFilter([...document.querySelectorAll<HTMLElement>("li[data-tutorial]")]);
 
 .tutorial-card:hover {
   text-decoration: none;
-  border-color: var(--level-color);
+  border-color: var(--cdh-blue-700);
 }
 
 .card-top {
@@ -208,7 +203,7 @@ facetFilter([...document.querySelectorAll<HTMLElement>("li[data-tutorial]")]);
 
 .pill.level {
   color: var(--text-inverse);
-  background: var(--level-color);
+  background: var(--cdh-blue-700);
 }
 
 .card-title {
