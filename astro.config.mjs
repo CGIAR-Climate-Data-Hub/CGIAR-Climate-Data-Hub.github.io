@@ -17,7 +17,13 @@ import { SITE_URL } from "./src/site.config.ts";
 // https://astro.build/config
 export default defineConfig({
   site: SITE_URL,
-  integrations: [mdx(), sitemap(), pagefind()],
+  integrations: [
+    mdx(),
+    // Record ids have no "_", so /catalog/<id>_<version>/ is a release page:
+    // a redirect while current, an old release after. Neither belongs here.
+    sitemap({ filter: (page) => !/\/catalog\/[^/]+_[^/]+\/$/.test(page) }),
+    pagefind(),
+  ],
   prefetch: { prefetchAll: true },
   output: "static",
   // Slashed URLs come from build.format "directory"; trailingSlash stays at

@@ -15,7 +15,7 @@ const facts = [
 ];
 ---
 
-<article class="ds-card">
+<article class="card ds-card">
   <span class="label type">
     <DataGlyph size={13} type={d.type} />
     {d.type === "spatial" ? "Spatial" : "Tabular"}
@@ -23,7 +23,7 @@ const facts = [
   <h2><a href={`/catalog/${d.id}/`} title={d.title}>{d.title}</a></h2>
   {d.source && <p class="source" title={d.source}>By {d.source}</p>}
   <p class="summary" title={d.description}>{d.description}</p>
-  <div class="meta mono">
+  <div class="meta mono caption">
     {facts.map((f) => <span title={f || undefined}>{f}</span>)}
   </div>
 </article>
@@ -35,10 +35,6 @@ const facts = [
   flex-direction: column;
   gap: var(--space-3);
   height: 100%;
-  padding: 22px 22px 18px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
   transition: border-color 0.12s;
 }
 
@@ -131,8 +127,6 @@ h2 a::after {
   gap: 3px;
   padding-top: 14px;
   margin-top: auto;
-  font-size: var(--font-size-3);
-  color: var(--text-mute);
   border-top: 1px solid var(--border);
 }
 

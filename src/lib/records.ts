@@ -8,7 +8,7 @@ import { join, relative, sep } from "node:path";
 import type { Loader } from "astro/loaders";
 import { parse } from "yaml";
 
-interface RecordsSource {
+export interface RepoSource {
   repo: string;
   dir: string;
 }
@@ -25,7 +25,7 @@ export async function fromLocal(dir: string, match = /./) {
     entries
       .filter((e) => e.isFile())
       .map((e) =>
-        relative(dir, join(e.parentPath, e.name)).split(sep).join("/"),
+        relative(dir, join(e.parentPath, e.name)).replaceAll(sep, "/"),
       )
       .filter((f) => match.test(f))
       .map(async (f): Promise<SourceFile> => {
@@ -59,7 +59,7 @@ async function mapLimit<T, R>(
 }
 
 export async function fromGitHub(
-  { repo, dir }: RecordsSource,
+  { repo, dir }: RepoSource,
   ref: string,
   match = /./,
 ) {
@@ -96,19 +96,38 @@ export async function fromGitHub(
   });
 }
 
-export function records(source: RecordsSource): Loader {
+// Supporting assets and cdh-inventory indexes may be relative to the record
+// file. Resolve them against its raw URL for pages, copy buttons, and snippets.
+function resolveSidecars(record: unknown, base: string) {
+  const doc = record as { additional_assets?: unknown; data?: unknown };
+  const assets = Array.isArray(doc?.additional_assets)
+    ? doc.additional_assets
+    : [];
+  const indexes = Array.isArray(doc?.data)
+    ? doc.data.flatMap((asset) => {
+        const indexes = asset?.file_index;
+        return Array.isArray(indexes)
+          ? indexes.filter((index) => index?.format === "cdh-inventory")
+          : [];
+      })
+    : [];
+  for (const asset of [...assets, ...indexes])
+    for (const loc of asset?.locations ?? [])
+      if (typeof loc?.url === "string" && !/^[a-z][a-z\d+.-]*:/i.test(loc.url))
+        loc.url = new URL(loc.url, base).href;
+}
+
+export function records(source: RepoSource): Loader {
   return {
     name: "records",
     async load({ store, parseData, logger }) {
+      const repo = process.env.RECORDS_REPO ?? source.repo;
+      const ref = process.env.RECORDS_REF ?? "main";
       let files: SourceFile[];
       try {
         files = process.env.RECORDS_DIR
           ? await fromLocal(process.env.RECORDS_DIR, /\.ya?ml$/)
-          : await fromGitHub(
-              { ...source, repo: process.env.RECORDS_REPO ?? source.repo },
-              process.env.RECORDS_REF ?? "main",
-              /\.ya?ml$/,
-            );
+          : await fromGitHub({ ...source, repo }, ref, /\.ya?ml$/);
       } catch (err) {
         // With REQUIRE_RECORDS set (deploy workflow), an unavailable catalog
         // fails the build instead of deploying without records
@@ -124,12 +143,17 @@ export function records(source: RecordsSource): Loader {
       const decoder = new TextDecoder();
       for (const f of files) {
         const id = f.path.replace(/\.ya?ml$/, "");
-        const data = await parseData({
-          id,
-          data: parse(decoder.decode(f.bytes)),
-        });
-        // filePath is repo-relative, for "view source" links on record pages
-        store.set({ id, data, filePath: `${source.dir}/${f.path}` });
+        const body = decoder.decode(f.bytes);
+        // merge: records may share blocks with YAML anchors and `<<` merge keys
+        const record = parse(body, { merge: true });
+        resolveSidecars(
+          record,
+          `https://raw.githubusercontent.com/${repo}/${ref}/${source.dir}/${f.path}`,
+        );
+        const data = await parseData({ id, data: record });
+        // body is the file as authored, for the raw JSON endpoint; filePath is
+        // repo-relative, for "view source" links on record pages
+        store.set({ id, data, body, filePath: `${source.dir}/${f.path}` });
       }
       logger.info(`loaded ${files.length} records`);
     },

@@ -1,11 +1,9 @@
 # yaml-language-server: $schema=../../spec/schemas/profiles/cdh.schema.json
-"$schema": https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/schemas/profiles/cdh.schema.json
-cdh_schema_version: "v0.3.0"
+cdh_schema_version: "v0.4.0"
 extensions:
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/extensions/cdh/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/extensions/climate/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/extensions/datacube/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/extensions/agriculture/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/cdh/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/climate/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/agriculture/schema.json
 
 id: spam2020
 title: MAPSPAM 2020
@@ -33,26 +31,30 @@ contact:
   - name: Zhe Guo
     roles: [producer]
     email: z.guo@cgiar.org
-    organization: International Food Policy Research Institute
+    organization: International Food Policy Research Institute (IFPRI)
     url: https://www.ifpri.org/
   - name: Shuang Zhou
     roles: [producer]
     email: s.zhou@cgiar.org
-    organization: International Food Policy Research Institute
+    organization: International Food Policy Research Institute (IFPRI)
     url: https://www.ifpri.org/
   - name: Liangzhi You
     roles: [producer]
-    organization: International Food Policy Research Institute
+    organization: International Food Policy Research Institute (IFPRI)
 
-  - organization: International Food Policy Research Institute
+  - organization: International Food Policy Research Institute (IFPRI)
     roles: [licensor]
     url: https://www.ifpri.org/
+  - name: Brayden Youngberg
+    roles: [maintainer]
+    email: b.youngberg@cgiar.org
+    organization: Alliance of Bioversity International and CIAT
 
 citation:
   title:
     Global Spatially-Disaggregated Crop Production Statistics Data for 2020 Version 2.0 Release 2
   authors:
-    - International Food Policy Research Institute (IFPRI)
+    - organization: International Food Policy Research Institute (IFPRI)
   date: "2026"
   publisher: Harvard Dataverse
 doi: 10.7910/DVN/SWPENT
@@ -60,10 +62,14 @@ related_publications:
   - citation:
       title: "Generating global crop distribution maps: From census to grid"
       authors:
-        - You, L.
-        - Wood, S.
-        - Wood-Sichra, U.
-        - Wu, W.
+        - family: You
+          given: L.
+        - family: Wood
+          given: S.
+        - family: Wood-Sichra
+          given: U.
+        - family: Wu
+          given: W.
       date: "2014"
       publisher: Agricultural Systems
     doi: 10.1016/j.agsy.2014.01.002
@@ -76,98 +82,138 @@ spatial:
   geography:
     - world
   crs: EPSG:4326
-  resolution:
-    - type: xy
-      unit: degree
-      value: 0.08333333
-      label: 5 arc-minutes (~10km at equator)
 
 temporal:
   date: "2020" # static 2020 reference year (year precision)
 
-dimensions:
-  - name: crop
-    type: crop
-    description: MAPSPAM crop code. Full labels are provided in the dimension codes asset.
-    values:
-      - whea
-      - rice
-      - maiz
-      - barl
-      - mill
-      - pmil
-      - sorg
-      - ocer
-      - pota
-      - swpo
-      - yams
-      - cass
-      - orts
-      - bean
-      - chic
-      - cowp
-      - pige
-      - lent
-      - opul
-      - soyb
-      - grou
-      - cnut
-      - oilp
-      - sunf
-      - rape
-      - sesa
-      - ooil
-      - sugc
-      - sugb
-      - cott
-      - ofib
-      - coff
-      - rcof
-      - coco
-      - teas
-      - toba
-      - bana
-      - plnt
-      - citr
-      - trof
-      - temf
-      - toma
-      - onio
-      - vege
-      - rubb
-      - rest
+structures:
+  - name: zarr
+    dimensions:
+      - &cell
+        name: cell
+        type: xy
+        description: 5 arc-minutes (~10km at equator).
+        step: 0.08333333
+        unit: degree
+      - &crop
+        name: crop
+        type: crop
+        description: MAPSPAM crop code. Full labels are provided in the dimension codes asset.
+        values:
+          - whea
+          - rice
+          - maiz
+          - barl
+          - mill
+          - pmil
+          - sorg
+          - ocer
+          - pota
+          - swpo
+          - yams
+          - cass
+          - orts
+          - bean
+          - chic
+          - cowp
+          - pige
+          - lent
+          - opul
+          - soyb
+          - grou
+          - cnut
+          - oilp
+          - sunf
+          - rape
+          - sesa
+          - ooil
+          - sugc
+          - sugb
+          - cott
+          - ofib
+          - coff
+          - rcof
+          - coco
+          - teas
+          - toba
+          - bana
+          - plnt
+          - citr
+          - trof
+          - temf
+          - toma
+          - onio
+          - vege
+          - rubb
+          - rest
 
-  - name: technology
-    type: technology
-    description:
-      MAPSPAM production system code. Full labels are provided in the dimension codes asset.
-    values: [all, irrigated, rainfed]
+      - &technology
+        name: technology
+        type: technology
+        description:
+          MAPSPAM production system code. Full labels are provided in the dimension codes asset.
+        values: [all, irrigated, rainfed]
+    variables:
+      - name: physical_area
+        nodata: "NaN"
+        description: Physical crop area allocated to each grid cell.
+        data_type: float32
+        unit: ha
+      - name: harvested_area
+        nodata: "NaN"
+        description: Harvested crop area allocated to each grid cell.
+        data_type: float32
+        unit: ha
+      - name: production
+        nodata: "NaN"
+        description: Crop production allocated to each grid cell.
+        data_type: float32
+        unit: t
+        note: Absolute quantity; regional summaries should sum values across cells.
+      - name: yield
+        nodata: "NaN"
+        description: Crop yield for each grid cell.
+        data_type: float32
+        unit: t ha-1
+        note: >
+          Relative quantity; do not sum yield values across grid cells. Regional summaries should
+          use a weighted mean with harvested_area as the weight.
 
-variables:
-  - name: physical_area
-    description: Physical crop area allocated to each grid cell.
-    data_type: float32
-    unit: ha
-  - name: harvested_area
-    description: Harvested crop area allocated to each grid cell.
-    data_type: float32
-    unit: ha
-  - name: production
-    description: Crop production allocated to each grid cell.
-    data_type: float32
-    unit: t
-    note: Absolute quantity; regional summaries should sum values across cells.
-  - name: yield
-    description: Crop yield for each grid cell.
-    data_type: float32
-    unit: t ha-1
-    note: >
-      Relative quantity; do not sum yield values across grid cells. Regional summaries should use a
-      weighted mean with harvested_area as the weight.
+  - name: cogs
+    dimensions: [*cell, *crop, *technology]
+    variables:
+      - name: physical_area
+        nodata: -9999
+        description: Physical crop area allocated to each grid cell.
+        data_type: float32
+        unit: ha
+      - name: harvested_area
+        nodata: -9999
+        description: Harvested crop area allocated to each grid cell.
+        data_type: float32
+        unit: ha
+      - name: production
+        nodata: -9999
+        description: Crop production allocated to each grid cell.
+        data_type: float32
+        unit: t
+        note: Absolute quantity; regional summaries should sum values across cells.
+      - name: yield
+        nodata: -9999
+        description: Crop yield for each grid cell.
+        data_type: float32
+        unit: t ha-1
+        note: >
+          Relative quantity; do not sum yield values across grid cells. Regional summaries should
+          use a weighted mean with harvested_area as the weight.
 
 cdh:
   domain: [agricultural-production]
   usage:
+    intended_uses:
+      - global and regional analysis of crop area, production, and yield patterns
+      - food security and agricultural systems assessment
+      - spatial targeting at national and sub-national scale
     not_recommended_for:
       - use: field-scale farm management
         reason: the grid is too coarse for field-scale operational decisions.
@@ -231,6 +277,7 @@ processing:
     derived_from:
       - url: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/SWPENT
         title: Source MAPSPAM dataset
+        version: v2r2
   - id: cloud-optimize
     description: Conversion of source MAPSPAM files to a consolidated Zarr data cube.
     code:
@@ -240,39 +287,39 @@ processing:
 
 data:
   - name: zarr
+    structures: [zarr]
     locations:
       - url: https://digital-atlas.s3.amazonaws.com/cdh/data/mapspam2020-v2r2/spam2020-v2r2.zarr
         title: HTTPS
-      - url: s3://digital-atlas/cdh/data/mapspam-2020-v2r2/spam2020-v2r2.zarr
+      - url: s3://digital-atlas/cdh/data/mapspam2020-v2r2/spam2020-v2r2.zarr
         title: S3
     processing_steps: [cloud-optimize]
     description: Zarr representation of the source MAPSPAM files.
-    nodata: -9999
     media_type: application/vnd.zarr; version=3
     file_size: 500 MB
   - name: cogs
+    structures: [cogs]
     locations:
-      - url: https://digital-atlas.s3.amazonaws.com/cdh/data/mapspam2020-v2r2/cogs/
+      - url: https://digital-atlas.s3.amazonaws.com/cdh/data/mapspam2020-v2r2/cog/
         title: HTTPS
-      - url: s3://digital-atlas/cdh/data/mapspam-2020-v2r2/cogs/
+      - url: s3://digital-atlas/cdh/data/mapspam2020-v2r2/cog/
         title: S3
-    href_template: "spam2020-{technology}-{variable}.tif"
+    href_template: "spam2020-{variable}-{technology}.tif"
     processing_steps: [cloud-optimize]
     description: Cloud Optimized GeoTIFFs of the MAPSPAM files.
-    nodata: -9999
     media_type: "image/tiff; application=geotiff; profile=cloud-optimized"
 
 additional_assets:
   - name: crop codes
     locations:
-      - url: https://digital-atlas.s3.amazonaws.com/cdh/data/mapspam-2020-v2r2/crop-codes.json
+      - url: https://digital-atlas.s3.amazonaws.com/cdh/data/mapspam2020-v2r2/crop-codes.json
     description: Dimension code list for crop values.
     media_type: application/json
     roles: [metadata, describedby]
     file_size: 5 KB
 
 additional_links:
-  - name: MAPSPAM project website
+  - title: MAPSPAM project website
     rel: about
     url: https://www.mapspam.info/about/
     description: Project page describing MAPSPAM methods and releases.

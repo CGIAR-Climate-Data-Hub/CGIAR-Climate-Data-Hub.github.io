@@ -6,6 +6,7 @@ import DataGlyph from "@/components/DataGlyph.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import Takeaways from "@/components/Takeaways.astro";
 import Layout from "@/layouts/Layout.astro";
+import { currentReleases } from "@/lib/catalog";
 import { editUrl } from "@/lib/github";
 import { SITE_NAME, SITE_PUBLISHER_NAME, SITE_REPO } from "@/site.config";
 
@@ -22,13 +23,13 @@ const { Content, headings } = await render(entry);
 const date = entry.data.date.toISOString().slice(0, 10);
 
 // Resolve dataset ids to catalog entries for the "Built with" chips
-const datasets = (
-  await getCollection("catalog", (c) => entry.data.datasets.includes(c.data.id))
-).map((c) => ({
-  href: `/catalog/${c.data.id}/`,
-  title: c.data.title,
-  type: c.data.spatial ? ("spatial" as const) : ("tabular" as const),
-}));
+const datasets = currentReleases(await getCollection("catalog"))
+  .filter((c) => entry.data.datasets.includes(c.data.id))
+  .map((c) => ({
+    href: `/catalog/${c.data.id}/`,
+    title: c.data.title,
+    type: c.data.spatial ? ("spatial" as const) : ("tabular" as const),
+  }));
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -59,11 +60,11 @@ const jsonLd = {
   <div class="container narrow-grid">
     <article>
       <div class="meta">
-        <span class="label kind">{entry.data.kind}</span>
+        <span class="label terra">{entry.data.kind}</span>
         <span aria-hidden="true" class="sep"></span>
-        <span class="mono">{entry.data.country}</span>
+        <span class="mono caption">{entry.data.country}</span>
         <span aria-hidden="true" class="sep"></span>
-        <span class="mono">{date.slice(0, 7)}</span>
+        <span class="mono caption">{date.slice(0, 7)}</span>
       </div>
       <h1>{entry.data.title}</h1>
       <div class="partner">{entry.data.partner}</div>
@@ -133,21 +134,11 @@ article {
   align-items: center;
 }
 
-.kind {
-  font-size: var(--font-size-1);
-  color: var(--terra-700);
-}
-
 .sep {
   width: 3px;
   height: 3px;
   background: var(--grey-3);
   border-radius: 50%;
-}
-
-.meta .mono {
-  font-size: var(--font-size-3);
-  color: var(--text-mute);
 }
 
 h1 {
@@ -186,14 +177,6 @@ h1 {
 
 .built-with .label {
   margin-bottom: 14px;
-  font-size: var(--font-size-1);
-  color: var(--text-mute);
-}
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
 }
 
 .ref-chip {

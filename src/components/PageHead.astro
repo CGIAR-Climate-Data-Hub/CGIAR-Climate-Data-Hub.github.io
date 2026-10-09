@@ -1,19 +1,15 @@
 ---
-// Editorial page header: breadcrumb slot, terracotta kicker, h1, serif-light sub.
-import Breadcrumbs from "./Breadcrumbs.astro";
-
+// Editorial page header: terracotta kicker, h1, serif-light sub.
 interface Props {
   kicker?: string;
   title: string;
   sub?: string;
-  breadcrumb?: { label: string; href?: string }[];
 }
 
-const { kicker, title, sub, breadcrumb } = Astro.props;
+const { kicker, title, sub } = Astro.props;
 ---
 
 <div class="container head">
-  {breadcrumb && <Breadcrumbs items={breadcrumb} />}
   <div class="row">
     <div class="main">
       {kicker && (
@@ -26,7 +22,6 @@ const { kicker, title, sub, breadcrumb } = Astro.props;
     </div>
     <slot name="right" />
   </div>
-  <slot />
 </div>
 
 <style>

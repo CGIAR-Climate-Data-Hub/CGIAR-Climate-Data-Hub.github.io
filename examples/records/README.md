@@ -14,9 +14,12 @@ schema in `src/content.config.ts` (same rules as real records; the loader
 picks up any `*.yaml`/`*.yml` in this folder, this README is ignored).
 
 Worth covering, to exercise every record-page path: one spatial dataset with
-templated assets (snippets, STAC link), one tabular dataset, and a versioned
-pair per standard §4.7 — a current record (stable id, `previous_version`
-pointing back) plus its frozen snapshot (`<id>-v1`, `deprecated: true`).
-Folders carry no meaning; layout is organization only. A record whose
-`processing[].derived_from` url points at another record's page
-(`/catalog/<id>/`) also lights up the provenance cross-links.
+templated assets (snippets, STAC link), one tabular dataset, and two
+releases of one record — both share an `id`, the superseded one is
+`deprecated: true` and is served at `/catalog/<id>_<version>/`. Folders carry
+no meaning; layout is organization only. A record whose
+`processing[].derived_from` names another record's `id` also lights up the
+provenance cross-links.
+
+These are copies of the `examples/` records in the metadata standard repo;
+refresh them from there when the standard changes.

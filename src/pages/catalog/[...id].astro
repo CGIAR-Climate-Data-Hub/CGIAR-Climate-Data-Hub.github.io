@@ -1,33 +1,38 @@
 ---
 import { getCollection } from "astro:content";
 import { satteri } from "@astrojs/markdown-satteri";
+import AssetCard from "@/components/AssetCard.astro";
 import BboxMap from "@/components/BboxMap.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import Citation from "@/components/Citation.astro";
 import CopyButton from "@/components/CopyButton.astro";
+import DataDictionary from "@/components/DataDictionary.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import SnippetTabs from "@/components/SnippetTabs.astro";
 import Layout from "@/layouts/Layout.astro";
 import {
   citable,
+  currentReleases,
   datasetJsonLd,
-  formatBestFor,
-  formatLabel,
   geoLabel,
-  hubRecordId,
+  gridSpacings,
   humanize,
+  lastSegment,
   licenseUrl,
   licensor,
   normalizeBboxes,
-  resolveTemplate,
+  recordSlug,
   stacCollectionUrl,
   temporalText,
   versionChain,
+  versionedSlug,
+  year,
 } from "@/lib/catalog";
+import { authorName } from "@/lib/citation";
 import { shikiConfig } from "@/lib/code-block";
 import { allTutorials } from "@/lib/collections";
 import { blobUrl, editUrl, githubUrl } from "@/lib/github";
-import { assetExample, quickstarts } from "@/lib/snippets";
+import { quickstart } from "@/lib/snippets";
 import { commodity } from "@/lib/vocab";
 import { CATALOG_REPO, SITE_NAME } from "@/site.config";
 
@@ -35,74 +40,88 @@ export async function getStaticPaths() {
   const entries = await getCollection("catalog");
   // Record descriptions may carry markdown; render like any other content
   const markdown = await satteri().createRenderer({ shikiConfig });
-  // No series/redirect routes: per the standard (§4.7) the unversioned id is
-  // always the current release, updated in place; snapshots are their own
-  // records marked deprecated.
-  return Promise.all(
+  // A current release's <id>_<version> redirects to <id> until superseded
+  const redirects = entries
+    .filter((e) => !e.data.deprecated)
+    .map((e) => ({
+      params: { id: versionedSlug(e.data) },
+      props: { redirect: `/catalog/${e.data.id}/` },
+    }));
+  const pages = await Promise.all(
     entries.map(async (entry) => ({
-      params: { id: entry.data.id },
+      params: { id: recordSlug(entry.data) },
       props: {
         entry,
         descriptionHtml: (await markdown.render(entry.data.description)).code,
       },
     })),
   );
+  return [...pages, ...redirects];
 }
 
+if ("redirect" in Astro.props) return Astro.redirect(Astro.props.redirect, 301);
 const { entry, descriptionHtml } = Astro.props;
 const d = entry.data;
 
 const catalog = await getCollection("catalog");
 // Newest-first version chain; the head is the current release
 const chain = versionChain(d.id, catalog);
-const current = chain[0]?.data.id !== d.id ? chain[0] : undefined;
+const current = d.deprecated ? chain[0] : undefined;
 
-// Provenance cross-links: derived_from urls that resolve to Hub records
-// render as internal links, and records derived from this one list in the
-// rail. The links carry the graph; there is no drawn DAG.
-const hubSource = (url: string) => {
-  const rec = catalog.find((e) => e.data.id === hubRecordId(url));
-  return rec && { href: `/catalog/${rec.data.id}/`, title: rec.data.title };
+// Provenance cross-links: derived_from ids render as internal links, and
+// records derived from this one list in the rail. No drawn DAG.
+// A pinned version links that release's permanent URL
+const live = currentReleases(catalog);
+const liveById = new Map(live.map((e) => [e.data.id, e]));
+const hubSource = (src: { id?: string; version?: string }) => {
+  const rec = src.id && liveById.get(src.id);
+  const slug = src.version ? `${src.id}_${src.version}` : src.id;
+  return rec && { href: `/catalog/${slug}/`, title: rec.data.title };
 };
-const derivatives = catalog
-  .filter(
-    (e) =>
-      !e.data.deprecated
-      && e.data.processing.some((s) =>
-        s.derived_from.some((src) => hubRecordId(src.url) === d.id),
-      ),
+const derivatives = live
+  .filter((e) =>
+    e.data.processing.some((s) =>
+      s.derived_from.some((src) => src.id === d.id),
+    ),
   )
   .map((e) => ({ href: `/catalog/${e.data.id}/`, title: e.data.title }));
 
+// Parent and child representations, linked by the child's `parent` id
+const parent = d.parent && liveById.get(d.parent);
+const children = live.filter((e) => e.data.parent === d.id);
+
 const bboxes = normalizeBboxes(d.spatial?.bbox);
 const coverage = d.spatial?.geography.map(geoLabel).join(", ");
-const resolution = d.spatial?.resolution
-  .map((r) => r.label)
-  .filter(Boolean)
-  .join(" · ");
+const spacings = gridSpacings(d);
+const resolution = spacings.join(" · ");
 const temporal = temporalText(
   d.temporal,
-  d.dimensions.find((dim) => dim.type === "temporal")?.step,
+  d.structures
+    .flatMap((s) => s.dimensions)
+    .map((dim) => (dim.type === "temporal" ? dim.step : undefined))
+    .find((step) => typeof step === "string"),
 );
 const source = licensor(d);
-// Contact order: custodians (hub-side stewards), then licensors, then the rest
+// Contact order: maintainers (accountable for the record), then licensors, then the rest
 const roleRank = (c: (typeof d.contact)[number]) =>
-  c.roles.includes("custodian") ? 2 : c.roles.includes("licensor") ? 1 : 0;
+  c.roles.includes("maintainer") ? 2 : c.roles.includes("licensor") ? 1 : 0;
 const contacts = [...d.contact]
   .sort((a, b) => roleRank(b) - roleRank(a))
   .map((c) => ({
     ...c,
-    otherRoles: c.roles.filter((r) => r !== "custodian" && r !== "licensor"),
+    otherRoles: c.roles.filter((r) => r !== "maintainer" && r !== "licensor"),
   }));
-const recordUrl = new URL(`/catalog/${d.id}/`, Astro.site).href;
+const recordUrl = new URL(`/catalog/${recordSlug(d)}/`, Astro.site).href;
 const restricted = Boolean(d.access && d.access !== "public");
 const crsHref =
   d.spatial?.crs && /^EPSG:\d+$/.test(d.spatial.crs)
     ? `https://epsg.io/${d.spatial.crs.split(":")[1]}`
     : undefined;
-const hasSchema = d.dimensions.length + d.variables.length > 0;
-const hasTemplated = d.data.some((a) => a.href_template);
-const stacUrl = stacCollectionUrl(d.id);
+const hasSchema = d.structures.length > 0;
+// The STAC collection indexes templated files, so only those records link it
+const stacUrl = d.data.some((a) => a.href_template)
+  ? stacCollectionUrl(d.id)
+  : undefined;
 // Record metadata lives in the catalog repo, so source + issue links point
 // there. Flat strings on purpose: Biome's Astro frontmatter parser trips on
 // template literals nested two deep.
@@ -138,85 +157,116 @@ const tutorialLinks = (await allTutorials())
     meta: `${t.data.audience} · ${t.data.time}`,
   }));
 
-// Long URLs wrap at path boundaries, not mid-token: each segment gets a
-// <wbr> break hint (see also the picker's replaceChildren in the script)
-const urlParts = (url: string) => url.split(/(?<=\/)/);
-
 // Example code, from the template files in src/snippets (see lib/snippets).
-// The quick start stacks one short block per format; each asset card in
-// Access & use carries its own worked example (spatial clip / point sample).
-const quickstart = {
-  python: quickstarts(d, "py").join("\n\n"),
-  r: quickstarts(d, "R").join("\n\n"),
-};
+// The quick start stacks one short block per format, unless the record ships
+// its own example script for that language; each asset card in Access & use
+// carries its own worked example (spatial clip / point sample).
+const quick = await quickstart(d, restricted);
 
-// Everything the asset card renders, derived once per asset:
-// - tplFields: one select per template placeholder, options from the cube's
-//   dimensions (and variable names); undefined unless every one resolves
-// - tplFile/tplUrl: the picker's prerendered default (first value per field)
-// - primary: the spotlighted access route (HTTPS when available); others
-//   fills the disclosure — everything on templated assets, where the picker
-//   stands in for the access panel and no root URL shows above
-// - download: only where one click yields one file — an http(s) URL to a
-//   single object, never templated collections, Zarr stores, or prefixes.
-//   Restricted records get no Download buttons at all (the click would just
-//   be refused); URLs and copy stay for users who hold credentials
-const assets = [...d.data, ...d.additional_assets].map((asset) => {
-  const httpUrl = asset.locations.find((l) => l.url.startsWith("http"))?.url;
-  const primary =
-    asset.locations.find((l) => l.url === httpUrl) ?? asset.locations[0];
-
-  let tplFields: { name: string; values: string[] }[] | undefined;
-  let tplFile: string | undefined;
-  if (asset.href_template) {
-    const resolved = resolveTemplate(d, asset.href_template);
-    tplFields = resolved?.fields;
-    tplFile = resolved?.file;
-  }
-
-  const lastSegment = httpUrl?.split("/").pop() ?? "";
-  return {
-    asset,
-    example: assetExample(d, asset),
-    bestFor: formatBestFor(asset.media_type),
-    primary,
-    others: asset.href_template
-      ? asset.locations
-      : asset.locations.filter((l) => l !== primary),
-    tplFields,
-    tplFile,
-    tplUrl: tplFile && httpUrl ? httpUrl + tplFile : undefined,
-    download:
-      !restricted
-      && !asset.href_template
-      && httpUrl
-      && !httpUrl.endsWith("/")
-      && lastSegment.includes(".")
-      && !lastSegment.endsWith(".zarr")
-        ? httpUrl
-        : undefined,
-  };
-});
 // The standard separates the distributions from supporting material
 const assetGroups = [
-  { title: "Data", items: assets.slice(0, d.data.length) },
-  { title: "Additional assets", items: assets.slice(d.data.length) },
+  { title: "Data", items: d.data },
+  { title: "Additional assets", items: d.additional_assets },
 ].filter((g) => g.items.length > 0);
+
+// Technical facts as label/value rows; empty values drop out, empty blocks too
+const joined = (parts: (string | undefined)[], sep: string) =>
+  parts.filter(Boolean).join(sep);
+const techBlocks = [
+  d.spatial && {
+    title: "Spatial",
+    facts: [
+      { label: "CRS", value: d.spatial.crs, href: crsHref },
+      {
+        label: "Extent (W S E N)",
+        value: bboxes?.map((b) => `[${b.join(", ")}]`).join("  "),
+        mono: true,
+      },
+      { label: "Coverage", value: coverage },
+      ...spacings.map((value) => ({ label: "Grid spacing", value })),
+    ],
+  },
+  d.temporal && {
+    title: "Temporal",
+    facts:
+      "date" in d.temporal
+        ? [{ label: "Reference date", value: d.temporal.date, mono: true }]
+        : [
+            { label: "Start", value: d.temporal.start_date, mono: true },
+            {
+              label: "End",
+              value: d.temporal.end_date ?? "open (present)",
+              mono: true,
+            },
+            {
+              label: "Updates",
+              value:
+                d.temporal.update_frequency
+                && humanize(d.temporal.update_frequency),
+            },
+          ],
+  },
+  d.climate && {
+    title: "Climate methods",
+    facts: [
+      { label: "MIP era", value: d.climate.mip_era },
+      { label: "Models", value: d.climate.models.join(", "), mono: true },
+      { label: "Scenarios", value: d.climate.scenarios.join(", "), mono: true },
+      {
+        label: "Baseline",
+        value:
+          d.climate.baseline
+          && joined(
+            [
+              year(d.climate.baseline.start_date),
+              d.climate.baseline.end_date && year(d.climate.baseline.end_date),
+            ],
+            " – ",
+          ),
+      },
+      {
+        label: "Bias adjustment",
+        value:
+          d.climate.bias_adjustment
+          && joined(
+            [
+              d.climate.bias_adjustment.method,
+              d.climate.bias_adjustment.reference_dataset,
+            ],
+            " · ",
+          ),
+      },
+      {
+        label: "Downscaling",
+        value:
+          d.climate.downscaling
+          && joined(
+            [d.climate.downscaling.method, d.climate.downscaling.resolution],
+            " · ",
+          ),
+      },
+    ],
+  },
+]
+  .filter((block) => !!block)
+  .map((block) => ({
+    ...block,
+    facts: block.facts.flatMap((f) =>
+      f.value ? [{ ...f, value: f.value }] : [],
+    ),
+  }))
+  .filter((block) => block.facts.length > 0);
 
 const SECTIONS = [
   ["overview", "Overview"],
   // Access & use first after Overview — it's the tab most visits are for
   d.data.length > 0 && ["access", "Access & use"],
-  hasSchema && ["schema", "Schema"],
-  (d.climate || d.spatial || d.temporal) && ["technical", "Technical metadata"],
+  hasSchema && ["schema", "Data dictionary"],
+  techBlocks.length > 0 && ["technical", "Technical metadata"],
   d.processing.length > 0 && ["provenance", "Provenance"],
-  (cite || d.contact.length > 0) && [
+  (cite || d.attribution || d.contact.length > 0) && [
     "citation",
-    cite && d.contact.length > 0
-      ? "Citation & contacts"
-      : cite
-        ? "Citation"
-        : "Contacts",
+    "Citation & contacts",
   ],
 ].filter(Boolean) as [string, string][];
 
@@ -240,13 +290,12 @@ const jsonLd = datasetJsonLd(
       />
       {d.deprecated && (
         <div class="deprecated-note">
-          This is a frozen snapshot of an older release{d.version ? ` (${d.version})` : ""}.
+          This is an older release ({d.version}).
           {current && (
             <>
               {" "}
               <a href={`/catalog/${current.data.id}/`}>
-                Go to the current version
-                {current.data.version ? ` (${current.data.version})` : ""} →
+                Go to the current version ({current.data.version}) →
               </a>
             </>
           )}
@@ -259,54 +308,56 @@ const jsonLd = datasetJsonLd(
           {d.series && (
             <p class="series-line">
               Part of:{" "}
-              <a href={`/catalog/?series=${encodeURIComponent(d.series.name)}`}>
+              <a href={`/catalog/?q=${encodeURIComponent(d.series.name)}`}>
                 {d.series.name}
               </a>
             </p>
           )}
 
-          {(d.version || restricted) && (
-            <div class="version-row">
-              {d.version && <span class="label">Version</span>}
-              {d.version && chain.length > 1 ? (
-                <details class="drop-menu version-menu">
-                  <summary class="btn btn-ghost">
-                    {d.version}
-                    {!current && <span class="latest">LATEST</span>}
-                    <svg
-                      aria-hidden="true"
-                      fill="none"
-                      height="10"
-                      stroke="currentColor"
-                      stroke-width="2.4"
-                      viewBox="0 0 24 24"
-                      width="10"
+          <div class="version-row">
+            <span class="label">Version</span>
+            {chain.length > 1 ? (
+              <>
+              <button
+                class="btn btn-ghost drop-menu version-menu"
+                popovertarget="version-menu"
+                type="button"
+              >
+                  {d.version}
+                  {!current && <span class="pill blue caps">LATEST</span>}
+                  <svg
+                    aria-hidden="true"
+                    fill="none"
+                    height="10"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    viewBox="0 0 24 24"
+                    width="10"
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+              </button>
+                <div class="card menu-list" id="version-menu" popover>
+                  {chain.map((v, i) => (
+                    <a
+                      aria-current={v.data.version === d.version ? "page" : undefined}
+                      href={`/catalog/${recordSlug(v.data)}/`}
                     >
-                      <path d="M6 9l6 6 6-6" />
-                    </svg>
-                  </summary>
-                  <div class="menu-list">
-                    {chain.map((v, i) => (
-                      <a
-                        aria-current={v.data.id === d.id ? "page" : undefined}
-                        href={`/catalog/${v.data.id}/`}
-                      >
-                        {v.data.version ?? v.data.id}
-                        {i === 0 && <span class="latest">LATEST</span>}
-                      </a>
-                    ))}
-                  </div>
-                </details>
-              ) : (
-                d.version && <span class="version-single">{d.version}</span>
-              )}
-              {restricted && (
-                <span class="mono access-flag">
-                  {humanize(d.access ?? "")} access
-                </span>
-              )}
-            </div>
-          )}
+                      {v.data.version}
+                      {i === 0 && <span class="pill blue caps">LATEST</span>}
+                    </a>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <span class="version-single">{d.version}</span>
+            )}
+            {restricted && (
+              <span class="pill terra outline mono">
+                {humanize(d.access ?? "")} access
+              </span>
+            )}
+          </div>
 
           <div class="mono meta-row">
             <span class="fact">
@@ -323,56 +374,60 @@ const jsonLd = datasetJsonLd(
                 <a href={`https://doi.org/${d.doi}`}>{d.doi}</a>
               </span>
             )}
-            {d.updated && (
-              <span class="fact">
-                <span class="fact-label">updated</span>
-                {d.updated}
-              </span>
-            )}
+            <span class="fact">
+              <span class="fact-label">created</span>
+              {d.created}
+            </span>
+            <span class="fact">
+              <span class="fact-label">updated</span>
+              {d.updated}
+            </span>
           </div>
 
           <div class="ctas">
             <a class="btn btn-primary" href="#access">
               {restricted ? "Request access" : "Access the data"}
             </a>
-            <details class="drop-menu meta-menu">
-              <summary class="btn btn-ghost">
-                Metadata
-                <svg
-                  aria-hidden="true"
-                  fill="none"
-                  height="10"
-                  stroke="currentColor"
-                  stroke-width="2.4"
-                  viewBox="0 0 24 24"
-                  width="10"
-                >
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </summary>
-              <div class="menu-list">
-                <a href={`/catalog/${d.id}.json`}>Raw record (JSON)</a>
-                {hasTemplated && (
+            <button
+              class="btn btn-ghost drop-menu meta-menu"
+              popovertarget="meta-menu"
+              type="button"
+            >
+              Metadata
+              <svg
+                aria-hidden="true"
+                fill="none"
+                height="10"
+                stroke="currentColor"
+                stroke-width="2.4"
+                viewBox="0 0 24 24"
+                width="10"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="card menu-list" id="meta-menu" popover>
+              <a href={`/catalog/${recordSlug(d)}.json`}>Raw record (JSON)</a>
+              {stacUrl && (
                   <a href={stacUrl} rel="noreferrer">
                     STAC Collection ↗
                   </a>
                 )}
-                {entry.filePath && (
+              {entry.filePath && (
                   <a
                     class="menu-split"
                     href={editUrl(CATALOG_REPO, entry.filePath)}
                     >Suggest an edit ↗</a
                   >
                 )}
-                <a
-                  href={reportUrl}
-                  rel="noreferrer"
-                  class:list={[{ "menu-split": !entry.filePath }]}
-                >
-                  Report a problem ↗
-                </a>
-              </div>
-            </details>
+              <a
+                href={reportUrl}
+                rel="noreferrer"
+                class:list={[{ "menu-split": !entry.filePath }]}
+              >
+                Report a problem ↗
+              </a>
+            </div>
           </div>
         </div>
 
@@ -392,17 +447,20 @@ const jsonLd = datasetJsonLd(
   <div class="container body">
     <article>
       <section id="overview">
-        <div class="prose" set:html={descriptionHtml} />
+        <header>
+          <h2>Overview</h2>
+          <div class="prose" set:html={descriptionHtml} />
+        </header>
 
         {d.keywords.length > 0 && (
-            <div class="keywords">
+            <div class="chips">
               {d.keywords.map((k) =>
                 typeof k === "string" ? (
-                  <a class="mono keyword" href={`/catalog/?q=${encodeURIComponent(k)}`}>
+                  <a class="pill mono" href={`/catalog/?q=${encodeURIComponent(k)}`}>
                     #{k}
                   </a>
                 ) : (
-                  <a class="mono keyword ontology" href={k.uri ?? k.scheme} rel="noreferrer" title={`${k.scheme ?? "ontology"} concept`}>
+                  <a class="pill blue outline mono" href={k.uri ?? k.scheme} rel="noreferrer" title={`${k.scheme ?? "ontology"} concept`}>
                     {k.term} ↗
                   </a>
                 ),
@@ -417,33 +475,55 @@ const jsonLd = datasetJsonLd(
             </div>
           )}
 
-        {(quickstart.python || quickstart.r) && (
-            <div>
+        {Object.keys(quick.code).length > 0 && (
+            <section>
               <h2>Quick start</h2>
-              <SnippetTabs python={quickstart.python} r={quickstart.r} />
-              <p class="digest">
+              {/* Open on the authors' own language when they wrote one */}
+              <SnippetTabs code={quick.code} first={quick.authored[0]?.id} />
+              {quick.authored.length > 0 && (
+                <p class="section-sub">
+                  Provided by the dataset authors:{" "}
+                  {quick.authored.map((l, i) => (
+                    <>
+                      {i > 0 && ", "}
+                      <a href={l.url} rel="noreferrer">{l.label} example</a>
+                    </>
+                  ))}
+                </p>
+              )}
+              <p class="section-sub">
                 <a href="#access">Full access details and endpoints</a>
               </p>
-            </div>
+            </section>
+          )}
+
+        {restricted && Object.keys(quick.code).length === 0 && (
+            <section>
+              <h2>Quick start</h2>
+              <p class="section-sub">
+                This dataset needs credentials, so no generic example is shown.{" "}
+                <a href="#access">See the access conditions.</a>
+              </p>
+            </section>
           )}
 
         {d.cdh && d.cdh.usage.intended_uses.length > 0 && (
-            <div>
+            <section>
               <h2>Intended uses</h2>
               <ul class="uses">
                 {d.cdh.usage.intended_uses.map((u) => (
                   <li>{u}</li>
                 ))}
               </ul>
-            </div>
+            </section>
           )}
 
         {d.cdh && d.cdh.usage.not_recommended_for.length > 0 && (
-            <div>
+            <section>
               <h2>Not recommended for</h2>
-              <div class="warn-cards">
+              <div class="stack">
                 {d.cdh.usage.not_recommended_for.map((n) => (
-                  <div class="warn-card">
+                  <div class="card warn-card">
                     <b>{n.use}</b>
                     {n.reason && (
                       <p>
@@ -458,126 +538,42 @@ const jsonLd = datasetJsonLd(
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
         {d.commodities.length > 0 && (
-            <div>
+            <section>
               <h2>Commodities</h2>
               <div class="chips">
                 {d.commodities.map((id) => {
                   const c = commodity(id);
                   return c?.uri ? (
-                    <a class="chip" href={c.uri} rel="noreferrer" title={`AGROVOC ${c.code}`}>
+                    <a class="pill blue" href={c.uri} rel="noreferrer" title={`AGROVOC ${c.code}`}>
                       {c.label} ↗
                     </a>
                   ) : (
-                    <span class="chip">{c?.label ?? humanize(id)}</span>
+                    <span class="pill blue">{c?.label ?? humanize(id)}</span>
                   );
                 })}
               </div>
-            </div>
+            </section>
           )}
       </section>
 
-      {hasSchema && (
-          <section id="schema">
-            {d.variables.length > 0 && (
-              <div>
-                <h2>Variables</h2>
-                <div class="table-wrap">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Variable</th>
-                        <th>Type</th>
-                        <th>Unit</th>
-                        <th>Description</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {d.variables.map((v) => {
-                        const classValues = d.classes.find(
-                          (c) => c.variable === v.name,
-                        )?.values;
-                        return (
-                          <tr>
-                            <td class="mono var-name">{v.name}</td>
-                            <td class="mono">{v.data_type ?? "—"}</td>
-                            <td class="mono">{v.unit ?? "—"}</td>
-                            <td>
-                              {v.description ?? "—"}
-                              {v.note && <div class="var-note">{v.note}</div>}
-                              {classValues && classValues.length > 0 && (
-                                <dl class="class-list">
-                                  {classValues.map((cv) => (
-                                    <>
-                                      <dt class="mono">{cv.value}</dt>
-                                      <dd>
-                                        {cv.label}
-                                        {cv.description && (
-                                          <span class="class-desc">
-                                            {" "}
-                                            — {cv.description}
-                                          </span>
-                                        )}
-                                      </dd>
-                                    </>
-                                  ))}
-                                </dl>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {d.dimensions.length > 0 && (
-              <div>
-                <h2>Dimensions</h2>
-                <p class="section-sub">Axes of the cube — spatial, temporal, and domain axes.</p>
-                <div class="dim-cards">
-                  {d.dimensions.map((dim) => (
-                    <div class="dim-card">
-                      <div class="dim-head">
-                        <span class="mono dim-name">{dim.name}</span>
-                        {dim.type && <span class="label">{dim.type}</span>}
-                      </div>
-                      {dim.description && <p>{dim.description}</p>}
-                      {dim.values.length > 0 && (
-                        <div class="chips">
-                          {dim.values.map((v) => (
-                            <span class="chip mono">{v}</span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </section>
-        )}
-
       {d.data.length > 0 && (
           <section id="access">
-            <div>
+            <header>
               <h2>Access &amp; use</h2>
               <p class="section-sub">
-                Cloud-optimised distributions — read just the window you need directly from object
-                storage.
+                Files, endpoints, and worked examples for each distribution.
               </p>
-              {hasTemplated && (
-                <p class="digest">
+              {stacUrl && (
+                <p class="section-sub">
                   Machine-readable file index:{" "}
                   <a href={stacUrl} rel="noreferrer">STAC Collection</a>
                 </p>
               )}
-            </div>
+            </header>
             {d.access_note && (
               <div class="note">
                 <h3 class="note-title">Access conditions</h3>
@@ -586,403 +582,176 @@ const jsonLd = datasetJsonLd(
             )}
 
             {assetGroups.map((group) => (
-            <div>
-              <h3 class="tech-title">{group.title}</h3>
-            <div class="assets">
-              {group.items.map(({ asset, example, bestFor, primary, others, tplFields, tplFile, tplUrl, download }) => (
-                <div class="asset">
-                  <div class="asset-head">
-                    <span class="mono asset-name">{asset.name}</span>
-                    {asset.file_size && <span class="mono asset-size">{asset.file_size}</span>}
-                    {download && (
-                      <a class="btn btn-ghost dl" download href={download}>
-                        Download
-                      </a>
-                    )}
-                  </div>
-                  {asset.description && <p class="asset-desc">{asset.description}</p>}
-                  {asset.media_type && (
-                    <p class="asset-fact">
-                      <b>Format:</b> {formatLabel(asset.media_type)}
-                      {bestFor && (
-                        <span class="best-for"> — best for {bestFor}</span>
-                      )}
-                    </p>
-                  )}
-                  {asset.nodata !== undefined && (
-                    <p class="asset-fact">
-                      <b>No Data:</b> <span class="mono">{asset.nodata}</span>
-                    </p>
-                  )}
-                  {tplUrl && (
-                      <div
-                        class="tpl-picker"
-                        data-file={tplFile}
-                        data-root={primary.url}
-                        data-template={asset.href_template}
-                      >
-                        <p class="panel-head">
-                          <span class="label tpl-title">
-                            Access a specific file
-                          </span>
-                          <CopyButton
-                            copy={tplUrl}
-                            label="Copy selected file URL"
-                          />
-                          {!restricted && (
-                            <a class="btn btn-ghost dl" download href={tplUrl}>
-                              Download
-                            </a>
-                          )}
-                        </p>
-                        <div class="tpl-fields">
-                          {(tplFields ?? []).map((f) => (
-                            <label class="tpl-field">
-                              <span class="label">{humanize(f.name)}</span>
-                              <select data-tpl-dim={f.name}>
-                                {f.values.map((v) => <option>{v}</option>)}
-                              </select>
-                            </label>
-                          ))}
-                        </div>
-                        <p class="mono selected-url" data-tpl-url>{tplUrl}</p>
-                      </div>
-                    )}
-                  {!asset.href_template && primary && (
-                    <div class="access-panel">
-                      <p class="panel-head">
-                        <span class="label tpl-title">Access the data</span>
-                        <CopyButton copy={primary.url} label="Copy URL" />
-                      </p>
-                      <p class="asset-fact">
-                        <span class="mono url">
-                          {urlParts(primary.url).map((part) => (
-                            <>
-                              {part}
-                              <wbr />
-                            </>
-                          ))}
-                        </span>
-                      </p>
-                    </div>
-                  )}
-                  {others.length > 0 && (
-                    <details class="alt-access">
-                      <summary>Other access methods</summary>
-                      {asset.href_template && (
-                        <p class="asset-fact">
-                          <b>File pattern:</b>{" "}
-                          <span class="mono">{asset.href_template}</span>
-                        </p>
-                      )}
-                      {others.map((loc) => (
-                        <div class="endpoint">
-                          <span class="proto">
-                            {loc.title ?? "URL"}
-                            {asset.href_template ? " directory" : ""}:
-                          </span>
-                          <span class="mono url">
-                            {urlParts(loc.url).map((part) => (
-                              <>
-                                {part}
-                                <wbr />
-                              </>
-                            ))}
-                          </span>
-                          <CopyButton copy={loc.url} label="Copy URL" />
-                        </div>
-                      ))}
-                    </details>
-                  )}
-                  {example && (
-                    <div class="example-row">
-                      <button class="example-btn" data-example-open type="button">
-                        &lt;/&gt; View usage examples
-                      </button>
-                      <dialog
-                        aria-label={`${asset.name} usage examples`}
-                        class="example-modal"
-                      >
-                        <div class="example-head">
-                          <h4>
-                            <span class="mono">{asset.name}</span> — usage
-                            examples
-                          </h4>
-                          <button
-                            aria-label="Close"
-                            class="example-close"
-                            data-example-close
-                            type="button"
-                          >
-                            ×
-                          </button>
-                        </div>
-                        <SnippetTabs python={example.python} r={example.r} />
-                      </dialog>
-                    </div>
-                  )}
+              <section>
+                <h3 class="tech-title">{group.title}</h3>
+                <div class="stack assets">
+                  {group.items.map((asset) => (
+                    <AssetCard asset={asset} record={d} restricted={restricted} />
+                  ))}
                 </div>
-              ))}
-            </div>
-            </div>
+              </section>
             ))}
           </section>
         )}
 
-      {(d.climate || d.spatial || d.temporal) && (
+      {hasSchema && (
+          <section id="schema">
+            <header>
+              <h2>Data dictionary</h2>
+              <p class="section-sub">
+                What each file holds. A layout describes how the data is stored in a file: its
+                variables, the dimensions they vary over, and any keys.
+              </p>
+            </header>
+            <DataDictionary liveById={liveById} record={d} />
+          </section>
+        )}
+      {techBlocks.length > 0 && (
           <section id="technical">
-            <h2>Technical metadata</h2>
-            <p class="section-sub">
-              The full spatial, temporal, and modeling detail behind the
-              summaries elsewhere on this page.
-            </p>
-
-            {d.spatial && (
-              <div>
-                <h3 class="tech-title">Spatial</h3>
+            <header>
+              <h2>Technical metadata</h2>
+              <p class="section-sub">
+                The full spatial, temporal, and modeling detail behind the
+                summaries elsewhere on this page.
+              </p>
+            </header>
+            {techBlocks.map((block) => (
+              <section>
+                <h3 class="tech-title">{block.title}</h3>
                 <dl class="kv">
-                  {d.spatial.crs && (
+                  {block.facts.map((f) => (
                     <>
-                      <dt>CRS</dt>
-                      <dd>
-                        {crsHref ? (
-                          <a href={crsHref} rel="noreferrer">{d.spatial.crs}</a>
-                        ) : (
-                          d.spatial.crs
-                        )}
-                      </dd>
-                    </>
-                  )}
-                  {bboxes && (
-                    <>
-                      <dt>Extent (W S E N)</dt>
-                      <dd class="mono">
-                        {bboxes.map((b) => `[${b.join(", ")}]`).join("  ")}
-                      </dd>
-                    </>
-                  )}
-                  {coverage && (
-                    <>
-                      <dt>Coverage</dt>
-                      <dd>{coverage}</dd>
-                    </>
-                  )}
-                  {d.spatial.resolution.map((r) => (
-                    <>
-                      <dt>Resolution{r.type ? ` (${r.type})` : ""}</dt>
-                      <dd>
-                        {r.label
-                          ?? [r.value, r.unit].filter(Boolean).join(" ")}
+                      <dt>{f.label}</dt>
+                      <dd class:list={{ mono: f.mono }}>
+                        {f.href ? <a href={f.href} rel="noreferrer">{f.value}</a> : f.value}
                       </dd>
                     </>
                   ))}
                 </dl>
-              </div>
-            )}
-
-            {d.temporal && (
-              <div>
-                <h3 class="tech-title">Temporal</h3>
-                <dl class="kv">
-                  {"date" in d.temporal ? (
-                    <>
-                      <dt>Reference date</dt>
-                      <dd class="mono">{d.temporal.date}</dd>
-                    </>
-                  ) : (
-                    <>
-                      <dt>Start</dt>
-                      <dd class="mono">{d.temporal.start_date}</dd>
-                      <dt>End</dt>
-                      <dd class="mono">
-                        {d.temporal.end_date ?? "open (present)"}
-                      </dd>
-                    </>
-                  )}
-                </dl>
-              </div>
-            )}
-
-            {d.climate && (
-            <div>
-              <h3 class="tech-title">Climate methods</h3>
-              <dl class="kv">
-                  {d.climate.mip_era && (
-                    <>
-                      <dt>MIP era</dt>
-                      <dd>{d.climate.mip_era}</dd>
-                    </>
-                  )}
-                  {d.climate.models.length > 0 && (
-                    <>
-                      <dt>Models</dt>
-                      <dd class="mono">{d.climate.models.join(", ")}</dd>
-                    </>
-                  )}
-                  {d.climate.scenarios.length > 0 && (
-                    <>
-                      <dt>Scenarios</dt>
-                      <dd class="mono">{d.climate.scenarios.join(", ")}</dd>
-                    </>
-                  )}
-                  {d.climate.baseline && (
-                    <>
-                      <dt>Baseline</dt>
-                      <dd>
-                        {d.climate.baseline.start_date.slice(0, 4)}
-                        {d.climate.baseline.end_date
-                          && ` – ${d.climate.baseline.end_date.slice(0, 4)}`}
-                      </dd>
-                    </>
-                  )}
-                  {d.climate.bias_adjustment && (
-                    <>
-                      <dt>Bias adjustment</dt>
-                      <dd>
-                        {[
-                          d.climate.bias_adjustment.method,
-                          d.climate.bias_adjustment.reference_dataset,
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </dd>
-                    </>
-                  )}
-                  {d.climate.downscaling && (
-                    <>
-                      <dt>Downscaling</dt>
-                      <dd>
-                        {[
-                          d.climate.downscaling.method,
-                          d.climate.downscaling.resolution,
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </dd>
-                    </>
-                  )}
-              </dl>
-            </div>
-            )}
-
-            <div>
-              <h3 class="tech-title">Record</h3>
-              <dl class="kv">
-                <dt>Resource type</dt>
-                <dd>{d.resource_type}</dd>
-                {d.created && (
-                  <>
-                    <dt>Created</dt>
-                    <dd class="mono">{d.created}</dd>
-                  </>
-                )}
-                {d.updated && (
-                  <>
-                    <dt>Updated</dt>
-                    <dd class="mono">{d.updated}</dd>
-                  </>
-                )}
-              </dl>
-            </div>
+              </section>
+            ))}
           </section>
         )}
 
       {d.processing.length > 0 && (
           <section id="provenance">
-            <div>
+            <header>
               <h2>Provenance</h2>
               <p class="section-sub">Ordered processing steps, from source to publication.</p>
-              <ol class="lineage">
-                {d.processing.map((step) => (
-                  <li>
-                    <div class="step">
-                      <div class="step-head">
-                        <span class="mono step-id">{step.id}</span>
-                        {step.date && <span class="label">{step.date.slice(0, 10)}</span>}
-                      </div>
-                      {step.description && <p>{step.description}</p>}
-                      {step.derived_from.length > 0 && (
-                        <p class="step-meta">
-                          Derived from:{" "}
-                          {step.derived_from.map((src, i) => {
-                            const hub = hubSource(src.url);
-                            return (
-                              <>
-                                {i > 0 && ", "}
-                                {hub ? (
-                                  <a href={hub.href}>{src.title ?? hub.title}</a>
-                                ) : (
-                                  <a href={src.url} rel="noreferrer">
-                                    {src.title ?? src.url}
-                                  </a>
-                                )}
-                              </>
-                            );
-                          })}
-                        </p>
-                      )}
-                      {step.code && (
-                        <p class="step-meta mono">
-                          code:{" "}
-                          <a href={step.code.url} rel="noreferrer">
-                            {urlParts(step.code.url).map((part) => (
-                              <>
-                                {part}
-                                <wbr />
-                              </>
-                            ))}
-                          </a>
-                          {step.code.version && <span> @ {step.code.version}</span>}
-                        </p>
-                      )}
+            </header>
+            <ol class="lineage">
+              {d.processing.map((step) => (
+                <li>
+                  <div class="card step">
+                    <div class="card-head">
+                      <span class="mono step-id">{step.id}</span>
+                      {step.date && <span class="label">{step.date.slice(0, 10)}</span>}
                     </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
+                    {step.description && <p>{step.description}</p>}
+                    {step.derived_from.length > 0 && (
+                      <p class="step-meta">
+                        Derived from:{" "}
+                        {step.derived_from.map((src, i) => {
+                          const hub = hubSource(src);
+                          return (
+                            <>
+                              {i > 0 && ", "}
+                              {hub ? (
+                                <a href={hub.href}>
+                                  {src.title ?? hub.title}
+                                  {src.version && ` (${src.version})`}
+                                </a>
+                              ) : (
+                                <a href={src.url} rel="noreferrer">
+                                  {src.title ?? src.url ?? src.id}
+                                </a>
+                              )}
+                            </>
+                          );
+                        })}
+                      </p>
+                    )}
+                    {step.code && (
+                      <p class="step-meta">
+                        Code:{" "}
+                        <a class="mono" href={step.code.url} rel="noreferrer" title={step.code.url}>
+                          {lastSegment(step.code.url)} ↗
+                        </a>
+                        {step.code.version && (
+                          <>
+                            {" "}
+                            <span class="label">@ {step.code.version}</span>
+                          </>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ol>
           </section>
         )}
 
-      {(cite || d.contact.length > 0) && (
+      {(cite || d.attribution || d.contact.length > 0) && (
           <section id="citation">
             {cite && (
               <Citation
                 cite={cite}
                 note="Please cite the dataset and any associated peer-reviewed publications."
-                viaUrl={recordUrl}
+                viaUrl={new URL(`/catalog/${versionedSlug(d)}/`, Astro.site).href}
               >
                 {d.related_publications.length > 0 && (
-                  <div class="related-pubs">
-                    <h3>Related publications</h3>
+                  <section class="related-pubs">
+                    <h3 class="tech-title">Related publications</h3>
                     <ul>
                       {d.related_publications.map((pub) => (
                         <li>
-                          {pub.citation && `${pub.citation.authors.join(", ")} (${pub.citation.date}). ${pub.citation.title}. ${pub.citation.publisher}. `}
+                          {pub.citation
+                            && `${[
+                              pub.citation.authors.map(authorName).join(", "),
+                              `(${pub.citation.date}).`,
+                              pub.citation.title && `${pub.citation.title}.`,
+                              pub.citation.publisher && `${pub.citation.publisher}.`,
+                            ]
+                              .filter(Boolean)
+                              .join(" ")} `}
                           {pub.doi && <a href={`https://doi.org/${pub.doi}`}>doi:{pub.doi}</a>}
                         </li>
                       ))}
                     </ul>
-                  </div>
+                  </section>
                 )}
               </Citation>
             )}
+            {d.attribution && (
+              <section class="attribution">
+                <h3 class="tech-title">Attribution</h3>
+                <p class="section-sub">
+                  Reproduce this credit line wherever you reuse the data.
+                </p>
+                <blockquote>
+                  {d.attribution}{" "}
+                  <CopyButton copy={d.attribution} label="Copy attribution" />
+                </blockquote>
+              </section>
+            )}
             {d.contact.length > 0 && (
-            <div class="contacts-block">
+            <section>
             <h2>Contacts</h2>
             <p class="section-sub">
               Who produced this dataset, and who to reach about it.
             </p>
             <div class="contact-cards">
               {contacts.map((c) => (
-                <div class:list={["contact-card", c.roles.includes("custodian") && "custodian"]}>
-                  <div class="contact-head">
+                <div class="card contact-card">
+                  <div class="card-head">
                     <b>{c.name ?? c.organization}</b>
-                    <span class="badges">
-                      {c.roles.includes("custodian") && (
-                        <span class="role-badge custodian-badge">Hub custodian</span>
+                    <span class="chips">
+                      {c.roles.includes("maintainer") && (
+                        <span class="pill terra caps">Maintainer</span>
                       )}
                       {c.roles.includes("licensor") && (
-                        <span class="role-badge licensor-badge">Licensor</span>
+                        <span class="pill blue caps">Licensor</span>
                       )}
                     </span>
                   </div>
@@ -992,11 +761,11 @@ const jsonLd = datasetJsonLd(
                   {c.otherRoles.length > 0 && (
                     <div class="chips">
                       {c.otherRoles.map((r) => (
-                        <span class="chip">{humanize(r)}</span>
+                        <span class="pill blue">{humanize(r)}</span>
                       ))}
                     </div>
                   )}
-                  {(c.email || c.url) && (
+                  {(c.email || c.url || c.orcid || c.ror) && (
                     <div class="contact-links">
                       {c.email && <a href={`mailto:${c.email}`}>{c.email}</a>}
                       {c.url && (
@@ -1004,23 +773,29 @@ const jsonLd = datasetJsonLd(
                           {c.url.replace(/^https?:\/\//, "")} ↗
                         </a>
                       )}
+                      {c.orcid && (
+                        <a href={c.orcid} rel="noreferrer">
+                          ORCID ↗
+                        </a>
+                      )}
+                      {c.ror && (
+                        <a href={c.ror} rel="noreferrer">
+                          ROR ↗
+                        </a>
+                      )}
                     </div>
                   )}
                 </div>
               ))}
             </div>
-            </div>
+            </section>
             )}
           </section>
         )}
-
-      <div class="footer-row">
-        <a class="back" href="/catalog/">← Back to the catalog</a>
-      </div>
     </article>
 
     <aside>
-      <div class="rail-box">
+      <div class="card rail-box">
         <h2 class="label">Quick facts</h2>
         <dl class="kv">
           {coverage && (
@@ -1052,7 +827,7 @@ const jsonLd = datasetJsonLd(
               <dt>Temporal</dt>
               <dd>
                 {temporal.main}
-                {temporal.sub && <div class="fact-sub">{temporal.sub}</div>}
+                {temporal.sub && <div class="caption fact-sub">{temporal.sub}</div>}
               </dd>
             </>
           )}
@@ -1066,19 +841,39 @@ const jsonLd = datasetJsonLd(
       </div>
 
       {tutorialLinks.length > 0 && (
-          <div class="rail-box">
+          <div class="card rail-box">
             <h2 class="label">Tutorials</h2>
             {tutorialLinks.map((t) => (
               <a class="rail-link" href={t.href}>
                 <b>{t.title}</b>
-                <span>{t.meta}</span>
+                <span class="caption">{t.meta}</span>
+              </a>
+            ))}
+          </div>
+        )}
+
+      {parent && (
+          <div class="card rail-box">
+            <h2 class="label">Parent record</h2>
+            <a class="rail-link" href={`/catalog/${parent.data.id}/`}>
+              <b>{parent.data.title}</b>
+            </a>
+          </div>
+        )}
+
+      {children.length > 0 && (
+          <div class="card rail-box">
+            <h2 class="label">Child records</h2>
+            {children.map((c) => (
+              <a class="rail-link" href={`/catalog/${c.data.id}/`}>
+                <b>{c.data.title}</b>
               </a>
             ))}
           </div>
         )}
 
       {derivatives.length > 0 && (
-          <div class="rail-box">
+          <div class="card rail-box">
             <h2 class="label">Derived datasets</h2>
             {derivatives.map((der) => (
               <a class="rail-link" href={der.href}>
@@ -1089,30 +884,30 @@ const jsonLd = datasetJsonLd(
         )}
 
       {seenIn.length > 0 && (
-          <div class="rail-box">
+          <div class="card rail-box">
             <h2 class="label">Seen in</h2>
             {seenIn.map((uc) => (
               <a class="rail-link" href={uc.href}>
                 <b>{uc.title}</b>
-                <span>{uc.partner}</span>
+                <span class="caption">{uc.partner}</span>
               </a>
             ))}
           </div>
         )}
 
       {d.additional_links.length > 0 && (
-          <div class="rail-box">
+          <div class="card rail-box">
             <h2 class="label">Related links</h2>
             {d.additional_links.map((link) => (
               <a class="rail-link ext" href={link.url} rel="noreferrer">
-                {link.name ?? link.url} ↗
+                {link.title ?? link.url} ↗
               </a>
             ))}
           </div>
         )}
 
       {d.funding.length > 0 && (
-          <div class="rail-box">
+          <div class="card rail-box">
             <h2 class="label">Funding</h2>
             {d.funding.map((f) =>
               f.url ? (
@@ -1126,65 +921,14 @@ const jsonLd = datasetJsonLd(
           </div>
         )}
     </aside>
+
+    <div class="footer-row">
+      <a class="back" href="/catalog/">← Back to the catalog</a>
+    </div>
   </div>
 </Layout>
 
 <script>
-// Usage-example modals: native <dialog> handles backdrop/Esc/focus; this
-// wires the open and close buttons plus backdrop-click dismiss.
-document.addEventListener("click", (e) => {
-  const target = e.target as HTMLElement;
-  if (target.closest("[data-example-open]"))
-    target.closest(".example-row")?.querySelector("dialog")?.showModal();
-  if (target.closest("[data-example-close]")) target.closest("dialog")?.close();
-  // A click on the dialog element itself is the backdrop, not its content
-  if (target instanceof HTMLDialogElement) target.close();
-});
-
-// Dropdowns (version switcher, metadata menu): <details> handles open/toggle
-// natively; this only adds light-dismiss on outside clicks.
-const menus =
-  document.querySelectorAll<HTMLDetailsElement>("details.drop-menu");
-document.addEventListener("click", (e) => {
-  for (const menu of menus)
-    if (menu.open && !menu.contains(e.target as Node)) menu.open = false;
-});
-
-// Template pickers: the selects fill the asset's href_template; the built
-// URL feeds the row's copy button and download link
-for (const picker of document.querySelectorAll<HTMLElement>(".tpl-picker")) {
-  const update = () => {
-    let file = picker.dataset.template ?? "";
-    for (const sel of picker.querySelectorAll<HTMLSelectElement>(
-      "select[data-tpl-dim]",
-    ))
-      file = file.replaceAll(`{${sel.dataset.tplDim}}`, sel.value);
-    const url = (picker.dataset.root ?? "") + file;
-    const urlEl = picker.querySelector<HTMLElement>("[data-tpl-url]");
-    if (urlEl) urlEl.textContent = url;
-    const copyBtn =
-      picker.querySelector<HTMLButtonElement>("button[data-copy]");
-    if (copyBtn) copyBtn.dataset.copy = url;
-    const dl = picker.querySelector<HTMLAnchorElement>("a[download]");
-    if (dl) dl.href = url;
-    // The usage example bakes in the previous selection's filename — swap it
-    // wherever it appears in the dialog's code so the example stays live
-    const prev = picker.dataset.file;
-    const dialog = picker.closest(".asset")?.querySelector("dialog");
-    if (dialog && prev && prev !== file) {
-      const walker = document.createTreeWalker(dialog, NodeFilter.SHOW_TEXT);
-      while (walker.nextNode()) {
-        const node = walker.currentNode;
-        if (node.nodeValue?.includes(prev))
-          node.nodeValue = node.nodeValue.replaceAll(prev, file);
-      }
-    }
-    picker.dataset.file = file;
-  };
-  picker.addEventListener("change", update);
-  update();
-}
-
 // Hash-driven tabs: all panels stay in the DOM (crawlers see everything);
 // the hash picks the visible one, so /catalog/<id>#access deep-links work.
 const tabs = [
@@ -1194,14 +938,19 @@ const panels = tabs
   .map((a) => document.getElementById(a.hash.slice(1)))
   .filter((el): el is HTMLElement => el !== null);
 
+// A hash may name a panel or something inside one (#file-zarr); show its panel
 function showPanel(id: string) {
-  const target = panels.some((s) => s.id === id) ? id : panels[0]?.id;
+  const el = id ? document.getElementById(id) : null;
+  const target = panels.find((s) => el && s.contains(el))?.id ?? panels[0]?.id;
   for (const s of panels) s.hidden = s.id !== target;
   for (const a of tabs)
     a.setAttribute("aria-current", String(a.hash === `#${target}`));
 }
-// Don't strand the reader mid-page: reveal the new panel top if it's off-screen
+// Don't strand the reader mid-page: reveal the new panel top if it's off-screen,
+// or the linked element when the hash points inside a panel
 function snapToPanel() {
+  const el = document.getElementById(location.hash.slice(1));
+  if (el && !panels.includes(el)) return el.scrollIntoView();
   const panel = panels.find((s) => !s.hidden);
   if (panel && panel.getBoundingClientRect().top < 130) panel.scrollIntoView();
 }
@@ -1210,6 +959,8 @@ if (tabs.length > 0) {
   // replaceState instead of a real navigation — skips the browser's anchor jump
   for (const a of tabs) {
     a.addEventListener("click", (e) => {
+      // A modified click opens the section in a new tab or window
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
       e.preventDefault();
       history.replaceState(null, "", a.hash);
       showPanel(a.hash.slice(1));
@@ -1222,6 +973,7 @@ if (tabs.length > 0) {
     snapToPanel();
   });
   showPanel(location.hash.slice(1));
+  if (location.hash) snapToPanel();
 }
 </script>
 
@@ -1231,49 +983,17 @@ if (tabs.length > 0) {
   background: var(--surface);
 }
 
-/* Outline only: a caution tag that doesn't outweigh the version beside it */
-.access-flag {
-  padding: 2px var(--space-2);
-  font-size: var(--font-size-3);
-  color: var(--terra-700);
-  border: 1px solid var(--terra-300);
-  border-radius: var(--radius-sm);
-}
-
-/* Promoted h4→h3 for heading order; keep the smaller h4-like size */
-.tech-title,
-.related-pubs h3 {
-  font-size: var(--font-size-5);
-}
-
-.related-pubs {
-  margin-top: var(--space-3);
-}
-
-.tech-title {
-  margin-bottom: var(--space-3);
-}
-
-.class-list {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--space-1) var(--space-2);
-  margin: var(--space-2) 0 0;
-  font-size: var(--font-size-4);
-}
-
-.class-list dt {
-  color: var(--text-soft);
-}
-
-.class-list dd {
+/* The credit line quoted, as the prose style does it; the section grid
+   gap spaces it, so no margin of its own */
+.attribution blockquote {
+  padding: var(--space-1) var(--space-4);
   margin: 0;
+  font-size: var(--font-size-5);
+  border-left: 3px solid var(--cdh-blue-700);
 }
 
-.class-desc,
 .version-row .label,
-.fact-label,
-.kv dt {
+.fact-label {
   color: var(--text-mute);
 }
 
@@ -1310,31 +1030,6 @@ h1 {
   font-size: clamp(25px, 2.6vw, 31px);
 }
 
-.keywords {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.keyword {
-  padding: 2px var(--space-2);
-  font-size: var(--font-size-1);
-  color: var(--text-soft);
-  background: var(--grey-1);
-  border-radius: var(--radius-md);
-}
-
-.keyword:hover {
-  text-decoration: none;
-  background: var(--grey-2);
-}
-
-.keyword.ontology {
-  color: var(--cdh-blue-700);
-  background: transparent;
-  border: 1px solid var(--cdh-blue-150);
-}
-
 .ctas {
   display: flex;
   flex-wrap: wrap;
@@ -1350,7 +1045,7 @@ h1 {
   color: var(--text-soft);
 }
 
-/* "Part of: <series>" — links to the catalog filtered to the series */
+/* "Part of: <series>" — links to the catalog searched for the series */
 .series-line {
   margin-top: var(--space-2);
   font-size: var(--font-size-4);
@@ -1370,46 +1065,32 @@ h1 {
   color: var(--text);
 }
 
-.latest {
-  padding: 1px 5px;
-  font-size: var(--font-size-1);
-  font-weight: 700;
-  color: var(--cdh-blue-700);
-  letter-spacing: 0.04em;
-  background: var(--cdh-blue-50);
-  border-radius: var(--radius-md);
-}
-
-/* Shared details-dropdown (version switcher, metadata menu) */
-.drop-menu {
-  position: relative;
-  display: inline-block;
-}
-
-.drop-menu summary {
-  cursor: pointer;
-  list-style: none;
-}
-
-.drop-menu summary svg {
+/* Shared dropdown (version switcher, metadata menu): a native popover
+   anchored under its button, so outside-click and Escape dismiss it */
+.drop-menu svg {
   color: var(--text-mute);
   transition: transform 0.15s;
 }
 
-.drop-menu[open] summary svg {
+.drop-menu:has(+ :popover-open) svg {
   transform: rotate(180deg);
 }
 
+#version-menu {
+  position-anchor: --version-menu;
+}
+
+#meta-menu {
+  position-anchor: --meta-menu;
+}
+
 .menu-list {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 20;
+  position-area: bottom span-right;
+  position-try-fallbacks: flip-block, flip-inline;
+  inset: auto;
   min-width: 170px;
+  margin: 6px 0 0;
   padding: var(--space-2);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-menu);
 }
 
@@ -1437,14 +1118,24 @@ h1 {
 }
 
 /* Compact btn-ghost — the shared button recipe, sized down */
-.version-menu summary {
+.version-menu {
   gap: var(--space-2);
   padding: var(--space-1) var(--space-3);
   font-size: var(--font-size-4);
+  anchor-name: --version-menu;
 }
 
-.meta-menu summary {
+.meta-menu {
   gap: var(--space-2);
+  anchor-name: --meta-menu;
+}
+
+/* No popover support (pre-2024 browser): hide the menu rather than render
+   it permanently expanded in the page flow */
+@supports not selector(:popover-open) {
+  .menu-list {
+    display: none;
+  }
 }
 
 /* Divider between the record's representations and its maintenance actions */
@@ -1508,24 +1199,49 @@ h1 {
 /* Tabbed panels (script-driven; without JS all sections stay stacked) */
 .body {
   display: grid;
+  /* The rail spans both rows, so the back link sits right under the article */
+  grid-template-rows: auto 1fr;
   grid-template-columns: 1fr 320px;
-  gap: 40px;
+  column-gap: 40px;
   padding-top: var(--space-6);
+}
+
+.body > .footer-row {
+  grid-column: 1;
+  align-self: start;
 }
 
 /* The rail follows the reader; align-self keeps sticky alive in the grid */
 .body > aside {
   position: sticky;
   top: calc(var(--nav-height) + 58px);
+  grid-row: 1 / span 2;
+  grid-column: 2;
   align-self: start;
 }
 
-article section {
+/* A tab: a header, then titled blocks, one gap between them */
+article > section {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  padding-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+}
+
+/* Anything linked by hash (a tab, a layout row, an asset card) lands below
+   the sticky header and section nav */
+article > section,
+article :global([id]) {
   scroll-margin-top: calc(var(--nav-height) + 58px);
+}
+
+/* Inside a header or block, heading and content share one gap */
+article section header,
+article section section {
+  display: grid;
+  /* minmax(0, …) lets wide code and tiles shrink instead of overflowing */
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
 }
 
 article h2 {
@@ -1533,9 +1249,9 @@ article h2 {
   line-height: 1.3;
 }
 
-article section > div > p,
+article section > section > p,
 article ul {
-  margin-top: var(--space-3);
+  margin: 0;
   font-size: var(--font-size-6);
   line-height: 1.65;
   color: var(--text-soft);
@@ -1543,7 +1259,6 @@ article ul {
 
 .section-sub {
   max-width: 640px;
-  margin-top: var(--space-2);
   font-size: var(--font-size-5);
   color: var(--text-soft);
 }
@@ -1562,15 +1277,8 @@ article ul {
 
 .note p {
   margin-top: var(--space-2);
-  font-size: var(--font-size-5);
+  font-size: var(--font-size-6);
   line-height: 1.65;
-}
-
-.warn-cards {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  margin-top: var(--space-3);
 }
 
 .uses {
@@ -1588,11 +1296,7 @@ article ul {
 }
 
 .warn-card {
-  padding: var(--space-4);
   font-size: var(--font-size-5);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
 }
 
 .warn-card p {
@@ -1606,373 +1310,13 @@ article ul {
   color: var(--cdh-blue-800);
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-}
-
-.chip {
-  padding: var(--space-1) var(--space-2);
-  font-size: var(--font-size-3);
-  color: var(--cdh-blue-800);
-  background: var(--cdh-blue-50);
-  border-radius: var(--radius-md);
-}
-
-a.chip:hover {
-  text-decoration: none;
-  background: var(--cdh-blue-150);
-}
-
-.dim-cards {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  margin-top: var(--space-3);
-}
-
-.dim-card {
-  padding: var(--space-4);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-}
-
-.dim-card p {
-  margin-top: var(--space-2);
-  font-size: var(--font-size-5);
-  color: var(--text-soft);
-}
-
-.dim-head {
-  display: flex;
-  gap: var(--space-2);
-  align-items: baseline;
-}
-
-.dim-name {
-  font-weight: 700;
-  color: var(--cdh-blue-700);
-}
-
-.digest {
-  margin-top: var(--space-2);
-  font-size: var(--font-size-4);
-  color: var(--text-soft);
-}
-
-.table-wrap {
-  margin-top: var(--space-3);
-  overflow-x: auto;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-}
-
-table {
-  width: 100%;
-  font-size: var(--font-size-4);
-  border-collapse: collapse;
-}
-
-th {
-  padding: var(--space-3);
-  font-size: var(--font-size-2);
-  font-weight: 700;
-  color: var(--text-soft);
-  text-align: left;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  background: var(--grey-1);
-}
-
-/* Only the description column wraps; the rest size to their content */
-th,
-td {
-  padding: var(--space-3);
-  white-space: nowrap;
-  border-top: 1px solid var(--border);
-}
-
-th {
-  border-top: 0;
-}
-
-th:last-child,
-td:last-child {
-  width: 100%;
-  white-space: normal;
-}
-
-td.mono {
-  font-size: var(--font-size-3);
-  color: var(--text-soft);
-}
-
-.var-name {
-  font-weight: 600;
-  color: var(--cdh-blue-700);
-}
-
-.var-note {
-  margin-top: var(--space-1);
-  font-size: var(--font-size-3);
-  color: var(--text-mute);
-}
-
 .assets {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
   margin-top: var(--space-2);
-}
-
-/* The card's border is the only box line — inside, whitespace separates.
-   Visual weight: name → download → selectors → URL → technical facts */
-.asset {
-  padding: var(--space-4);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-}
-
-.asset p,
-.alt-access,
-.example-row,
-.contact-card .chips {
-  margin-top: var(--space-2);
-}
-
-.asset-head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  align-items: baseline;
-}
-
-/* Name + description read as one unit; the breathing room sits below them */
-.asset-desc {
-  margin-top: var(--space-1);
-  margin-bottom: var(--space-3);
-  font-size: var(--font-size-5);
-  color: var(--text-soft);
-}
-
-.asset-name {
-  font-size: var(--font-size-6);
-  font-weight: 700;
-  color: var(--cdh-blue-950);
-}
-
-.asset-size {
-  font-size: var(--font-size-2);
-  color: var(--text-mute);
-}
-
-/* One download style everywhere, height-matched to the copy buttons; sits
-   beside the size so the "how big" context precedes the click */
-.dl {
-  height: 26px;
-  padding: 0 var(--space-3);
-  font-size: var(--font-size-3);
-}
-
-/* Whichever of size/download comes first carries the row's right edge */
-.asset-size,
-.dl {
-  margin-left: auto;
-}
-
-.asset-size ~ .dl {
-  margin-left: 0;
-}
-
-/* Per-asset facts — light labels, darker values; mono only on literals */
-.asset-fact {
-  font-size: var(--font-size-4);
-  color: var(--text);
-}
-
-.asset-fact b {
-  font-weight: 500;
-  color: var(--text-mute);
-}
-
-.asset-fact .mono {
-  font-size: var(--font-size-3);
-}
-
-.best-for {
-  font-family: var(--sans);
-  color: var(--text-mute);
-}
-
-.tpl-fields {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3) var(--space-4);
-  margin-top: var(--space-3);
-}
-
-.tpl-field {
-  display: inline-flex;
-  gap: var(--space-2);
-  align-items: center;
-}
-
-.tpl-field .label {
-  font-size: var(--font-size-1);
-}
-
-.tpl-field select {
-  padding: 2px 6px;
-  font-size: var(--font-size-3);
-  color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-}
-
-/* Quieter than the asset name — it labels a control group, not content */
-.tpl-title {
-  font-size: var(--font-size-1);
-  color: var(--text-mute);
-}
-
-/* Interactive units — a tinted inset panel groups the file picker (or the
-   spotlighted access URL) against the card's white surface */
-.tpl-picker,
-.access-panel {
-  padding: var(--space-3) var(--space-4) var(--space-2);
-  margin-top: var(--space-3);
-  background: var(--bg);
-  border-radius: var(--radius-md);
-}
-
-/* Plain URL line, wrapping normally — same voice as every card URL */
-.selected-url {
-  margin-top: var(--space-2);
-  font-size: var(--font-size-3);
-  color: var(--text-soft);
-  word-break: normal;
-  overflow-wrap: anywhere;
-}
-
-/* Every URL starts with the same slight inset, whatever its container */
-.selected-url,
-.url {
-  padding-left: var(--space-1);
-}
-
-/* Panel head: quiet title left, the panel's actions right */
-.panel-head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  align-items: center;
-}
-
-.panel-head :global(.code-copy) {
-  margin-left: auto;
-}
-
-.panel-head .dl {
-  margin-left: 0;
-}
-
-.alt-access summary {
-  font-size: var(--font-size-3);
-  color: var(--text-mute);
-  cursor: pointer;
-  user-select: none;
-}
-
-.alt-access summary:hover {
-  color: var(--cdh-blue-700);
-}
-
-.endpoint {
-  display: grid;
-  grid-template-columns: minmax(56px, max-content) 1fr auto;
-  gap: var(--space-2);
-  align-items: center;
-  padding: var(--space-1) 0;
-  margin-top: var(--space-2);
-}
-
-/* Same voice as the fact labels (Format, No Data) — sans, light, muted */
-.proto {
-  font-size: var(--font-size-3);
-  font-weight: 500;
-  color: var(--text-mute);
-}
-
-/* <wbr> hints break URLs at slashes; break-word is the last resort for a
-   single segment wider than the column — never mid-token orphans */
-.url {
-  font-size: var(--font-size-3);
-  color: var(--text-soft);
-  overflow-wrap: break-word;
-}
-
-/* A quiet text affordance — the Download button stays the card's one button */
-.example-btn {
-  padding: 0;
-  font-size: var(--font-size-4);
-  font-weight: 600;
-  color: var(--cdh-blue-700);
-  cursor: pointer;
-  background: none;
-  border: 0;
-}
-
-.example-btn:hover {
-  color: var(--cdh-blue-950);
-}
-
-.example-modal {
-  width: min(760px, 92vw);
-  max-height: 84vh;
-  padding: var(--space-5);
-  margin: auto;
-  overflow: auto;
-  overscroll-behavior: contain;
-  background: var(--bg);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
-}
-
-.example-modal::backdrop {
-  background: color-mix(in srgb, var(--text) 45%, transparent);
-}
-
-.example-head {
-  display: flex;
-  gap: var(--space-3);
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-3);
-}
-
-.example-close {
-  padding: 0 var(--space-2);
-  font-size: var(--font-size-8);
-  line-height: 1;
-  color: var(--text-mute);
-  cursor: pointer;
-  background: none;
-  border: 0;
-}
-
-.example-close:hover {
-  color: var(--text);
 }
 
 .lineage {
   padding: 0;
-  margin: var(--space-3) 0 0;
+  margin: 0;
   list-style: none;
 }
 
@@ -2007,25 +1351,11 @@ td.mono {
   background: var(--border-strong);
 }
 
-.step {
-  padding: var(--space-3) var(--space-4);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-}
-
 .step p {
   margin-top: var(--space-2);
   font-size: var(--font-size-5);
   line-height: 1.55;
   color: var(--text-soft);
-}
-
-.step-head {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
-  justify-content: space-between;
 }
 
 .step-id {
@@ -2038,91 +1368,22 @@ td.mono {
   overflow-wrap: break-word;
 }
 
-.rail-box {
-  padding: var(--space-4);
-  margin-bottom: var(--space-4);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-}
-
-.rail-box .label {
-  display: block;
-  margin-bottom: var(--space-3);
-  font-family: var(--sans);
-  line-height: 1.3;
-  color: var(--text-mute);
-  text-wrap: wrap;
-}
-
-.kv {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--space-2) var(--space-4);
-  margin: 0;
-  font-size: var(--font-size-4);
-}
-
-.kv dd {
-  margin: 0;
-}
-
 .fact-sub {
   margin-top: var(--space-1);
-  font-size: var(--font-size-2);
-  color: var(--text-mute);
 }
 
 .contact-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: var(--space-3);
-  margin-top: var(--space-3);
 }
 
 .contact-card {
-  padding: var(--space-4);
   font-size: var(--font-size-5);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
 }
 
-.contact-card.custodian {
-  border-left: 3px solid var(--terra-500);
-}
-
-.contact-head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  align-items: baseline;
-  justify-content: space-between;
-}
-
-.badges {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.role-badge {
-  padding: 1px 6px;
-  font-size: var(--font-size-1);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-radius: var(--radius-md);
-}
-
-.custodian-badge {
-  color: var(--terra-700);
-  background: var(--terra-50);
-}
-
-.licensor-badge {
-  color: var(--cdh-blue-700);
-  background: var(--cdh-blue-50);
+.contact-card .chips {
+  margin-top: var(--space-2);
 }
 
 .contact-org {
@@ -2139,38 +1400,6 @@ td.mono {
   font-size: var(--font-size-4);
 }
 
-.rail-link {
-  display: block;
-  padding: var(--space-2) 0;
-  font-size: var(--font-size-4);
-  color: var(--text);
-  border-bottom: 1px solid var(--border);
-}
-
-/* Rail entry with no link (e.g. an unlinked funder) */
-.rail-text {
-  padding: var(--space-2) 0;
-  font-size: var(--font-size-4);
-  border-bottom: 1px solid var(--border);
-}
-
-.rail-link:last-child {
-  border-bottom: 0;
-}
-
-.rail-link b {
-  display: block;
-}
-
-.rail-link span {
-  font-size: var(--font-size-2);
-  color: var(--text-mute);
-}
-
-.rail-link.ext {
-  color: var(--cdh-blue-700);
-}
-
 /* Grid items default to min-width auto and refuse to shrink below the
    widest code line, overflowing small screens — let them shrink so the
    pre scrolls instead. */
@@ -2179,9 +1408,18 @@ td.mono {
   min-width: 0;
 }
 
+/* One column: article, rail, then the back link last */
 @media (width <= 960px) {
   .body {
+    grid-template-rows: none;
     grid-template-columns: 1fr;
+    row-gap: 40px;
+  }
+
+  .body > aside {
+    position: static;
+    grid-row: auto;
+    grid-column: auto;
   }
 }
 
@@ -2194,6 +1432,16 @@ td.mono {
      coastlines look coarse */
   .header-grid > div:last-child {
     max-width: 350px;
+  }
+
+  /* The tabs wrap to several rows here, so they scroll with the page
+     instead of covering it */
+  .section-nav {
+    position: static;
+  }
+
+  article > section {
+    scroll-margin-top: var(--nav-height);
   }
 }
 </style>

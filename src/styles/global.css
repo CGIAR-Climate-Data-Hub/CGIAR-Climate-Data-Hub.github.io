@@ -104,7 +104,7 @@ a:hover {
 /* Inline links need a non-colour cue; standalone navigation and controls keep
    their component treatments. */
 :where(p, :where(.prose, .answer) :where(li, td, dd), .cite-block li, .fact)
-a:not(.btn, .pill, .chip) {
+a:not(.btn, .pill) {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -175,6 +175,108 @@ hr {
   font-family: var(--mono);
 }
 
+/* Bordered surface box: asset, dimension, and contact cards, rail boxes */
+/* Label/value rows: Coverage · Africa, CRS · EPSG:4326 */
+.kv {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  font-size: var(--font-size-4);
+}
+
+.kv dt {
+  color: var(--text-mute);
+}
+
+.kv dd {
+  margin: 0;
+}
+
+/* A wrapping row of pills or links */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* A column of cards, one gap between */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.card {
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+/* Card or panel head: the first child is the title, the rest sit at the right */
+.card-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: baseline;
+}
+
+.card-head > :first-child {
+  margin-right: auto;
+}
+
+/* Block title inside a tab or card: Spatial, Variables, Access the data… */
+.tech-title {
+  font-size: var(--font-size-5);
+  font-weight: 700;
+}
+
+/* A wrapped URL: breaks anywhere rather than overflow the column */
+.url {
+  padding-left: var(--space-1);
+  font-size: var(--font-size-3);
+  color: var(--text-soft);
+  overflow-wrap: anywhere;
+}
+
+/* Data table: uppercase column heads, cells sized to content, and the last
+   column wrapping to take the rest */
+.data-table {
+  width: 100%;
+  font-size: var(--font-size-4);
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: var(--space-3);
+  text-align: left;
+  white-space: nowrap;
+  border-top: 1px solid var(--border);
+}
+
+.data-table th {
+  font-size: var(--font-size-2);
+  font-weight: 700;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--grey-1);
+  border-top: 0;
+}
+
+.data-table th:last-child,
+.data-table td:last-child {
+  width: 100%;
+  white-space: normal;
+}
+
+.data-table td.mono {
+  font-size: var(--font-size-3);
+  color: var(--text-soft);
+}
+
 /* Eyebrow/kicker label */
 .label {
   font-size: var(--font-size-2);
@@ -182,6 +284,51 @@ hr {
   color: var(--text-soft);
   text-transform: uppercase;
   letter-spacing: 0.14em;
+}
+
+.label.terra {
+  color: var(--terra-700);
+}
+
+/* Sidebar box: an eyebrow title over a list of links or short entries */
+.rail-box {
+  margin-bottom: var(--space-4);
+}
+
+.rail-box .label {
+  display: block;
+  margin-bottom: var(--space-3);
+  font-family: var(--sans);
+  line-height: 1.3;
+  color: var(--text-mute);
+  text-wrap: wrap;
+}
+
+.rail-link,
+.rail-text {
+  display: block;
+  padding: var(--space-2) 0;
+  font-size: var(--font-size-4);
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+.rail-link:last-child,
+.rail-text:last-child {
+  border-bottom: 0;
+}
+
+.rail-link:hover {
+  color: var(--cdh-blue-700);
+  text-decoration: none;
+}
+
+.rail-link b {
+  display: block;
+}
+
+.rail-link.ext {
+  color: var(--cdh-blue-700);
 }
 
 .caption {
@@ -206,7 +353,8 @@ hr {
   border-radius: var(--radius-sm);
 }
 
-.pill.spatial {
+.pill.spatial,
+.pill.blue {
   color: var(--cdh-blue-800);
   background: var(--cdh-blue-50);
 }
@@ -216,6 +364,29 @@ hr {
   background: var(--terra-50);
 }
 
+.pill.terra {
+  color: var(--terra-700);
+  background: var(--terra-50);
+}
+
+/* Outlined: the text colour, faded, draws the border */
+.pill.outline {
+  background: transparent;
+  border-color: color-mix(in srgb, currentColor 35%, transparent);
+}
+
+/* Status stamps (LATEST, Maintainer, SOON) */
+.pill.caps {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+a.pill:hover {
+  text-decoration: none;
+  filter: brightness(0.95);
+}
+
 .pill.dot::before {
   width: 6px;
   height: 6px;
@@ -223,6 +394,14 @@ hr {
   background: currentColor;
   border-radius: 50%;
   opacity: 0.7;
+}
+
+/* A parked action: a disabled button, or a link with its href pulled */
+.btn:disabled,
+a.btn:not([href]),
+.code-copy:disabled {
+  pointer-events: none;
+  opacity: 0.5;
 }
 
 .btn {
@@ -435,11 +614,6 @@ hr {
   background: var(--grey-1);
 }
 
-.facet-option .count {
-  font-size: var(--font-size-2);
-  color: var(--text-mute);
-}
-
 .facet-option[aria-pressed="true"] .count {
   color: var(--text-soft);
 }
@@ -496,6 +670,10 @@ hr {
   margin-top: 0;
 }
 
+.prose > :last-child {
+  margin-bottom: 0;
+}
+
 .prose h2 {
   margin: 40px 0 var(--space-3);
   font-size: var(--font-size-9);
@@ -548,7 +726,8 @@ hr {
   margin-bottom: 6px;
 }
 
-.prose code {
+/* Inline code anywhere: a quiet token, so a code reads apart from its label */
+:not(pre) > code {
   padding: 1px 5px;
   font-family: var(--mono);
   font-size: 0.88em;

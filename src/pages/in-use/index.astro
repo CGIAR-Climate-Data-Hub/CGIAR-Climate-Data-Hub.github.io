@@ -5,12 +5,10 @@ import Layout from "@/layouts/Layout.astro";
 import { issueUrl } from "@/lib/github";
 import { SITE_NAME, SITE_REPO } from "@/site.config";
 
-const all = (await getCollection("useCases")).sort(
-  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
-);
-const lead = all.find((uc) => uc.data.featured) ?? all[0];
-const rest = all.filter((uc) => uc !== lead);
-const stories = lead ? [lead, ...rest] : [];
+// Newest first, with the featured story (if any) leading
+const stories = (await getCollection("useCases"))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .sort((a, b) => Number(b.data.featured) - Number(a.data.featured));
 const description =
   "What people are doing with the Hub — impact from national planning and climate finance, and adoption of its data and standards.";
 
@@ -42,9 +40,9 @@ const monthOf = (d: Date) => d.toISOString().slice(0, 7);
         <article class:list={["story", { lead: i === 0 }]}>
           <div class="rail">
             {i === 0 && <div class="label featured">Featured</div>}
-            <div class:list={["label", "kind", { muted: i === 0 }]}>{uc.data.kind}</div>
+            <div class:list={["label", { terra: i !== 0 }]}>{uc.data.kind}</div>
             <div class="mono country">{uc.data.country}</div>
-            <div class="mono date">{monthOf(uc.data.date)}</div>
+            <div class="mono caption date">{monthOf(uc.data.date)}</div>
             <div class="partner caption">{uc.data.partner}</div>
           </div>
           <div class="body">
@@ -124,15 +122,6 @@ h1 {
   color: var(--terra-700);
 }
 
-.kind {
-  font-size: var(--font-size-1);
-  color: var(--terra-700);
-}
-
-.kind.muted {
-  color: var(--text-mute);
-}
-
 .country {
   margin-top: var(--space-2);
   font-size: var(--font-size-4);
@@ -141,8 +130,6 @@ h1 {
 
 .date {
   margin-top: 3px;
-  font-size: var(--font-size-3);
-  color: var(--text-mute);
 }
 
 .partner {

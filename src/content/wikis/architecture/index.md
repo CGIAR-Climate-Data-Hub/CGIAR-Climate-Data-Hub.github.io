@@ -127,9 +127,9 @@ also makes the metadata easier to author for AI agents as they can read the
 schema and validate their work as they go.
 
 The metadata standard publishes a core JSON Schema plus a Hub profile that
-requires five Hub-maintained extensions: `cdh`, `climate`, `datacube`,
-`classification`, `agriculture`. It was designed this way to allow outside
-projects to easily reuse the core fields, and add custom extensions for
+requires three Hub-maintained extensions: `cdh`, `climate`, `agriculture`. It
+was designed this way to allow outside projects to easily reuse the core fields,
+and add custom extensions for
 additional fields as needed. This will allow them to use much of the tooling the
 Hub has built for its needs without needing to adopt fields which may not be
 relevant to them or cover their needs.

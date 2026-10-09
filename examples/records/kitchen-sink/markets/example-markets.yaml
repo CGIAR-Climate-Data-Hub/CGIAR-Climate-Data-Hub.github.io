@@ -1,0 +1,98 @@
+# yaml-language-server: $schema=../../../spec/schemas/profiles/cdh.schema.json
+#
+# ============================================================================
+# SAMPLE RECORD - NOT REAL DATA.
+# Vector data with embedded geometries: one GeoParquet file of market points
+# in the imaginary region of Farland. Shows a structure's geometry_column, a
+# place-key dimension, a coded variable with categories, and an
+# open-ended series refreshed each year.
+# ============================================================================
+cdh_schema_version: "v0.4.0"
+extensions:
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/cdh/schema.json
+
+id: example-markets
+title: "Example Market Locations (SAMPLE - NOT REAL DATA)"
+version: "1"
+description: >
+  FICTIONAL SAMPLE RECORD. Locations of rural and urban markets in the imaginary region of Farland,
+  as points with a market type and the year each market opened. Delivered as one GeoParquet file
+  with the geometries embedded, and refreshed each year as new markets are surveyed. Every value
+  here is invented.
+license: CC-BY-4.0
+resource_type: dataset
+
+keywords:
+  - markets
+  - points
+  - sample data
+
+contact:
+  - name: Ada Placeholder
+    organization: Institute for Example Data
+    email: ada.placeholder@example.org
+    roles: [licensor, producer, point-of-contact]
+  - name: Jan Itor
+    organization: Institute for Example Data
+    email: jan.itor@example.org
+    roles: [maintainer]
+
+citation:
+  authors:
+    - family: Placeholder
+      given: A.
+  date: "2026"
+  publisher: Example Data Repository
+
+created: "2026-09-30"
+updated: "2026-09-30"
+
+spatial:
+  bbox: [10, -5, 22, 8]
+  geography: [africa]
+  crs: EPSG:4326
+
+temporal:
+  start_date: "2026-06"
+  end_date: null # still growing
+  update_frequency: annual
+
+structures:
+  - name: main
+    geometry_column: geometry
+    dimensions:
+      - name: market_id
+        type: location
+        description: Market code, unique within Farland.
+        data_type: string # codes keep leading zeros
+    variables:
+      - name: market_name
+        description: Market name as used locally.
+        data_type: string
+      - name: market_type
+        description: Kind of market.
+        data_type: string
+        categories:
+          - value: rural
+            label: Rural periodic market
+          - value: urban
+            label: Urban daily market
+      - name: opened
+        description: Year the market opened.
+        data_type: int16
+
+processing:
+  - id: source
+    description: Invented for documentation.
+
+data:
+  - name: markets
+    description: Market points, GeoParquet.
+    locations:
+      - url: https://example.org/markets/farland-markets.parquet
+    media_type: application/vnd.apache.parquet
+    checksum: md5:9e107d9d372bb6826bd81d3542a419d6
+    processing_steps: [source]
+
+cdh:
+  domain: [socioeconomic]

@@ -1,71 +1,70 @@
 ---
-// Python/R code block with a language toggle. The chosen language syncs
-// across every instance on the page; a block missing that language keeps
-// showing the one it has. Single-language blocks render without a toggle.
+// Code block with a language toggle (languages from lib/snippets). The chosen
+// language syncs across every instance on the page; a block missing that
+// language keeps showing the one it has. One language renders no toggle.
 import { Code } from "astro:components";
+import type { BundledLanguage } from "shiki";
 import { codeHeader, shikiConfig } from "@/lib/code-block";
+import { LANGUAGES, type Snippets } from "@/lib/snippets";
 
 interface Props {
-  python?: string;
-  r?: string;
+  code: Snippets;
+  // Language id shown before the visitor picks one; defaults to the first given
+  first?: string;
 }
 
-const { python, r } = Astro.props;
+const { code, first } = Astro.props;
+const tabs = LANGUAGES.flatMap((l) =>
+  code[l.id] ? [{ ...l, code: code[l.id] }] : [],
+).sort((a, b) => Number(b.id === first) - Number(a.id === first));
 ---
 
 <div class="snippet">
-  {python && r && (
+  {tabs.length > 1 && (
     <div class="seg">
-      <button aria-pressed="true" data-lang="python" type="button">Python</button>
-      <button aria-pressed="false" data-lang="r" type="button">R</button>
+      {tabs.map((t, i) => (
+        <button aria-pressed={i === 0} data-lang={t.id} type="button">
+          {t.label}
+        </button>
+      ))}
     </div>
   )}
-  {python && (
-    <div data-snippet="python">
+  {tabs.map((t, i) => (
+    <div data-snippet={t.id} hidden={i > 0}>
       <Code
-        code={python}
-        lang="python"
+        code={t.code}
+        lang={t.id as BundledLanguage}
         theme={shikiConfig.theme}
-        transformers={[codeHeader("Python")]}
+        transformers={[codeHeader(t.label)]}
       />
     </div>
-  )}
-  {r && (
-    <div data-snippet="r" hidden={Boolean(python)}>
-      <Code
-        code={r}
-        lang="r"
-        theme={shikiConfig.theme}
-        transformers={[codeHeader("R")]}
-      />
-    </div>
-  )}
+  ))}
 </div>
 
 <script>
-const buttons = document.querySelectorAll<HTMLButtonElement>("[data-lang]");
-
 function setLang(lang: string) {
-  for (const b of buttons)
-    b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
   for (const snip of document.querySelectorAll<HTMLElement>(".snippet")) {
     const panels = [...snip.querySelectorAll<HTMLElement>("[data-snippet]")];
-    if (!panels.some((p) => p.dataset.snippet === lang)) continue;
-    for (const p of panels) p.hidden = p.dataset.snippet !== lang;
+    if (panels.some((p) => p.dataset.snippet === lang))
+      for (const p of panels) p.hidden = p.dataset.snippet !== lang;
+    // Each block marks the language it shows, which may not be the one picked
+    const shown = panels.find((p) => !p.hidden)?.dataset.snippet;
+    for (const b of snip.querySelectorAll<HTMLButtonElement>("[data-lang]"))
+      b.setAttribute("aria-pressed", String(b.dataset.lang === shown));
   }
 }
 
-for (const btn of buttons) {
-  btn.addEventListener("click", () => {
-    const lang = btn.dataset.lang ?? "python";
-    localStorage.setItem("snippet-lang", lang);
-    setLang(lang);
-  });
-}
+document.addEventListener("click", (e) => {
+  const lang = (e.target as Element).closest<HTMLElement>("[data-lang]")
+    ?.dataset.lang;
+  if (!lang) return;
+  localStorage.setItem("snippet-lang", lang);
+  setLang(lang);
+});
 
-// Returning visitors land on their language (same pattern as catalog-layout)
+// Returning visitors land on their language
 const saved = localStorage.getItem("snippet-lang");
-if (saved && saved !== "python") setLang(saved);
+if (saved) setLang(saved);
 </script>
 
 <style>

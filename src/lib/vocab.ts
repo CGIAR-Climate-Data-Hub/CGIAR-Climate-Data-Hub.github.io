@@ -1,11 +1,11 @@
 // CDH controlled vocabularies, vendored from the published standard.
-// To bump: re-download VOCAB_URL/its geography sibling and update the version.
+// To bump: re-download VOCAB_URL and its geography sibling (latest release).
 import commodityVocab from "@/assets/commodity-vocab.json";
 import geoBboxes from "@/assets/geo-bboxes.json";
 import geographyVocab from "@/assets/geography-vocab.json";
 
 export const VOCAB_URL =
-  "https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.0.2/vocab/commodity.json";
+  "https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/vocab/commodity.json";
 
 const byId = new Map(commodityVocab.concepts.map((c) => [c.id, c]));
 

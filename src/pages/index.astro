@@ -20,7 +20,7 @@ const wikis = (await getCollection("wikis"))
   .filter((w) => w.data.order !== undefined)
   .sort(
     (a, b) =>
-      (a.data.order ?? 0) - (b.data.order ?? 0)
+      Number(a.data.order) - Number(b.data.order)
       || a.data.title.localeCompare(b.data.title),
   )
   .slice(0, 2);
@@ -156,7 +156,7 @@ const PRINCIPLES = [
               <span class="essential-kind">
                 <span class="essential-glyph">
                   {item.glyph ? (
-                    <DataGlyph size={19} type={item.glyph} />
+                    <DataGlyph type={item.glyph} />
                   ) : (
                     <svg aria-hidden="true" fill="none" height="19" stroke="currentColor" stroke-linecap="round" stroke-width="1.6" viewBox="0 0 24 24" width="19">
                       <path d="M7 3h7l5 5v13H7V3Zm7 0v5h5M10 12h6M10 16h6" />
@@ -168,7 +168,7 @@ const PRINCIPLES = [
               <span class="essential-text">
                 <span class="essential-name">{item.name}</span>
                 <span class="essential-meta">
-                  <span class="mono">{item.meta}</span>
+                  <span class="mono caption">{item.meta}</span>
                 </span>
               </span>
               <svg aria-hidden="true" class="essential-arrow" fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16">
@@ -366,8 +366,6 @@ h1 {
 .path-cue {
   display: block;
   margin-top: var(--space-1);
-  font-size: var(--font-size-1);
-  color: var(--text-mute);
 }
 
 .path-arrow {
@@ -396,9 +394,10 @@ h1 {
   border-top: 1px solid var(--border);
 }
 
+/* A fixed kind column, so titles line up whatever the badge says */
 .essential {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 72px 1fr auto;
   gap: var(--space-4);
   align-items: center;
   padding: 18px 6px;
@@ -461,8 +460,6 @@ h1 {
 .essential-meta .mono {
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: var(--font-size-3);
-  color: var(--text-mute);
   white-space: nowrap;
 }
 

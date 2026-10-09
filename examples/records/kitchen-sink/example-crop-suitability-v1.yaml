@@ -1,23 +1,19 @@
 # yaml-language-server: $schema=../../spec/schemas/profiles/cdh.schema.json
-"$schema": https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/schemas/profiles/cdh.schema.json
 #
 # ============================================================================
 # SAMPLE RECORD - NOT REAL DATA.
-# The DEPRECATED v1.0 snapshot of example-crop-suitability. Kept frozen so the
-# earlier release stays citable; the current release lives in
-# example-crop-suitability.yaml and points back here via previous_version.
-# Snapshots are never edited again and are surfaced only through the version
-# chain, not catalog listings (see standard.md section 4.7).
+# The DEPRECATED 1.0 release of example-crop-suitability. Same id as the
+# current release (version 2.0, in example-crop-suitability.yaml), which points
+# back here via previous_version: "1.0". Kept so the earlier release stays
+# citable as id + version (see standard.md section 4.7).
 # ============================================================================
-cdh_schema_version: "v0.3.0"
+cdh_schema_version: "v0.4.0"
 extensions:
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/extensions/cdh/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/extensions/climate/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/extensions/datacube/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/extensions/classification/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.3.0/extensions/agriculture/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/cdh/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/climate/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/agriculture/schema.json
 
-id: example-crop-suitability-v1
+id: example-crop-suitability
 title: "Example Gridded Crop Suitability Projections (SAMPLE - NOT REAL DATA), v1.0"
 version: "1.0"
 deprecated: true
@@ -25,9 +21,9 @@ series:
   name: Example Suitability Atlas
   url: https://example.org/atlas
 description: >
-  FICTIONAL SAMPLE RECORD - superseded snapshot. The first release of the example suitability cube
-  for the imaginary region of Farland, covering two crops under a single scenario. Retained frozen
-  for citation; use the current release (example-crop-suitability) instead.
+  FICTIONAL SAMPLE RECORD - superseded release. The first release of the example suitability cube
+  for the imaginary region of Farland, covering two crops under a single scenario. Retained for
+  citation; use the current release (example-crop-suitability, version 2.0) instead.
 license: CC-BY-4.0
 resource_type: dataset
 
@@ -42,6 +38,10 @@ contact:
     email: ada.placeholder@example.org
     organization: Institute for Example Data
     url: https://example.org
+  - name: Jan Itor
+    roles: [maintainer]
+    email: jan.itor@example.org
+    organization: Institute for Example Data
   - organization: Institute for Example Data
     roles: [licensor]
     url: https://example.org
@@ -49,7 +49,8 @@ contact:
 citation:
   title: "Example Gridded Crop Suitability Projections, v1.0"
   authors:
-    - Placeholder, A.
+    - family: Placeholder
+      given: A.
   date: "2024"
   publisher: Example Data Repository
   url: https://example.org/atlas/example-crop-suitability-v1
@@ -63,33 +64,35 @@ spatial:
   geography:
     - africa
   crs: EPSG:4326
-  resolution:
-    - type: xy
-      unit: degree
-      value: 0.1
-      label: 6 arc-minutes (~10 km at equator)
 
 temporal:
   start_date: "2030"
   end_date: "2050"
 
-# lat/lon come from spatial; the projection horizon and domain axes are declared here.
-dimensions:
-  - name: time
-    type: temporal
-    description: Projection horizon (reference year).
-    values: ["2030", "2050"]
-    step: P20Y
-  - name: crop
-    type: crop
-    description: Example crop code.
-    values: [maiz, rice]
-
-variables:
-  - name: suitability_index
-    description: Continuous modelled suitability, 0 (unsuitable) to 1 (optimal).
-    data_type: float32
-    unit: "1"
+# Every axis is declared here: the grid, the projection horizon, and the domain axes.
+structures:
+  - name: main
+    dimensions:
+      - name: cell
+        type: xy
+        description: 6 arc-minutes (~10 km at equator).
+        step: 0.1
+        unit: degree
+      - name: time
+        type: temporal
+        description: Projection horizon (reference year).
+        values: ["2030", "2050"] # ISO 8601 strings; a temporal axis takes no bare numbers
+        step: P20Y
+      - name: crop
+        type: crop
+        description: Example crop code.
+        values: [maiz, rice]
+    variables:
+      - name: suitability_index
+        description: Continuous modelled suitability, 0 (unsuitable) to 1 (optimal).
+        data_type: float32
+        nodata: -9999
+        unit: "1"
 
 cdh:
   domain: [agricultural-production]
@@ -120,4 +123,24 @@ data:
       - url: https://example.org/data/example-crop-suitability/v1/cube.zarr
         title: HTTPS
     media_type: application/vnd.zarr; version=3
-    nodata: -9999
+  # v1 COG names followed no single pattern, so no href_template fits. Indexes
+  # list the files instead: a cdh-inventory (CSV columns href, time, crop,
+  # checksum) of full URLs, a stac-geoparquet index for STAC clients, and
+  # a GDAL VRT that opens the COGs as one raster in GDAL, QGIS, or rasterio.
+  - name: cogs
+    description: Cloud Optimized GeoTIFFs of the v1 cube, one per horizon and crop.
+    locations:
+      - url: https://example.org/data/example-crop-suitability/v1/cogs/
+    file_index:
+      - format: cdh-inventory
+        locations:
+          - url: https://example.org/data/example-crop-suitability/v1/cogs-inventory.csv
+        media_type: text/csv
+      - format: stac-geoparquet
+        locations:
+          - url: https://example.org/data/example-crop-suitability/v1/cogs-items.parquet
+        media_type: application/vnd.apache.parquet
+      - format: vrt
+        locations:
+          - url: https://example.org/data/example-crop-suitability/v1/cogs.vrt
+    media_type: "image/tiff; application=geotiff; profile=cloud-optimized"

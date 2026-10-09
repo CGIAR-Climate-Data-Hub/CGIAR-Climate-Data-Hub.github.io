@@ -3,6 +3,7 @@ import { getCollection, getEntry, render } from "astro:content";
 import JsonLd from "@/components/JsonLd.astro";
 import SectionHeader from "@/components/SectionHeader.astro";
 import Layout from "@/layouts/Layout.astro";
+import { currentReleases, formatBytes } from "@/lib/catalog";
 import { SITE_NAME } from "@/site.config";
 
 // Copy lives in src/content/pages/about.md — sections in frontmatter, prose in the body
@@ -11,28 +12,22 @@ if (!entry) throw new Error("Missing src/content/pages/about.md");
 const { Content } = await render(entry);
 const { title, lede, missions, principles } = entry.data;
 
-// Derived from the catalog records and skills at build time
-const catalogEntries = await getCollection("catalog");
+// Derived from the current releases and skills at build time
+const catalogEntries = currentReleases(await getCollection("catalog"));
 const datasetCount = catalogEntries.length;
 const skillCount = (await getCollection("skills")).length;
 
-const UNITS: Record<string, number> = { KB: 1e3, MB: 1e6, GB: 1e9, TB: 1e12 };
 const totalBytes = catalogEntries
   .flatMap((e) => [...e.data.data, ...e.data.additional_assets])
-  .reduce((sum, a) => {
-    const m = a.file_size?.match(/([\d.]+)\s*(KB|MB|GB|TB)/i);
-    return m ? sum + Number(m[1]) * UNITS[m[2].toUpperCase()] : sum;
-  }, 0);
+  .reduce((sum, a) => sum + (a.file_size ?? 0), 0);
 // Floor to one significant figure — sizes are a known undercount (not every
 // asset lists file_size), so a clean "500+ MB" is more honest than 531.
 const floorClean = (n: number) => {
   const p = 10 ** Math.floor(Math.log10(Math.max(n, 1)));
   return Math.floor(n / p) * p;
 };
-const [volumeUnit, factor] = Object.entries(UNITS)
-  .reverse()
-  .find(([, f]) => totalBytes >= f) ?? ["MB", 1e6];
-const dataVolume = `${floorClean(totalBytes / factor)}+ ${volumeUnit}`;
+// "500 MB" → "500+ MB"
+const dataVolume = formatBytes(floorClean(totalBytes)).replace(" ", "+ ");
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -55,9 +50,9 @@ const jsonLd = {
           <h1>{title}</h1>
           <p>{lede}</p>
         </div>
-        <aside class="glance">
+        <aside class="card glance">
           <div class="label">At a glance</div>
-          <dl>
+          <dl class="kv">
             <dt>Datasets</dt>
             <dd>{datasetCount}</dd>
             <dt>Data volume</dt>
@@ -200,32 +195,12 @@ h1 {
 }
 
 .glance {
-  padding: 20px;
   background: var(--bg); /* the hero backdrop is --surface, so invert */
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
 }
 
 .glance .label {
   margin-bottom: var(--space-3);
   color: var(--terra-700);
-}
-
-dl {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--space-2) var(--space-4);
-  margin: 0;
-  font-size: var(--font-size-4);
-}
-
-dt {
-  color: var(--text-mute);
-}
-
-dd {
-  margin: 0;
-  color: var(--text);
 }
 
 @media (width <= 860px) {

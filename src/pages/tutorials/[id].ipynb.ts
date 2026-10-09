@@ -15,5 +15,5 @@ export async function getStaticPaths() {
 
 export const GET: APIRoute = async ({ props }) =>
   new Response(await readFile(props.filePath as string), {
-    headers: { "Content-Type": "application/x-ipynb+json" },
+    headers: { "Content-Type": "application/vnd.jupyter" },
   });

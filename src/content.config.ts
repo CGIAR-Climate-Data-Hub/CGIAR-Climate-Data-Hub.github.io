@@ -1,6 +1,7 @@
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
+import { SIZE_UNITS } from "./lib/catalog";
 import { WIKI_GROUPS } from "./lib/collections";
 import { notebooks } from "./lib/notebooks";
 import { records } from "./lib/records";
@@ -140,26 +141,133 @@ const contact = z.object({
   roles: z.array(z.string()).default([]),
   email: z.string().optional(),
   url: z.string().optional(),
+  // Full https://orcid.org/ and https://ror.org/ URLs
+  orcid: z.string().optional(),
+  ror: z.string().optional(),
 });
 
+// A person or an organization, in citation order (CSL-JSON shape)
+const author = z.union([
+  z.object({
+    family: z.string(),
+    given: z.string().optional(),
+    orcid: z.string().optional(),
+  }),
+  z.object({ organization: z.string(), ror: z.string().optional() }),
+]);
+
 const citation = z.object({
-  title: z.string(),
-  authors: z.array(z.string()).default([]),
+  title: z.string().optional(),
+  authors: z.array(author).default([]),
   date: z.string().optional(),
   publisher: z.string().optional(),
   url: z.string().optional(),
 });
 
+// Code → label for a categorical variable or axis
+const category = z.object({
+  value: z.coerce.string(),
+  label: z.string(),
+  description: z.string().optional(),
+});
+
 const location = z.object({ url: z.string(), title: z.string().optional() });
+
+// The record's coverage, or one asset's (data[].spatial, same shape).
+// Grid spacing is the step of a structure's horizontal axis, not here
+const spatial = z.object({
+  // Either one bbox or a list of them
+  bbox: z.union([z.array(z.number()), z.array(z.array(z.number()))]).optional(),
+  geography: z.array(z.string()).default([]),
+  crs: z.string().optional(),
+});
 
 const asset = z.object({
   name: z.string(),
   description: z.string().optional(),
-  locations: z.array(location),
+  // Omitted when a file_index carries the locations
+  locations: z.array(location).default([]),
   href_template: z.string().optional(),
   media_type: z.string().optional(),
-  file_size: z.string().optional(),
+  // What a supporting file is for: describedby, agents, example…
+  roles: z.array(z.string()).default([]),
+  // Whole bytes or "31.1 MB" (powers of 1000); stored as bytes
+  file_size: z
+    .union([z.number(), z.string()])
+    .transform((s) => {
+      if (typeof s === "number") return s;
+      const [, n, unit] = s.match(/^([\d.]+)\s?(\w+)$/) ?? [];
+      return Math.ceil(Number(n) * 1000 ** SIZE_UNITS.indexOf(unit));
+    })
+    .optional(),
+  // Single-file digest as <algorithm>:<hex>
+  checksum: z.string().optional(),
+  // Coverage of this asset alone, for picking files by area
+  spatial: spatial.optional(),
+  // Names of the structures[] this file holds
+  structures: z.array(z.string()).default([]),
+  // Index files that list or open this entry's files as one dataset
+  file_index: z
+    .array(
+      z.object({
+        format: z.string(),
+        locations: z.array(location),
+        title: z.string().optional(),
+      }),
+    )
+    .default([]),
+});
+
+// A record's data dictionary: one structure per file layout, each with its
+// own dimensions, variables, and foreign keys (Frictionless resource schema)
+const dimension = z.object({
+  name: z.string(),
+  type: z.string().optional(),
+  description: z.string().optional(),
+  // The standard allows bare numbers (years); the site works in strings
+  values: z.array(z.coerce.string()).default([]),
+  // Temporal [first, last] dates, or horizontal [min, max] coordinates
+  extent: z.union([z.array(z.string()), z.array(z.number())]).optional(),
+  // Spacing between values: an ISO 8601 duration on a temporal axis, a
+  // number in unit on a horizontal (xy, x, y) axis
+  step: z.union([z.string(), z.number()]).optional(),
+  unit: z.string().optional(),
+  // Stored type of the coordinate or key column
+  data_type: z.string().optional(),
+  // The axis's values with labels, in place of values
+  categories: z.array(category).default([]),
+  // Vocabulary or vertical CRS the values are coded against
+  reference_system: z.string().optional(),
+});
+
+const variable = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  data_type: z.string().optional(),
+  unit: z.string().optional(),
+  note: z.string().optional(),
+  // Fill value marking missing data
   nodata: z.union([z.string(), z.number()]).optional(),
+  categories: z.array(category).default([]),
+});
+
+// Columns joining this table to another dataset (Frictionless shape)
+const foreignKey = z.object({
+  fields: z.array(z.string()),
+  reference: z.object({
+    resource: z.string(),
+    asset: z.string().optional(),
+    fields: z.array(z.string()),
+  }),
+});
+
+const structure = z.object({
+  name: z.string(),
+  dimensions: z.array(dimension).default([]),
+  variables: z.array(variable),
+  foreign_keys: z.array(foreignKey).default([]),
+  // The geometry column of a vector table
+  geometry_column: z.string().optional(),
 });
 
 const catalog = defineCollection({
@@ -175,11 +283,13 @@ const catalog = defineCollection({
       id: z.string(),
       title: z.string(),
       description: z.string(),
-      version: z.string().optional(),
-      // Versioning per standard §4.7: snapshots are frozen records marked
-      // deprecated; the chain links backward via previous_version ids
+      version: z.string(),
+      // Releases share one id; superseded ones are deprecated, and each
+      // names its predecessor's version
       previous_version: z.string().optional(),
       deprecated: z.boolean().default(false),
+      // id of the record this one is a child representation of
+      parent: z.string().optional(),
       // Cross-dataset family (e.g. MapSPAM), distinct from the version chain
       series: z
         .object({ name: z.string(), url: z.string().optional() })
@@ -192,6 +302,8 @@ const catalog = defineCollection({
       access_note: z.string().optional(),
       doi: z.string().optional(),
       note: z.string().optional(),
+      // Credit line reusers must reproduce (Copernicus, OpenStreetMap…)
+      attribution: z.string().optional(),
       keywords: z.array(keyword).default([]),
       contact: z.array(contact).default([]),
       citation: citation.optional(),
@@ -206,28 +318,9 @@ const catalog = defineCollection({
       funding: z
         .array(z.object({ name: z.string(), url: z.string().optional() }))
         .default([]),
-      created: z.string().optional(),
-      updated: z.string().optional(),
-      spatial: z
-        .object({
-          // Either one bbox or a list of them, per the datacube extension
-          bbox: z
-            .union([z.array(z.number()), z.array(z.array(z.number()))])
-            .optional(),
-          geography: z.array(z.string()).default([]),
-          crs: z.string().optional(),
-          resolution: z
-            .array(
-              z.object({
-                type: z.string().optional(),
-                unit: z.string().optional(),
-                value: z.number().optional(),
-                label: z.string().optional(),
-              }),
-            )
-            .default([]),
-        })
-        .optional(),
+      created: z.string(),
+      updated: z.string(),
+      spatial: spatial.optional(),
       // Dates are ISO 8601, possibly reduced precision ("2020", "2020-06");
       // a reduced-precision end_date is inclusive (through the period's end).
       temporal: z
@@ -235,33 +328,14 @@ const catalog = defineCollection({
           // Static reference date — "represents 2020", not "covers 2020"
           z.object({ date: z.string() }),
           // Coverage span; end_date is required but null when ongoing
-          z.object({ start_date: z.string(), end_date: z.string().nullable() }),
+          z.object({
+            start_date: z.string(),
+            end_date: z.string().nullable(),
+            // How often the resource gains data: daily … annual, irregular
+            update_frequency: z.string().optional(),
+          }),
         ])
         .optional(),
-      dimensions: z
-        .array(
-          z.object({
-            name: z.string(),
-            type: z.string().optional(),
-            description: z.string().optional(),
-            // The standard allows bare numbers (years); the site works in strings
-            values: z.array(z.coerce.string()).default([]),
-            // ISO 8601 duration between slices, on temporal axes
-            step: z.string().optional(),
-          }),
-        )
-        .default([]),
-      variables: z
-        .array(
-          z.object({
-            name: z.string(),
-            description: z.string().optional(),
-            data_type: z.string().optional(),
-            unit: z.string().optional(),
-            note: z.string().optional(),
-          }),
-        )
-        .default([]),
       cdh: z
         .object({
           domain: z.array(z.string()).default([]),
@@ -307,23 +381,7 @@ const catalog = defineCollection({
           scenarios: z.array(z.string()).default([]),
         })
         .optional(),
-      // Classification extension: value → label maps for categorical variables
-      classes: z
-        .array(
-          z.object({
-            variable: z.string(),
-            values: z
-              .array(
-                z.object({
-                  value: z.coerce.string(),
-                  label: z.string(),
-                  description: z.string().optional(),
-                }),
-              )
-              .default([]),
-          }),
-        )
-        .default([]),
+      structures: z.array(structure).default([]),
       commodities: z.array(z.string()).default([]),
       processing: z
         .array(
@@ -334,7 +392,18 @@ const catalog = defineCollection({
             code: z
               .object({ url: z.string(), version: z.string().optional() })
               .optional(),
-            derived_from: z.array(location).default([]),
+            // A Hub record id or a storage url, never both
+            derived_from: z
+              .array(
+                z.object({
+                  id: z.string().optional(),
+                  url: z.string().optional(),
+                  title: z.string().optional(),
+                  // The source release used, when the link should not float
+                  version: z.string().optional(),
+                }),
+              )
+              .default([]),
           }),
         )
         .default([]),
@@ -343,7 +412,7 @@ const catalog = defineCollection({
       additional_links: z
         .array(
           z.object({
-            name: z.string().optional(),
+            title: z.string().optional(),
             rel: z.string().optional(),
             url: z.string(),
             description: z.string().optional(),

@@ -5,6 +5,7 @@ import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import Citation from "@/components/Citation.astro";
 import JsonLd from "@/components/JsonLd.astro";
 import Layout from "@/layouts/Layout.astro";
+import { currentReleases } from "@/lib/catalog";
 import { citationText } from "@/lib/citation";
 import { allTutorials, pageCitable } from "@/lib/collections";
 import { editUrl } from "@/lib/github";
@@ -28,7 +29,7 @@ const isNotebook = entry.collection === "notebookTutorials";
 const notebookPath = `src/content/tutorials/${entry.id}.ipynb`;
 
 // Resolve linked catalog records for the "Data" line
-const catalog = await getCollection("catalog");
+const catalog = currentReleases(await getCollection("catalog"));
 const datasets = entry.data.datasets.map((id) => ({
   id,
   title: catalog.find((c) => c.data.id === id)?.data.title ?? id,
@@ -47,7 +48,7 @@ const jsonLd = {
   url: pageUrl,
   audience: { "@type": "Audience", audienceType: entry.data.audience },
   ...(timeRequired && { timeRequired }),
-  dateModified: entry.data.updated.toISOString().slice(0, 10),
+  dateModified: cite.date,
   author: entry.data.author.length
     ? entry.data.author.map((name) => ({ "@type": "Person", name }))
     : { "@type": "Organization", name: SITE_PUBLISHER_NAME },
@@ -77,7 +78,7 @@ const byline = new Intl.ListFormat("en").format(entry.data.author);
           {entry.data.audience}
         </span>
         <span class="pill">{entry.data.topic}</span>
-        <span class="mono meta">
+        <span class="mono caption">
           {[
             entry.data.time,
             entry.data.format,
@@ -90,7 +91,7 @@ const byline = new Intl.ListFormat("en").format(entry.data.author);
       <h1>{entry.data.title}</h1>
       <p class="sub">{entry.data.description}</p>
       {datasets.length > 0 && (
-        <p class="mono uses">
+        <p class="mono caption uses">
           Data:{" "}
           {datasets.map((ds, i) => (
             <>
@@ -151,11 +152,6 @@ const byline = new Intl.ListFormat("en").format(entry.data.author);
   margin-top: 22px;
 }
 
-.meta {
-  font-size: var(--font-size-3);
-  color: var(--text-mute);
-}
-
 h1 {
   margin-top: var(--space-3);
   font-size: clamp(28px, 3vw, 38px);
@@ -163,8 +159,6 @@ h1 {
 
 .uses {
   margin-top: 10px;
-  font-size: var(--font-size-3);
-  color: var(--text-mute);
 }
 
 .sub {

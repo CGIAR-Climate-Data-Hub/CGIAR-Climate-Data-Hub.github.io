@@ -18,10 +18,10 @@ const text = citationText(cite, viaUrl);
 const bib = bibtex(cite, viaUrl);
 ---
 
-<div class="cite-block">
+<div class="stack cite-block">
   <h2>How to cite</h2>
   {note && <p class="cite-note">{note}</p>}
-  <blockquote class="cite">
+  <blockquote class="card cite">
     {text}
     <span class="cite-copy">
       <CopyButton copy={text} label="Copy citation" />
@@ -40,12 +40,6 @@ const bib = bibtex(cite, viaUrl);
 </div>
 
 <style>
-.cite-block {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
 h2 {
   font-size: var(--font-size-8);
   line-height: 1.3;
@@ -59,13 +53,10 @@ h2 {
 
 .cite {
   position: relative;
-  padding: var(--space-4) 56px var(--space-4) var(--space-4);
+  padding-right: 56px;
   margin: 0;
   font-size: var(--font-size-5);
   line-height: 1.7;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
 }
 
 .cite-copy {
