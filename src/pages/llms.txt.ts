@@ -11,7 +11,6 @@ export const GET: APIRoute = async ({ site }) => {
   const catalog = currentReleases(await getCollection("catalog"));
   const wikis = await getCollection("wikis");
   const tutorials = await allTutorials();
-  const useCases = await getCollection("useCases");
 
   const line = (title: string, url: string, desc: string) =>
     `- [${title.replaceAll("[", "\\[").replaceAll("]", "\\]")}](${abs(url)}): ${desc.trim().replace(/\s+/g, " ")}`;
@@ -39,10 +38,6 @@ ${wikis.map((w) => line(w.data.title, `/wikis/${w.id}/${w.filePath?.endsWith(".m
 ## Tutorials
 
 ${tutorials.map((t) => line(t.data.title, `/tutorials/${t.id}/${t.filePath?.endsWith(".md") ? "index.md" : ""}`, t.data.description)).join("\n")}
-
-## Use cases
-
-${useCases.map((u) => line(u.data.title, `/in-use/${u.id}/${u.filePath?.endsWith(".md") ? "index.md" : ""}`, u.data.description)).join("\n")}
 
 ## Reference
 
