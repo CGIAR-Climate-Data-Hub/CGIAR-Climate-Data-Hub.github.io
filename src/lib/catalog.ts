@@ -212,16 +212,6 @@ export const recordSlug = (d: CatalogRecord) =>
 export const licensor = (d: CatalogRecord) =>
   d.contact.find((c) => c.roles.includes("licensor"))?.organization;
 
-// M49 chain depth of the most specific tag (kenya → 5, africa → 2) to a
-// coverage scale; sub-regions at depths 3-4 both read as regional
-function scaleOf(tags: string[]) {
-  const depth = Math.max(0, ...tags.map((g) => geographyWithParents(g).length));
-  if (depth === 0) return undefined;
-  if (depth === 1) return "global";
-  if (depth === 2) return "continental";
-  return depth <= 4 ? "regional" : "national";
-}
-
 export const HORIZONTAL = ["xy", "x", "y"];
 
 // A grid step in words. Degrees convert exactly to arc-minutes or arc-seconds;
@@ -290,10 +280,6 @@ export function summarize(entry: CollectionEntry<"catalog">) {
     ].filter(
       (g) => g !== "world" || (d.spatial?.geography ?? []).includes("world"),
     ),
-    // Coverage scale from the most specific tag's M49 chain depth:
-    // world → global, a continent → continental, sub-regions → regional,
-    // countries → national. Untagged records carry no scale.
-    scale: scaleOf(d.spatial?.geography ?? []),
     // Explicit extent, else derived from geography tags for spatial search
     bboxes:
       normalizeBboxes(d.spatial?.bbox)
