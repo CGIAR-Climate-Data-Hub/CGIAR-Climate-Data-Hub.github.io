@@ -136,16 +136,6 @@ const catalogSchema = {
             type="search"
           >
         </div>
-        <span class="pill blue mono series-tag" hidden id="series-active">
-          Series: <b id="series-name"></b>
-          <button
-            aria-label="Clear series filter"
-            id="series-clear"
-            type="button"
-          >
-            ×
-          </button>
-        </span>
         <button hidden id="clear-filters" type="button">
           Clear all filters
         </button>
@@ -303,8 +293,7 @@ const catalogSchema = {
               data-format={d.formats.join(" ")}
               data-geography={d.geographies.join(" ")}
               data-license={d.license}
-              data-search={[d.title, d.source ?? "", d.description, d.license, ...d.formats.flatMap((f) => [f, formatIdLabel(f)]), ...d.keywords, ...d.geographies.map(geoLabel), ...d.commodities.map(commodityLabel)].join(" ").toLowerCase()}
-              data-series={d.series}
+              data-search={[d.title, d.source ?? "", d.description, d.license, d.series ?? "", ...d.formats.flatMap((f) => [f, formatIdLabel(f)]), ...d.keywords, ...d.geographies.map(geoLabel), ...d.commodities.map(commodityLabel)].join(" ").toLowerCase()}
             >
               <DatasetCard dataset={d} />
             </li>
@@ -323,17 +312,8 @@ import { projectLonLat, unprojectPoint } from "@/lib/coordinates";
 import { facetFilter } from "@/lib/facets";
 
 const search = document.querySelector<HTMLInputElement>("#catalog-search");
-// Filters beyond the facets: text, a series deep link, a drawn bbox
-const state: { q: string; bbox: number[] | null; series: string } = {
-  q: "",
-  bbox: null,
-  series: "",
-};
-
-// Series filter is deep-link only (record pages' "Part of" link)
-const seriesTag = document.querySelector<HTMLElement>("#series-active");
-const seriesName = document.querySelector<HTMLElement>("#series-name");
-const seriesClear = document.querySelector<HTMLButtonElement>("#series-clear");
+// Filters beyond the facets: text and a drawn bbox
+const state: { q: string; bbox: number[] | null } = { q: "", bbox: null };
 
 const bboxIntersects = (a: number[], b: number[]) =>
   !(a[2] < b[0] || a[0] > b[2] || a[3] < b[1] || a[1] > b[3]);
@@ -370,25 +350,20 @@ const {
     },
     extra: (card) =>
       (!state.q || (card.dataset.search ?? "").includes(state.q))
-      && (!state.series || card.dataset.series === state.series)
       && matchesBbox(card),
-    active: () => Boolean(state.q || state.bbox || state.series),
+    active: () => Boolean(state.q || state.bbox),
     onClear: () => {
       state.q = "";
       state.bbox = null;
-      state.series = "";
       if (search) search.value = "";
     },
     onApply: () => {
-      if (seriesTag) seriesTag.hidden = !state.series;
-      if (seriesName) seriesName.textContent = state.series;
       syncBboxUi();
 
       // Keep filters shareable
       const params = new URLSearchParams();
       if (state.q) params.set("q", state.q);
       for (const k of keys) if (facets[k]) params.set(k, facets[k]);
-      if (state.series) params.set("series", state.series);
       if (state.bbox)
         params.set("bbox", state.bbox.map((n) => n.toFixed(2)).join(","));
       history.replaceState(
@@ -402,10 +377,6 @@ const {
 
 search?.addEventListener("input", () => {
   state.q = search.value.trim().toLowerCase();
-  apply();
-});
-seriesClear?.addEventListener("click", () => {
-  state.series = "";
   apply();
 });
 
@@ -501,7 +472,6 @@ bboxClear?.addEventListener("click", () => {
 // ---- Init from URL ----
 const params = new URLSearchParams(location.search);
 state.q = (params.get("q") ?? "").trim().toLowerCase();
-state.series = params.get("series") ?? "";
 if (search) search.value = params.get("q") ?? "";
 for (const k of keys) facets[k] = params.get(k) ?? "";
 const urlBbox = params.get("bbox")?.split(",").map(Number);
@@ -646,16 +616,6 @@ apply();
   background: transparent;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
-}
-
-/* Reuses the global .pill.spatial look; only the clear button is local */
-.series-tag button {
-  padding: 0 2px;
-  font-size: var(--font-size-4);
-  color: inherit;
-  cursor: pointer;
-  background: none;
-  border: 0;
 }
 
 /* "5 of 6 datasets" at the row's end; tabular digits keep it from shifting */

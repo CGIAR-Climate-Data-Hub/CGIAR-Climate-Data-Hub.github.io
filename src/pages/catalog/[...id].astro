@@ -308,7 +308,7 @@ const jsonLd = datasetJsonLd(
           {d.series && (
             <p class="series-line">
               Part of:{" "}
-              <a href={`/catalog/?series=${encodeURIComponent(d.series.name)}`}>
+              <a href={`/catalog/?q=${encodeURIComponent(d.series.name)}`}>
                 {d.series.name}
               </a>
             </p>
@@ -1045,7 +1045,7 @@ h1 {
   color: var(--text-soft);
 }
 
-/* "Part of: <series>" — links to the catalog filtered to the series */
+/* "Part of: <series>" — links to the catalog searched for the series */
 .series-line {
   margin-top: var(--space-2);
   font-size: var(--font-size-4);
