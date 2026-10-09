@@ -3,8 +3,8 @@ import { getCollection } from "astro:content";
 import WikiSidebar from "@/components/WikiSidebar.astro";
 import Layout from "@/layouts/Layout.astro";
 import { groupWikis } from "@/lib/collections";
-import { githubUrl, treeUrl } from "@/lib/github";
-import { SITE_NAME, SITE_REPO, STANDARD_REPO } from "@/site.config";
+import { treeUrl } from "@/lib/github";
+import { SITE_NAME, SITE_REPO } from "@/site.config";
 
 const groups = groupWikis(
   await getCollection("wikis", ({ data }) => !data.soon),
