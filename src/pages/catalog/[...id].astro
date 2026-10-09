@@ -161,7 +161,7 @@ const tutorialLinks = (await allTutorials())
 // The quick start stacks one short block per format, unless the record ships
 // its own example script for that language; each asset card in Access & use
 // carries its own worked example (spatial clip / point sample).
-const quick = await quickstart(d);
+const quick = await quickstart(d, restricted);
 
 // The standard separates the distributions from supporting material
 const assetGroups = [
@@ -493,6 +493,16 @@ const jsonLd = datasetJsonLd(
               )}
               <p class="section-sub">
                 <a href="#access">Full access details and endpoints</a>
+              </p>
+            </section>
+          )}
+
+        {restricted && Object.keys(quick.code).length === 0 && (
+            <section>
+              <h2>Quick start</h2>
+              <p class="section-sub">
+                This dataset needs credentials, so no generic example is shown.{" "}
+                <a href="#access">See the access conditions.</a>
               </p>
             </section>
           )}

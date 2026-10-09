@@ -144,8 +144,9 @@ async function authorExample(d: CatalogRecord, mediaType: string) {
 }
 
 // Quick start per language: the authors' own script where the record ships
-// one, else one short generated block per format, stacked
-export async function quickstart(d: CatalogRecord) {
+// one, else one short generated block per format, stacked. A restricted
+// record gets no generated code: its URLs don't open as the templates assume
+export async function quickstart(d: CatalogRecord, restricted = false) {
   const code: Snippets = {};
   const authored: { id: string; label: string; url: string }[] = [];
   for (const l of LANGUAGES) {
@@ -153,10 +154,12 @@ export async function quickstart(d: CatalogRecord) {
     if (own) authored.push({ id: l.id, label: l.label, url: own.url });
     const block =
       own?.code
-      ?? formatAssets(d)
-        .map((f) => render("quickstart", f.id, l.ext, f.url))
-        .filter(Boolean)
-        .join("\n\n");
+      ?? (restricted
+        ? undefined
+        : formatAssets(d)
+            .map((f) => render("quickstart", f.id, l.ext, f.url))
+            .filter(Boolean)
+            .join("\n\n"));
     if (block) code[l.id] = block;
   }
   return { code, authored };

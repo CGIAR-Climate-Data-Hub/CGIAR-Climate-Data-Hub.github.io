@@ -99,8 +99,9 @@ export async function shapeAsset(
   const path = http ? (URL.parse(http)?.pathname ?? http) : "";
   const lastSegment = path.split("/").pop() ?? "";
   return {
-    // An indexed asset's root is a directory, not a file to open
-    example: index ? undefined : assetExample(d, asset),
+    // An indexed asset's root is a directory, not a file to open; a
+    // restricted one needs credentials the templates don't carry
+    example: index || restricted ? undefined : assetExample(d, asset),
     bestFor: formatBestFor(asset.media_type),
     extent: assetCoverage(asset.spatial),
     primary,
