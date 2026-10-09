@@ -5,12 +5,10 @@ import Layout from "@/layouts/Layout.astro";
 import { issueUrl } from "@/lib/github";
 import { SITE_NAME, SITE_REPO } from "@/site.config";
 
-const all = (await getCollection("useCases")).sort(
-  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
-);
-const lead = all.find((uc) => uc.data.featured) ?? all[0];
-const rest = all.filter((uc) => uc !== lead);
-const stories = lead ? [lead, ...rest] : [];
+// Newest first, with the featured story (if any) leading
+const stories = (await getCollection("useCases"))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .sort((a, b) => Number(b.data.featured) - Number(a.data.featured));
 const description =
   "What people are doing with the Hub — impact from national planning and climate finance, and adoption of its data and standards.";
 
