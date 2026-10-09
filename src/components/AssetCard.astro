@@ -54,10 +54,8 @@ const script = lang && primary && (await fetchScript(primary.url));
 
 <div class="card asset" id={anchor("file", asset.name)}>
   <div class="card-head">
-    <span>
-      <span class="mono asset-name">{asset.name}</span>
-      {asset.roles.map((r) => <> <span class="label">{r}</span></>)}
-    </span>
+    <span class="mono asset-name">{asset.name}</span>
+    {asset.roles.map((r) => <span class="label">{r}</span>)}
     {asset.file_size !== undefined && <span class="mono caption">{formatBytes(asset.file_size)}</span>}
   </div>
   {asset.description && <p class="asset-desc">{asset.description}</p>}
