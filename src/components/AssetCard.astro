@@ -45,6 +45,10 @@ const layouts = heldStructures(d, asset).map((s) => ({
   shown: s.variables.slice(0, 6).map((v) => v.name),
   more: Math.max(0, s.variables.length - 6),
 }));
+// A supporting file (guide, script, notebook) is a page to open, not a
+// store to point tools at: its URL links, and text reads in the browser
+const supporting = !d.data.includes(asset);
+const readable = /^text\/(markdown|html|plain)/.test(asset.media_type ?? "");
 // An author's example script previews in place; notebooks stay downloads
 const lang = asset.roles.includes("example")
   ? scriptLanguage(asset.media_type)
@@ -260,13 +264,22 @@ const script = lang && primary && (await fetchScript(primary.url));
         <span class="tech-title">Access the data</span>
         <CopyButton copy={primary.url} label="Copy URL" />
         {download && (
-          <a class="btn btn-ghost dl" download href={download}>
-            Download
+          <a
+            class="btn btn-ghost dl"
+            download={!readable}
+            href={download}
+            rel={readable ? "noreferrer" : undefined}
+          >
+            {readable ? "Open" : "Download"}
           </a>
         )}
       </p>
       <p class="asset-fact">
-        <span class="mono url">{primary.url}</span>
+        {supporting && /^https?:/.test(primary.url) ? (
+          <a class="mono url" href={primary.url} rel="noreferrer">{primary.url}</a>
+        ) : (
+          <span class="mono url">{primary.url}</span>
+        )}
       </p>
     </div>
   )}

@@ -45,8 +45,9 @@ export const anchor = (kind: string, name: string) =>
 //   files directory go to the disclosure, and their snippets sit inline
 // - download: only where one click yields one file — an http(s) URL to a
 //   single object, never templated collections, Zarr stores, or prefixes.
-//   Restricted records get no Download buttons at all (the click would just
-//   be refused); URLs and copy stay for users who hold credentials
+//   Restricted records get no Download buttons on data (the click would
+//   just be refused); URLs and copy stay for users who hold credentials,
+//   and supporting files (guides, scripts) stay downloadable
 export async function shapeAsset(
   d: CatalogRecord,
   asset: Asset,
@@ -116,7 +117,7 @@ export async function shapeAsset(
     // How many files the template names; [asset]-files.csv lists them
     fileCount: templateInventory(d, asset, resolved)?.count,
     download:
-      !restricted
+      (!restricted || !d.data.includes(asset))
       && !asset.href_template
       && http
       && !path.endsWith("/")
