@@ -30,6 +30,14 @@ const assetCoverage = (s?: Asset["spatial"]) =>
     ...(normalizeBboxes(s.bbox) ?? []).map((b) => `[${b.join(", ")}]`),
   ].join(" · ");
 
+// Whether a browser shows a file of this type inline rather than saving it.
+// The record's media_type stands in for the response Content-Type, which is
+// what the browser actually decides on; CSV and TSV are the text types it saves
+export const opensInline = (mediaType = "") =>
+  /^(text\/(?!csv|tab-separated)|image\/|application\/(json|xml|pdf))/.test(
+    mediaType,
+  );
+
 // In-page anchors for asset cards and structures; names may hold spaces
 export const anchor = (kind: string, name: string) =>
   `${kind}-${name.replace(/[^\w-]+/g, "-")}`;
