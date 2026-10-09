@@ -37,11 +37,11 @@ const {
   fileCount,
   download,
 } = await shapeAsset(d, asset, restricted);
-// The layouts this file holds; named only when the name tells the reader
-// something the file name doesn't. Long variable lists fold past six.
+// The layouts this file holds; named only when there are several to tell
+// apart. Long variable lists fold past six.
 const layouts = heldStructures(d, asset).map((s) => ({
   ...s,
-  named: asset.structures.length > 1 || s.name !== asset.name,
+  named: asset.structures.length > 1,
   shown: s.variables.slice(0, 6).map((v) => v.name),
   more: Math.max(0, s.variables.length - 6),
 }));
@@ -526,6 +526,11 @@ summary.index-head:hover {
 .tpl-picker > :first-child,
 .access-panel > :first-child {
   margin-top: 0;
+}
+
+/* Icon and text buttons share a row: centre them, not their baselines */
+.access-panel .card-head {
+  align-items: center;
 }
 
 .selected-url {
