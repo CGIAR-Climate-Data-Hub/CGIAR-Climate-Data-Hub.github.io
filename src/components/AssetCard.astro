@@ -45,10 +45,6 @@ const layouts = heldStructures(d, asset).map((s) => ({
   shown: s.variables.slice(0, 6).map((v) => v.name),
   more: Math.max(0, s.variables.length - 6),
 }));
-// One file the browser can show (a guide, a script, a text table) opens;
-// one it will save downloads. The download attribute is ignored cross-origin,
-// so the label follows the browser rather than the other way round
-const readable = opensInline(asset.media_type);
 // An author's example script previews in place; notebooks stay downloads
 const lang = asset.roles.includes("example")
   ? scriptLanguage(asset.media_type)
@@ -263,14 +259,11 @@ const script = lang && primary && (await fetchScript(primary.url));
       <p class="card-head">
         <span class="tech-title">Access the data</span>
         <CopyButton copy={primary.url} label="Copy URL" />
+        {/* The browser shows or saves by the response type; the label just
+            says which. A download attribute would be ignored cross-origin */}
         {download && (
-          <a
-            class="btn btn-ghost dl"
-            download={!readable}
-            href={download}
-            rel={readable ? "noreferrer" : undefined}
-          >
-            {readable ? "Open" : "Download"}
+          <a class="btn btn-ghost dl" href={download} rel="noreferrer">
+            {opensInline(asset.media_type) ? "Open" : "Download"}
           </a>
         )}
       </p>
