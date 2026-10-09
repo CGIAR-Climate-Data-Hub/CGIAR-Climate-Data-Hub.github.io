@@ -8,6 +8,7 @@
   --cdh-blue-950: #0c2c57;
   --cdh-blue-800: #123f79;
   --cdh-blue-700: #1955a6;
+  --cdh-blue-500: #3b7ed4;
   --cdh-blue-300: #63a9fe;
   --cdh-blue-150: #a9cdfe;
   --cdh-blue-50: #e9f2ff;
@@ -30,6 +31,8 @@
   --grey-0: #fff;
   --grey-1: #e2e0df;
   --grey-2: #c6c4c3;
+  --grey-3: #aaa8a7;
+  --grey-4: #8e8c8c;
   --grey-5: #727070;
   --grey-6: #555554;
   --grey-7: #393939;
@@ -59,6 +62,7 @@
   --space-5: 24px;
   --space-6: 32px;
   --space-7: 48px;
+  --space-8: 64px;
 
   /* Shape scale — restrained editorial corners, from controls to major surfaces. */
   --radius-sm: 3px;
