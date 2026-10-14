@@ -112,10 +112,10 @@ export async function shapeAsset(
         const label = INDEX_LABELS[ix.format] ?? ix.format;
         const source = asset.locations[0]?.url ?? "<source prefix>/";
         const path = URL.parse(url)?.pathname ?? url;
-        // "cogs.vrt", "suitability/" for a prefix, or the template itself
-        const name =
-          picker?.template
-          ?? `${path.replace(/\/$/, "").split("/").pop()}${path.endsWith("/") ? "/" : ""}`;
+        // "cogs.vrt", "suitability/" for a prefix, or the full templated URL
+        const name = picker
+          ? root + picker.template
+          : `${path.replace(/\/$/, "").split("/").pop()}${path.endsWith("/") ? "/" : ""}`;
         const snippet = indexExample(ix.format, url, source);
         const preview =
           ix.format === "cdh-inventory" && !picker
