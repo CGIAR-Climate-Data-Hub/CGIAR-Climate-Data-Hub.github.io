@@ -13,10 +13,10 @@
 # Aggregating a grid to polygons is lossy, which is why this is its own record
 # rather than a second structure on the parent.
 # ============================================================================
-cdh_schema_version: "v0.4.0"
+cdh_schema_version: "v0.5.0"
 extensions:
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/cdh/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/agriculture/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/extensions/cdh/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/extensions/agriculture/schema.json
 
 id: example-crop-suitability-admin2
 parent: example-crop-suitability

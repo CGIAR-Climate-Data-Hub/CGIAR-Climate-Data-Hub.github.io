@@ -1,426 +1,1997 @@
 {
-  "$schema": "../spec/schemas/vocab/vocabulary.schema.json",
   "scheme": {
-    "id": "cdh-agrovoc-commodities",
+    "id": "cdh-commodity",
     "title": "Climate Data Hub Commodity Vocabulary",
-    "description": "Controlled vocabulary of commodities used by the Climate Data Hub for metadata validation, filtering, and catalog rendering. Each concept is a friendly Hub name; where applicable, it carries an AGROVOC code and URI.",
-    "source_scheme": {
-      "id": "agrovoc",
-      "uri": "https://agrovoc.fao.org/",
-      "title": "AGROVOC"
-    }
+    "description": "Controlled vocabulary of crops and livestock used by the Climate Data Hub for metadata filtering and catalog browse. Crops are generated from the FAO Indicative Crop Classification 1.1 and livestock from the WCA 2030 Classification of livestock; each concept carries its source code, ancestor ids for roll-up under `crops` or `livestock`, and an AGROVOC URI where one corresponds.",
+    "source_schemes": [
+      {
+        "id": "fao-icc-1-1",
+        "uri": "https://stats.fao.org/classifications/ICC/v1.1/scheme",
+        "title": "FAO Indicative Crop Classification (ICC) 1.1"
+      },
+      {
+        "id": "fao-wca2030-livestock",
+        "uri": "https://www.fao.org/world-census-agriculture/wca-round/round-2030-(2026-2035)/en",
+        "title": "WCA 2030 Classification of livestock (Annex 8)"
+      }
+    ]
   },
   "concepts": [
     {
-      "id": "arabica-coffee",
-      "label": "Arabica coffee",
-      "code": "c_566",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_566",
-      "broader": ["coffee", "crops"]
+      "id": "almonds",
+      "label": "Almonds",
+      "code": "3.06.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-06-01",
+      "parents": ["nuts", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_8734"
     },
     {
-      "id": "banana",
-      "label": "Banana",
-      "code": "c_806",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_806",
-      "broader": ["tropical-fruits", "fruits", "crops"]
+      "id": "anise-badian-and-fennel",
+      "label": "Anise, badian, and fennel",
+      "code": "6.02.01.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-02-01-02",
+      "parents": [
+        "temporary-spice-and-aromatic-crops",
+        "spice-and-aromatic-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "apples",
+      "label": "Apples",
+      "code": "3.05.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-05-01",
+      "parents": ["pome-fruits-and-stone-fruits", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_541"
+    },
+    {
+      "id": "apricots",
+      "label": "Apricots",
+      "code": "3.05.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-05-02",
+      "parents": ["pome-fruits-and-stone-fruits", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_545"
+    },
+    {
+      "id": "areca-nuts",
+      "label": "Areca nuts",
+      "code": "3.06.08",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-06-08",
+      "parents": ["nuts", "fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "artichokes",
+      "label": "Artichokes",
+      "code": "2.01.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-01-01",
+      "parents": ["leafy-or-stem-vegetables", "vegetables-and-melons", "crops"]
+    },
+    {
+      "id": "asparagus",
+      "label": "Asparagus",
+      "code": "2.01.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-01-02",
+      "parents": ["leafy-or-stem-vegetables", "vegetables-and-melons", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_669"
+    },
+    {
+      "id": "asses",
+      "label": "Asses",
+      "code": "42",
+      "parents": ["equines", "livestock"]
+    },
+    {
+      "id": "avocados",
+      "label": "Avocados",
+      "code": "3.01.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-01-01",
+      "parents": ["tropical-and-subtropical-fruits", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_9022"
+    },
+    {
+      "id": "bactrian-camel",
+      "label": "Bactrian camel",
+      "code": "52",
+      "parents": ["camels-and-camelids", "livestock"]
+    },
+    {
+      "id": "bambara-beans",
+      "label": "Bambara beans",
+      "code": "7.09",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/7-09",
+      "parents": ["leguminous-crops", "crops"]
+    },
+    {
+      "id": "bananas",
+      "label": "Bananas",
+      "code": "3.01.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-01-02",
+      "parents": ["tropical-and-subtropical-fruits", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_806"
     },
     {
       "id": "barley",
       "label": "Barley",
-      "code": "c_823",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_823",
-      "broader": ["cereals", "crops"]
+      "code": "1.05",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/1-05",
+      "parents": ["cereals", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_823"
     },
     {
-      "id": "buffalo",
-      "label": "Water Buffalo",
-      "code": "c_8313",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_8313",
-      "broader": ["livestock"]
+      "id": "basil",
+      "label": "Basil",
+      "code": "9.03.01.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-03-01-02",
+      "parents": [
+        "temporary-medicinal-pesticidal-or-similar-crops",
+        "medicinal-pesticidal-or-similar-crops",
+        "other-crops",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_9093"
+    },
+    {
+      "id": "beans",
+      "label": "Beans",
+      "code": "7.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/7-01",
+      "parents": ["leguminous-crops", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_331566"
+    },
+    {
+      "id": "bees",
+      "label": "Bees",
+      "code": "81",
+      "parents": ["insects-and-worms", "livestock"]
+    },
+    {
+      "id": "berries",
+      "label": "Berries",
+      "code": "3.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-04",
+      "parents": ["fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "blueberries",
+      "label": "Blueberries",
+      "code": "3.04.06",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-04-06",
+      "parents": ["berries", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_974"
+    },
+    {
+      "id": "bovine-animals",
+      "label": "Bovine animals",
+      "code": "1",
+      "parents": ["livestock"]
+    },
+    {
+      "id": "brazil-nuts",
+      "label": "Brazil nuts",
+      "code": "3.06.07",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-06-07",
+      "parents": ["nuts", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_9410"
+    },
+    {
+      "id": "broad-beans",
+      "label": "Broad beans",
+      "code": "7.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/7-02",
+      "parents": ["leguminous-crops", "crops"]
+    },
+    {
+      "id": "buckwheat",
+      "label": "Buckwheat",
+      "code": "1.1",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/1-1",
+      "parents": ["cereals", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_9471"
+    },
+    {
+      "id": "buffaloes",
+      "label": "Buffaloes",
+      "code": "12",
+      "parents": ["bovine-animals", "livestock"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_8313"
+    },
+    {
+      "id": "cabbages",
+      "label": "Cabbages",
+      "code": "2.01.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-01-03",
+      "parents": ["leafy-or-stem-vegetables", "vegetables-and-melons", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_1173"
+    },
+    {
+      "id": "camels-and-camelids",
+      "label": "Camels and camelids",
+      "code": "5",
+      "parents": ["livestock"]
+    },
+    {
+      "id": "canary-seed",
+      "label": "Canary seed",
+      "code": "1.13",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/1-13",
+      "parents": ["cereals", "crops"]
+    },
+    {
+      "id": "cantaloupes-and-other-melons",
+      "label": "Cantaloupes and other melons",
+      "code": "2.05.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-05-02",
+      "parents": ["melons", "vegetables-and-melons", "crops"]
+    },
+    {
+      "id": "carrots",
+      "label": "Carrots",
+      "code": "2.03.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-03-01",
+      "parents": [
+        "root-bulb-or-tuberous-vegetables",
+        "vegetables-and-melons",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_9640"
+    },
+    {
+      "id": "cashew-nuts",
+      "label": "Cashew nuts",
+      "code": "3.06.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-06-02",
+      "parents": ["nuts", "fruit-and-nuts", "crops"]
     },
     {
       "id": "cassava",
       "label": "Cassava",
-      "code": "c_9649",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_9649",
-      "broader": ["root-vegetables", "vegetables", "crops"]
+      "code": "5.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/5-03",
+      "parents": [
+        "root-tuber-crops-with-high-starch-or-inulin-content",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_9649"
+    },
+    {
+      "id": "castor-bean",
+      "label": "Castor bean",
+      "code": "4.03.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-03-01",
+      "parents": [
+        "other-temporary-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ]
     },
     {
       "id": "cattle",
       "label": "Cattle",
-      "code": "c_1391",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_1391",
-      "broader": ["livestock"]
+      "code": "11",
+      "parents": ["bovine-animals", "livestock"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_1391"
+    },
+    {
+      "id": "cauliflower-and-broccoli",
+      "label": "Cauliflower and broccoli",
+      "code": "2.01.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-01-04",
+      "parents": ["leafy-or-stem-vegetables", "vegetables-and-melons", "crops"]
     },
     {
       "id": "cereals",
       "label": "Cereals",
-      "code": "c_1474",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_1474",
-      "broader": ["crops"]
+      "code": "1",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/1",
+      "parents": ["crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_1474"
+    },
+    {
+      "id": "cherries-and-sour-cherries",
+      "label": "Cherries and sour cherries",
+      "code": "3.05.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-05-03",
+      "parents": ["pome-fruits-and-stone-fruits", "fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "chestnuts",
+      "label": "Chestnuts",
+      "code": "3.06.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-06-03",
+      "parents": ["nuts", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_25467"
     },
     {
       "id": "chickens",
       "label": "Chickens",
-      "code": "c_1540",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_1540",
-      "broader": ["livestock"]
+      "code": "61",
+      "parents": ["poultry", "livestock"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_1540"
     },
     {
       "id": "chickpeas",
       "label": "Chickpeas",
-      "code": "c_9785",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_9785",
-      "broader": ["vegetables", "pulses", "legumes", "crops"]
+      "code": "7.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/7-03",
+      "parents": ["leguminous-crops", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_9785"
     },
     {
-      "id": "citrus",
-      "label": "Citrus",
-      "code": "c_1637",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_1637",
-      "broader": ["tropical-fruits", "fruits", "crops"]
+      "id": "chicory",
+      "label": "Chicory",
+      "code": "2.01.07",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-01-07",
+      "parents": ["leafy-or-stem-vegetables", "vegetables-and-melons", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_9786"
+    },
+    {
+      "id": "chicory-roots",
+      "label": "Chicory roots",
+      "code": "6.01.05",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-01-05",
+      "parents": [
+        "stimulant-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "chillies-and-peppers",
+      "label": "Chillies and peppers (capsicum spp.)",
+      "code": "6.02.01.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-02-01-01",
+      "parents": [
+        "temporary-spice-and-aromatic-crops",
+        "spice-and-aromatic-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "cinnamon",
+      "label": "Cinnamon (canella)",
+      "code": "6.02.02.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-02-02-03",
+      "parents": [
+        "permanent-spice-and-aromatic-crops",
+        "spice-and-aromatic-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "citrus-fruits",
+      "label": "Citrus fruits",
+      "code": "3.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-02",
+      "parents": ["fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_1641"
+    },
+    {
+      "id": "cloves",
+      "label": "Cloves",
+      "code": "6.02.02.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-02-02-04",
+      "parents": [
+        "permanent-spice-and-aromatic-crops",
+        "spice-and-aromatic-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_23597"
+    },
+    {
+      "id": "coca",
+      "label": "Coca",
+      "code": "9.03.02.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-03-02-02",
+      "parents": [
+        "permanent-medicinal-pesticidal-or-similar-crops",
+        "medicinal-pesticidal-or-similar-crops",
+        "other-crops",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_9955"
     },
     {
       "id": "cocoa",
       "label": "Cocoa",
-      "code": "c_331527",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_331527",
-      "broader": ["crops"]
+      "code": "6.01.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-01-04",
+      "parents": [
+        "stimulant-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ]
     },
     {
       "id": "coconuts",
       "label": "Coconuts",
-      "code": "c_25470",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_25470",
-      "broader": ["oil-crops", "crops"]
+      "code": "4.04.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-04-01",
+      "parents": [
+        "permanent-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_25470"
     },
     {
       "id": "coffee",
       "label": "Coffee",
-      "code": "c_28379",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_28379",
-      "broader": ["crops"]
+      "code": "6.01.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-01-01",
+      "parents": [
+        "stimulant-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_1731"
     },
     {
-      "id": "common-bean",
-      "label": "Common Bean",
-      "code": "c_4098",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_4098",
-      "broader": ["legumes", "pulses", "crops"]
+      "id": "cola-nuts",
+      "label": "Cola nuts",
+      "code": "3.06.09",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-06-09",
+      "parents": ["nuts", "fruit-and-nuts", "crops"]
     },
     {
       "id": "cotton",
       "label": "Cotton",
-      "code": "c_1926",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_1926",
-      "broader": ["fibre-crops", "crops"]
+      "code": "9.02.01.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-02-01-01",
+      "parents": [
+        "temporary-fibre-crops",
+        "fibre-crops",
+        "other-crops",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_1926"
     },
     {
       "id": "cowpeas",
       "label": "Cowpeas",
-      "code": "c_1938",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_1938",
-      "broader": ["legumes", "vegetables", "pulses", "crops"]
+      "code": "7.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/7-04",
+      "parents": ["leguminous-crops", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_1938"
+    },
+    {
+      "id": "cranberries",
+      "label": "Cranberries",
+      "code": "3.04.07",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-04-07",
+      "parents": ["berries", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_1944"
     },
     {
       "id": "crops",
       "label": "Crops",
-      "code": "c_1972",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_1972"
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_1972"
+    },
+    {
+      "id": "cucumbers",
+      "label": "Cucumbers",
+      "code": "2.02.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-02-01",
+      "parents": ["fruit-bearing-vegetables", "vegetables-and-melons", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_10195"
+    },
+    {
+      "id": "currants",
+      "label": "Currants",
+      "code": "3.04.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-04-01",
+      "parents": ["berries", "fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "dates",
+      "label": "Dates",
+      "code": "3.01.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-01-04",
+      "parents": ["tropical-and-subtropical-fruits", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_25475"
+    },
+    {
+      "id": "deer-elk-reindeer-and-other-ruminants",
+      "label": "Deer, elk, reindeer and other ruminants",
+      "code": "71",
+      "parents": ["other-animals", "livestock"]
+    },
+    {
+      "id": "dogs-and-cats",
+      "label": "Dogs and cats",
+      "code": "74",
+      "parents": ["other-animals", "livestock"]
+    },
+    {
+      "id": "dromedary",
+      "label": "Dromedary",
+      "code": "51",
+      "parents": ["camels-and-camelids", "livestock"]
     },
     {
       "id": "ducks",
       "label": "Ducks",
-      "code": "c_2406",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_2406",
-      "broader": ["livestock"]
+      "code": "64",
+      "parents": ["poultry", "livestock"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_2406"
+    },
+    {
+      "id": "eggplants",
+      "label": "Eggplants (aubergines)",
+      "code": "2.02.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-02-02",
+      "parents": ["fruit-bearing-vegetables", "vegetables-and-melons", "crops"]
+    },
+    {
+      "id": "equines",
+      "label": "Equines",
+      "code": "4",
+      "parents": ["livestock"]
     },
     {
       "id": "fibre-crops",
       "label": "Fibre crops",
-      "code": "c_2876",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_2876",
-      "broader": ["crops"]
+      "code": "9.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-02",
+      "parents": ["other-crops", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_2876"
     },
     {
-      "id": "fruits",
-      "label": "Fruits",
-      "code": "c_3131",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_3131",
-      "broader": ["crops"]
+      "id": "figs",
+      "label": "Figs",
+      "code": "3.01.05",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-01-05",
+      "parents": ["tropical-and-subtropical-fruits", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_10840"
+    },
+    {
+      "id": "flax",
+      "label": "Flax",
+      "code": "9.02.01.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-02-01-03",
+      "parents": [
+        "temporary-fibre-crops",
+        "fibre-crops",
+        "other-crops",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_2970"
+    },
+    {
+      "id": "flower-crops",
+      "label": "Flower crops",
+      "code": "9.05",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-05",
+      "parents": ["other-crops", "crops"]
+    },
+    {
+      "id": "fonio",
+      "label": "Fonio",
+      "code": "1.11",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/1-11",
+      "parents": ["cereals", "crops"]
+    },
+    {
+      "id": "fruit-and-nuts",
+      "label": "Fruit and nuts",
+      "code": "3",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3",
+      "parents": ["crops"]
+    },
+    {
+      "id": "fruit-bearing-vegetables",
+      "label": "Fruit-bearing vegetables",
+      "code": "2.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-02",
+      "parents": ["vegetables-and-melons", "crops"]
+    },
+    {
+      "id": "fur-bearing-animals-such-as-foxes-and-minks",
+      "label": "Fur-bearing animals such as foxes and minks",
+      "code": "73",
+      "parents": ["other-animals", "livestock"]
+    },
+    {
+      "id": "garlic",
+      "label": "Garlic",
+      "code": "2.03.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-03-03",
+      "parents": [
+        "root-bulb-or-tuberous-vegetables",
+        "vegetables-and-melons",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_11091"
+    },
+    {
+      "id": "geese",
+      "label": "Geese",
+      "code": "63",
+      "parents": ["poultry", "livestock"]
+    },
+    {
+      "id": "ginger",
+      "label": "Ginger",
+      "code": "6.02.02.05",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-02-02-05",
+      "parents": [
+        "permanent-spice-and-aromatic-crops",
+        "spice-and-aromatic-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_11157"
+    },
+    {
+      "id": "ginseng",
+      "label": "Ginseng",
+      "code": "9.03.02.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-03-02-01",
+      "parents": [
+        "permanent-medicinal-pesticidal-or-similar-crops",
+        "medicinal-pesticidal-or-similar-crops",
+        "other-crops",
+        "crops"
+      ]
     },
     {
       "id": "goats",
       "label": "Goats",
-      "code": "c_3324",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_3324",
-      "broader": ["livestock"]
+      "code": "22",
+      "parents": ["sheep-and-goats", "livestock"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_3324"
+    },
+    {
+      "id": "gooseberries",
+      "label": "Gooseberries",
+      "code": "3.04.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-04-02",
+      "parents": ["berries", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_3333"
+    },
+    {
+      "id": "grapefruit-and-pomelo",
+      "label": "Grapefruit and pomelo",
+      "code": "3.02.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-02-01",
+      "parents": ["citrus-fruits", "fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "grapes",
+      "label": "Grapes",
+      "code": "3.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-03",
+      "parents": ["fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_3359"
+    },
+    {
+      "id": "grasses-and-other-fodder-crops",
+      "label": "Grasses and other fodder crops",
+      "code": "9.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-01",
+      "parents": ["other-crops", "crops"]
     },
     {
       "id": "groundnuts",
       "label": "Groundnuts",
-      "code": "c_11368",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_11368",
-      "broader": ["legumes", "oil-crops", "vegetables", "crops"]
+      "code": "4.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-02",
+      "parents": ["oilseed-crops-and-oleaginous-fruits", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_11368"
+    },
+    {
+      "id": "guarana",
+      "label": "Guarana",
+      "code": "9.03.02.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-03-02-04",
+      "parents": [
+        "permanent-medicinal-pesticidal-or-similar-crops",
+        "medicinal-pesticidal-or-similar-crops",
+        "other-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "guinea-fowls",
+      "label": "Guinea fowls",
+      "code": "65",
+      "parents": ["poultry", "livestock"]
+    },
+    {
+      "id": "hazelnuts",
+      "label": "Hazelnuts",
+      "code": "3.06.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-06-04",
+      "parents": ["nuts", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_18248"
+    },
+    {
+      "id": "hemp",
+      "label": "Hemp",
+      "code": "9.02.01.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-02-01-04",
+      "parents": [
+        "temporary-fibre-crops",
+        "fibre-crops",
+        "other-crops",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_3558"
+    },
+    {
+      "id": "hops",
+      "label": "Hops",
+      "code": "6.02.02.07",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-02-02-07",
+      "parents": [
+        "permanent-spice-and-aromatic-crops",
+        "spice-and-aromatic-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_11596"
     },
     {
       "id": "horses",
       "label": "Horses",
-      "code": "c_3668",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_3668",
-      "broader": ["livestock"]
+      "code": "41",
+      "parents": ["equines", "livestock"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_3668"
     },
     {
-      "id": "legumes",
-      "label": "Legumes",
-      "code": "c_4255",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_4255",
-      "broader": ["crops"]
+      "id": "insects-and-worms",
+      "label": "Insects and worms",
+      "code": "8",
+      "parents": ["livestock"]
+    },
+    {
+      "id": "jojoba",
+      "label": "Jojoba",
+      "code": "4.03.11",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-03-11",
+      "parents": [
+        "other-temporary-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_11913"
+    },
+    {
+      "id": "jute-kenaf-and-other-similar-crops",
+      "label": "Jute, kenaf, and other similar crops",
+      "code": "9.02.01.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-02-01-02",
+      "parents": [
+        "temporary-fibre-crops",
+        "fibre-crops",
+        "other-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "kava",
+      "label": "Kava",
+      "code": "9.03.02.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-03-02-03",
+      "parents": [
+        "permanent-medicinal-pesticidal-or-similar-crops",
+        "medicinal-pesticidal-or-similar-crops",
+        "other-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "kiwi-fruit",
+      "label": "Kiwi fruit",
+      "code": "3.04.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-04-03",
+      "parents": ["berries", "fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "leafy-or-stem-vegetables",
+      "label": "Leafy or stem vegetables",
+      "code": "2.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-01",
+      "parents": ["vegetables-and-melons", "crops"]
+    },
+    {
+      "id": "leeks-and-other-alliaceous-vegetables",
+      "label": "Leeks and other alliaceous vegetables",
+      "code": "2.03.05",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-03-05",
+      "parents": [
+        "root-bulb-or-tuberous-vegetables",
+        "vegetables-and-melons",
+        "crops"
+      ]
+    },
+    {
+      "id": "leguminous-crops",
+      "label": "Leguminous crops",
+      "code": "7",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/7",
+      "parents": ["crops"]
+    },
+    {
+      "id": "leguminous-crops-n-e-c",
+      "label": "Leguminous crops, n.e.c.",
+      "code": "7.9",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/7-9",
+      "parents": ["leguminous-crops", "crops"]
+    },
+    {
+      "id": "lemons-and-limes",
+      "label": "Lemons and limes",
+      "code": "3.02.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-02-02",
+      "parents": ["citrus-fruits", "fruit-and-nuts", "crops"]
     },
     {
       "id": "lentils",
       "label": "Lentils",
-      "code": "c_12140",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_12140",
-      "broader": ["legumes", "pulses", "vegetables", "crops"]
+      "code": "7.05",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/7-05",
+      "parents": ["leguminous-crops", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_12140"
+    },
+    {
+      "id": "lettuce",
+      "label": "Lettuce",
+      "code": "2.01.05",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-01-05",
+      "parents": ["leafy-or-stem-vegetables", "vegetables-and-melons", "crops"]
+    },
+    {
+      "id": "linseed",
+      "label": "Linseed",
+      "code": "4.03.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-03-02",
+      "parents": [
+        "other-temporary-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_12192"
     },
     {
       "id": "livestock",
       "label": "Livestock",
-      "code": "c_4397",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_4397"
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_4397"
+    },
+    {
+      "id": "llamas-and-alpacas",
+      "label": "Llamas and alpacas",
+      "code": "53",
+      "parents": ["camels-and-camelids", "livestock"]
+    },
+    {
+      "id": "lupins",
+      "label": "Lupins",
+      "code": "7.06",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/7-06",
+      "parents": ["leguminous-crops", "crops"]
     },
     {
       "id": "maize",
       "label": "Maize",
-      "code": "c_12332",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_12332",
-      "broader": ["cereals", "crops"]
+      "code": "1.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/1-02",
+      "parents": ["cereals", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_12332"
     },
     {
-      "id": "millets",
-      "label": "Millets",
-      "code": "c_4838",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_4838",
-      "broader": ["cereals", "crops"]
+      "id": "mangoes-guavas-and-mangosteens",
+      "label": "Mangoes, guavas and mangosteens",
+      "code": "3.01.06",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-01-06",
+      "parents": ["tropical-and-subtropical-fruits", "fruit-and-nuts", "crops"]
     },
     {
-      "id": "oil-crops",
-      "label": "Oil crops",
-      "code": "c_5328",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_5328",
-      "broader": ["crops"]
+      "id": "mate",
+      "label": "Maté",
+      "code": "6.01.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-01-03",
+      "parents": [
+        "stimulant-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "medicinal-pesticidal-or-similar-crops",
+      "label": "Medicinal, pesticidal or similar crops",
+      "code": "9.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-03",
+      "parents": ["other-crops", "crops"]
+    },
+    {
+      "id": "melons",
+      "label": "Melons",
+      "code": "2.05",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-05",
+      "parents": ["vegetables-and-melons", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_12487"
+    },
+    {
+      "id": "millet",
+      "label": "Millet",
+      "code": "1.08",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/1-08",
+      "parents": ["cereals", "crops"]
+    },
+    {
+      "id": "mint",
+      "label": "Mint",
+      "code": "9.03.01.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-03-01-01",
+      "parents": [
+        "temporary-medicinal-pesticidal-or-similar-crops",
+        "medicinal-pesticidal-or-similar-crops",
+        "other-crops",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_12606"
+    },
+    {
+      "id": "mixed-cereals",
+      "label": "Mixed cereals",
+      "code": "1.14",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/1-14",
+      "parents": ["cereals", "crops"]
+    },
+    {
+      "id": "mules-and-hinnies",
+      "label": "Mules and hinnies",
+      "code": "43",
+      "parents": ["equines", "livestock"]
+    },
+    {
+      "id": "mushrooms-and-truffles",
+      "label": "Mushrooms and truffles",
+      "code": "2.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-04",
+      "parents": ["vegetables-and-melons", "crops"]
+    },
+    {
+      "id": "mustard",
+      "label": "Mustard",
+      "code": "4.03.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-03-03",
+      "parents": [
+        "other-temporary-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_25488"
+    },
+    {
+      "id": "niger-seed",
+      "label": "Niger seed",
+      "code": "4.03.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-03-04",
+      "parents": [
+        "other-temporary-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_12827"
+    },
+    {
+      "id": "nutmeg-mace-cardamoms",
+      "label": "Nutmeg, mace, cardamoms",
+      "code": "6.02.02.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-02-02-02",
+      "parents": [
+        "permanent-spice-and-aromatic-crops",
+        "spice-and-aromatic-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "nuts",
+      "label": "Nuts",
+      "code": "3.06",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-06",
+      "parents": ["fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_12873"
+    },
+    {
+      "id": "oats",
+      "label": "Oats",
+      "code": "1.07",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/1-07",
+      "parents": ["cereals", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_5287"
     },
     {
       "id": "oil-palms",
       "label": "Oil palms",
-      "code": "c_5330",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_5330",
-      "broader": ["oil-crops", "crops"]
+      "code": "4.04.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-04-03",
+      "parents": [
+        "permanent-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_5330"
+    },
+    {
+      "id": "oilseed-crops-and-oleaginous-fruits",
+      "label": "Oilseed crops and oleaginous fruits",
+      "code": "4",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4",
+      "parents": ["crops"]
+    },
+    {
+      "id": "okra",
+      "label": "Okra",
+      "code": "2.02.05",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-02-05",
+      "parents": ["fruit-bearing-vegetables", "vegetables-and-melons", "crops"]
+    },
+    {
+      "id": "olives",
+      "label": "Olives",
+      "code": "4.04.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-04-02",
+      "parents": [
+        "permanent-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_12926"
     },
     {
       "id": "onions",
-      "label": "Onions",
-      "code": "c_12934",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_12934",
-      "broader": ["vegetables", "crops"]
+      "label": "Onions (incl. shallots)",
+      "code": "2.03.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-03-04",
+      "parents": [
+        "root-bulb-or-tuberous-vegetables",
+        "vegetables-and-melons",
+        "crops"
+      ]
     },
     {
-      "id": "pearl-millet",
-      "label": "Pearl millet",
-      "code": "c_e4e17d1b",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_e4e17d1b",
-      "broader": ["millets", "cereals", "crops"]
+      "id": "oranges",
+      "label": "Oranges",
+      "code": "3.02.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-02-03",
+      "parents": ["citrus-fruits", "fruit-and-nuts", "crops"]
     },
     {
-      "id": "pigeon-pea",
-      "label": "Pigeon pea",
-      "code": "c_13356",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_13356",
-      "broader": ["pulses", "legumes", "vegetables", "crops"]
+      "id": "ostriches-and-emus",
+      "label": "Ostriches and emus",
+      "code": "75",
+      "parents": ["other-animals", "livestock"]
+    },
+    {
+      "id": "other-animals",
+      "label": "Other animals",
+      "code": "7",
+      "parents": ["livestock"]
+    },
+    {
+      "id": "other-animals-e-g-primates-elephants-reptiles-zebras",
+      "label": "Other animals (e.g. primates, elephants, reptiles, zebras)",
+      "code": "79",
+      "parents": ["other-animals", "livestock"]
+    },
+    {
+      "id": "other-berries-n-e-c",
+      "label": "Other berries, n.e.c",
+      "code": "3.04.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-04-90",
+      "parents": ["berries", "fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "other-birds",
+      "label": "Other birds (e.g pigeons)",
+      "code": "76",
+      "parents": ["other-animals", "livestock"]
+    },
+    {
+      "id": "other-bovine-animals",
+      "label": "Other bovine animals",
+      "code": "19",
+      "parents": ["bovine-animals", "livestock"]
+    },
+    {
+      "id": "other-camelids",
+      "label": "Other camelids",
+      "code": "59",
+      "parents": ["camels-and-camelids", "livestock"]
+    },
+    {
+      "id": "other-cereals-n-e-c",
+      "label": "Other cereals, n.e.c.",
+      "code": "1.9",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/1-9",
+      "parents": ["cereals", "crops"]
+    },
+    {
+      "id": "other-citrus-fruits-n-e-c",
+      "label": "Other citrus fruits, n.e.c.",
+      "code": "3.02.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-02-90",
+      "parents": ["citrus-fruits", "fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "other-crops",
+      "label": "Other crops",
+      "code": "9",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9",
+      "parents": ["crops"]
+    },
+    {
+      "id": "other-crops-n-e-c",
+      "label": "Other crops, n.e.c.",
+      "code": "9.9",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-9",
+      "parents": ["other-crops", "crops"]
+    },
+    {
+      "id": "other-crops-n-e-c-permanent",
+      "label": "Other crops, n.e.c. – permanent",
+      "code": "9.90.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-90-02",
+      "parents": ["other-crops-n-e-c", "other-crops", "crops"]
+    },
+    {
+      "id": "other-crops-n-e-c-temporary",
+      "label": "Other crops, n.e.c. – temporary",
+      "code": "9.90.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-90-01",
+      "parents": ["other-crops-n-e-c", "other-crops", "crops"]
+    },
+    {
+      "id": "other-fruit-bearing-vegetables-n-e-c",
+      "label": "Other fruit-bearing vegetables, n.e.c.",
+      "code": "2.02.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-02-90",
+      "parents": ["fruit-bearing-vegetables", "vegetables-and-melons", "crops"]
+    },
+    {
+      "id": "other-fruits-n-e-c",
+      "label": "Other fruits, n.e.c.",
+      "code": "3.9",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-9",
+      "parents": ["fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "other-insects-and-worms",
+      "label": "Other insects and worms",
+      "code": "89",
+      "parents": ["insects-and-worms", "livestock"]
+    },
+    {
+      "id": "other-leafy-or-stem-vegetables-n-e-c",
+      "label": "Other leafy or stem vegetables, n.e.c.",
+      "code": "2.01.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-01-90",
+      "parents": ["leafy-or-stem-vegetables", "vegetables-and-melons", "crops"]
+    },
+    {
+      "id": "other-nuts-n-e-c",
+      "label": "Other nuts, n.e.c.",
+      "code": "3.06.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-06-90",
+      "parents": ["nuts", "fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "other-oleaginous-fruits-n-e-c",
+      "label": "Other oleaginous fruits, n.e.c.",
+      "code": "4.04.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-04-90",
+      "parents": [
+        "permanent-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ]
+    },
+    {
+      "id": "other-permanent-fibre-crops-n-e-c",
+      "label": "Other permanent fibre crops, n.e.c.",
+      "code": "9.02.02.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-02-02-90",
+      "parents": [
+        "permanent-fibre-crops",
+        "fibre-crops",
+        "other-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "other-permanent-medicinal-pesticidal-or-similar-crops",
+      "label": "Other permanent medicinal, pesticidal or similar crops",
+      "code": "9.03.02.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-03-02-90",
+      "parents": [
+        "permanent-medicinal-pesticidal-or-similar-crops",
+        "medicinal-pesticidal-or-similar-crops",
+        "other-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "other-permanent-spice-and-aromatic-crops-n-e-c",
+      "label": "Other permanent spice and aromatic crops, n.e.c.",
+      "code": "6.02.02.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-02-02-90",
+      "parents": [
+        "permanent-spice-and-aromatic-crops",
+        "spice-and-aromatic-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "other-pome-fruits-and-stone-fruits-n-e-c",
+      "label": "Other pome fruits and stone fruits, n.e.c.",
+      "code": "3.05.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-05-90",
+      "parents": ["pome-fruits-and-stone-fruits", "fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "other-root-bulb-or-tuberous-vegetables-n-e-c",
+      "label": "Other root, bulb, or tuberous vegetables, n.e.c.",
+      "code": "2.03.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-03-90",
+      "parents": [
+        "root-bulb-or-tuberous-vegetables",
+        "vegetables-and-melons",
+        "crops"
+      ]
+    },
+    {
+      "id": "other-roots-and-tubers-n-e-c",
+      "label": "Other roots and tubers, n.e.c.",
+      "code": "5.9",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/5-9",
+      "parents": [
+        "root-tuber-crops-with-high-starch-or-inulin-content",
+        "crops"
+      ]
+    },
+    {
+      "id": "other-stimulant-crops-n-e-c",
+      "label": "Other stimulant crops, n.e.c.",
+      "code": "6.01.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-01-90",
+      "parents": [
+        "stimulant-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "other-sugar-crops-n-e-c",
+      "label": "Other sugar crops, n.e.c.",
+      "code": "8.9",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/8-9",
+      "parents": ["sugar-crops", "crops"]
+    },
+    {
+      "id": "other-temporary-fibre-crops-n-e-c",
+      "label": "Other temporary fibre crops, n.e.c.",
+      "code": "9.02.01.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-02-01-90",
+      "parents": [
+        "temporary-fibre-crops",
+        "fibre-crops",
+        "other-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "other-temporary-medicinal-pesticidal-or-similar-crops",
+      "label": "Other temporary medicinal, pesticidal or similar crops",
+      "code": "9.03.01.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-03-01-90",
+      "parents": [
+        "temporary-medicinal-pesticidal-or-similar-crops",
+        "medicinal-pesticidal-or-similar-crops",
+        "other-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "other-temporary-oilseed-crops",
+      "label": "Other temporary oilseed crops",
+      "code": "4.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-03",
+      "parents": ["oilseed-crops-and-oleaginous-fruits", "crops"]
+    },
+    {
+      "id": "other-temporary-oilseed-crops-n-e-c",
+      "label": "Other temporary oilseed crops, n.e.c.",
+      "code": "4.03.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-03-90",
+      "parents": [
+        "other-temporary-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ]
+    },
+    {
+      "id": "other-temporary-spice-crops-n-e-c",
+      "label": "Other temporary spice crops, n.e.c.",
+      "code": "6.02.01.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-02-01-90",
+      "parents": [
+        "temporary-spice-and-aromatic-crops",
+        "spice-and-aromatic-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "other-tropical-and-subtropical-fruits-n-e-c",
+      "label": "Other tropical and subtropical fruits, n.e.c.",
+      "code": "3.01.90",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-01-90",
+      "parents": ["tropical-and-subtropical-fruits", "fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "other-vegetables-n-e-c",
+      "label": "Other vegetables n.e.c.",
+      "code": "2.9",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-9",
+      "parents": ["vegetables-and-melons", "crops"]
+    },
+    {
+      "id": "papayas",
+      "label": "Papayas",
+      "code": "3.01.07",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-01-07",
+      "parents": ["tropical-and-subtropical-fruits", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_13087"
+    },
+    {
+      "id": "peaches-and-nectarines",
+      "label": "Peaches and nectarines",
+      "code": "3.05.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-05-04",
+      "parents": ["pome-fruits-and-stone-fruits", "fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "pears-and-quinces",
+      "label": "Pears and quinces",
+      "code": "3.05.05",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-05-05",
+      "parents": ["pome-fruits-and-stone-fruits", "fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "peas",
+      "label": "Peas",
+      "code": "7.07",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/7-07",
+      "parents": ["leguminous-crops", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_13177"
+    },
+    {
+      "id": "pepper",
+      "label": "Pepper (piper spp.)",
+      "code": "6.02.02.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-02-02-01",
+      "parents": [
+        "permanent-spice-and-aromatic-crops",
+        "spice-and-aromatic-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "permanent-fibre-crops",
+      "label": "Permanent fibre crops",
+      "code": "9.02.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-02-02",
+      "parents": ["fibre-crops", "other-crops", "crops"]
+    },
+    {
+      "id": "permanent-flower-crops",
+      "label": "Permanent flower crops",
+      "code": "9.05.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-05-02",
+      "parents": ["flower-crops", "other-crops", "crops"]
+    },
+    {
+      "id": "permanent-grass-and-fodder-crops",
+      "label": "Permanent grass and fodder crops",
+      "code": "9.01.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-01-02",
+      "parents": ["grasses-and-other-fodder-crops", "other-crops", "crops"]
+    },
+    {
+      "id": "permanent-medicinal-pesticidal-or-similar-crops",
+      "label": "Permanent medicinal, pesticidal or similar crops",
+      "code": "9.03.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-03-02",
+      "parents": [
+        "medicinal-pesticidal-or-similar-crops",
+        "other-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "permanent-oilseed-crops",
+      "label": "Permanent oilseed crops",
+      "code": "4.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-04",
+      "parents": ["oilseed-crops-and-oleaginous-fruits", "crops"]
+    },
+    {
+      "id": "permanent-spice-and-aromatic-crops",
+      "label": "Permanent spice and aromatic crops",
+      "code": "6.02.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-02-02",
+      "parents": [
+        "spice-and-aromatic-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "pigeon-peas",
+      "label": "Pigeon peas",
+      "code": "7.08",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/7-08",
+      "parents": ["leguminous-crops", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_13356"
+    },
+    {
+      "id": "pineapples",
+      "label": "Pineapples",
+      "code": "3.01.08",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-01-08",
+      "parents": ["tropical-and-subtropical-fruits", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_13394"
+    },
+    {
+      "id": "pistachios",
+      "label": "Pistachios",
+      "code": "3.06.05",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-06-05",
+      "parents": ["nuts", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_13413"
     },
     {
       "id": "plantains",
-      "label": "Plantain",
-      "code": "c_5989",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_5989",
-      "broader": ["vegetables", "crops"]
+      "label": "Plantains",
+      "code": "3.01.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-01-03",
+      "parents": ["tropical-and-subtropical-fruits", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_5989"
     },
     {
-      "id": "potato",
-      "label": "Potato",
-      "code": "c_13551",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_13551",
-      "broader": ["root-vegetables", "vegetables", "crops"]
+      "id": "plums-and-sloes",
+      "label": "Plums and sloes",
+      "code": "3.05.06",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-05-06",
+      "parents": ["pome-fruits-and-stone-fruits", "fruit-and-nuts", "crops"]
     },
     {
-      "id": "pulses",
-      "label": "Pulses/Grain Legumes",
-      "code": "c_3351",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_3351",
-      "broader": ["legumes", "crops"]
+      "id": "pome-fruits-and-stone-fruits",
+      "label": "Pome fruits and stone fruits",
+      "code": "3.05",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-05",
+      "parents": ["fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "poppy",
+      "label": "Poppy",
+      "code": "4.03.12",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-03-12",
+      "parents": [
+        "other-temporary-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ]
+    },
+    {
+      "id": "potatoes",
+      "label": "Potatoes",
+      "code": "5.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/5-01",
+      "parents": [
+        "root-tuber-crops-with-high-starch-or-inulin-content",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_13551"
+    },
+    {
+      "id": "poultry",
+      "label": "Poultry",
+      "code": "6",
+      "parents": ["livestock"]
+    },
+    {
+      "id": "pumpkin-squash-and-gourds",
+      "label": "Pumpkin, squash and gourds",
+      "code": "2.02.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-02-04",
+      "parents": ["fruit-bearing-vegetables", "vegetables-and-melons", "crops"]
+    },
+    {
+      "id": "quinoa",
+      "label": "Quinoa",
+      "code": "1.12",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/1-12",
+      "parents": ["cereals", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_13716"
+    },
+    {
+      "id": "rabbits-and-hares",
+      "label": "Rabbits and hares",
+      "code": "72",
+      "parents": ["other-animals", "livestock"]
+    },
+    {
+      "id": "ramie",
+      "label": "Ramie",
+      "code": "9.02.02.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-02-02-01",
+      "parents": [
+        "permanent-fibre-crops",
+        "fibre-crops",
+        "other-crops",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_6442"
     },
     {
       "id": "rapeseed",
       "label": "Rapeseed",
-      "code": "c_25499",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_25499",
-      "broader": ["oil-crops", "crops"]
+      "code": "4.03.05",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-03-05",
+      "parents": [
+        "other-temporary-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_25499"
+    },
+    {
+      "id": "raspberries",
+      "label": "Raspberries",
+      "code": "3.04.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-04-04",
+      "parents": ["berries", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_6458"
     },
     {
       "id": "rice",
       "label": "Rice",
-      "code": "c_6599",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_6599",
-      "broader": ["cereals", "crops"]
+      "code": "1.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/1-03",
+      "parents": ["cereals", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_6599"
     },
     {
-      "id": "robusta-coffee",
-      "label": "Robusta coffee",
-      "code": "c_6626",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_6626",
-      "broader": ["coffee", "crops"]
+      "id": "root-bulb-or-tuberous-vegetables",
+      "label": "Root, bulb or tuberous vegetables",
+      "code": "2.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-03",
+      "parents": ["vegetables-and-melons", "crops"]
     },
     {
-      "id": "root-vegetables",
-      "label": "Root vegetables",
-      "code": "c_6647",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_6647",
-      "broader": ["vegetables", "crops"]
+      "id": "root-tuber-crops-with-high-starch-or-inulin-content",
+      "label": "Root/tuber crops with high starch or inulin content",
+      "code": "5",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/5",
+      "parents": ["crops"]
     },
     {
       "id": "rubber",
       "label": "Rubber",
-      "code": "c_6678",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_6678",
-      "broader": ["crops"]
+      "code": "9.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-04",
+      "parents": ["other-crops", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_6678"
+    },
+    {
+      "id": "rye",
+      "label": "Rye",
+      "code": "1.06",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/1-06",
+      "parents": ["cereals", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_14010"
+    },
+    {
+      "id": "safflower",
+      "label": "Safflower",
+      "code": "4.03.06",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-03-06",
+      "parents": [
+        "other-temporary-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_14022"
     },
     {
       "id": "sesame",
-      "label": "Sesame seed",
-      "code": "c_14216",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_14216",
-      "broader": ["oil-crops", "crops"]
+      "label": "Sesame",
+      "code": "4.03.07",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-03-07",
+      "parents": [
+        "other-temporary-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_14216"
+    },
+    {
+      "id": "shea-tree",
+      "label": "Shea tree (shea butter or karite nuts)",
+      "code": "4.03.09",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-03-09",
+      "parents": [
+        "other-temporary-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ]
     },
     {
       "id": "sheep",
       "label": "Sheep",
-      "code": "c_7030",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_7030",
-      "broader": ["livestock"]
+      "code": "21",
+      "parents": ["sheep-and-goats", "livestock"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_7030"
     },
     {
-      "id": "small-millet",
-      "label": "Small millet",
-      "code": "c_cc8f6dca",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_cc8f6dca",
-      "broader": ["millets", "cereals", "crops"]
+      "id": "sheep-and-goats",
+      "label": "Sheep and goats",
+      "code": "2",
+      "parents": ["livestock"]
+    },
+    {
+      "id": "silkworms",
+      "label": "Silkworms",
+      "code": "82",
+      "parents": ["insects-and-worms", "livestock"]
+    },
+    {
+      "id": "sisal",
+      "label": "Sisal",
+      "code": "9.02.02.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-02-02-02",
+      "parents": [
+        "permanent-fibre-crops",
+        "fibre-crops",
+        "other-crops",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_7086"
     },
     {
       "id": "sorghum",
       "label": "Sorghum",
-      "code": "c_435824c5",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_435824c5",
-      "broader": ["crops"]
+      "code": "1.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/1-04",
+      "parents": ["cereals", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_7244"
     },
     {
-      "id": "soybeans",
-      "label": "Soybeans",
-      "code": "c_14477",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_14477",
-      "broader": ["vegetables", "legumes", "oil-crops", "pulses", "crops"]
+      "id": "soya-beans",
+      "label": "Soya beans",
+      "code": "4.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-01",
+      "parents": ["oilseed-crops-and-oleaginous-fruits", "crops"]
     },
     {
-      "id": "sugarbeet",
-      "label": "Sugarbeet",
-      "code": "c_7499",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_7499",
-      "broader": ["crops"]
+      "id": "spice-and-aromatic-crops",
+      "label": "Spice and aromatic crops",
+      "code": "6.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-02",
+      "parents": ["stimulant-spice-and-aromatic-crops", "crops"]
     },
     {
-      "id": "sugarcane",
-      "label": "Sugarcane",
-      "code": "c_7501",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_7501",
-      "broader": ["crops"]
+      "id": "spinach",
+      "label": "Spinach",
+      "code": "2.01.06",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-01-06",
+      "parents": ["leafy-or-stem-vegetables", "vegetables-and-melons", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_14508"
+    },
+    {
+      "id": "stimulant-crops",
+      "label": "Stimulant crops",
+      "code": "6.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-01",
+      "parents": ["stimulant-spice-and-aromatic-crops", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_7413"
+    },
+    {
+      "id": "stimulant-spice-and-aromatic-crops",
+      "label": "Stimulant, spice and aromatic crops",
+      "code": "6",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6",
+      "parents": ["crops"]
+    },
+    {
+      "id": "strawberries",
+      "label": "Strawberries",
+      "code": "3.04.05",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-04-05",
+      "parents": ["berries", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_7443"
+    },
+    {
+      "id": "sugar-beet",
+      "label": "Sugar beet",
+      "code": "8.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/8-01",
+      "parents": ["sugar-crops", "crops"]
+    },
+    {
+      "id": "sugar-cane",
+      "label": "Sugar cane",
+      "code": "8.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/8-02",
+      "parents": ["sugar-crops", "crops"]
+    },
+    {
+      "id": "sugar-crops",
+      "label": "Sugar crops",
+      "code": "8",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/8",
+      "parents": ["crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_7503"
     },
     {
       "id": "sunflower",
       "label": "Sunflower",
-      "code": "c_aad037e4",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_aad037e4",
-      "broader": ["oil-crops", "crops"]
+      "code": "4.03.08",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-03-08",
+      "parents": [
+        "other-temporary-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ]
     },
     {
       "id": "sweet-potatoes",
       "label": "Sweet potatoes",
-      "code": "c_14729",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_14729",
-      "broader": ["root-vegetables", "vegetables", "crops"]
+      "code": "5.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/5-02",
+      "parents": [
+        "root-tuber-crops-with-high-starch-or-inulin-content",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_14729"
     },
     {
-      "id": "swine",
-      "label": "Swine",
-      "code": "c_7555",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_7555",
-      "broader": ["livestock"]
+      "id": "sweet-sorghum",
+      "label": "Sweet sorghum",
+      "code": "8.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/8-03",
+      "parents": ["sugar-crops", "crops"]
+    },
+    {
+      "id": "swine-pigs",
+      "label": "Swine/ pigs",
+      "code": "3",
+      "parents": ["livestock"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_7555"
+    },
+    {
+      "id": "tallow-tree",
+      "label": "Tallow tree",
+      "code": "4.03.13",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-03-13",
+      "parents": [
+        "other-temporary-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ]
+    },
+    {
+      "id": "tangerines-mandarins-clementines",
+      "label": "Tangerines mandarins, clementines",
+      "code": "3.02.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-02-04",
+      "parents": ["citrus-fruits", "fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "taro",
+      "label": "Taro",
+      "code": "5.05",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/5-05",
+      "parents": [
+        "root-tuber-crops-with-high-starch-or-inulin-content",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_14791"
     },
     {
       "id": "tea",
       "label": "Tea",
-      "code": "c_7634",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_7634",
-      "broader": ["crops"]
+      "code": "6.01.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-01-02",
+      "parents": [
+        "stimulant-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_7634"
     },
     {
-      "id": "temperate-fruit",
-      "label": "Temperate fruit",
-      "code": "c_7655",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_7655",
-      "broader": ["fruits", "crops"]
+      "id": "temporary-fibre-crops",
+      "label": "Temporary fibre crops",
+      "code": "9.02.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-02-01",
+      "parents": ["fibre-crops", "other-crops", "crops"]
+    },
+    {
+      "id": "temporary-flower-crops",
+      "label": "Temporary flower crops",
+      "code": "9.05.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-05-01",
+      "parents": ["flower-crops", "other-crops", "crops"]
+    },
+    {
+      "id": "temporary-grass-and-fodder-crops",
+      "label": "Temporary grass and fodder crops",
+      "code": "9.01.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-01-01",
+      "parents": ["grasses-and-other-fodder-crops", "other-crops", "crops"]
+    },
+    {
+      "id": "temporary-medicinal-pesticidal-or-similar-crops",
+      "label": "Temporary medicinal, pesticidal or similar crops",
+      "code": "9.03.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-03-01",
+      "parents": [
+        "medicinal-pesticidal-or-similar-crops",
+        "other-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "temporary-spice-and-aromatic-crops",
+      "label": "Temporary spice and aromatic crops",
+      "code": "6.02.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-02-01",
+      "parents": [
+        "spice-and-aromatic-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ]
     },
     {
       "id": "tobacco",
       "label": "Tobacco",
-      "code": "c_7796",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_7796",
-      "broader": ["crops"]
+      "code": "9.06",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/9-06",
+      "parents": ["other-crops", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_7796"
     },
     {
       "id": "tomatoes",
       "label": "Tomatoes",
-      "code": "c_7805",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_7805",
-      "broader": ["vegetables", "crops"]
+      "code": "2.02.03",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-02-03",
+      "parents": ["fruit-bearing-vegetables", "vegetables-and-melons", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_7805"
     },
     {
-      "id": "tropical-fruits",
-      "label": "Tropical fruits",
-      "code": "c_7974",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_7974",
-      "broader": ["fruits", "crops"]
+      "id": "triticale",
+      "label": "Triticale",
+      "code": "1.09",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/1-09",
+      "parents": ["cereals", "crops"]
     },
     {
-      "id": "vegetables",
-      "label": "Vegetables",
-      "code": "c_8174",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_8174",
-      "broader": ["crops"]
+      "id": "tropical-and-subtropical-fruits",
+      "label": "Tropical and subtropical fruits",
+      "code": "3.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-01",
+      "parents": ["fruit-and-nuts", "crops"]
+    },
+    {
+      "id": "tung-tree",
+      "label": "Tung tree",
+      "code": "4.03.10",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/4-03-10",
+      "parents": [
+        "other-temporary-oilseed-crops",
+        "oilseed-crops-and-oleaginous-fruits",
+        "crops"
+      ]
+    },
+    {
+      "id": "turkeys",
+      "label": "Turkeys",
+      "code": "62",
+      "parents": ["poultry", "livestock"]
+    },
+    {
+      "id": "turnips",
+      "label": "Turnips",
+      "code": "2.03.02",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-03-02",
+      "parents": [
+        "root-bulb-or-tuberous-vegetables",
+        "vegetables-and-melons",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_8019"
+    },
+    {
+      "id": "vanilla",
+      "label": "Vanilla",
+      "code": "6.02.02.06",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/6-02-02-06",
+      "parents": [
+        "permanent-spice-and-aromatic-crops",
+        "spice-and-aromatic-crops",
+        "stimulant-spice-and-aromatic-crops",
+        "crops"
+      ]
+    },
+    {
+      "id": "vegetables-and-melons",
+      "label": "Vegetables and melons",
+      "code": "2",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2",
+      "parents": ["crops"]
+    },
+    {
+      "id": "vetches",
+      "label": "Vetches",
+      "code": "7.1",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/7-1",
+      "parents": ["leguminous-crops", "crops"]
+    },
+    {
+      "id": "walnuts",
+      "label": "Walnuts",
+      "code": "3.06.06",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/3-06-06",
+      "parents": ["nuts", "fruit-and-nuts", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_15254"
+    },
+    {
+      "id": "watermelons",
+      "label": "Watermelons",
+      "code": "2.05.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/2-05-01",
+      "parents": ["melons", "vegetables-and-melons", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_15277"
     },
     {
       "id": "wheat",
-      "label": "Wheats",
-      "code": "c_8373",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_8373",
-      "broader": ["cereals", "crops"]
+      "label": "Wheat",
+      "code": "1.01",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/1-01",
+      "parents": ["cereals", "crops"],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_8373"
     },
     {
       "id": "yams",
       "label": "Yams",
-      "code": "c_8478",
-      "uri": "http://aims.fao.org/aos/agrovoc/c_8478",
-      "broader": ["root-vegetables", "vegetables", "crops"]
+      "code": "5.04",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/5-04",
+      "parents": [
+        "root-tuber-crops-with-high-starch-or-inulin-content",
+        "crops"
+      ],
+      "agrovoc": "http://aims.fao.org/aos/agrovoc/c_8478"
+    },
+    {
+      "id": "yautia",
+      "label": "Yautia",
+      "code": "5.06",
+      "uri": "https://stats.fao.org/classifications/ICC/v1.1/5-06",
+      "parents": [
+        "root-tuber-crops-with-high-starch-or-inulin-content",
+        "crops"
+      ]
     }
   ]
 }

@@ -7,9 +7,9 @@
 # place-key dimension, a coded variable with categories, and an
 # open-ended series refreshed each year.
 # ============================================================================
-cdh_schema_version: "v0.4.0"
+cdh_schema_version: "v0.5.0"
 extensions:
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/cdh/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/extensions/cdh/schema.json
 
 id: example-markets
 title: "Example Market Locations (SAMPLE - NOT REAL DATA)"

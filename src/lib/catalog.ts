@@ -90,8 +90,11 @@ function tokenField(s: CatalogRecord["structures"][number], name: string) {
 // An asset template's tokens with every value each takes in any held
 // structure, the values per structure (structures can share a dimension
 // name but not its values), and one real file from the first structure.
-export function resolveTemplate(d: CatalogRecord, asset: Asset) {
-  const template = asset.href_template;
+export function resolveTemplate(
+  d: CatalogRecord,
+  asset: Asset,
+  template = asset.href_template,
+) {
   if (!template) return undefined;
   const names = tokenNames(template);
   // A structure missing a token can't name a file
@@ -121,42 +124,74 @@ export function resolveTemplate(d: CatalogRecord, asset: Asset) {
   };
 }
 
-// One row per distinct URL. Only serialize CSV when requested, not for counts.
+// One row per distinct URL, expanded only when count or csv is read.
+// `source` is the asset or one of its file_index entries, whichever holds the template.
 export function templateInventory(
   d: CatalogRecord,
   asset: Asset,
-  resolved = resolveTemplate(d, asset),
+  source: Pick<Asset, "href_template" | "locations"> = asset,
+  resolved = resolveTemplate(d, asset, source.href_template),
 ) {
-  const { href_template: template, locations } = asset;
+  const { href_template: template, locations } = source;
   if (!template || !resolved) return undefined;
   const base = httpUrl(locations) ?? locations[0]?.url;
-  const files = new Map<string, string[]>();
-  let columns: string[] = [];
-  // Each structure names its own files; one two structures share counts once
-  for (const combo of resolved.combos) {
-    const fields = Object.entries(combo).map(([name, values]) => ({
-      name,
-      ...fileCoordinates(template, name, values),
-    }));
-    columns = fields.filter((f) => f.column).map((f) => f.name);
-    let rows: string[][] = [[]];
-    for (const f of fields)
-      rows = rows.flatMap((row) => f.values.map((v) => [...row, v]));
-    for (const row of rows) {
-      const pick = Object.fromEntries(fields.map((f, i) => [f.name, row[i]]));
-      const href = `${base ?? ""}${fillTemplate(template, pick)}`;
-      files.set(href, [href, ...row.filter((_, i) => fields[i].column)]);
+  let expanded: { files: Map<string, string[]>; columns: string[] } | undefined;
+  const expand = () => {
+    if (expanded) return expanded;
+    const files = new Map<string, string[]>();
+    let columns: string[] = [];
+    // Each structure names its own files; one two structures share counts once
+    for (const combo of resolved.combos) {
+      const fields = Object.entries(combo).map(([name, values]) => ({
+        name,
+        ...fileCoordinates(template, name, values),
+      }));
+      columns = fields.filter((f) => f.column).map((f) => f.name);
+      let rows: string[][] = [[]];
+      for (const f of fields)
+        rows = rows.flatMap((row) => f.values.map((v) => [...row, v]));
+      for (const row of rows) {
+        const pick = Object.fromEntries(fields.map((f, i) => [f.name, row[i]]));
+        const href = `${base ?? ""}${fillTemplate(template, pick)}`;
+        files.set(href, [href, ...row.filter((_, i) => fields[i].column)]);
+      }
     }
-  }
+    expanded = { files, columns };
+    return expanded;
+  };
   return {
-    count: files.size,
+    get count() {
+      return expand().files.size;
+    },
     get csv() {
+      const { files, columns } = expand();
       const header = ["href", ...columns];
       const cell = (v: string) =>
         /[",\r\n]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v;
       return `${[header, ...files.values()].map((row) => row.map(cell).join(",")).join("\r\n")}\r\n`;
     },
   };
+}
+
+// File list name for an asset's template, or for its i-th file_index entry
+export const inventoryName = (asset: Asset, i?: number) =>
+  i === undefined ? asset.name : `${asset.name}-index-${i + 1}`;
+export const inventoryCsv = (name: string) => `${name}-files.csv`;
+
+// Every file list the site builds for a record, served at
+// /catalog/<slug>/<inventoryCsv(name)>: templated assets, then templated indexes
+export function inventories(d: CatalogRecord) {
+  return d.data.flatMap((asset) =>
+    [
+      { name: inventoryName(asset), inventory: templateInventory(d, asset) },
+      ...asset.file_index.map((ix, i) => ({
+        name: inventoryName(asset, i),
+        inventory: templateInventory(d, asset, ix),
+      })),
+    ].flatMap(({ name, inventory }) =>
+      inventory ? [{ name, inventory }] : [],
+    ),
+  );
 }
 
 export const SIZE_UNITS = ["B", "KB", "MB", "GB", "TB", "PB"];
@@ -276,6 +311,9 @@ const terms = (d: CatalogRecord) =>
 
 export function summarize(entry: CollectionEntry<"catalog">) {
   const d = entry.data;
+  for (const id of d.commodities)
+    if (!commodity(id))
+      console.warn(`${d.id}: commodity "${id}" is not in the vocabulary`);
   const commodities = [...new Set(d.commodities.flatMap(commodityWithParents))];
   return {
     id: d.id,
@@ -413,11 +451,9 @@ export function datasetMd(
     `URL: ${abs(`/catalog/${slug}/`)}`,
     `Metadata (JSON): ${abs(`/catalog/${slug}.json`)}`,
     d.data.length && stac && `STAC collection: ${stac}`,
-    ...d.data.map(
-      (a) =>
-        a.href_template
-        && resolveTemplate(d, a)
-        && `File list (${a.name}, CSV): ${abs(`/catalog/${slug}/${a.name}-files.csv`)}`,
+    ...inventories(d).map(
+      ({ name }) =>
+        `File list (${name}, CSV): ${abs(`/catalog/${slug}/${inventoryCsv(name)}`)}`,
     ),
     temporal
       && `Temporal coverage: ${[temporal.main, temporal.sub].filter(Boolean).join(", ")}`,
@@ -616,23 +652,20 @@ export function datasetJsonLd(
         ]
       : []),
     // The site's list of every templated file, as CSV
-    ...d.data.flatMap((asset) =>
-      resolveTemplate(d, asset)
-        ? [
-            {
-              "@type": "DataDownload",
-              name: `${asset.name}: list of all files (CSV)`,
-              contentUrl: new URL(`${asset.name}-files.csv`, url).href,
-              encodingFormat: "text/csv",
-            },
-          ]
-        : [],
-    ),
-    // Single-file indexes (not an Icechunk repo or a prefix)
+    ...inventories(d).map(({ name }) => ({
+      "@type": "DataDownload",
+      name: `${name}: list of all files (CSV)`,
+      contentUrl: new URL(inventoryCsv(name), url).href,
+      encodingFormat: "text/csv",
+    })),
+    // Single-file indexes (not an Icechunk repo, a prefix, or one per slice)
     ...d.data.flatMap((asset) =>
       asset.file_index.flatMap((ix) => {
         const href = httpUrl(ix.locations);
-        return href && ix.format !== "icechunk" && !href.endsWith("/")
+        return href
+          && ix.format !== "icechunk"
+          && !ix.href_template
+          && !href.endsWith("/")
           ? [
               {
                 "@type": "DataDownload",
@@ -675,7 +708,7 @@ export function datasetJsonLd(
             ...(k.scheme && { inDefinedTermSet: k.scheme }),
           },
     ),
-    // Commodities as AGROVOC-linked subjects, via the CDH controlled vocab
+    // Commodities as FAO ICC/WCA-coded subjects, via the CDH controlled vocab
     ...(d.commodities.length > 0 && {
       about: d.commodities.map((id) => {
         const c = commodity(id);
@@ -683,7 +716,7 @@ export function datasetJsonLd(
           "@type": "DefinedTerm",
           name: c?.label ?? humanize(id),
           ...(c?.code && { termCode: c.code }),
-          ...(c?.uri && { url: c.uri }),
+          ...((c?.uri ?? c?.agrovoc) && { url: c?.uri ?? c?.agrovoc }),
           ...(c && { inDefinedTermSet: VOCAB_URL }),
         };
       }),
