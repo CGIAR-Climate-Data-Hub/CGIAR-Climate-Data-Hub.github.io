@@ -112,8 +112,6 @@ export async function shapeAsset(
         const label = INDEX_LABELS[ix.format] ?? ix.format;
         const source = asset.locations[0]?.url ?? "<source prefix>/";
         const path = URL.parse(url)?.pathname ?? url;
-        // An Icechunk repo, or any index given as a prefix, is not one file
-        const isDir = ix.format === "icechunk" || path.endsWith("/");
         // "cogs.vrt", "suitability/" for a prefix, or the template itself
         const name =
           picker?.template
@@ -123,7 +121,15 @@ export async function shapeAsset(
           ix.format === "cdh-inventory" && !picker
             ? await inventoryPreview(url)
             : undefined;
-        return { label, url, name, isDir, snippet, preview, picker };
+        return {
+          format: ix.format,
+          label,
+          url,
+          name,
+          snippet,
+          preview,
+          picker,
+        };
       }),
     )
   ).filter((ix): ix is NonNullable<typeof ix> => ix !== undefined);

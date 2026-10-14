@@ -100,7 +100,7 @@ const script = lang && primary && (await fetchScript(primary.url));
     </p>
   )}
   {picker && (
-      <TemplatePicker picker={picker} restricted={restricted} slug={recordSlug(d)} />
+      <TemplatePicker download={!restricted} picker={picker} slug={recordSlug(d)} />
     )}
   {index && (
     <div class="access-panel">
@@ -129,7 +129,9 @@ const script = lang && primary && (await fetchScript(primary.url));
               ) : (
                 <CopyButton copy={ix.url} label={`Copy ${ix.label} URL`} />
               )}
-              {ix.picker || ix.isDir || restricted ? (
+              {/* Only a cdh-inventory works away from its location: the
+                  others resolve paths against their own, or are a prefix */}
+              {ix.format !== "cdh-inventory" || restricted ? (
                 <span />
               ) : (
                 <a class="btn btn-ghost dl" download href={ix.url}>
@@ -178,7 +180,7 @@ const script = lang && primary && (await fetchScript(primary.url));
                   </div>
                 )}
                 {ix.picker && (
-                  <TemplatePicker picker={ix.picker} restricted={restricted} slug={recordSlug(d)} />
+                  <TemplatePicker download={false} picker={ix.picker} slug={recordSlug(d)} />
                 )}
                 {ix.snippet && <SnippetTabs code={ix.snippet} />}
               </div>

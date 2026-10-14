@@ -21,10 +21,12 @@ interface Props {
     csv: string;
   };
   slug: string;
-  restricted: boolean;
+  // Whether the picked file is worth saving: not for restricted data, nor
+  // for index files whose paths resolve against their own location
+  download: boolean;
 }
 
-const { picker, slug, restricted } = Astro.props;
+const { picker, slug, download } = Astro.props;
 ---
 
 <div
@@ -87,7 +89,7 @@ const { picker, slug, restricted } = Astro.props;
           )}
     </div>
     <CopyButton copy={picker.url} label="Copy selected file URL" />
-    {!restricted && (
+    {download && (
             <a
               class="btn btn-ghost dl"
               data-tpl-download
