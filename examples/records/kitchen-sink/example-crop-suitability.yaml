@@ -12,11 +12,11 @@
 # file_index lives in the v1 record; update_frequency and a growing series in
 # markets/example-markets.yaml.
 # ============================================================================
-cdh_schema_version: "v0.4.0"
+cdh_schema_version: "v0.5.0"
 extensions:
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/cdh/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/climate/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/agriculture/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/extensions/cdh/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/extensions/climate/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/extensions/agriculture/schema.json
 
 id: example-crop-suitability
 title: "Example Gridded Crop Suitability Projections (SAMPLE - NOT REAL DATA)"
@@ -226,8 +226,8 @@ climate:
     resolution: 0.05 degree
   mip_era: CMIP6
   models:
-    - EXAMPLE-ESM1
-    - EXAMPLE-ESM2
+    - MPI-ESM1-2-HR
+    - UKESM1-0-LL
   scenarios:
     - ssp245
     - ssp585
@@ -336,3 +336,7 @@ additional_links:
     rel: version-history
     url: https://example.org/atlas/example-crop-suitability/changelog
     description: Human-readable history of releases for this record.
+  - title: MAPSPAM 2020
+    rel: related
+    id: spam2020
+    description: Crop area and production maps for the same crops, catalogued in the Hub.

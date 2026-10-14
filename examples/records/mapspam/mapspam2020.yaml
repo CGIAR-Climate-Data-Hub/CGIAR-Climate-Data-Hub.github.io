@@ -1,9 +1,9 @@
 # yaml-language-server: $schema=../../spec/schemas/profiles/cdh.schema.json
-cdh_schema_version: "v0.4.0"
+cdh_schema_version: "v0.5.0"
 extensions:
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/cdh/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/climate/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/agriculture/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/extensions/cdh/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/extensions/climate/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/extensions/agriculture/schema.json
 
 id: spam2020
 title: MAPSPAM 2020
@@ -219,52 +219,8 @@ cdh:
         reason: the grid is too coarse for field-scale operational decisions.
         use_instead: local survey or administrative production data.
 
+# Covers every crop group, so it tags the root; the crop dimension lists the 46 codes.
 commodities:
-  - wheat
-  - rice
-  - maize
-  - barley
-  - millets
-  - pearl-millet
-  - sorghum
-  - cereals
-  - potato
-  - sweet-potatoes
-  - yams
-  - cassava
-  - root-vegetables
-  - common-bean
-  - chickpeas
-  - cowpeas
-  - pigeon-pea
-  - lentils
-  - pulses
-  - soybeans
-  - groundnuts
-  - coconuts
-  - oil-palms
-  - sunflower
-  - rapeseed
-  - sesame
-  - oil-crops
-  - sugarcane
-  - sugarbeet
-  - cotton
-  - fibre-crops
-  - coffee
-  - robusta-coffee
-  - cocoa
-  - tea
-  - tobacco
-  - banana
-  - plantains
-  - citrus
-  - tropical-fruits
-  - temperate-fruit
-  - tomatoes
-  - onions
-  - vegetables
-  - rubber
   - crops
 
 processing:

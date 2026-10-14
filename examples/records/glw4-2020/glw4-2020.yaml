@@ -1,9 +1,9 @@
 # yaml-language-server: $schema=../../spec/schemas/profiles/cdh.schema.json
-cdh_schema_version: "v0.4.0"
+cdh_schema_version: "v0.5.0"
 
 extensions:
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/cdh/schema.json
-  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.4.0/extensions/agriculture/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/extensions/cdh/schema.json
+  - https://cgiar-climate-data-hub.github.io/cdh-metadata-standard/v0.5.0/extensions/agriculture/schema.json
 
 id: glw4-2020
 title: Gridded livestock density for 2020 (GLW4)
@@ -161,7 +161,7 @@ cdh:
         reason: values are spatially modeled estimates derived from census and other data
         use_instead: official livestock census counts where available
 
-commodities: [buffalo, cattle, chickens, goats, swine, sheep]
+commodities: [buffaloes, cattle, chickens, goats, swine-pigs, sheep]
 
 processing:
   - id: source
