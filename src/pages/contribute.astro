@@ -2,6 +2,7 @@
 import { Code } from "astro:components";
 import { getCollection } from "astro:content";
 import PageHead from "@/components/PageHead.astro";
+import RailBox from "@/components/RailBox.astro";
 import Layout from "@/layouts/Layout.astro";
 import { codeHeader, shikiConfig } from "@/lib/code-block";
 import { githubUrl, issueUrl } from "@/lib/github";
@@ -17,8 +18,15 @@ const guides = (await getCollection("contributionGuides"))
   .map(({ id, data }) => ({ id, ...data }));
 
 const STANDARDS_LINKS = [
-  ["Metadata standard", githubUrl(STANDARD_REPO)],
-  ["Licensing & attribution", "/wikis/licensing-and-attribution/"],
+  {
+    title: "Metadata standard",
+    href: githubUrl(STANDARD_REPO),
+    external: true,
+  },
+  {
+    title: "Licensing & attribution",
+    href: "/wikis/licensing-and-attribution/",
+  },
 ];
 
 // Each kind opens a prefilled issue on the repo that owns the problem:
@@ -79,10 +87,7 @@ const description = `How to contribute a dataset, edit the docs, write a tutoria
         </a>
       </nav>
 
-      <div class="card rail-box">
-        <div class="label">Hub standards</div>
-        {STANDARDS_LINKS.map(([label, href]) => <a class="rail-link" href={href}>{label}</a>)}
-      </div>
+      <RailBox items={STANDARDS_LINKS} title="Hub standards" />
     </aside>
 
     <div class="guides">
@@ -245,7 +250,7 @@ aside {
 }
 
 /* The standards box follows the intent nav */
-.rail-box {
+aside :global(.rail-box) {
   margin-top: var(--space-5);
 }
 

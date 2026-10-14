@@ -320,7 +320,6 @@ hr {
 
 .rail-link:hover {
   color: var(--cdh-blue-700);
-  text-decoration: none;
 }
 
 .rail-link.ext {
