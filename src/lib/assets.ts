@@ -5,6 +5,8 @@ import {
   formatBestFor,
   geoLabel,
   httpUrl,
+  inventoryCsv,
+  inventoryName,
   normalizeBboxes,
   resolveTemplate,
   templateInventory,
@@ -76,9 +78,20 @@ export async function shapeAsset(
 
   const indexes = (
     await Promise.all(
-      asset.file_index.map(async (ix) => {
-        const url = httpUrl(ix.locations) ?? ix.locations[0]?.url;
-        if (!url) return undefined;
+      asset.file_index.map(async (ix, i) => {
+        const root = httpUrl(ix.locations) ?? ix.locations[0]?.url;
+        if (!root) return undefined;
+        // One index per slice: the row shows the first rendered file and
+        // links the full list. Unresolvable templates drop the row, as assets do
+        const tpl = resolveTemplate(d, asset, ix.href_template);
+        if (ix.href_template && !tpl) {
+          console.warn(
+            `${d.id}: ${asset.name} index template does not resolve`,
+          );
+          return undefined;
+        }
+        const sliced = tpl && templateInventory(d, asset, ix, tpl);
+        const url = tpl ? `${root}${tpl.file}` : root;
         const label = INDEX_LABELS[ix.format] ?? ix.format;
         const source = asset.locations[0]?.url ?? "<source prefix>/";
         const path = URL.parse(url)?.pathname ?? url;
@@ -88,10 +101,14 @@ export async function shapeAsset(
         const name = `${path.replace(/\/$/, "").split("/").pop()}${path.endsWith("/") ? "/" : ""}`;
         const snippet = indexExample(ix.format, url, source);
         const preview =
-          ix.format === "cdh-inventory"
+          ix.format === "cdh-inventory" && !sliced
             ? await inventoryPreview(url)
             : undefined;
-        return { label, url, name, isDir, snippet, preview };
+        const files = sliced && {
+          count: sliced.count,
+          csv: inventoryCsv(inventoryName(asset, i)),
+        };
+        return { label, url, name, isDir, snippet, preview, files };
       }),
     )
   ).filter((ix): ix is NonNullable<typeof ix> => ix !== undefined);
@@ -129,7 +146,7 @@ export async function shapeAsset(
     tplCombos,
     tplUrl: tplFile && http ? http + tplFile : undefined,
     // How many files the template names; [asset]-files.csv lists them
-    fileCount: templateInventory(d, asset, resolved)?.count,
+    fileCount: templateInventory(d, asset, asset, resolved)?.count,
     download:
       (!restricted || !d.data.includes(asset))
       && !asset.href_template

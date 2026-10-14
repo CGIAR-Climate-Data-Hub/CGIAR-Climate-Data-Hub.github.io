@@ -11,6 +11,7 @@ import {
   formatLabel,
   heldStructures,
   humanize,
+  inventoryCsv,
   recordSlug,
 } from "@/lib/catalog";
 import { fetchScript, scriptLanguage } from "@/lib/snippets";
@@ -120,8 +121,8 @@ const script = lang && primary && (await fetchScript(primary.url));
             </span>
             <a
               class="btn btn-ghost dl"
-              download={`${asset.name}-files.csv`}
-              href={`/catalog/${recordSlug(d)}/${asset.name}-files.csv`}
+              download={inventoryCsv(asset.name)}
+              href={`/catalog/${recordSlug(d)}/${inventoryCsv(asset.name)}`}
             >
               Download CSV
             </a>
@@ -196,7 +197,16 @@ const script = lang && primary && (await fetchScript(primary.url));
                 {ix.name}
               </a>
               <CopyButton copy={ix.url} label={`Copy ${ix.label} URL`} />
-              {ix.isDir || restricted ? (
+              {ix.files ? (
+                <a
+                  class="btn btn-ghost dl"
+                  download={ix.files.csv}
+                  href={`/catalog/${recordSlug(d)}/${ix.files.csv}`}
+                  title={`${ix.files.count.toLocaleString("en")} index files`}
+                >
+                  List of {ix.files.count.toLocaleString("en")} files (CSV)
+                </a>
+              ) : ix.isDir || restricted ? (
                 <span />
               ) : (
                 <a class="btn btn-ghost dl" download href={ix.url}>
