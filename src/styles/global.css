@@ -116,6 +116,7 @@ a:where(
 }
 
 a:hover {
+  color: var(--link-hover);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -327,10 +328,6 @@ hr {
 .rail-link:last-child,
 .rail-text:last-child {
   border-bottom: 0;
-}
-
-.rail-link:hover {
-  color: var(--cdh-blue-700);
 }
 
 .rail-link.ext {
