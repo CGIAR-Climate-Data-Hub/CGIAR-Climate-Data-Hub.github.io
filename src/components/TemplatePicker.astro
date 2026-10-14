@@ -1,6 +1,7 @@
 ---
 // A select (or date field) per href_template token, with copy and download
-// on the file they pick. Used for an asset's template and a sliced index's.
+// on the file they pick, then the slot: how to open it. Used for an asset's
+// template and a sliced index's.
 import CopyButton from "@/components/CopyButton.astro";
 import { humanize } from "@/lib/catalog";
 
@@ -101,6 +102,8 @@ const { picker, slug, download } = Astro.props;
           )}
   </div>
   <p class="mono url selected-url" data-tpl-url>{picker.url}</p>
+  {/* How to open the picked file: the asset's examples or the index's snippet */}
+  <slot />
 </div>
 
 <script>
@@ -147,14 +150,10 @@ for (const picker of document.querySelectorAll<HTMLElement>(".tpl-picker")) {
     if (copyBtn) copyBtn.dataset.copy = url;
     if (dl) dl.href = url;
     // The usage example bakes in the previous selection's filename — swap it
-    // wherever it appears in the card's examples so they stay live
+    // wherever it appears in the panel so the snippet stays live
     const prev = picker.dataset.file;
-    // An index picker's snippet sits beside it; an asset's under the card
-    const examples =
-      picker.closest(".index-body")
-      ?? picker.closest(".asset")?.querySelector(".asset-examples");
-    if (examples && prev && prev !== file) {
-      const walker = document.createTreeWalker(examples, NodeFilter.SHOW_TEXT);
+    if (prev && prev !== file) {
+      const walker = document.createTreeWalker(picker, NodeFilter.SHOW_TEXT);
       while (walker.nextNode()) {
         const node = walker.currentNode;
         if (node.nodeValue?.includes(prev))

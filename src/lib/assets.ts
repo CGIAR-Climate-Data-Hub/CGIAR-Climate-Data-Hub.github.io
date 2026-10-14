@@ -47,11 +47,10 @@ export const anchor = (kind: string, name: string) =>
 // - picker: what TemplatePicker needs for the asset's href_template;
 //   undefined unless every token resolves. Sliced indexes carry their own
 // - primary: the spotlighted access route (HTTPS when available); others
-//   fills the disclosure — everything on templated assets, where the picker
-//   stands in for the access panel and no root URL shows above
+//   fills the disclosure — every location on templated and indexed assets,
+//   where the panel shows a picker or index rather than a root URL
 // - indexes: file_index entries in record order (the author lists the one to
-//   open first); the first stands in for the access panel, the rest and the
-//   files directory go to the disclosure, and their snippets sit inline
+//   open first); each row holds its snippet and, when sliced, its picker
 // - download: only where one click yields one file — an http(s) URL to a
 //   single object, never templated collections, Zarr stores, or prefixes.
 //   Restricted records get no Download buttons on data (the click would
@@ -132,17 +131,15 @@ export async function shapeAsset(
   ).filter((ix): ix is NonNullable<typeof ix> => ix !== undefined);
   const index = indexes[0];
 
-  // Indexed assets list their indexes in their own panel; a templated asset
-  // lists its directories, which the picker builds URLs from
-  const others = index
-    ? []
-    : (asset.href_template
-        ? asset.locations
-        : asset.locations.filter((l) => l !== primary)
-      ).map((loc) => ({
-        label: `${loc.title ?? "URL"}${asset.href_template ? " directory" : ""}`,
-        url: loc.url,
-      }));
+  // A templated or indexed asset's locations are directories the picker or
+  // index builds on; a single file's primary already shows in its panel
+  const dirs = Boolean(asset.href_template || index);
+  const others = (
+    dirs ? asset.locations : asset.locations.filter((l) => l !== primary)
+  ).map((loc) => ({
+    label: `${loc.title ?? "URL"}${dirs ? " directory" : ""}`,
+    url: loc.url,
+  }));
 
   // The path alone: a query or fragment must not hide a directory or .zarr
   const path = http ? (URL.parse(http)?.pathname ?? http) : "";

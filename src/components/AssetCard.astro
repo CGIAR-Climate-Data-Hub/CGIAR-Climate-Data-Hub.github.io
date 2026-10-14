@@ -4,6 +4,7 @@
 import CopyButton from "@/components/CopyButton.astro";
 import SnippetTabs from "@/components/SnippetTabs.astro";
 import TemplatePicker from "@/components/TemplatePicker.astro";
+import UsageExamples from "@/components/UsageExamples.astro";
 import { anchor, opensInline, shapeAsset } from "@/lib/assets";
 import {
   type Asset,
@@ -100,7 +101,9 @@ const script = lang && primary && (await fetchScript(primary.url));
     </p>
   )}
   {picker && (
-      <TemplatePicker download={!restricted} picker={picker} slug={recordSlug(d)} />
+      <TemplatePicker download={!restricted} picker={picker} slug={recordSlug(d)}>
+        {example && <UsageExamples code={example} />}
+      </TemplatePicker>
     )}
   {index && (
     <div class="access-panel">
@@ -180,10 +183,13 @@ const script = lang && primary && (await fetchScript(primary.url));
                     </p>
                   </div>
                 )}
-                {ix.picker && (
-                  <TemplatePicker download={false} picker={ix.picker} slug={recordSlug(d)} />
+                {ix.picker ? (
+                  <TemplatePicker download={false} picker={ix.picker} slug={recordSlug(d)}>
+                    {ix.snippet && <UsageExamples code={ix.snippet} />}
+                  </TemplatePicker>
+                ) : (
+                  ix.snippet && <UsageExamples code={ix.snippet} />
                 )}
-                {ix.snippet && <SnippetTabs code={ix.snippet} />}
               </div>
             </details>
           ) : (
@@ -216,6 +222,7 @@ const script = lang && primary && (await fetchScript(primary.url));
           <span class="mono url">{primary.url}</span>
         )}
       </p>
+      {example && <UsageExamples code={example} />}
     </div>
   )}
   {script && lang && (
@@ -242,12 +249,6 @@ const script = lang && primary && (await fetchScript(primary.url));
       ))}
     </details>
   )}
-  {example && (
-    <div class="asset-examples">
-      <p class="tech-title">Usage examples</p>
-      <SnippetTabs code={example} />
-    </div>
-  )}
 </div>
 
 <style>
@@ -258,8 +259,7 @@ const script = lang && primary && (await fetchScript(primary.url));
 /* The card's border is the only box line — inside, whitespace separates.
    Visual weight: name → download → selectors → URL → technical facts */
 .asset p,
-.alt-access,
-.asset-examples {
+.alt-access {
   margin-top: var(--space-2);
 }
 
