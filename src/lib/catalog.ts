@@ -421,6 +421,8 @@ export function datasetMd(
     ),
     temporal
       && `Temporal coverage: ${[temporal.main, temporal.sub].filter(Boolean).join(", ")}`,
+    citation
+      && `Cite: ${citationText(citation, abs(`/catalog/${versionedSlug(d)}/`))}`,
   ]
     .filter(Boolean)
     .map((f) => `- ${f}`);
@@ -429,8 +431,6 @@ export function datasetMd(
     facts.join("\n"),
     d.description.trim(),
     yaml && `\`\`\`yaml\n${yaml.trim()}\n\`\`\``,
-    citation
-      && `Cite: ${citationText(citation, abs(`/catalog/${versionedSlug(d)}/`))}`,
   ]
     .filter(Boolean)
     .join("\n\n");

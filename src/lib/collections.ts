@@ -41,9 +41,8 @@ export function pageMd(
 ) {
   return [
     `# ${e.data.title}`,
-    url,
+    `- URL: ${url}\n- Cite: ${citationText(pageCitable(e, url))}`,
     (e.body ?? e.data.description).trim(),
-    `Cite: ${citationText(pageCitable(e, url))}`,
   ].join("\n\n");
 }
 
