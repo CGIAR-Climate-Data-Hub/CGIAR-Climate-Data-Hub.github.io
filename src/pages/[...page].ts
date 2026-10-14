@@ -3,6 +3,7 @@
 
 import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
+import { parse, stringify } from "yaml";
 import { type CatalogRecord, currentReleases, datasetMd } from "@/lib/catalog";
 import { allTutorials, pageMd, publishedWikis } from "@/lib/collections";
 import { markdownResponse } from "@/lib/markdown";
@@ -23,7 +24,13 @@ export async function getStaticPaths() {
 
   const datasets = currentReleases(await getCollection("catalog")).map((e) => ({
     params: { page: `catalog/${e.data.id}/index.md` },
-    props: { dataset: e.data, yaml: e.body ?? "" },
+    // Re-serialize so anchors/aliases are resolved, as the JSON endpoint does
+    props: {
+      dataset: e.data,
+      yaml: stringify(parse(e.body ?? "", { merge: true }), {
+        aliasDuplicateObjects: false,
+      }),
+    },
   }));
 
   return [...docs, ...datasets];
