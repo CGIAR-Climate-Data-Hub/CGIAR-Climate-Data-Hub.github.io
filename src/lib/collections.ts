@@ -12,6 +12,11 @@ export async function allTutorials() {
   ];
 }
 
+// Wikis marked `soon` have no page yet; only the sidebar lists them (as a label).
+export function publishedWikis() {
+  return getCollection("wikis", ({ data }) => !data.soon);
+}
+
 export type CitablePage = {
   id: string;
   data: { title: string; author: string[]; updated: Date };

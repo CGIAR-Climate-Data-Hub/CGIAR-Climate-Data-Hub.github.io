@@ -66,35 +66,59 @@ export const heldStructures = (d: CatalogRecord, asset: Asset) =>
     ? d.structures.filter((s) => asset.structures.includes(s.name))
     : d.structures.slice(0, 1);
 
-// An asset template's tokens with every value each takes (its dimension's,
-// or the held variable names for {variable}), plus one real file from the
-// first value per token. A daily axis also carries a date range, so the
-// picker can show a native date field instead of a list spanning decades.
+// A template token's values in one structure: its dimension's, or the
+// variable names for {variable}. A daily axis also carries a date range, so
+// the picker can show a native date field instead of a list spanning decades.
+function tokenField(s: CatalogRecord["structures"][number], name: string) {
+  const dim = s.dimensions.find((x) => x.name === name);
+  const values = dim
+    ? axisValues(dim)
+    : name === "variable"
+      ? s.variables.map((v) => v.name)
+      : [];
+  const days = dayStep(dim);
+  const date = dim?.extent
+    && typeof dim.extent[1] === "string"
+    && days && { min: values[0], max: dim.extent[1], step: days };
+  // Coded axes show their labels in the picker; the code still fills the URL
+  const labels = dim?.categories.length
+    ? Object.fromEntries(dim.categories.map((c) => [c.value, c.label]))
+    : undefined;
+  return { name, values, labels, date: date || undefined };
+}
+
+// An asset template's tokens with every value each takes in any held
+// structure, the values per structure (structures can share a dimension
+// name but not its values), and one real file from the first structure.
 export function resolveTemplate(d: CatalogRecord, asset: Asset) {
   const template = asset.href_template;
   if (!template) return undefined;
-  const held = heldStructures(d, asset);
-  const fields = tokenNames(template).map((name) => {
-    // The same dimension in every held structure, so the first will do
-    const dim = held.flatMap((s) => s.dimensions).find((x) => x.name === name);
-    const values = dim
-      ? axisValues(dim)
-      : name === "variable"
-        ? held.flatMap((s) => s.variables.map((v) => v.name))
-        : [];
-    const days = dayStep(dim);
-    const date = dim?.extent
-      && typeof dim.extent[1] === "string"
-      && days && { min: values[0], max: dim.extent[1], step: days };
-    // Coded axes show their labels in the picker; the code still fills the URL
-    const labels = dim?.categories.length
-      ? Object.fromEntries(dim.categories.map((c) => [c.value, c.label]))
-      : undefined;
-    return { name, values, labels, date: date || undefined };
+  const names = tokenNames(template);
+  // A structure missing a token can't name a file
+  const combos = heldStructures(d, asset)
+    .map((s) => names.map((name) => tokenField(s, name)))
+    .filter((fields) => fields.every((f) => f.values.length > 0));
+  if (combos.length === 0) return undefined;
+  const fields = names.map((name, i) => {
+    const per = combos.map((c) => c[i]);
+    return {
+      name,
+      values: [...new Set(per.flatMap((f) => f.values))],
+      labels: Object.assign({}, ...per.map((f) => f.labels)) as Record<
+        string,
+        string
+      >,
+      date: per[0].date,
+    };
   });
-  if (fields.some((f) => f.values.length === 0)) return undefined;
-  const first = Object.fromEntries(fields.map((f) => [f.name, f.values[0]]));
-  return { fields, file: fillTemplate(template, first) };
+  const first = Object.fromEntries(combos[0].map((f) => [f.name, f.values[0]]));
+  return {
+    fields,
+    file: fillTemplate(template, first),
+    combos: combos.map((c) =>
+      Object.fromEntries(c.map((f) => [f.name, f.values])),
+    ),
+  };
 }
 
 // One row per distinct URL. Only serialize CSV when requested, not for counts.
@@ -105,27 +129,29 @@ export function templateInventory(
 ) {
   const { href_template: template, locations } = asset;
   if (!template || !resolved) return undefined;
-  const fields = resolved.fields.map((f) => ({
-    name: f.name,
-    ...fileCoordinates(template, f.name, f.values),
-  }));
   const base = httpUrl(locations) ?? locations[0]?.url;
-  let rows: string[][] = [[]];
-  for (const f of fields)
-    rows = rows.flatMap((row) => f.values.map((v) => [...row, v]));
   const files = new Map<string, string[]>();
-  for (const row of rows) {
-    const pick = Object.fromEntries(fields.map((f, i) => [f.name, row[i]]));
-    const href = `${base ?? ""}${fillTemplate(template, pick)}`;
-    files.set(href, [href, ...row.filter((_, i) => fields[i].column)]);
+  let columns: string[] = [];
+  // Each structure names its own files; one two structures share counts once
+  for (const combo of resolved.combos) {
+    const fields = Object.entries(combo).map(([name, values]) => ({
+      name,
+      ...fileCoordinates(template, name, values),
+    }));
+    columns = fields.filter((f) => f.column).map((f) => f.name);
+    let rows: string[][] = [[]];
+    for (const f of fields)
+      rows = rows.flatMap((row) => f.values.map((v) => [...row, v]));
+    for (const row of rows) {
+      const pick = Object.fromEntries(fields.map((f, i) => [f.name, row[i]]));
+      const href = `${base ?? ""}${fillTemplate(template, pick)}`;
+      files.set(href, [href, ...row.filter((_, i) => fields[i].column)]);
+    }
   }
   return {
     count: files.size,
     get csv() {
-      const header = [
-        "href",
-        ...fields.filter((f) => f.column).map((f) => f.name),
-      ];
+      const header = ["href", ...columns];
       const cell = (v: string) =>
         /[",\r\n]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v;
       return `${[header, ...files.values()].map((row) => row.map(cell).join(",")).join("\r\n")}\r\n`;

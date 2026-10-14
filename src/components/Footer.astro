@@ -24,7 +24,7 @@ const GROUPS = [
       ["About", "/about/"],
       ["FAQ", "/faq/"],
       [
-        "Climate Action Program",
+        "CGIAR Climate Action",
         "https://www.cgiar.org/cgiar-research-portfolio-2025-2030/climate-action",
       ],
     ],
@@ -80,12 +80,13 @@ footer {
   border-top: 3px solid var(--cgiar-accent);
 }
 
-/* Brand sized to its logos, the four groups splitting what's left evenly —
-   right-aligning them instead leaves a dead zone beside the wordmark */
+/* Every column hugs its content; the grid spreads the leftover space so the
+   brand sits on the left edge, the last group on the right, equal gaps between */
 .top {
   display: grid;
-  grid-template-columns: auto repeat(4, 1fr);
+  grid-template-columns: repeat(5, auto);
   gap: var(--space-6);
+  justify-content: space-between;
 }
 
 .brand {

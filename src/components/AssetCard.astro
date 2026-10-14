@@ -33,6 +33,7 @@ const {
   others,
   tplFields,
   tplFile,
+  tplCombos,
   tplUrl,
   fileCount,
   download,
@@ -104,6 +105,7 @@ const script = lang && primary && (await fetchScript(primary.url));
   {tplUrl && (
       <div
         class="tpl-picker"
+        data-combos={tplCombos}
         data-file={tplFile}
         data-root={primary.url}
         data-template={asset.href_template}
@@ -323,6 +325,20 @@ for (const picker of document.querySelectorAll<HTMLElement>(".tpl-picker")) {
   const copyBtn = picker.querySelector<HTMLButtonElement>("button[data-copy]");
   const dl = picker.querySelector<HTMLAnchorElement>("[data-tpl-download]");
   const urlEl = picker.querySelector<HTMLElement>("[data-tpl-url]");
+  // Structures with different values for the same token: a change moves
+  // the other fields onto a structure holding the new value, if they must
+  const combos: Record<string, string[]>[] = JSON.parse(
+    picker.dataset.combos ?? "[]",
+  );
+  const dim = (f: HTMLElement) => f.dataset.tplDim ?? "";
+  const snap = (changed: HTMLInputElement | HTMLSelectElement) => {
+    const holds = combos.filter((c) => c[dim(changed)].includes(changed.value));
+    const fit =
+      holds.find((c) => fields.every((f) => c[dim(f)].includes(f.value)))
+      ?? holds[0];
+    for (const f of fields)
+      if (!fit[dim(f)].includes(f.value)) f.value = fit[dim(f)][0];
+  };
   const update = () => {
     // A cleared or out-of-range date names no file: park the actions
     const valid = fields.every((f) => f.value && f.validity.valid);
@@ -352,7 +368,10 @@ for (const picker of document.querySelectorAll<HTMLElement>(".tpl-picker")) {
     }
     picker.dataset.file = file;
   };
-  picker.addEventListener("change", update);
+  picker.addEventListener("change", (e) => {
+    if (combos.length) snap(e.target as HTMLSelectElement);
+    update();
+  });
   update();
 }
 </script>

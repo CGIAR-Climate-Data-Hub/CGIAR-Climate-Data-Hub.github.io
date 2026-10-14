@@ -1,5 +1,5 @@
 ---
-import { getCollection, render } from "astro:content";
+import { render } from "astro:content";
 import ArticleToc from "@/components/ArticleToc.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
 import Citation from "@/components/Citation.astro";
@@ -7,12 +7,12 @@ import JsonLd from "@/components/JsonLd.astro";
 import WikiSidebar from "@/components/WikiSidebar.astro";
 import Layout from "@/layouts/Layout.astro";
 import { citationText } from "@/lib/citation";
-import { pageCitable } from "@/lib/collections";
+import { pageCitable, publishedWikis } from "@/lib/collections";
 import { editUrl } from "@/lib/github";
 import { SITE_NAME, SITE_PUBLISHER_NAME, SITE_REPO } from "@/site.config";
 
 export async function getStaticPaths() {
-  const entries = await getCollection("wikis", ({ data }) => !data.soon);
+  const entries = await publishedWikis();
   return entries.map((entry) => ({
     params: { id: entry.id },
     props: { entry },

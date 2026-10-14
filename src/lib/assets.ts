@@ -68,6 +68,11 @@ export async function shapeAsset(
   const resolved = resolveTemplate(d, asset);
   const tplFields = resolved?.fields;
   const tplFile = resolved?.file;
+  // The picker only needs the per-structure values when there are several
+  const tplCombos =
+    resolved && resolved.combos.length > 1
+      ? JSON.stringify(resolved.combos)
+      : undefined;
 
   const indexes = (
     await Promise.all(
@@ -121,6 +126,7 @@ export async function shapeAsset(
     others,
     tplFields,
     tplFile,
+    tplCombos,
     tplUrl: tplFile && http ? http + tplFile : undefined,
     // How many files the template names; [asset]-files.csv lists them
     fileCount: templateInventory(d, asset, resolved)?.count,

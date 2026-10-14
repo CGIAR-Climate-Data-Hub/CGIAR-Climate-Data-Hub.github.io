@@ -5,13 +5,18 @@ import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
 import { currentReleases, datasetMd } from "@/lib/catalog";
 import { citationText } from "@/lib/citation";
-import { allTutorials, type CitablePage, pageCitable } from "@/lib/collections";
+import {
+  allTutorials,
+  type CitablePage,
+  pageCitable,
+  publishedWikis,
+} from "@/lib/collections";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/site.config";
 
 export const GET: APIRoute = async ({ site }) => {
   const abs = (path: string) => new URL(path, site).href;
   const catalog = currentReleases(await getCollection("catalog"));
-  const wikis = await getCollection("wikis");
+  const wikis = await publishedWikis();
   const tutorials = await allTutorials();
   const faq = (await getCollection("faq")).sort(
     (a, b) => a.data.order - b.data.order,
