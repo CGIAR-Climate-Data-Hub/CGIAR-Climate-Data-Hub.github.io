@@ -881,11 +881,12 @@ const jsonLd = datasetJsonLd(
       {d.additional_links.length > 0 && (
           <div class="card rail-box">
             <h2 class="label">Related links</h2>
-            {d.additional_links.map((link) =>
-              link.id ? (
-                hubSource(link) ? (
-                  <a class="rail-link" href={hubSource(link)?.href}>
-                    {link.title ?? hubSource(link)?.title}
+            {d.additional_links.map((link) => {
+              const hub = hubSource(link);
+              return link.id ? (
+                hub ? (
+                  <a class="rail-link" href={hub.href}>
+                    {link.title ?? hub.title}
                   </a>
                 ) : (
                   <div class="rail-text">{link.title ?? link.id}</div>
@@ -894,8 +895,8 @@ const jsonLd = datasetJsonLd(
                 <a class="rail-link ext" href={link.url} rel="noreferrer">
                   {link.title ?? link.url} ↗
                 </a>
-              ),
-            )}
+              );
+            })}
           </div>
         )}
 
