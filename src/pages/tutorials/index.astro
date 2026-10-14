@@ -186,13 +186,6 @@ facetFilter([...document.querySelectorAll<HTMLElement>("li[data-tutorial]")]);
   flex-direction: column;
   gap: var(--space-3);
   height: 100%;
-  color: var(--text);
-  transition: border-color 0.12s;
-}
-
-.tutorial-card:hover {
-  text-decoration: none;
-  border-color: var(--cdh-blue-700);
 }
 
 .card-top {
@@ -271,6 +264,7 @@ facetFilter([...document.querySelectorAll<HTMLElement>("li[data-tutorial]")]);
   gap: var(--space-2);
   padding: 20px;
   color: var(--text);
+  text-decoration: none;
   border-right: 1px solid var(--border);
 }
 

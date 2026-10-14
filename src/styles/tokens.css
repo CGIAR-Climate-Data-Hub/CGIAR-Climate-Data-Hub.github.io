@@ -50,6 +50,7 @@
   --text-inverse-soft: color-mix(in srgb, var(--text-inverse) 75%, transparent);
   --border-inverse: color-mix(in srgb, var(--text-inverse) 15%, transparent);
   --link: var(--cdh-blue-700);
+  --link-hover: var(--cdh-blue-950);
   --navbar-glass: color-mix(in srgb, var(--bg) 86%, transparent);
 
   --shadow-menu: 0 12px 30px rgb(20 16 8 / 12%);

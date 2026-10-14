@@ -1,0 +1,21 @@
+---
+// "Usage examples" plus its language tabs, the same inside every access panel
+import SnippetTabs from "@/components/SnippetTabs.astro";
+
+interface Props {
+  code: Record<string, string>;
+}
+
+const { code } = Astro.props;
+---
+
+<div class="examples">
+  <p class="tech-title">Usage examples</p>
+  <SnippetTabs code={code} />
+</div>
+
+<style>
+.examples {
+  margin-top: var(--space-3);
+}
+</style>

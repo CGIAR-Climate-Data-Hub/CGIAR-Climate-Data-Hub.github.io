@@ -9,8 +9,8 @@ export const VOCAB_URL =
 
 const byId = new Map(commodityVocab.concepts.map((c) => [c.id, c]));
 
-// Resolve a record's commodity id to its concept (label, AGROVOC code/uri,
-// broader parents); undefined for ids the vocabulary doesn't know.
+// Resolve a record's commodity id to its concept (label, FAO ICC/WCA code and
+// uri, agrovoc uri, parents); undefined for ids the vocabulary doesn't know.
 export function commodity(id: string) {
   return byId.get(id);
 }
@@ -18,15 +18,15 @@ export function commodity(id: string) {
 // A commodity plus all its broader concepts, for roll-up filtering
 export function commodityWithParents(id: string) {
   const c = byId.get(id);
-  return c ? [c.id, ...(c.broader ?? [])] : [id];
+  return c ? [c.id, ...(c.parents ?? [])] : [id];
 }
 
 // Facet-level concepts are the ones that group others — anything appearing
-// as some concept's broader (cereals, livestock, crops…), never bare leaves
+// as some concept's parent (cereals, livestock, crops…), never bare leaves
 // like cattle or sorghum. Filtering a closure by this keeps facet counts
 // consistent with closure-based matching.
 const groupConcepts = new Set(
-  commodityVocab.concepts.flatMap((c) => c.broader ?? []),
+  commodityVocab.concepts.flatMap((c) => c.parents ?? []),
 );
 
 export function isCommodityGroup(id: string) {
