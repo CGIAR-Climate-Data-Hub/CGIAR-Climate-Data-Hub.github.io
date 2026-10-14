@@ -90,21 +90,32 @@ p {
   margin: 0;
 }
 
+/* A link is underlined: inline in text it needs a cue beyond colour (WCAG
+   1.4.1). Links that stand alone — navigation, link lists, bare URLs, cards,
+   and controls — rely on position instead and opt out here or in their
+   component, underlining on hover only. */
 a {
   color: var(--link);
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 2px;
   transition: color 0.12s;
 }
 
-a:hover {
-  text-decoration: underline;
-  text-underline-offset: 2px;
+nav a,
+a:where(
+  .rail-link,
+  .url,
+  .index-file,
+  .back,
+  .edit-link,
+  .section-link,
+  .skip-link
+),
+.menu-list a {
+  text-decoration: none;
 }
 
-/* Inline links need a non-colour cue; standalone navigation and controls keep
-   their component treatments. */
-:where(p, :where(.prose, .answer) :where(li, td, dd), .cite-block li, .fact)
-a:not(.btn, .pill) {
+a:hover {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -343,6 +354,7 @@ hr {
   color: var(--grey-7);
   letter-spacing: 0.02em;
   white-space: nowrap;
+  text-decoration: none;
   background: var(--grey-1);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
@@ -407,6 +419,7 @@ a.btn:not([href]),
   font-size: var(--font-size-5);
   font-weight: 600;
   white-space: nowrap;
+  text-decoration: none;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   transition:
