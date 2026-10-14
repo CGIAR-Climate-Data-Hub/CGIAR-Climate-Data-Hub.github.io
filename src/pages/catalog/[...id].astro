@@ -100,11 +100,13 @@ const children = live
   .map((e) => hubLink(e));
 
 // Related links: a Hub record by id, or anything else by url
-const related = d.additional_links.map((l) =>
-  l.id
-    ? (hubSource(l) ?? { title: l.title ?? l.id })
-    : { href: l.url, title: l.title ?? l.url ?? "", external: true },
-);
+const related = d.additional_links.map((l) => {
+  if (!l.id)
+    return { href: l.url, title: l.title ?? l.url ?? "", external: true };
+  // The author's title wins over the record's, as it does for derived_from
+  const hub = hubSource(l);
+  return { ...hub, title: l.title ?? hub?.title ?? l.id };
+});
 const funding = d.funding.map((f) => ({
   href: f.url,
   title: f.name,
