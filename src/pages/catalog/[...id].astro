@@ -540,8 +540,10 @@ const jsonLd = datasetJsonLd(
               <div class="chips">
                 {d.commodities.map((id) => {
                   const c = commodity(id);
-                  return c?.uri ? (
-                    <a class="pill blue" href={c.uri} rel="noreferrer" title={`AGROVOC ${c.code}`}>
+                  // Crops link to FAO ICC; livestock have no uri, so AGROVOC
+                  const href = c?.uri ?? c?.agrovoc;
+                  return c && href ? (
+                    <a class="pill blue" href={href} rel="noreferrer" title={c.uri ? `FAO ICC ${c.code}` : "AGROVOC"}>
                       {c.label} ↗
                     </a>
                   ) : (
@@ -879,11 +881,21 @@ const jsonLd = datasetJsonLd(
       {d.additional_links.length > 0 && (
           <div class="card rail-box">
             <h2 class="label">Related links</h2>
-            {d.additional_links.map((link) => (
-              <a class="rail-link ext" href={link.url} rel="noreferrer">
-                {link.title ?? link.url} ↗
-              </a>
-            ))}
+            {d.additional_links.map((link) =>
+              link.id ? (
+                hubSource(link) ? (
+                  <a class="rail-link" href={hubSource(link)?.href}>
+                    {link.title ?? hubSource(link)?.title}
+                  </a>
+                ) : (
+                  <div class="rail-text">{link.title ?? link.id}</div>
+                )
+              ) : (
+                <a class="rail-link ext" href={link.url} rel="noreferrer">
+                  {link.title ?? link.url} ↗
+                </a>
+              ),
+            )}
           </div>
         )}
 

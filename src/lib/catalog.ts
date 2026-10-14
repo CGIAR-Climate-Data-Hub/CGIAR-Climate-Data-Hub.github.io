@@ -276,6 +276,9 @@ const terms = (d: CatalogRecord) =>
 
 export function summarize(entry: CollectionEntry<"catalog">) {
   const d = entry.data;
+  for (const id of d.commodities)
+    if (!commodity(id))
+      console.warn(`${d.id}: commodity "${id}" is not in the vocabulary`);
   const commodities = [...new Set(d.commodities.flatMap(commodityWithParents))];
   return {
     id: d.id,
@@ -675,7 +678,7 @@ export function datasetJsonLd(
             ...(k.scheme && { inDefinedTermSet: k.scheme }),
           },
     ),
-    // Commodities as AGROVOC-linked subjects, via the CDH controlled vocab
+    // Commodities as FAO ICC/WCA-coded subjects, via the CDH controlled vocab
     ...(d.commodities.length > 0 && {
       about: d.commodities.map((id) => {
         const c = commodity(id);
@@ -683,7 +686,7 @@ export function datasetJsonLd(
           "@type": "DefinedTerm",
           name: c?.label ?? humanize(id),
           ...(c?.code && { termCode: c.code }),
-          ...(c?.uri && { url: c.uri }),
+          ...((c?.uri ?? c?.agrovoc) && { url: c?.uri ?? c?.agrovoc }),
           ...(c && { inDefinedTermSet: VOCAB_URL }),
         };
       }),

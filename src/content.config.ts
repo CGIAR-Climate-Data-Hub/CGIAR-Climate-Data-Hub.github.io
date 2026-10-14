@@ -196,6 +196,8 @@ const asset = z.object({
         format: z.string(),
         locations: z.array(location),
         title: z.string().optional(),
+        // One index file per slice (a VRT per map), same tokens as the asset's
+        href_template: z.string().optional(),
       }),
     )
     .default([]),
@@ -394,12 +396,19 @@ const catalog = defineCollection({
       additional_assets: z.array(asset).default([]),
       additional_links: z
         .array(
-          z.object({
-            title: z.string().optional(),
-            rel: z.string().optional(),
-            url: z.string(),
-            description: z.string().optional(),
-          }),
+          z
+            .object({
+              title: z.string().optional(),
+              rel: z.string().optional(),
+              // A Hub record id or an outside url, never both
+              id: z.string().optional(),
+              url: z.string().optional(),
+              description: z.string().optional(),
+            })
+            .refine(
+              (l) => !!l.id !== !!l.url,
+              "a link has an id or a url, not both",
+            ),
         )
         .default([]),
     })
