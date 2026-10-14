@@ -115,7 +115,9 @@ a:where(
   text-decoration: none;
 }
 
-a:hover {
+/* :where keeps this at element specificity, so any control that sets its own
+   colour on a class (buttons, pills, menus, nav) keeps it on hover */
+a:where(:hover) {
   color: var(--link-hover);
   text-decoration: underline;
   text-underline-offset: 2px;
