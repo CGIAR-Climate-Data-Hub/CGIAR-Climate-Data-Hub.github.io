@@ -1,16 +1,9 @@
-// Expanded llms.txt companion. Notebook tutorials fall back to their link and
-// description because their rendered source embeds base64 figures.
+// Expanded llms.txt companion: every doc twin and dataset header in one file.
 
 import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
 import { currentReleases, datasetMd } from "@/lib/catalog";
-import { citationText } from "@/lib/citation";
-import {
-  allTutorials,
-  type CitablePage,
-  pageCitable,
-  publishedWikis,
-} from "@/lib/collections";
+import { allTutorials, pageMd, publishedWikis } from "@/lib/collections";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/site.config";
 
 export const GET: APIRoute = async ({ site }) => {
@@ -22,23 +15,11 @@ export const GET: APIRoute = async ({ site }) => {
     (a, b) => a.data.order - b.data.order,
   );
 
-  const datasets = catalog.map(
-    (c) => `### ${c.data.title}\n\n${datasetMd(c.data, site)}`,
-  );
-
-  const nestHeadings = (md: string) =>
-    md.replace(/^(#{1,6})(?= )/gm, (heading) =>
-      "#".repeat(Math.min(heading.length + 2, 6)),
+  // Twins start at h1; shift them under this file's h2 sections.
+  const nest = (md: string) =>
+    md.replace(/^(#{1,6})(?= )/gm, (h) =>
+      "#".repeat(Math.min(h.length + 2, 6)),
     );
-  const doc = (title: string, url: string, body = "", cite?: CitablePage) =>
-    [
-      `### ${title}`,
-      abs(url),
-      nestHeadings(body.trim()),
-      cite && `Cite: ${citationText(pageCitable(cite, abs(url)))}`,
-    ]
-      .filter(Boolean)
-      .join("\n\n");
 
   const md = `# ${SITE_NAME} — full documentation
 
@@ -46,15 +27,15 @@ export const GET: APIRoute = async ({ site }) => {
 
 ## Datasets
 
-${datasets.join("\n\n")}
+${catalog.map((c) => `### ${c.data.title}\n\n${datasetMd(c.data, site)}`).join("\n\n")}
 
 ## Documentation
 
-${wikis.map((w) => doc(w.data.title, `/wikis/${w.id}/`, w.body, w)).join("\n\n")}
+${wikis.map((w) => nest(pageMd(w, abs(`/wikis/${w.id}/`)))).join("\n\n")}
 
 ## Tutorials
 
-${tutorials.map((t) => doc(t.data.title, `/tutorials/${t.id}/`, t.body ?? t.data.description, t)).join("\n\n")}
+${tutorials.map((t) => nest(pageMd(t, abs(`/tutorials/${t.id}/`)))).join("\n\n")}
 
 ## FAQ
 

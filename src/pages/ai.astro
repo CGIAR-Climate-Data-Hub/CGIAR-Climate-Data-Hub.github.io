@@ -25,7 +25,7 @@ const ENDPOINTS = [
     path: "/llms-full.txt",
     href: "/llms-full.txt",
     title: "llms-full.txt",
-    desc: "The whole Hub in one file — docs, tutorials, FAQ, and per-dataset metadata inlined, for agents that fetch once and don't crawl.",
+    desc: "The whole Hub in one file — docs, tutorials, FAQ, and a summary of every dataset with links to its full record, for agents that fetch once and don't crawl.",
   },
   {
     path: "/catalog.json",
@@ -37,13 +37,13 @@ const ENDPOINTS = [
     path: "/catalog/<id>.json",
     href: undefined,
     title: "Record metadata",
-    desc: "Each record's full CDH metadata as JSON at a stable URL beside its page — variables, dimensions, assets, licensing.",
+    desc: "Each record's full CDH metadata as JSON at a stable URL beside its page — variables, dimensions, assets, licensing. The same record the Markdown twin embeds, for clients that want plain JSON.",
   },
   {
     path: "<page>/index.md",
     href: undefined,
     title: "Markdown twins",
-    desc: "Markdown-sourced docs and tutorials — plus every dataset page — served as plain markdown. Append index.md to the page URL.",
+    desc: "Docs, tutorials, and every dataset page as plain markdown: links and citation first, then the article or the full record as YAML. Append index.md to the page URL — one fetch, nothing else needed.",
   },
   {
     path: "/.well-known/api-catalog",
