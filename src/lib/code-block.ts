@@ -18,13 +18,13 @@ const icon = (name: string, children: Element[]) =>
       ariaHidden: "true",
       className: [name],
       fill: "none",
-      height: 13,
+      height: "13",
       stroke: "currentColor",
       strokeLinecap: "round",
       strokeLinejoin: "round",
-      strokeWidth: 2,
+      strokeWidth: "2",
       viewBox: "0 0 24 24",
-      width: 13,
+      width: "13",
     },
     children,
   );
@@ -32,7 +32,7 @@ const icon = (name: string, children: Element[]) =>
 // Both icons ship in the button; .copied (toggled on click) swaps them in CSS.
 const copyIcon = () =>
   icon("ic-copy", [
-    el("rect", { height: 12, rx: 2, width: 12, x: 9, y: 9 }),
+    el("rect", { height: "12", rx: "2", width: "12", x: "9", y: "9" }),
     el("path", {
       d: "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1",
     }),
@@ -60,7 +60,7 @@ export function codeHeader(label?: string): ShikiTransformer {
           head,
           ...(root.children as ElementContent[]),
         ]),
-      ];
+      ] as typeof root.children;
     },
   };
 }
