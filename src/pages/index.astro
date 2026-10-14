@@ -5,7 +5,7 @@ import DataGlyph from "@/components/DataGlyph.astro";
 import SectionHeader from "@/components/SectionHeader.astro";
 import Layout from "@/layouts/Layout.astro";
 import { currentReleases, summarize } from "@/lib/catalog";
-import { allTutorials } from "@/lib/collections";
+import { allTutorials, publishedWikis } from "@/lib/collections";
 import { GITHUB_URL, SITE_NAME } from "@/site.config";
 
 // The two most recently updated releases represent the catalog here
@@ -16,7 +16,7 @@ const datasets = currentReleases(await getCollection("catalog"))
 const tutorials = (await allTutorials()).sort(
   (a, b) => b.data.updated.valueOf() - a.data.updated.valueOf(),
 );
-const wikis = (await getCollection("wikis"))
+const wikis = (await publishedWikis())
   .filter((w) => w.data.order !== undefined)
   .sort(
     (a, b) =>

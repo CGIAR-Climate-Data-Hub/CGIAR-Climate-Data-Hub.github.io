@@ -5,7 +5,7 @@ import { getCollection } from "astro:content";
 import type { APIRoute } from "astro";
 import { type CatalogRecord, currentReleases, datasetMd } from "@/lib/catalog";
 import { citationText } from "@/lib/citation";
-import { allTutorials, pageCitable } from "@/lib/collections";
+import { allTutorials, pageCitable, publishedWikis } from "@/lib/collections";
 import { markdownResponse } from "@/lib/markdown";
 import { SITE_URL } from "@/site.config";
 
@@ -13,7 +13,7 @@ type Props = { md: string } | { dataset: CatalogRecord };
 
 export async function getStaticPaths() {
   const docs = [
-    ...(await getCollection("wikis")).map((e) => ({ e, base: "wikis" })),
+    ...(await publishedWikis()).map((e) => ({ e, base: "wikis" })),
     ...(await allTutorials()).map((e) => ({ e, base: "tutorials" })),
   ]
     .filter(({ e }) => e.filePath?.endsWith(".md") && e.body)
