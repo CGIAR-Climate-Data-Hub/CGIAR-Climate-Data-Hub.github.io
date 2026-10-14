@@ -1,0 +1,40 @@
+---
+// Sidebar box: an eyebrow title over a list of links, or plain entries
+// where an item has no href. Hub records link inside; `external` marks
+// the rest.
+interface Props {
+  title: string;
+  items: {
+    href?: string;
+    title: string;
+    meta?: string;
+    external?: boolean;
+  }[];
+}
+
+const { title, items } = Astro.props;
+---
+
+{items.length > 0 && (
+  <div class="card rail-box">
+    <h2 class="label">{title}</h2>
+    {items.map((it) =>
+      it.href ? (
+        <a href={it.href} class:list={["rail-link", { ext: it.external }]} rel={it.external ? "noreferrer" : undefined}>
+          {it.title}
+          {it.external && " ↗"}
+          {it.meta && <span class="caption">{it.meta}</span>}
+        </a>
+      ) : (
+        <div class="rail-text">{it.title}</div>
+      ),
+    )}
+  </div>
+)}
+
+<style>
+/* An entry's meta line sits under its title */
+.rail-link .caption {
+  display: block;
+}
+</style>

@@ -323,10 +323,6 @@ hr {
   text-decoration: none;
 }
 
-.rail-link b {
-  display: block;
-}
-
 .rail-link.ext {
   color: var(--cdh-blue-700);
 }
