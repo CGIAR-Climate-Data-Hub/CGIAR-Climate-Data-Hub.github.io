@@ -44,9 +44,8 @@ export const opensInline = (mediaType = "") =>
 export const anchor = (kind: string, name: string) =>
   `${kind}-${name.replace(/[^\w-]+/g, "-")}`;
 
-// - tplFields: one select per template token, options from the dimension's
-//   values or extent (or variable names); undefined unless every one resolves
-// - tplFile/tplUrl: the picker's prerendered default (first value per field)
+// - picker: what TemplatePicker needs for the asset's href_template;
+//   undefined unless every token resolves. Sliced indexes carry their own
 // - primary: the spotlighted access route (HTTPS when available); others
 //   fills the disclosure — everything on templated assets, where the picker
 //   stands in for the access panel and no root URL shows above
@@ -67,48 +66,64 @@ export async function shapeAsset(
   const primary =
     asset.locations.find((l) => l.url === http) ?? asset.locations[0];
 
-  const resolved = resolveTemplate(d, asset);
-  const tplFields = resolved?.fields;
-  const tplFile = resolved?.file;
-  // The picker only needs the per-structure values when there are several
-  const tplCombos =
-    resolved && resolved.combos.length > 1
-      ? JSON.stringify(resolved.combos)
-      : undefined;
+  // What TemplatePicker renders for a template: the asset's own, or an
+  // index's. `root` is the directory the picked file name is appended to
+  const pickerOf = (
+    source: Pick<Asset, "href_template" | "locations">,
+    name: string,
+    root = httpUrl(source.locations),
+    resolved = resolveTemplate(d, asset, source.href_template),
+  ) => {
+    const inventory = resolved && templateInventory(d, asset, source, resolved);
+    if (!resolved || !inventory || !root) return undefined;
+    return {
+      ...resolved,
+      // The picker only needs the per-structure values when there are several
+      combos:
+        resolved.combos.length > 1
+          ? JSON.stringify(resolved.combos)
+          : undefined,
+      template: source.href_template,
+      root,
+      url: root + resolved.file,
+      count: inventory.count,
+      csv: inventoryCsv(name),
+    };
+  };
+  const picker = pickerOf(asset, inventoryName(asset));
 
   const indexes = (
     await Promise.all(
       asset.file_index.map(async (ix, i) => {
         const root = httpUrl(ix.locations) ?? ix.locations[0]?.url;
         if (!root) return undefined;
-        // One index per slice: the row shows the first rendered file and
-        // links the full list. Unresolvable templates drop the row, as assets do
-        const tpl = resolveTemplate(d, asset, ix.href_template);
-        if (ix.href_template && !tpl) {
+        // One index per slice: the row carries a picker over the rendered
+        // files. Unresolvable templates drop the row, as assets do
+        const picker = ix.href_template
+          ? pickerOf(ix, inventoryName(asset, i), root)
+          : undefined;
+        if (ix.href_template && !picker) {
           console.warn(
             `${d.id}: ${asset.name} index template does not resolve`,
           );
           return undefined;
         }
-        const sliced = tpl && templateInventory(d, asset, ix, tpl);
-        const url = tpl ? `${root}${tpl.file}` : root;
+        const url = picker ? picker.url : root;
         const label = INDEX_LABELS[ix.format] ?? ix.format;
         const source = asset.locations[0]?.url ?? "<source prefix>/";
         const path = URL.parse(url)?.pathname ?? url;
         // An Icechunk repo, or any index given as a prefix, is not one file
         const isDir = ix.format === "icechunk" || path.endsWith("/");
-        // "cogs.vrt", or "suitability/" for a prefix
-        const name = `${path.replace(/\/$/, "").split("/").pop()}${path.endsWith("/") ? "/" : ""}`;
+        // "cogs.vrt", "suitability/" for a prefix, or the template itself
+        const name =
+          picker?.template
+          ?? `${path.replace(/\/$/, "").split("/").pop()}${path.endsWith("/") ? "/" : ""}`;
         const snippet = indexExample(ix.format, url, source);
         const preview =
-          ix.format === "cdh-inventory" && !sliced
+          ix.format === "cdh-inventory" && !picker
             ? await inventoryPreview(url)
             : undefined;
-        const files = sliced && {
-          count: sliced.count,
-          csv: inventoryCsv(inventoryName(asset, i)),
-        };
-        return { label, url, name, isDir, snippet, preview, files };
+        return { label, url, name, isDir, snippet, preview, picker };
       }),
     )
   ).filter((ix): ix is NonNullable<typeof ix> => ix !== undefined);
@@ -139,14 +154,9 @@ export async function shapeAsset(
     index,
     indexes,
     // The one index row that starts open
-    openIndex: indexes.find((ix) => ix.snippet),
+    openIndex: indexes.find((ix) => ix.snippet || ix.picker),
     others,
-    tplFields,
-    tplFile,
-    tplCombos,
-    tplUrl: tplFile && http ? http + tplFile : undefined,
-    // How many files the template names; [asset]-files.csv lists them
-    fileCount: templateInventory(d, asset, asset, resolved)?.count,
+    picker,
     download:
       (!restricted || !d.data.includes(asset))
       && !asset.href_template

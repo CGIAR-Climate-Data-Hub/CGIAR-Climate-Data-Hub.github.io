@@ -3,6 +3,7 @@
 // picker, file indexes, and worked examples. Data shaping lives in lib/assets.
 import CopyButton from "@/components/CopyButton.astro";
 import SnippetTabs from "@/components/SnippetTabs.astro";
+import TemplatePicker from "@/components/TemplatePicker.astro";
 import { anchor, opensInline, shapeAsset } from "@/lib/assets";
 import {
   type Asset,
@@ -11,7 +12,6 @@ import {
   formatLabel,
   heldStructures,
   humanize,
-  inventoryCsv,
   recordSlug,
 } from "@/lib/catalog";
 import { fetchScript, scriptLanguage } from "@/lib/snippets";
@@ -32,11 +32,7 @@ const {
   indexes,
   openIndex,
   others,
-  tplFields,
-  tplFile,
-  tplCombos,
-  tplUrl,
-  fileCount,
+  picker,
   download,
 } = await shapeAsset(d, asset, restricted);
 // The layouts this file holds; named only when there are several to tell
@@ -103,83 +99,8 @@ const script = lang && primary && (await fetchScript(primary.url));
       <CopyButton copy={asset.checksum} label="Copy checksum" />
     </p>
   )}
-  {tplUrl && (
-      <div
-        class="tpl-picker"
-        data-combos={tplCombos}
-        data-file={tplFile}
-        data-root={primary.url}
-        data-template={asset.href_template}
-      >
-        {fileCount && (
-          <p class="card-head">
-            <span class="tech-title">
-              List of files{" "}
-              <span class="tpl-count">
-                {fileCount.toLocaleString("en")} files
-              </span>
-            </span>
-            <a
-              class="btn btn-ghost dl"
-              download={inventoryCsv(asset.name)}
-              href={`/catalog/${recordSlug(d)}/${inventoryCsv(asset.name)}`}
-            >
-              Download CSV
-            </a>
-          </p>
-        )}
-        <p class="card-head file-head">
-          <span class="tech-title">Individual file</span>
-        </p>
-        {/* The selectors, with the actions on the file they pick */}
-        <div class="tpl-row">
-        <div class="tpl-fields">
-          {(tplFields ?? []).map((f) =>
-            // One value is no choice: keep it for the URL, show no control
-            f.values.length === 1 ? (
-              <input data-tpl-dim={f.name} type="hidden" value={f.values[0]} />
-            ) : (
-            // biome-ignore lint/a11y/noLabelWithoutControl: the control is inside, behind a ternary
-            <label class="tpl-field">
-              <span class="caption">{humanize(f.name)}</span>
-              {f.date ? (
-                <input
-                  data-tpl-dim={f.name}
-                  max={f.date.max}
-                  min={f.date.min}
-                  required
-                  step={f.date.step}
-                  type="date"
-                  value={f.date.min}
-                />
-              ) : (
-                <select data-tpl-dim={f.name}>
-                  {f.values.map((v) => (
-                    <option value={v}>{f.labels?.[v] ?? v}</option>
-                  ))}
-                </select>
-              )}
-            </label>
-            ),
-          )}
-        </div>
-          <CopyButton
-            copy={tplUrl}
-            label="Copy selected file URL"
-          />
-          {!restricted && (
-            <a
-              class="btn btn-ghost dl"
-              data-tpl-download
-              download
-              href={tplUrl}
-            >
-              Download
-            </a>
-          )}
-        </div>
-        <p class="mono url selected-url" data-tpl-url>{tplUrl}</p>
-      </div>
+  {picker && (
+      <TemplatePicker picker={picker} restricted={restricted} slug={recordSlug(d)} />
     )}
   {index && (
     <div class="access-panel">
@@ -193,20 +114,22 @@ const script = lang && primary && (await fetchScript(primary.url));
           const row = (
             <>
               <span class="index-format">{ix.label}</span>
-              <a class="mono caption index-file" href={ix.url} rel="noreferrer" title={ix.url}>
-                {ix.name}
-              </a>
-              <CopyButton copy={ix.url} label={`Copy ${ix.label} URL`} />
-              {ix.files ? (
-                <a
-                  class="btn btn-ghost dl"
-                  download={ix.files.csv}
-                  href={`/catalog/${recordSlug(d)}/${ix.files.csv}`}
-                  title={`${ix.files.count.toLocaleString("en")} index files`}
-                >
-                  List of {ix.files.count.toLocaleString("en")} file{ix.files.count === 1 ? "" : "s"} (CSV)
+              {/* A sliced index names a pattern, not a file: its picker builds the URL */}
+              {ix.picker ? (
+                <span class="mono caption index-file" title={ix.name}>{ix.name}</span>
+              ) : (
+                <a class="mono caption index-file" href={ix.url} rel="noreferrer" title={ix.url}>
+                  {ix.name}
                 </a>
-              ) : ix.isDir || restricted ? (
+              )}
+              {ix.picker ? (
+                <span class="tpl-count">
+                  {ix.picker.count.toLocaleString("en")} files
+                </span>
+              ) : (
+                <CopyButton copy={ix.url} label={`Copy ${ix.label} URL`} />
+              )}
+              {ix.picker || ix.isDir || restricted ? (
                 <span />
               ) : (
                 <a class="btn btn-ghost dl" download href={ix.url}>
@@ -215,7 +138,7 @@ const script = lang && primary && (await fetchScript(primary.url));
               )}
             </>
           );
-          return ix.snippet ? (
+          return ix.snippet || ix.picker ? (
             <details
               class="index-row"
               name={`index-${asset.name}`}
@@ -254,7 +177,10 @@ const script = lang && primary && (await fetchScript(primary.url));
                     </p>
                   </div>
                 )}
-                <SnippetTabs code={ix.snippet} />
+                {ix.picker && (
+                  <TemplatePicker picker={ix.picker} restricted={restricted} slug={recordSlug(d)} />
+                )}
+                {ix.snippet && <SnippetTabs code={ix.snippet} />}
               </div>
             </details>
           ) : (
@@ -320,71 +246,6 @@ const script = lang && primary && (await fetchScript(primary.url));
     </div>
   )}
 </div>
-
-<script>
-import { fillTemplate } from "@/lib/template";
-
-// Template pickers: the selects and date fields fill the asset's
-// href_template; the built URL feeds the row's copy button and download link
-for (const picker of document.querySelectorAll<HTMLElement>(".tpl-picker")) {
-  const fields = [
-    ...picker.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
-      "[data-tpl-dim]",
-    ),
-  ];
-  const copyBtn = picker.querySelector<HTMLButtonElement>("button[data-copy]");
-  const dl = picker.querySelector<HTMLAnchorElement>("[data-tpl-download]");
-  const urlEl = picker.querySelector<HTMLElement>("[data-tpl-url]");
-  // Structures with different values for the same token: a change moves
-  // the other fields onto a structure holding the new value, if they must
-  const combos: Record<string, string[]>[] = JSON.parse(
-    picker.dataset.combos ?? "[]",
-  );
-  const dim = (f: HTMLElement) => f.dataset.tplDim ?? "";
-  const snap = (changed: HTMLInputElement | HTMLSelectElement) => {
-    const holds = combos.filter((c) => c[dim(changed)].includes(changed.value));
-    const fit =
-      holds.find((c) => fields.every((f) => c[dim(f)].includes(f.value)))
-      ?? holds[0];
-    for (const f of fields)
-      if (!fit[dim(f)].includes(f.value)) f.value = fit[dim(f)][0];
-  };
-  const update = () => {
-    // A cleared or out-of-range date names no file: park the actions
-    const valid = fields.every((f) => f.value && f.validity.valid);
-    if (copyBtn) copyBtn.disabled = !valid;
-    // An anchor without href is no link, so the download stops too
-    if (dl && !valid) dl.removeAttribute("href");
-    if (!valid) return;
-    const file = fillTemplate(
-      picker.dataset.template ?? "",
-      Object.fromEntries(fields.map((f) => [f.dataset.tplDim, f.value])),
-    );
-    const url = (picker.dataset.root ?? "") + file;
-    if (urlEl) urlEl.textContent = url;
-    if (copyBtn) copyBtn.dataset.copy = url;
-    if (dl) dl.href = url;
-    // The usage example bakes in the previous selection's filename — swap it
-    // wherever it appears in the card's examples so they stay live
-    const prev = picker.dataset.file;
-    const examples = picker.closest(".asset")?.querySelector(".asset-examples");
-    if (examples && prev && prev !== file) {
-      const walker = document.createTreeWalker(examples, NodeFilter.SHOW_TEXT);
-      while (walker.nextNode()) {
-        const node = walker.currentNode;
-        if (node.nodeValue?.includes(prev))
-          node.nodeValue = node.nodeValue.replaceAll(prev, file);
-      }
-    }
-    picker.dataset.file = file;
-  };
-  picker.addEventListener("change", (e) => {
-    if (combos.length) snap(e.target as HTMLSelectElement);
-    update();
-  });
-  update();
-}
-</script>
 
 <style>
 .asset:target {
@@ -487,6 +348,12 @@ summary.index-head:hover {
   font-weight: 500;
 }
 
+/* The sliced index's file count, quieter than the pattern beside it */
+.tpl-count {
+  font-weight: 400;
+  color: var(--text-mute);
+}
+
 .index-file {
   overflow-wrap: anywhere;
 }
@@ -510,40 +377,8 @@ summary.index-head:hover {
   color: var(--text-mute);
 }
 
-.tpl-fields {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3) var(--space-4);
-  margin-top: var(--space-3);
-}
-
-/* Label above its control */
-.tpl-field {
-  display: inline-flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.tpl-field select,
-.tpl-field input {
-  padding: 2px 6px;
-  font-size: var(--font-size-3);
-  color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-}
-
-/* Quieter than the asset name — it labels a control group, not content */
-/* Panel headings: the card's sub-sections, one step under the asset name */
-.tpl-count {
-  font-weight: 400;
-  color: var(--text-mute);
-}
-
-/* Interactive units — a tinted inset panel groups the file picker (or the
-   spotlighted access URL) against the card's white surface */
-.tpl-picker,
+/* Interactive units — a tinted inset panel groups the spotlighted access
+   URL (and, in TemplatePicker, the file picker) against the card's surface */
 .access-panel {
   padding: var(--space-4);
   margin-top: var(--space-3);
@@ -552,7 +387,6 @@ summary.index-head:hover {
 }
 
 /* The panel's padding is its top edge; drop the card's paragraph margin */
-.tpl-picker > :first-child,
 .access-panel > :first-child {
   margin-top: 0;
 }
@@ -560,31 +394,6 @@ summary.index-head:hover {
 /* Icon and text buttons share a row: centre them, not their baselines */
 .access-panel .card-head {
   align-items: center;
-}
-
-.selected-url {
-  margin-top: var(--space-2);
-}
-
-/* Selectors left, the picked file's copy and Download right */
-.tpl-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  align-items: flex-end;
-  margin-top: var(--space-3);
-}
-
-.tpl-row .tpl-fields {
-  margin-top: 0;
-  margin-right: auto;
-}
-
-/* The individual-file section, divided from the file list above */
-.file-head {
-  padding-top: var(--space-4);
-  margin-top: var(--space-4);
-  border-top: 1px solid var(--border);
 }
 
 .alt-access summary {
