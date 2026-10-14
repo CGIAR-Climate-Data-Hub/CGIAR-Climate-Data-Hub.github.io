@@ -25,7 +25,7 @@ const ENDPOINTS = [
     path: "/llms-full.txt",
     href: "/llms-full.txt",
     title: "llms-full.txt",
-    desc: "The whole Hub in one file — docs, tutorials, FAQ, and per-dataset metadata inlined, for agents that fetch once and don't crawl.",
+    desc: "The whole Hub in one file — docs, tutorials, FAQ, and a summary of every dataset with links to its full record, for agents that fetch once and don't crawl.",
   },
   {
     path: "/catalog.json",
@@ -43,7 +43,7 @@ const ENDPOINTS = [
     path: "<page>/index.md",
     href: undefined,
     title: "Markdown twins",
-    desc: "Markdown-sourced docs and tutorials — plus every dataset page — served as plain markdown. Append index.md to the page URL.",
+    desc: "Markdown-sourced docs and tutorials — plus every dataset page, with its full record embedded as YAML — served as plain markdown. Append index.md to the page URL.",
   },
   {
     path: "/.well-known/api-catalog",

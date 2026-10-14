@@ -397,182 +397,43 @@ export function stepLabel(step: string) {
   return `every ${parts.join(" ")}`;
 }
 
-// Shared dataset Markdown for llms-full.txt and record twins.
+// Dataset Markdown for llms-full.txt and record twins: the derived links and
+// labels the raw record can't carry. The twin appends the record itself.
 export function datasetMd(
   d: CatalogRecord,
   site: URL | undefined,
-  sectionDepth = 4,
+  yaml?: string,
 ) {
-  const grid = gridSpacings(d);
   const abs = (path: string) => new URL(path, site).href;
-  const citation = citable(d);
-  const values = (v: string[]) =>
-    v.length > 8 ? `${v[0]} … ${v.at(-1)} (${v.length} values)` : v.join(", ");
-  const dash = (...parts: (string | undefined)[]) =>
-    parts.filter(Boolean).join(" — ");
-  const temporal =
-    d.temporal
-    && ("date" in d.temporal
-      ? d.temporal.date
-      : `${d.temporal.start_date} to ${d.temporal.end_date ?? "ongoing"}${
-          d.temporal.update_frequency
-            ? `, ${updateLabel(d.temporal.update_frequency)}`
-            : ""
-        }`);
-
+  const slug = recordSlug(d);
   const stac = stacCollectionUrl(d.id);
+  const citation = citable(d);
+  const temporal = temporalText(d.temporal);
   const facts = [
-    `URL: ${abs(`/catalog/${recordSlug(d)}/`)}`,
-    `Metadata (JSON): ${abs(`/catalog/${recordSlug(d)}.json`)}`,
+    `URL: ${abs(`/catalog/${slug}/`)}`,
+    `Metadata (JSON): ${abs(`/catalog/${slug}.json`)}`,
     d.data.length && stac && `STAC collection: ${stac}`,
-    `Resource type: ${d.resource_type}`,
-    `License: ${d.license}`,
-    d.attribution && `Attribution: ${d.attribution}`,
-    d.parent && `Parent record: ${abs(`/catalog/${d.parent}/`)}`,
-    d.access && dash(`Access: ${d.access}`, d.access_note),
-    d.doi && `DOI: ${d.doi}`,
-    temporal && `Temporal coverage: ${temporal}`,
-    d.spatial?.geography.length
-      && `Geography: ${d.spatial.geography.join(", ")}`,
-    grid.length > 0 && `Grid spacing: ${grid.join(" · ")}`,
-    d.commodities.length && `Commodities: ${d.commodities.join(", ")}`,
-    d.keywords.length && `Keywords: ${terms(d).join(", ")}`,
-    d.data.length
-      && `Data: ${d.data
-        .map((a) => a.locations[0]?.url)
-        .filter(Boolean)
-        .join(" · ")}`,
-    ...d.data.flatMap((a) => [
-      a.checksum && `Checksum (${a.name}): ${a.checksum}`,
-      ...a.file_index.map(
-        (ix) => `File index (${a.name}, ${ix.format}): ${ix.locations[0]?.url}`,
-      ),
-      a.href_template
+    ...d.data.map(
+      (a) =>
+        a.href_template
         && resolveTemplate(d, a)
-        && `File list (${a.name}, CSV): ${abs(`/catalog/${recordSlug(d)}/${a.name}-files.csv`)}`,
-    ]),
-    ...d.additional_assets.map((a) =>
-      dash(
-        `Additional asset (${a.name}${a.roles.length ? `; roles: ${a.roles.join(", ")}` : ""}): ${a.locations[0]?.url}`,
-        a.description,
-      ),
+        && `File list (${a.name}, CSV): ${abs(`/catalog/${slug}/${a.name}-files.csv`)}`,
     ),
-    ...d.additional_links.map((l) =>
-      dash(`Link: ${l.title ?? l.url}`, l.title && l.url, l.description),
-    ),
-  ].filter(Boolean);
+    temporal
+      && `Temporal coverage: ${[temporal.main, temporal.sub].filter(Boolean).join(", ")}`,
+  ]
+    .filter(Boolean)
+    .map((f) => `- ${f}`);
 
-  // Keep multiline record fields inside a single Markdown bullet.
-  const bullets = (items: unknown[]) =>
-    items
-      .filter(Boolean)
-      .map((i) => `- ${String(i).replace(/\s+/g, " ").trim()}`)
-      .join("\n");
-  const section = (title: string, items: unknown[]) => {
-    const content = bullets(items);
-    return content
-      ? `${"#".repeat(sectionDepth)} ${title}\n\n${content}`
-      : undefined;
-  };
-
-  // Names repeat across structures, so tag them with theirs when there are several
-  const at = (s: { name: string }, name: string) =>
-    d.structures.length > 1 ? `${s.name}/${name}` : name;
-  const codes = (cats: { value: string; label: string }[]) =>
-    cats.map((c) => `${c.value} = ${c.label}`);
-
-  const c = d.climate;
-  const blocks = [
-    bullets(facts),
+  return [
+    facts.join("\n"),
     d.description.trim(),
-    section(
-      "Variables",
-      d.structures.flatMap((s) =>
-        s.variables.map((v) =>
-          dash(
-            `${at(s, v.name)}${v.unit ? ` (${v.unit})` : ""}`,
-            v.description,
-            v.note,
-          ),
-        ),
-      ),
-    ),
-    section(
-      "Dimensions",
-      d.structures.flatMap((s) =>
-        s.dimensions.map((dim) =>
-          dash(
-            [
-              at(s, dim.name),
-              dim.extent
-                ? dim.extent.join(" to ")
-                : values(
-                    dim.categories.length > 0
-                      ? codes(dim.categories)
-                      : dim.values,
-                  ),
-            ]
-              .filter(Boolean)
-              .join(": "),
-            dim.data_type && `type ${dim.data_type}`,
-            dim.step ? `step ${dim.step}` : undefined,
-            dim.unit && `unit ${dim.unit}`,
-            dim.reference_system && `coded against ${dim.reference_system}`,
-            dim.description,
-          ),
-        ),
-      ),
-    ),
-    section(
-      "Categories",
-      d.structures.flatMap((s) =>
-        s.variables
-          .filter((v) => v.categories.length > 0)
-          .map((v) => `${at(s, v.name)}: ${codes(v.categories).join("; ")}`),
-      ),
-    ),
-    section(
-      "Geometry",
-      d.structures.flatMap((s) =>
-        s.geometry_column
-          ? [`Geometry column: ${at(s, s.geometry_column)}`]
-          : [],
-      ),
-    ),
-    section(
-      "Foreign keys",
-      d.structures.flatMap((s) =>
-        s.foreign_keys.map(
-          (fk) =>
-            `${fk.fields.map((f) => at(s, f)).join(", ")} → ${fk.reference.resource}${fk.reference.asset ? ` (${fk.reference.asset})` : ""}: ${fk.reference.fields.join(", ")}`,
-        ),
-      ),
-    ),
-    d.cdh
-      && section("Intended use", [
-        d.cdh.domain.length && `Domains: ${d.cdh.domain.join(", ")}`,
-        ...d.cdh.usage.intended_uses.map((u) => `Intended: ${u}`),
-        ...d.cdh.usage.not_recommended_for.map((n) =>
-          dash(
-            `Not recommended: ${n.use}`,
-            n.reason,
-            n.use_instead && `use instead: ${n.use_instead}`,
-          ),
-        ),
-      ]),
-    c
-      && section("Climate modeling", [
-        c.mip_era && `MIP era: ${c.mip_era}`,
-        c.models.length && `Models: ${c.models.join(", ")}`,
-        c.scenarios.length && `Scenarios: ${c.scenarios.join(", ")}`,
-        c.baseline
-          && `Baseline: ${c.baseline.start_date}${c.baseline.end_date ? ` to ${c.baseline.end_date}` : ""}`,
-      ]),
+    yaml && `\`\`\`yaml\n${yaml.trim()}\n\`\`\``,
     citation
       && `Cite: ${citationText(citation, abs(`/catalog/${versionedSlug(d)}/`))}`,
-  ].filter(Boolean);
-
-  return blocks.join("\n\n");
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 }
 
 // Record dates are ISO 8601 at any precision ("2020", "1981-01", full

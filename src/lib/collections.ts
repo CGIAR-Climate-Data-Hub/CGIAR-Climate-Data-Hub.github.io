@@ -1,6 +1,6 @@
 // Shared ordering/grouping for the docs collections.
 import { type CollectionEntry, getCollection } from "astro:content";
-import type { Citable } from "@/lib/citation";
+import { type Citable, citationText } from "@/lib/citation";
 import { SITE_PUBLISHER_NAME } from "@/site.config";
 
 // Markdown tutorials and notebook tutorials share a schema and render the
@@ -31,6 +31,20 @@ export function pageCitable(e: CitablePage, url: string): Citable {
     title: e.data.title,
     url,
   };
+}
+
+// Markdown twin of a doc page, shared by index.md routes and llms-full.txt.
+// Notebooks have no Markdown body (base64 figures), so they get their description.
+export function pageMd(
+  e: CitablePage & { body?: string; data: { description: string } },
+  url: string,
+) {
+  return [
+    `# ${e.data.title}`,
+    url,
+    (e.body ?? e.data.description).trim(),
+    `Cite: ${citationText(pageCitable(e, url))}`,
+  ].join("\n\n");
 }
 
 export const WIKI_GROUPS = [
