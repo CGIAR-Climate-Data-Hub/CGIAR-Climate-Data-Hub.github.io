@@ -226,6 +226,18 @@ hr {
   border-radius: var(--radius-lg);
 }
 
+/* A card that is itself a link reads as content and lights its border */
+a.card {
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 0.12s;
+}
+
+a.card:hover {
+  color: var(--text);
+  border-color: var(--link);
+}
+
 /* Card or panel head: the first child is the title, the rest sit at the right */
 .card-head {
   display: flex;
