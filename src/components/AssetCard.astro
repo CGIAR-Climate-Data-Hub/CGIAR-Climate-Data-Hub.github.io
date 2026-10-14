@@ -204,7 +204,7 @@ const script = lang && primary && (await fetchScript(primary.url));
                   href={`/catalog/${recordSlug(d)}/${ix.files.csv}`}
                   title={`${ix.files.count.toLocaleString("en")} index files`}
                 >
-                  List of {ix.files.count.toLocaleString("en")} files (CSV)
+                  List of {ix.files.count.toLocaleString("en")} file{ix.files.count === 1 ? "" : "s"} (CSV)
                 </a>
               ) : ix.isDir || restricted ? (
                 <span />
