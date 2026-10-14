@@ -119,6 +119,7 @@ export async function shapeAsset(
             : undefined;
         return {
           format: ix.format,
+          title: ix.title,
           label,
           url,
           name,

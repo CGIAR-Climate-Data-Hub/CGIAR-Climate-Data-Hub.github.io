@@ -144,7 +144,7 @@ const script = lang && primary && (await fetchScript(primary.url));
               )}
             </>
           );
-          return ix.snippet || ix.picker ? (
+          return ix.snippet || ix.picker || ix.title ? (
             <details
               class="index-row"
               name={`index-${asset.name}`}
@@ -152,6 +152,7 @@ const script = lang && primary && (await fetchScript(primary.url));
             >
               <summary class="index-head">{row}</summary>
               <div class="index-body">
+                {ix.title && <p class="caption">{ix.title}</p>}
                 {ix.preview && (
                   <div class="inventory-preview">
                     <table class="data-table">
