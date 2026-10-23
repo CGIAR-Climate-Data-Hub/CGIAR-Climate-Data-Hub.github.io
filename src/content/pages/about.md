@@ -29,11 +29,10 @@ principles:
 
 The Hub is a product of CGIAR Climate Action, maintained by a small engineering
 and data-stewardship team at the
-[Alliance of Bioversity
-International and CIAT](https://alliancebioversityciat.org), working across
-CGIAR Centers. Datasets are reviewed against the Hub's metadata and data
-standards before publication. For more information about this process and the
-governance of the Hub, see [our governance process](/wikis/governance/).
+[Alliance of Bioversity International and CIAT](https://alliancebioversityciat.org),
+working across CGIAR Centers. Datasets are reviewed against the Hub's metadata
+and data standards before publication. For more information about this process
+and the governance of the Hub, see [our governance process](/wikis/governance/).
 
 How the pieces fit together — the metadata layer, cloud-native distribution, the
 build pipeline and the machine interfaces — is documented in the Hub's

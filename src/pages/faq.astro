@@ -40,18 +40,27 @@ const jsonLd = {
 
   <div class="container narrow faqs">
     {faqs.map(({ entry, Content }) => (
-        <details>
-          <summary>
-            <h2>{entry.data.question}</h2>
-            <svg aria-hidden="true" class="chev" fill="none" height="14" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" width="14">
-              <path d="M6 9l6 6 6-6" />
-            </svg>
-          </summary>
-          <div class="answer">
-            <Content />
-          </div>
-        </details>
-      ))}
+      <details>
+        <summary>
+          <h2>{entry.data.question}</h2>
+          <svg
+            aria-hidden="true"
+            class="chev"
+            fill="none"
+            height="14"
+            stroke="currentColor"
+            stroke-width="2.2"
+            viewBox="0 0 24 24"
+            width="14"
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </summary>
+        <div class="answer">
+          <Content />
+        </div>
+      </details>
+    ))}
 
     <p class="more">
       Something missing?{" "}

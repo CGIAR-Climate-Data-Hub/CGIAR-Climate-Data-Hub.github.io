@@ -20,22 +20,22 @@ for (const h of headings) {
 ---
 
 {headings.length > 1 && (
-    <nav aria-label="Table of contents" data-toc>
-      <div class="label">On this page</div>
-      {groups.map((g) => (
-        <div class="sec">
-          <a class={`depth-${g.heading.depth}`} href={`#${g.heading.slug}`}>
-            {g.heading.text}
+  <nav aria-label="Table of contents" data-toc>
+    <div class="label">On this page</div>
+    {groups.map((g) => (
+      <div class="sec">
+        <a class={`depth-${g.heading.depth}`} href={`#${g.heading.slug}`}>
+          {g.heading.text}
+        </a>
+        {g.children.map((h) => (
+          <a class={`depth-${h.depth}`} href={`#${h.slug}`}>
+            {h.text}
           </a>
-          {g.children.map((h) => (
-            <a class={`depth-${h.depth}`} href={`#${h.slug}`}>
-              {h.text}
-            </a>
-          ))}
-        </div>
-      ))}
-    </nav>
-  )}
+        ))}
+      </div>
+    ))}
+  </nav>
+)}
 
 <script>
 import { scrollSpy } from "@/lib/scrollspy";

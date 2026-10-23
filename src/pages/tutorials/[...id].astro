@@ -69,21 +69,25 @@ const byline = new Intl.ListFormat("en").format(entry.data.author);
   <div class="container narrow-grid">
     <article>
       <Breadcrumbs
-        items={[{ label: "Hub", href: "/" }, { label: "Tutorials", href: "/tutorials/" }, { label: entry.data.title }]}
+        items={[
+          { label: "Hub", href: "/" },
+          { label: "Tutorials", href: "/tutorials/" },
+          { label: entry.data.title },
+        ]}
       />
       <div class="head">
         <span
-          class:list={["pill", "dot", entry.data.audience === "Anyone" ? "spatial" : "warn"]}
+          class:list={[
+            "pill",
+            "dot",
+            entry.data.audience === "Anyone" ? "spatial" : "warn",
+          ]}
         >
           {entry.data.audience}
         </span>
         <span class="pill">{entry.data.topic}</span>
         <span class="mono caption">
-          {[
-            entry.data.time,
-            entry.data.format,
-            byline && `by ${byline}`,
-          ]
+          {[entry.data.time, entry.data.format, byline && `by ${byline}`]
             .filter(Boolean)
             .join(" · ")}
         </span>
@@ -103,7 +107,11 @@ const byline = new Intl.ListFormat("en").format(entry.data.author);
       )}
       {isNotebook && (
         <div class="nb-actions">
-          <a class="btn btn-ghost" download href={`/tutorials/${entry.id}.ipynb`}>
+          <a
+            class="btn btn-ghost"
+            download
+            href={`/tutorials/${entry.id}.ipynb`}
+          >
             Download notebook
           </a>
           <a

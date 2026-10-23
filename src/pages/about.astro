@@ -67,22 +67,22 @@ const jsonLd = {
 
   <section class="container missions">
     {missions.map((mission) => (
-        <div class="mission">
-          <h2>{mission.title}</h2>
-          <p>{mission.body}</p>
-        </div>
-      ))}
+      <div class="mission">
+        <h2>{mission.title}</h2>
+        <p>{mission.body}</p>
+      </div>
+    ))}
   </section>
 
   <section class="container principles">
     <SectionHeader kicker="How we work" title="Principles" />
     <div class="principles-grid">
       {principles.map((principle) => (
-          <div class="principle">
-            <div class="principle-title">{principle.title}</div>
-            <p>{principle.body}</p>
-          </div>
-        ))}
+        <div class="principle">
+          <div class="principle-title">{principle.title}</div>
+          <p>{principle.body}</p>
+        </div>
+      ))}
     </div>
   </section>
 

@@ -27,22 +27,25 @@ const nav = groupWikis(await getCollection("wikis")).map((group) => ({
 <nav aria-label="Wiki contents" data-pagefind-ignore>
   <div class="label contents">Contents</div>
   {nav.map((group) => (
-      <details class="group" open={group.open}>
-        <summary class="group-label">{group.label}</summary>
-        {group.items.map((e) =>
-          e.data.soon ? (
-            <span class="item soon">
-              {e.data.title}
-              <span class="pill caps">SOON</span>
-            </span>
-          ) : (
-            <a href={`/wikis/${e.id}/`} class:list={["item", { "is-active": e.id === activeId }]}>
-              {e.data.title}
-            </a>
-          ),
-        )}
-      </details>
-    ))}
+    <details class="group" open={group.open}>
+      <summary class="group-label">{group.label}</summary>
+      {group.items.map((e) =>
+        e.data.soon ? (
+          <span class="item soon">
+            {e.data.title}
+            <span class="pill caps">SOON</span>
+          </span>
+        ) : (
+          <a
+            class:list={["item", { "is-active": e.id === activeId }]}
+            href={`/wikis/${e.id}/`}
+          >
+            {e.data.title}
+          </a>
+        ),
+      )}
+    </details>
+  ))}
   <div class="contribute">
     <div class="label">Contribute</div>
     <p>

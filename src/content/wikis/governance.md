@@ -15,7 +15,6 @@ maintains, updates, and retires its resources. Its purpose is to keep the Hub
 scientifically credible, useful, transparent, and maintainable over time.
 
 The policy governs decisions about:
-
 - which resources are included in or surfaced through the Hub;
 - the ways resources are included, including through federated links and
   Hub-managed products;
@@ -43,7 +42,6 @@ routinely reviewing or approving individual resources; these responsibilities
 remain with Resource Stewards, Reviewers, and Hub Maintainers.
 
 The Steering Committee should include:
-
 - Members from multiple CGIAR Centers
 - Representatives from relevant CGIAR Science Programs
 - Scientific or domain experts relevant to the Hub's scope
