@@ -51,8 +51,7 @@ contact:
     organization: Alliance of Bioversity International and CIAT
 
 citation:
-  title:
-    Global Spatially-Disaggregated Crop Production Statistics Data for 2020 Version 2.0 Release 2
+  title: Global Spatially-Disaggregated Crop Production Statistics Data for 2020 Version 2.0 Release 2
   authors:
     - organization: International Food Policy Research Institute (IFPRI)
   date: "2026"
@@ -150,8 +149,7 @@ structures:
       - &technology
         name: technology
         type: technology
-        description:
-          MAPSPAM production system code. Full labels are provided in the dimension codes asset.
+        description: MAPSPAM production system code. Full labels are provided in the dimension codes asset.
         values: [all, irrigated, rainfed]
     variables:
       - name: physical_area

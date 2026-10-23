@@ -76,11 +76,11 @@ const description = `How to contribute a dataset, edit the docs, write a tutoria
       <nav aria-label="Contribution paths" class="intent" data-intent>
         <div class="label">I want to…</div>
         {guides.map((g) => (
-            <a href={`#${g.id}`}>
-              <span class="pill mono">{g.icon}</span>
-              {g.label}
-            </a>
-          ))}
+          <a href={`#${g.id}`}>
+            <span class="pill mono">{g.icon}</span>
+            {g.label}
+          </a>
+        ))}
         <a href="#report">
           <span class="pill mono">BUG</span>
           Report a bug or issue
@@ -92,57 +92,59 @@ const description = `How to contribute a dataset, edit the docs, write a tutoria
 
     <div class="guides">
       {guides.map((guide) => (
-          <article class="guide" id={guide.id}>
-            <div class="guide-meta">
-              <span class="pill warn">Guide</span>
-              <span class="label">{guide.audience}</span>
-              <span class="label">· {guide.time}</span>
-            </div>
-            <h2>{guide.title}</h2>
-            <p class="intro">{guide.intro}</p>
+        <article class="guide" id={guide.id}>
+          <div class="guide-meta">
+            <span class="pill warn">Guide</span>
+            <span class="label">{guide.audience}</span>
+            <span class="label">· {guide.time}</span>
+          </div>
+          <h2>{guide.title}</h2>
+          <p class="intro">{guide.intro}</p>
 
-            <div class="steps">
-              {guide.steps.map((step, i) => (
-                <div class="step">
-                  <div class="step-rail">
-                    <div class="step-n mono">{i + 1}</div>
-                    {i < guide.steps.length - 1 && <div class="step-line" />}
-                  </div>
-                  <div class="step-body">
-                    <h3>{step.title}</h3>
-                    <p>{step.body}</p>
-                    {step.code && (
-                      <Code
-                        code={step.code.trim()}
-                        lang={step.lang}
-                        theme={shikiConfig.theme}
-                        transformers={[
-                          codeHeader(
-                            step.lang === "sh"
-                              ? "Shell"
-                              : step.lang.toUpperCase(),
-                          ),
-                        ]}
-                      />
-                    )}
-                  </div>
+          <div class="steps">
+            {guide.steps.map((step, i) => (
+              <div class="step">
+                <div class="step-rail">
+                  <div class="step-n mono">{i + 1}</div>
+                  {i < guide.steps.length - 1 && <div class="step-line" />}
                 </div>
-              ))}
-            </div>
+                <div class="step-body">
+                  <h3>{step.title}</h3>
+                  <p>{step.body}</p>
+                  {step.code && (
+                    <Code
+                      code={step.code.trim()}
+                      lang={step.lang}
+                      theme={shikiConfig.theme}
+                      transformers={[
+                        codeHeader(
+                          step.lang === "sh"
+                            ? "Shell"
+                            : step.lang.toUpperCase(),
+                        ),
+                      ]}
+                    />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
 
-            <div class="checklist">
-              <h3>Pre-submission checklist</h3>
-              <ul>
-                {guide.checklist.map((item) => (
-                  <li>
-                    <span aria-hidden="true" class="check">✓</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </article>
-        ))}
+          <div class="checklist">
+            <h3>Pre-submission checklist</h3>
+            <ul>
+              {guide.checklist.map((item) => (
+                <li>
+                  <span aria-hidden="true" class="check">
+                    ✓
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </article>
+      ))}
 
       <article class="guide" id="report">
         <div class="guide-meta">
@@ -157,13 +159,13 @@ const description = `How to contribute a dataset, edit the docs, write a tutoria
         </p>
         <ul class="kinds">
           {REPORT_KINDS.map(([label, hint, href]) => (
-              <li>
-                <a class="kind" href={href} rel="noreferrer">
-                  <b>{label}</b>
-                  <span class="caption">{hint}</span>
-                </a>
-              </li>
-            ))}
+            <li>
+              <a class="kind" href={href} rel="noreferrer">
+                <b>{label}</b>
+                <span class="caption">{hint}</span>
+              </a>
+            </li>
+          ))}
         </ul>
         <p class="report-tip">
           Be specific — what you expected vs what you got, with exact values and

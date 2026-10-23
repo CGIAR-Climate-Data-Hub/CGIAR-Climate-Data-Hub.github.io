@@ -10,11 +10,7 @@ const { kicker, title, sub } = Astro.props;
 
 <div class="section-header">
   <div>
-    {kicker && (
-        <div class="label kicker">
-          {kicker}
-        </div>
-      )}
+    {kicker && <div class="label kicker">{kicker}</div>}
     <h2>{title}</h2>
     {sub && <p class="sub">{sub}</p>}
   </div>

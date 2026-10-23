@@ -35,21 +35,23 @@ const description = `Long-form reference for how the ${SITE_NAME} works — stan
       </div>
 
       {groups.map((group) => (
-          <section>
-            <h2>{group.label}</h2>
-            <div class="rows">
-              {group.entries.map((wiki) => (
-                <a class="row" href={`/wikis/${wiki.id}/`}>
-                  <span class="row-text">
-                    <span class="row-title">{wiki.data.title}</span>
-                    <span class="row-summary">{wiki.data.description}</span>
-                  </span>
-                  <span class="mono caption row-date">{wiki.data.updated.toISOString().slice(0, 10)}</span>
-                </a>
-              ))}
-            </div>
-          </section>
-        ))}
+        <section>
+          <h2>{group.label}</h2>
+          <div class="rows">
+            {group.entries.map((wiki) => (
+              <a class="row" href={`/wikis/${wiki.id}/`}>
+                <span class="row-text">
+                  <span class="row-title">{wiki.data.title}</span>
+                  <span class="row-summary">{wiki.data.description}</span>
+                </span>
+                <span class="mono caption row-date">
+                  {wiki.data.updated.toISOString().slice(0, 10)}
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   </div>
 </Layout>
