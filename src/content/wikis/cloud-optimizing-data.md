@@ -9,26 +9,27 @@ order: 3
 The Hub aims to make analysis-ready, cloud-optimized (ARCO) data available
 wherever that is practical and useful. Formats such as Cloud Optimized GeoTIFF,
 Zarr, and GeoParquet let people read the parts of a dataset they need without
-downloading the rest. For large climate and agricultural datasets this makes a
+downloading the rest. For large climate and agricultural datasets, this makes a
 real difference, especially when an analysis only needs one region, a few
 variables, or a particular period.
 
 ## Data as the API
 
-The Hub does not provide a single API for all its data. Instead, the data itself
-is the API: well-described files that people and tools can open directly. A
+The Hub does not provide one API for every dataset. Instead, it follows the
+idea that the data itself should be the API: well-described files that people
+and tools can open directly. A
 [metadata record](/wikis/metadata-conventions/) describes the dataset and links
 to its files. A reader then requests the chunks it needs, or uses HTTP range
-requests to pull selected parts of a file.
+requests to read selected parts of a file.
 
-This means data can be served from ordinary web or object storage without a
+This means data can be served from standard web or object storage without a
 dedicated API server for each dataset. People can keep using the tools they
 already know, such as GDAL, xarray, terra, and DuckDB, or browser libraries that
 support the format. Storage and access still have to be maintained, but most of
-the work of selecting and reading data happens in the user's own tools.
+the work of selecting and reading data happens in users' own tools.
 
-Datasets hosted elsewhere may already provide good access through files or APIs.
-The Hub can link to those directly, or prepare an ARCO copy where that would
+Datasets hosted elsewhere may already provide suitable files or APIs. The Hub
+can link to those directly, or prepare an ARCO copy where that would
 improve access. The [data conventions](/wikis/data-conventions/) explain when
 the Hub hosts data and how its files are organized.
 
@@ -39,12 +40,11 @@ Someone working on one country may need a small fraction of a global raster. How
 much they save depends on how the file is laid out and whether their reader and
 the hosting service support partial reads.
 
-These formats build on established tools and conventions, and all of them allow
-independent, parallel reads that fetch only the variables, regions, and periods
-requested. COG does this by organizing a GeoTIFF into internal tiles and
-overviews, Zarr by splitting multidimensional arrays into separately stored
-chunks, and Parquet by storing tables column by column in row groups that a
-query can skip. GeoParquet adds a standard way to store geometries in Parquet.
+These formats build on established tools and conventions. They support partial
+reads in different ways: COG organizes a GeoTIFF into internal tiles and
+overviews, Zarr splits multidimensional arrays into separately stored chunks,
+and Parquet stores tables column by column in row groups that a query can skip.
+GeoParquet adds a standard way to store geometries in Parquet.
 Each tile, chunk, or column is compressed on its own, so files stay small and a
 reader can fetch and decompress only the parts it needs.
 
@@ -72,8 +72,8 @@ cases.
 
 ### Rasters: COG
 
-A Cloud Optimized GeoTIFF (COG) arranges raster data in tiles, with the metadata
-placed so a reader can find them cheaply. Overviews provide lower-resolution
+A Cloud Optimized GeoTIFF (COG) arranges raster data in tiles, with metadata
+positioned so a reader can locate it efficiently. Overviews provide lower-resolution
 versions for displaying larger areas. Readers that support remote access fetch
 only the tiles or overview they need, and the file is still an ordinary GeoTIFF
 for everything else. See the
@@ -143,8 +143,10 @@ cloud-optimized one, served both over HTTP, and read them with the usual tools:
 rioxarray, xarray, pandas, and GeoPandas. The numbers below are the bytes and
 requests each read actually made. The test files are only a few megabytes, so
 the ratios matter more than the sizes. To translate them to real datasets, the
-sections below assume a 10 Mbit/s connection, which is a realistic field-office
+sections below assume a 10 Mbit/s connection, a realistic field-office
 link. On it, 1 GB takes about 13 minutes to download and 100 GB takes a day.
+The detailed benchmark tables use a 20 Mbit/s connection; their times are
+estimates, while the byte and request counts come from the tests.
 
 ### Rasters
 
@@ -178,14 +180,12 @@ fetches, so the chunk shape decides which of them is well served. A chunk that
 holds one month's map is ideal for the map and hopeless for the series, which
 has to touch a chunk for every month.
 
-In the test, a 5.0 MB NetCDF file with one map per chunk needed the
-**entire
+In the test, a 5.0 MB NetCDF file with one map per chunk needed the **entire
 file, in 268 requests**,
 to return a 20-year series at one point, about 29 seconds on a moderate
 connection. A Zarr store with balanced chunks, 60 months over a 32 by 32 pixel
 area, answered the same question with
-**0.2 MB in 16
-requests**,
+**0.2 MB in 16 requests**,
 under two seconds, and still returned a single map for 0.8 MB. The format made
 little difference. NetCDF and Zarr with the same chunks behave almost the same;
 the chunk shape is what matters.
