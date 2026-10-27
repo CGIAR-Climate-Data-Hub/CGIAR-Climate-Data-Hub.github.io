@@ -1,7 +1,7 @@
 ---
 title: One backbone for climate evidence across CGIAR.
 lede: >
-  The Climate Data Hub increases the visibility, accessibility and usability of climate-related
+  The Climate Action Data Hub increases the visibility, accessibility and usability of climate-related
   data, methods and tools — so researchers, program designers and partner countries can get to
   trustworthy evidence fast, and build on each other's work instead of starting over.
 missions:
