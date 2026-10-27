@@ -2,8 +2,8 @@
 title: Authoring a metadata record
 description: Prepare, check, and submit a dataset metadata record to the Climate Action Data Hub.
 audience: Anyone
-topic: Metadata
-time: 10 min
+topic: Onboarding
+time: 30 min
 format: Guide
 outcomes:
   - Choose a way to author a metadata record

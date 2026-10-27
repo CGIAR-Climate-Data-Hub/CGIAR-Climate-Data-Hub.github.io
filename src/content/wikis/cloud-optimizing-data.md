@@ -1,17 +1,17 @@
 ---
 title: Cloud-optimizing data
-description: How cloud-optimized formats improve data access, how to choose a suitable layout, and examples of their effect on downloads.
+description: How cloud-optimized formats save downloads and storage, and how to choose a layout that suits the way people use your data.
 group: Data standards
-updated: 2026-10-23
+updated: 2026-10-27
 order: 3
 ---
 
 The Hub aims to make analysis-ready, cloud-optimized (ARCO) data available
 wherever that is practical and useful. Formats such as Cloud Optimized GeoTIFF,
 Zarr, and GeoParquet let people read the parts of a dataset they need without
-downloading the rest. For large climate and agricultural datasets, this makes a
-real difference, especially when an analysis only needs one region, a few
-variables, or a particular period.
+downloading the rest. This saves time and bandwidth when working with large
+climate and agricultural datasets, especially if an analysis only needs one
+region, a few variables, or a particular period.
 
 ## Data as the API
 
@@ -35,10 +35,11 @@ the Hub hosts data and how its files are organized.
 
 ## Why cloud optimization matters
 
-Reading only the data you need saves download time, bandwidth, and disk space.
-Someone working on one country may need a small fraction of a global raster. How
-much they save depends on how the file is laid out and whether their reader and
-the hosting service support partial reads.
+If you need rainfall for a few farms or survey results for one country,
+downloading the entire dataset can take much longer than the analysis itself.
+Cloud-optimized files let compatible tools read just the parts you need from
+the source. This makes queries faster, uses less memory and disk space, and
+avoids keeping large local copies when you only need a small part of the data.
 
 These formats build on established tools and conventions. They support partial
 reads in different ways: COG organizes a GeoTIFF into internal tiles and
@@ -48,10 +49,17 @@ GeoParquet adds a standard way to store geometries in Parquet.
 Each tile, chunk, or column is compressed on its own, so files stay small and a
 reader can fetch and decompress only the parts it needs.
 
+Partial reads are the first step. The same property, files any tool can open in
+place, means the analysis can run next to the data instead of on a laptop: a
+cloud notebook, a Dask cluster, or compute instance in the same region as the
+storage. The Hub keeps this open on purpose: the data is not tied to any one compute platform,
+so it works with whatever you have, from a laptop to a cluster beside the files.
+
 ## What makes a file cloud-optimized
 
-Efficient remote access comes down to how the data and its metadata are
-arranged. The common ingredients are:
+To read part of a dataset remotely, a tool needs to know where that data is
+stored and be able to download it separately. This requires:
+
 1. **Independently readable sections.** Tiles, chunks, or column chunks within
    row groups let a reader retrieve selected parts of a dataset.
 2. **Metadata that locates the data.** Headers, chunk metadata, and footers say
@@ -60,15 +68,14 @@ arranged. The common ingredients are:
    support map previews, and statistics let readers skip sections that cannot
    match a query.
 
-This extends the Hub's habit of working with metadata before data. The catalog
-helps find a suitable asset, and the metadata inside that asset helps a reader
-get at the relevant content efficiently.
+The catalog metadata helps people find the right dataset. The metadata inside
+each file then helps their tools find and read the parts they need.
 
 ## The formats
 
 Choose a format based on the structure of the data, the tools that will read it,
-and how people are likely to access it. The following cover the common Hub
-cases.
+and how people are likely to access it. These are the main formats used by the
+Hub.
 
 ### Rasters: COG
 
@@ -88,29 +95,31 @@ usually read together.
 
 ### Cubes: Zarr
 
-Zarr stores arrays as chunks, with metadata describing their structure. It suits
-multidimensional data such as climate datasets with space, time, model, and
-scenario dimensions. Tools such as xarray read the chunks they need without
-loading the whole dataset.
+Zarr stores multidimensional arrays in compressed chunks and is designed to work
+directly with cloud object storage. It suits climate datasets with space, time,
+model, and scenario dimensions. Tools such as xarray and Dask can download and
+process chunks as needed, including several at once, without loading the whole
+dataset. This supports analysis of datasets larger than the available memory or
+local disk. See the [xarray Zarr documentation](https://docs.xarray.dev/en/stable/user-guide/io.html#zarr).
 
 Include Climate and Forecast (CF) metadata such as `units`, `long_name`, and a
 valid `standard_name` where one exists.
 [GeoZarr](https://github.com/zarr-developers/geozarr-spec) provides conventions
 for geospatial metadata; use them where the tools producing and reading the data
-support them. Choose chunk sizes for the expected access patterns, as the
-[cube comparison](#cubes) shows.
+support them. Choose chunk shapes for the way people will use the data: maps,
+time series, or a mix of both.
 
 ### Tables: Parquet
 
-Parquet is a columnar file format for tables. Each column is stored separately
-within row groups, so a reader can load only the attributes it needs. When the
-file carries statistics, a reader can also skip row groups that cannot match a
-filter.
+Parquet stores tables column by column in groups of rows. Compression and
+dictionary encoding reduce file size, particularly for repeated codes and
+names. Each column within a row group can be read separately, so tools can
+download the parts an analysis needs without loading the whole table.
 
-This helps most when an analysis needs a few columns from a large table.
-Compression and dictionary encoding shrink the file further, particularly for
-repeated codes and names. Arrange rows around the fields people filter on, so
-matching rows sit together and the other row groups can be skipped.
+Readers can also use statistics to skip row groups that do not match a filter.
+Sorting by commonly filtered fields, such as country and year, makes this more
+effective. Tools such as DuckDB select columns and skip irrelevant row groups
+[automatically](https://duckdb.org/docs/stable/data/parquet/overview.html#partial-reading).
 
 ### Vectors: GeoParquet
 
@@ -127,7 +136,7 @@ over large polygon datasets.
 ### Other formats and access options
 
 - **Icechunk** adds transactions and versioned snapshots to Zarr, which helps
-  when a store is updated over time.
+  when a store is updated over time. Think Git commits but for data.
 - **VirtualiZarr and kerchunk** give virtual access to existing files, such as
   NetCDF or GeoTIFF, without making a full copy of the data.
 - **FlatGeobuf** supports efficient access to vector features and suits
@@ -135,181 +144,66 @@ over large polygon datasets.
 - **PMTiles** packages map tiles for direct access, useful when a dataset needs
   a map viewer.
 
-## Comparing data layouts
+## What this means in practice
 
-Layout decides how much of a file a reader has to fetch to answer a question. To
-show the effect, we wrote the same data in a classic layout and a
-cloud-optimized one, served both over HTTP, and read them with the usual tools:
-rioxarray, xarray, pandas, and GeoPandas. The numbers below are the bytes and
-requests each read actually made. The test files are only a few megabytes, so
-the ratios matter more than the sizes. To translate them to real datasets, the
-sections below assume a 10 Mbit/s connection, a realistic field-office
-link. On it, 1 GB takes about 13 minutes to download and 100 GB takes a day.
-The detailed benchmark tables use a 20 Mbit/s connection; their times are
-estimates, while the byte and request counts come from the tests.
+Four common jobs, and what each costs from a classic file versus a
+cloud-optimized one. The numbers come from published benchmarks, linked in each
+case. Your own results will depend on the chunking, the connection, and the
+tool, so treat them as the order of magnitude, not a promise.
 
-### Rasters
+**You want to look at a global raster, then clip out one country.** From a
+GeoTIFF stored in strips, both reads pull most of the file. The zoomed-out view
+needs every pixel, and the country window needs every full-width row that
+crosses it. From a **COG**, the map view reads one overview and the clip reads
+the tiles over that country. Opening the file is a single 16 KB request, and a
+tile costs about three range requests
+([tilebench](https://github.com/developmentseed/tilebench)). The full-resolution
+data is still there in the same file when you need it. The
+[COG guide](https://cogeo.org/in-depth.html) explains how it works.
 
-The two things people usually want from a raster are to see the whole thing on a
-map and to get their own country out of it. A GeoTIFF stored in strips does both
-badly. A zoomed-out view has to read nearly the whole file, and a country's
-window pulls every full-width row that crosses it. A COG stores the same pixels
-in tiles and adds overviews, so a country costs only the tiles it covers and a
-zoomed-out view costs only the overview.
+**You want 40 years of daily rainfall at six farms.** A NetCDF archive is
+usually hundreds of files, each chunked as maps, so your tool has to open every
+file and read a chunk from each. AWS measured this on ERA5: a 13-year point
+series took 193 seconds from NetCDF and under 5 seconds from **Zarr** rechunked
+for time series. Rechunking MERRA-2 the same way took a query from one or two
+minutes to under a second
+([AWS, 2023](https://aws.amazon.com/blogs/publicsector/decrease-geospatial-query-latency-minutes-seconds-using-zarr-amazon-s3/)).
+The format was not the main difference. The chunk shape was, and Zarr makes it
+easy to choose and to read many chunks at once. NetCDF read with the right
+library over object storage can get close
+([Penard et al., 2026](https://gmd.copernicus.org/articles/19/1519/2026/)), but
+most tools do not read it that way by default. Either way, you can work with a
+dataset far bigger than your laptop can store.
 
-In the test, a 2.5 MB striped GeoTIFF needed 1.9 MB for the zoomed-out view and
-0.7 MB for a window the size of a few countries. The COG needed **66 KB** and
-**0.3 MB** for the same two reads, and fetched the overview in one request
-rather than four. The COG is larger on disk, 3.7 MB, because it carries the
-overviews. That is the one cost, and it buys a zoomed-out view that moves thirty
-times less data.
+**You want the mean of one column from a survey, or everything for Kenya in
+2020.** From a CSV, both reads are the whole file. **Parquet** stores each
+column separately and keeps min and max values per row group, so one column
+costs one column, and a file sorted by country and year lets the reader skip
+every row group that cannot match. On 11 million taxi rows, zstd Parquet was
+6.8 times smaller than the CSV and a single-column query ran about 60 times
+faster ([MotherDuck](https://motherduck.com/learn/csv-vs-parquet-benchmark/)).
+Those timings were on a local disk. Over HTTP the gap is the download itself,
+which is larger. Survey data usually compresses better than taxi data, because
+most answers repeat.
 
-For a 100 GB global raster, this is the difference between a dataset people can
-use and one they cannot. Viewing a striped file zoomed out means downloading all
-of it, a day on a slow link. From a COG, a map viewer fetches the overview that
-fits the screen, a megabyte or two, in a second or so. Clipping one country from
-a striped file pulls every row it crosses, around 1 GB and a quarter of an hour.
-From a COG it pulls the tiles over that country, a few megabytes, in seconds,
-and nothing needs to be installed or stored locally.
-
-### Cubes
-
-A climate cube has two kinds of user: one wants a map for a single date, the
-other wants the full history at a single place. Chunks are the unit a reader
-fetches, so the chunk shape decides which of them is well served. A chunk that
-holds one month's map is ideal for the map and hopeless for the series, which
-has to touch a chunk for every month.
-
-In the test, a 5.0 MB NetCDF file with one map per chunk needed the **entire
-file, in 268 requests**,
-to return a 20-year series at one point, about 29 seconds on a moderate
-connection. A Zarr store with balanced chunks, 60 months over a 32 by 32 pixel
-area, answered the same question with
-**0.2 MB in 16 requests**,
-under two seconds, and still returned a single map for 0.8 MB. The format made
-little difference. NetCDF and Zarr with the same chunks behave almost the same;
-the chunk shape is what matters.
-
-How the values are stored is the second lever. The data has two decimals, so
-int16 with a scale factor holds it exactly, and lining the bits up before
-compression (Blosc zstd with bitshuffle) took the store from
-**5.0 MB to
-3.1 MB**
-without losing anything.
-
-Take a 20 GB store of daily rainfall, roughly 40 years of daily maps. From a
-map-chunked store, a station's full series is one request per day, around 15,000
-of them, and the whole store comes down: four or five hours of transfer plus
-nearly half an hour of waiting on round trips. From a store with balanced
-chunks, the same question pulls a few megabytes in a few dozen requests and the
-answer is back in seconds. A country's rainfall on one day costs a few megabytes
-either way. Choose the chunk shape for the questions people actually ask, and
-write it down so they know what is cheap.
-
-### Tables
-
-Survey and statistics tables are usually read in one of two ways: one column
-across everyone, or everything about one country in one year. A CSV has no
-structure a remote reader can use, so either question costs the whole file. A
-spreadsheet costs more, because the reader fetches it twice. Parquet stores each
-column separately and keeps statistics for each block of rows, so a one-column
-read fetches only that column and a filter can skip the blocks that cannot
-match.
-
-The test table looks like a household survey: 100,000 rows and 69 mostly short
-coded answers. As CSV it is 15.2 MB; as Parquet with zstd it is **2.2 MB**. The
-mean of one column read **0.1 MB** from Parquet against all 15.2 MB from the
-CSV, more than a hundred times less. Sorting the file by country and year
-brought the one-country, one-year read down to **1.4 MB**. Unsorted, every block
-holds a few rows from every country and nothing can be skipped. The Excel file
-needed 45.7 MB for either question, three times the CSV.
-
-Real survey data usually compresses better than generated data, because real
-answers repeat: most households answer "no", most counts are zero, and whole
-modules are blank. Even at the test's sevenfold ratio, a 5 GB survey CSV, an
-hour's download on a slow link, becomes a file under 1 GB, and the mean of one
-column is a few tens of megabytes and under a minute. One country in one year
-from a file sorted by country and year is just the handful of blocks that match.
-Sort by the fields people filter on most. Tuning for one access pattern can cost
-another, as the sorted file's larger one-column read shows.
-
-### Vectors
-
-Boundary and feature datasets get asked for an area, or for a list of names. A
-spatial query needs either an index or a spatially sorted file; without one, it
-is a full scan. A names query needs the attributes to be stored apart from the
-geometry, which GeoParquet does and GeoPackage does not.
-
-The test used 2,000 polygons in random order and a bounding box covering about
-2% of them. The Shapefile had to be read in full, 10.1 MB in 28 requests.
-GeoParquet sorted along a Hilbert curve, so that neighbours share a row group,
-answered with **1.0 MB in 4 requests**, under a second, which matches an indexed
-GeoPackage without needing an index. Unsorted GeoParquet was no better than the
-Shapefile, because every row group spanned the whole map. The sort is what
-matters. For the names query, GeoParquet read **0.2 MB** where GeoPackage read
-9.9 MB, nearly the whole file.
-
-For a 2 GB set of administrative boundaries, listing the unit names from a
-GeoPackage is a half-hour download for a few thousand strings. From GeoParquet
-it is one column, a few megabytes, in seconds. One country's boundaries from a
-sorted GeoParquet file are the row groups covering that area, tens of megabytes,
-where the unsorted file or a Shapefile would be the full 2 GB. Compression does
-little for dense polygon coordinates, so nearly all of the saving here comes
-from layout.
-
-<details>
-<summary>Benchmark results in full</summary>
-
-The test files: a 2000 x 1000 float32 raster with missing values; a (240, 90, 180)
-float32 cube of 20 years of monthly data; a 100,000-row, 69-column survey table
-filtered by `country == C07 and year == 2020`, with 50,000-row groups; and 2,000
-polygons of 300 vertices each in random order, queried with a bounding box
-covering about 2% of the extent, with 50-feature row groups. Times are estimates
-for a 20 Mbit/s connection with 100 ms per request.
-
-| raster layout         | file size | 256 x 256 window | 1/8 overview | overview time |
-| --------------------- | --------- | ---------------- | ------------ | ------------- |
-| striped, uncompressed | 8.0 MB    | 2.1 MB           | 5.9 MB       | 2.8 s         |
-| striped, deflate      | 2.5 MB    | 0.7 MB           | 1.9 MB       | 1.1 s         |
-| COG, deflate          | 3.7 MB    | 0.3 MB           | 66 KB        | 0.1 s         |
-| COG, zstd             | 3.7 MB    | 0.3 MB           | 66 KB        | 0.1 s         |
-
-| cube format, chunks (time, y, x)            | store  | one full map       | one point, full series | series time |
-| ------------------------------------------- | ------ | ------------------ | ---------------------- | ----------- |
-| NetCDF4 float32 (1, 90, 180)                | 5.0 MB | 39 KB, 25 requests | 5.0 MB, 268 requests   | 29 s        |
-| Zarr float32 (1, 90, 180)                   | 5.5 MB | 28 KB, 13 requests | 5.5 MB, 252 requests   | 27 s        |
-| Zarr float32 (240, 16, 16)                  | 4.6 MB | 4.6 MB             | 81 KB                  | 1.3 s       |
-| Zarr float32 (60, 32, 32)                   | 4.7 MB | 1.2 MB             | 0.3 MB                 | 1.7 s       |
-| Zarr int16 packed, bitshuffle, (60, 32, 32) | 3.1 MB | 0.8 MB             | 0.2 MB                 | 1.7 s       |
-
-| table format                            | file size | one country, one year             | one column, all rows | column time |
-| --------------------------------------- | --------- | --------------------------------- | -------------------- | ----------- |
-| CSV                                     | 15.2 MB   | 15.2 MB                           | 15.2 MB              | 6.2 s       |
-| Excel                                   | 38.0 MB   | 45.7 MB (pandas fetches it twice) | same                 | 19 s        |
-| Parquet, snappy                         | 2.8 MB    | 2.8 MB                            | 0.2 MB               | 0.5 s       |
-| Parquet, zstd                           | 2.2 MB    | 2.2 MB                            | 0.1 MB               | 0.5 s       |
-| Parquet, zstd, sorted by filter columns | 2.8 MB    | 1.4 MB                            | 0.6 MB               | 0.8 s       |
-
-| vector format                    | size    | bbox read                     | one attribute, no geometry | attribute time |
-| -------------------------------- | ------- | ----------------------------- | -------------------------- | -------------- |
-| Shapefile                        | 10.1 MB | 10.1 MB (no index: full scan) | 0.4 MB (just the .dbf)     | 1.7 s          |
-| GeoPackage                       | 10.0 MB | 1.1 MB (R-tree)               | 9.9 MB                     | 6.9 s          |
-| GeoParquet, zstd                 | 9.4 MB  | 9.4 MB                        | 78 KB                      | 4.2 s          |
-| GeoParquet, zstd, Hilbert-sorted | 9.2 MB  | 1.0 MB                        | 0.2 MB                     | 4.4 s          |
-
-</details>
-
-> To reproduce these benchmarks, see
-> [`examples/benchmarks/cloud_optimized_benchmark.py`](https://github.com/CGIAR-Climate-Data-Hub/CGIAR-Climate-Data-Hub.github.io/blob/main/examples/benchmarks/cloud_optimized_benchmark.py)
-> in the site repository. It generates the example data, serves it over local
-> HTTP, and counts the bytes and requests each reader makes.
+**You want the names of every district, or the features around one site.**
+From a GeoPackage, listing names reads nearly the whole file, geometry and all.
+**GeoParquet** keeps the name column apart from the geometry, so that read is a
+few hundred kilobytes. On 10 million AIS points, GeoPackage was 2.6 GB and
+GeoParquet 470 MB; a full read took 2 minutes 12 seconds versus 7 seconds, and
+4 seconds with only some columns selected
+([Graser, 2024](https://anitagraser.com/2024/11/23/geoparquet-in-qgis-smaller-faster-files-for-the-win/)).
+For the area query, sort nearby features together and write the bounding-box
+column so readers skip row groups outside it. Shapefile is not in the running
+at this size: converting a 22 GB CSV to GeoParquet took under 5 minutes, to
+GeoPackage over 2.5 hours, and the Shapefile write failed at its 2 GB limit
+([Cloud-Native Geospatial, 2023](https://cloudnativegeo.org/blog/2023/08/performance-explorations-of-geoparquet-and-duckdb/)).
 
 ## Doing it well
 
-The comparisons above show why layout matters. This section is the checklist for
-getting it right. The benchmark does not prove any of it; this is the
-established practice behind each format, and what the Hub does by default unless
-a dataset gives a reason not to.
+Start with the questions people will ask of the data, then try those reads with
+the tools they use. The choices below are useful starting points; adjust them
+when the dataset or its readers need something different.
 
 ### Rules that apply everywhere
 
@@ -322,11 +216,12 @@ a dataset gives a reason not to.
   almost never justified. Packing floats to scaled integers halves the raw size
   before compression starts, and the result compresses far better.
 - **Make the unit of access a few megabytes.** Tiles, chunks, and row groups
-  that are too small cost a round trip each. Too large, and every read drags
-  along data nobody asked for. Between 1 and 10 MB compressed is a good range.
-- **Round deliberately, and say so.** Rounding to the real precision of the
-  measurement is lossy in a controlled way and is the biggest single lever on
-  size. Record it in the metadata.
+  that are too small require many separate requests. Large ones mean downloading
+  more unwanted data with each read. Between 1 and 10 MB compressed is a good
+  range.
+- **Record any rounding.** Rounding to the precision of the measurement can
+  substantially reduce file size. It changes the stored values, so document the
+  precision used in the metadata.
 - **Test over HTTP with the real reader.** Open the published URL with xarray,
   rioxarray, or GeoPandas and watch the request count. A layout that works
   locally can still fetch everything when read remotely.
@@ -354,21 +249,24 @@ a dataset gives a reason not to.
 
 ### Zarr
 
-- **Chunk for the questions.** Map chunks, series chunks, or a balance, as in
-  the [cube comparison](#cubes). When a dataset serves both kinds of user, a
-  balanced shape such as 60 time steps over 32 x 32 pixels keeps both reads to a
-  handful of requests. Whatever you choose, document it in the record.
+- **Chunk for the questions.** Long stretches of time over small spatial areas
+  suit point histories; short stretches over larger areas suit maps. If people
+  need both, try a compromise and check both kinds of read. Document the choice
+  in the record.
 - **Chunk size.** Aim for 1 to 10 MB uncompressed per chunk. Hundreds of tiny
-  chunks per read are slower than one larger one, even if more bytes come down.
+  chunks can take longer to read than a larger chunk, even if the larger chunk
+  contains more data. The
+  [Zarr performance guide](https://zarr.readthedocs.io/en/latest/user-guide/performance/)
+  covers chunking, sharding, and compressor trade-offs in more depth.
 - **Sharding.** Zarr v3 shards pack many small chunks into one object, so a
-  series-friendly chunking no longer means millions of files in storage. Use it
+  small chunks for time series do not require millions of separate files. Use it
   for large stores with small chunks.
 - **Compressor.** Blosc with zstd, level 3 to 5. Use `bitshuffle` for packed
   integers and `shuffle` for floats. The shuffle lines up bytes or bits across
   values so zstd can find the repetition.
 - **Pack floats.** `dtype: int16` with `scale_factor` and `add_offset` when the
-  precision is fixed, plus an explicit `_FillValue`. This was the largest single
-  saving in the cube comparison.
+  required range and precision fit, plus an explicit `_FillValue`. Smaller
+  types reduce storage and the amount of data readers need to decompress.
 - **One store, consolidated.** Put variables that share a grid in one store with
   one-dimensional coordinate arrays, and write consolidated metadata so a reader
   can open the dataset in one request. Dimension order `(time, y, x)` and CF
@@ -379,8 +277,7 @@ a dataset gives a reason not to.
 - **Types first.** Integers as integers, codes and names as dictionary-encoded
   strings (the default), dates as date or timestamp types rather than strings,
   booleans as booleans, and float32 where the precision allows. A column that
-  mixes strings and numbers forces the widest type and defeats everything that
-  follows.
+  mixes strings and numbers can require a less efficient storage type.
 - **Row group size.** Smaller groups skip more precisely on a filter; larger
   groups mean fewer reads for a scan. Between 50,000 and a few hundred thousand
   rows, or 10 to 100 MB, suits most Hub tables. The pandas default of one
@@ -389,14 +286,14 @@ a dataset gives a reason not to.
   rows share row groups and the statistics can rule out the rest. For spatial
   data, sort along a Hilbert curve or with GDAL's `SORT_BY_BBOX=YES`, and write
   the covering bounding-box column.
-- **Encodings.** Dictionary encoding is on by default and is why repeated codes
-  cost almost nothing. For float columns, `use_byte_stream_split=True` is the
-  Parquet equivalent of a shuffle and helps zstd a lot.
+- **Encodings.** Dictionary encoding is on by default and reduces the space
+  needed for repeated codes. For float columns, `use_byte_stream_split=True` is
+  the Parquet equivalent of a shuffle and can improve zstd compression.
 - **Partition only when everyone filters that way.** Splitting a table into
   files by country or year helps if every query starts there, and hurts if it
   leaves thousands of tiny files. Keep each file above a few tens of megabytes.
 - **GeoParquet specifics.** Geometry as WKB, the CRS in the file metadata, the
-  geometry column last so attribute-only reads stay cheap, and the bounding-box
+  geometry column last to keep attribute-only reads efficient, and the bounding-box
   column so spatial filters can skip row groups (`write_covering_bbox=True` in
   GeoPandas, on by default in recent GDAL).
 
