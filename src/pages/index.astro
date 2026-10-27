@@ -121,19 +121,39 @@ const PRINCIPLES = [
       <div class="paths">
         <div class="label kicker start-here">Start here</div>
         {PATHS.map((p) => (
-            <a class="path" href={p.href}>
-              <svg aria-hidden="true" class="path-glyph" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewBox="0 0 24 24" width="20">
-                <path d={p.icon} />
-              </svg>
-              <span class="path-text">
-                <span class="path-label">{p.label}</span>
-                <span class="label path-cue">{p.cue}</span>
-              </span>
-              <svg aria-hidden="true" class="path-arrow" fill="none" height="17" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="17">
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
-            </a>
-          ))}
+          <a class="path" href={p.href}>
+            <svg
+              aria-hidden="true"
+              class="path-glyph"
+              fill="none"
+              height="20"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              viewBox="0 0 24 24"
+              width="20"
+            >
+              <path d={p.icon} />
+            </svg>
+            <span class="path-text">
+              <span class="path-label">{p.label}</span>
+              <span class="label path-cue">{p.cue}</span>
+            </span>
+            <svg
+              aria-hidden="true"
+              class="path-arrow"
+              fill="none"
+              height="17"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="17"
+            >
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </a>
+        ))}
       </div>
     </div>
   </section>
@@ -152,30 +172,48 @@ const PRINCIPLES = [
 
       <div class="essentials-grid">
         {essentials.map((item) => (
-            <a class="essential" href={item.href}>
-              <span class="essential-kind">
-                <span class="essential-glyph">
-                  {item.glyph ? (
-                    <DataGlyph type={item.glyph} />
-                  ) : (
-                    <svg aria-hidden="true" fill="none" height="19" stroke="currentColor" stroke-linecap="round" stroke-width="1.6" viewBox="0 0 24 24" width="19">
-                      <path d="M7 3h7l5 5v13H7V3Zm7 0v5h5M10 12h6M10 16h6" />
-                    </svg>
-                  )}
-                </span>
-                <span class="label">{item.badge}</span>
+          <a class="essential" href={item.href}>
+            <span class="essential-kind">
+              <span class="essential-glyph">
+                {item.glyph ? (
+                  <DataGlyph type={item.glyph} />
+                ) : (
+                  <svg
+                    aria-hidden="true"
+                    fill="none"
+                    height="19"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-width="1.6"
+                    viewBox="0 0 24 24"
+                    width="19"
+                  >
+                    <path d="M7 3h7l5 5v13H7V3Zm7 0v5h5M10 12h6M10 16h6" />
+                  </svg>
+                )}
               </span>
-              <span class="essential-text">
-                <span class="essential-name">{item.name}</span>
-                <span class="essential-meta">
-                  <span class="mono caption">{item.meta}</span>
-                </span>
+              <span class="label">{item.badge}</span>
+            </span>
+            <span class="essential-text">
+              <span class="essential-name">{item.name}</span>
+              <span class="essential-meta">
+                <span class="mono caption">{item.meta}</span>
               </span>
-              <svg aria-hidden="true" class="essential-arrow" fill="none" height="16" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16">
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
-            </a>
-          ))}
+            </span>
+            <svg
+              aria-hidden="true"
+              class="essential-arrow"
+              fill="none"
+              height="16"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="16"
+            >
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </a>
+        ))}
       </div>
     </div>
   </section>
@@ -195,14 +233,16 @@ const PRINCIPLES = [
         </div>
         <div>
           {PRINCIPLES.map(([title, body], i) => (
-              <div class="principle">
-                <span class="mono principle-n">{String(i + 1).padStart(2, "0")}</span>
-                <div>
-                  <div class="principle-title">{title}</div>
-                  <p>{body}</p>
-                </div>
+            <div class="principle">
+              <span class="mono principle-n">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div>
+                <div class="principle-title">{title}</div>
+                <p>{body}</p>
               </div>
-            ))}
+            </div>
+          ))}
         </div>
       </div>
     </div>

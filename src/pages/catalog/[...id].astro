@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import { satteri } from "@astrojs/markdown-satteri";
+import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
 import AssetCard from "@/components/AssetCard.astro";
 import BboxMap from "@/components/BboxMap.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
@@ -37,7 +38,7 @@ import { quickstart } from "@/lib/snippets";
 import { commodity } from "@/lib/vocab";
 import { CATALOG_REPO, SITE_NAME } from "@/site.config";
 
-export async function getStaticPaths() {
+export const getStaticPaths = (async () => {
   const entries = await getCollection("catalog");
   // Record descriptions may carry markdown; render like any other content
   const markdown = await satteri().createRenderer({ shikiConfig });
@@ -58,7 +59,9 @@ export async function getStaticPaths() {
     })),
   );
   return [...pages, ...redirects];
-}
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
 if ("redirect" in Astro.props) return Astro.redirect(Astro.props.redirect, 301);
 const { entry, descriptionHtml } = Astro.props;
@@ -302,7 +305,11 @@ const jsonLd = datasetJsonLd(
   <section class="header">
     <div class="container">
       <Breadcrumbs
-        items={[{ label: "Hub", href: "/" }, { label: "Catalog", href: "/catalog/" }, { label: d.title }]}
+        items={[
+          { label: "Hub", href: "/" },
+          { label: "Catalog", href: "/catalog/" },
+          { label: d.title },
+        ]}
       />
       {d.deprecated && (
         <div class="deprecated-note">
@@ -334,11 +341,11 @@ const jsonLd = datasetJsonLd(
             <span class="label">Version</span>
             {chain.length > 1 ? (
               <>
-              <button
-                class="btn btn-ghost drop-menu version-menu"
-                popovertarget="version-menu"
-                type="button"
-              >
+                <button
+                  class="btn btn-ghost drop-menu version-menu"
+                  popovertarget="version-menu"
+                  type="button"
+                >
                   {d.version}
                   {!current && <span class="pill blue caps">LATEST</span>}
                   <svg
@@ -352,11 +359,13 @@ const jsonLd = datasetJsonLd(
                   >
                     <path d="M6 9l6 6 6-6" />
                   </svg>
-              </button>
+                </button>
                 <div class="card menu-list" id="version-menu" popover>
                   {chain.map((v, i) => (
                     <a
-                      aria-current={v.data.version === d.version ? "page" : undefined}
+                      aria-current={
+                        v.data.version === d.version ? "page" : undefined
+                      }
                       href={`/catalog/${recordSlug(v.data)}/`}
                     >
                       {v.data.version}
@@ -379,7 +388,9 @@ const jsonLd = datasetJsonLd(
             <span class="fact">
               <span class="fact-label">license</span>
               {licenseHref ? (
-                <a href={licenseHref} rel="noreferrer">{d.license}</a>
+                <a href={licenseHref} rel="noreferrer">
+                  {d.license}
+                </a>
               ) : (
                 d.license
               )}
@@ -425,17 +436,18 @@ const jsonLd = datasetJsonLd(
             <div class="card menu-list" id="meta-menu" popover>
               <a href={`/catalog/${recordSlug(d)}.json`}>Raw record (JSON)</a>
               {stacUrl && (
-                  <a href={stacUrl} rel="noreferrer">
-                    STAC Collection ↗
-                  </a>
-                )}
+                <a href={stacUrl} rel="noreferrer">
+                  STAC Collection ↗
+                </a>
+              )}
               {entry.filePath && (
-                  <a
-                    class="menu-split"
-                    href={editUrl(CATALOG_REPO, entry.filePath)}
-                    >Suggest an edit ↗</a
-                  >
-                )}
+                <a
+                  class="menu-split"
+                  href={editUrl(CATALOG_REPO, entry.filePath)}
+                >
+                  Suggest an edit ↗
+                </a>
+              )}
               <a
                 href={reportUrl}
                 rel="noreferrer"
@@ -469,355 +481,393 @@ const jsonLd = datasetJsonLd(
         </header>
 
         {d.keywords.length > 0 && (
-            <div class="chips">
-              {d.keywords.map((k) =>
-                typeof k === "string" ? (
-                  <a class="pill mono" href={`/catalog/?q=${encodeURIComponent(k)}`}>
-                    #{k}
-                  </a>
-                ) : (
-                  <a class="pill blue outline mono" href={k.uri ?? k.scheme} rel="noreferrer" title={`${k.scheme ?? "ontology"} concept`}>
-                    {k.term} ↗
-                  </a>
-                ),
-              )}
-            </div>
-          )}
+          <div class="chips">
+            {d.keywords.map((k) =>
+              typeof k === "string" ? (
+                <a
+                  class="pill mono"
+                  href={`/catalog/?q=${encodeURIComponent(k)}`}
+                >
+                  #{k}
+                </a>
+              ) : (
+                <a
+                  class="pill blue outline mono"
+                  href={k.uri ?? k.scheme}
+                  rel="noreferrer"
+                  title={`${k.scheme ?? "ontology"} concept`}
+                >
+                  {k.term} ↗
+                </a>
+              ),
+            )}
+          </div>
+        )}
 
         {d.note && (
-            <div class="note">
-              <h2 class="note-title">Important note</h2>
-              <p>{d.note}</p>
-            </div>
-          )}
+          <div class="note">
+            <h2 class="note-title">Important note</h2>
+            <p>{d.note}</p>
+          </div>
+        )}
 
         {Object.keys(quick.code).length > 0 && (
-            <section>
-              <h2>Quick start</h2>
-              {/* Open on the authors' own language when they wrote one */}
-              <SnippetTabs code={quick.code} first={quick.authored[0]?.id} />
-              {quick.authored.length > 0 && (
-                <p class="section-sub">
-                  Provided by the dataset authors:{" "}
-                  {quick.authored.map((l, i) => (
-                    <>
-                      {i > 0 && ", "}
-                      <a href={l.url} rel="noreferrer">{l.label} example</a>
-                    </>
-                  ))}
-                </p>
-              )}
+          <section>
+            <h2>Quick start</h2>
+            {/* Open on the authors' own language when they wrote one */}
+            <SnippetTabs code={quick.code} first={quick.authored[0]?.id} />
+            {quick.authored.length > 0 && (
               <p class="section-sub">
-                <a href="#access">Full access details and endpoints</a>
+                Provided by the dataset authors:{" "}
+                {quick.authored.map((l, i) => (
+                  <>
+                    {i > 0 && ", "}
+                    <a href={l.url} rel="noreferrer">
+                      {l.label} example
+                    </a>
+                  </>
+                ))}
               </p>
-            </section>
-          )}
+            )}
+            <p class="section-sub">
+              <a href="#access">Full access details and endpoints</a>
+            </p>
+          </section>
+        )}
 
         {restricted && Object.keys(quick.code).length === 0 && (
-            <section>
-              <h2>Quick start</h2>
-              <p class="section-sub">
-                This dataset needs credentials, so no generic example is shown.{" "}
-                <a href="#access">See the access conditions.</a>
-              </p>
-            </section>
-          )}
+          <section>
+            <h2>Quick start</h2>
+            <p class="section-sub">
+              This dataset needs credentials, so no generic example is shown.{" "}
+              <a href="#access">See the access conditions.</a>
+            </p>
+          </section>
+        )}
 
         {d.cdh && d.cdh.usage.intended_uses.length > 0 && (
-            <section>
-              <h2>Intended uses</h2>
-              <ul class="uses">
-                {d.cdh.usage.intended_uses.map((u) => (
-                  <li>{u}</li>
-                ))}
-              </ul>
-            </section>
-          )}
+          <section>
+            <h2>Intended uses</h2>
+            <ul class="uses">
+              {d.cdh.usage.intended_uses.map((u) => (
+                <li>{u}</li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {d.cdh && d.cdh.usage.not_recommended_for.length > 0 && (
-            <section>
-              <h2>Not recommended for</h2>
-              <div class="stack">
-                {d.cdh.usage.not_recommended_for.map((n) => (
-                  <div class="card warn-card">
-                    <b>{n.use}</b>
-                    {n.reason && (
-                      <p>
-                        <b>Why:</b> {n.reason}
-                      </p>
-                    )}
-                    {n.use_instead && (
-                      <p class="instead">
-                        <b>Use instead:</b> {n.use_instead}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
+          <section>
+            <h2>Not recommended for</h2>
+            <div class="stack">
+              {d.cdh.usage.not_recommended_for.map((n) => (
+                <div class="card warn-card">
+                  <b>{n.use}</b>
+                  {n.reason && (
+                    <p>
+                      <b>Why:</b> {n.reason}
+                    </p>
+                  )}
+                  {n.use_instead && (
+                    <p class="instead">
+                      <b>Use instead:</b> {n.use_instead}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {d.commodities.length > 0 && (
-            <section>
-              <h2>Commodities</h2>
-              <div class="chips">
-                {d.commodities.map((id) => {
-                  const c = commodity(id);
-                  // Crops link to FAO ICC; livestock have no uri, so AGROVOC
-                  const href = c?.uri ?? c?.agrovoc;
-                  return c && href ? (
-                    <a class="pill blue" href={href} rel="noreferrer" title={c.uri ? `FAO ICC ${c.code}` : "AGROVOC"}>
-                      {c.label} ↗
-                    </a>
-                  ) : (
-                    <span class="pill blue">{c?.label ?? humanize(id)}</span>
-                  );
-                })}
-              </div>
-            </section>
-          )}
+          <section>
+            <h2>Commodities</h2>
+            <div class="chips">
+              {d.commodities.map((id) => {
+                const c = commodity(id);
+                // Crops link to FAO ICC; livestock have no uri, so AGROVOC
+                const href = c?.uri ?? c?.agrovoc;
+                return c && href ? (
+                  <a
+                    class="pill blue"
+                    href={href}
+                    rel="noreferrer"
+                    title={c.uri ? `FAO ICC ${c.code}` : "AGROVOC"}
+                  >
+                    {c.label} ↗
+                  </a>
+                ) : (
+                  <span class="pill blue">{c?.label ?? humanize(id)}</span>
+                );
+              })}
+            </div>
+          </section>
+        )}
       </section>
 
       {d.data.length > 0 && (
-          <section id="access">
-            <header>
-              <h2>Access &amp; use</h2>
+        <section id="access">
+          <header>
+            <h2>Access &amp; use</h2>
+            <p class="section-sub">
+              Files, endpoints, and worked examples for each distribution.
+            </p>
+            {stacUrl && (
               <p class="section-sub">
-                Files, endpoints, and worked examples for each distribution.
+                Machine-readable file index:{" "}
+                <a href={stacUrl} rel="noreferrer">
+                  STAC Collection
+                </a>
               </p>
-              {stacUrl && (
-                <p class="section-sub">
-                  Machine-readable file index:{" "}
-                  <a href={stacUrl} rel="noreferrer">STAC Collection</a>
-                </p>
-              )}
-            </header>
-            {d.access_note && (
-              <div class="note">
-                <h3 class="note-title">Access conditions</h3>
-                <p>{d.access_note}</p>
-              </div>
             )}
+          </header>
+          {d.access_note && (
+            <div class="note">
+              <h3 class="note-title">Access conditions</h3>
+              <p>{d.access_note}</p>
+            </div>
+          )}
 
-            {assetGroups.map((group) => (
-              <section>
-                <h3 class="tech-title">{group.title}</h3>
-                <div class="stack assets">
-                  {group.items.map((asset) => (
-                    <AssetCard asset={asset} record={d} restricted={restricted} />
-                  ))}
-                </div>
-              </section>
-            ))}
-          </section>
-        )}
+          {assetGroups.map((group) => (
+            <section>
+              <h3 class="tech-title">{group.title}</h3>
+              <div class="stack assets">
+                {group.items.map((asset) => (
+                  <AssetCard asset={asset} record={d} restricted={restricted} />
+                ))}
+              </div>
+            </section>
+          ))}
+        </section>
+      )}
 
       {hasSchema && (
-          <section id="schema">
-            <header>
-              <h2>Data dictionary</h2>
-              <p class="section-sub">
-                What each file holds. A layout describes how the data is stored in a file: its
-                variables, the dimensions they vary over, and any keys.
-              </p>
-            </header>
-            <DataDictionary liveById={liveById} record={d} />
-          </section>
-        )}
+        <section id="schema">
+          <header>
+            <h2>Data dictionary</h2>
+            <p class="section-sub">
+              What each file holds. A layout describes how the data is stored in
+              a file: its variables, the dimensions they vary over, and any
+              keys.
+            </p>
+          </header>
+          <DataDictionary liveById={liveById} record={d} />
+        </section>
+      )}
       {techBlocks.length > 0 && (
-          <section id="technical">
-            <header>
-              <h2>Technical metadata</h2>
-              <p class="section-sub">
-                The full spatial, temporal, and modeling detail behind the
-                summaries elsewhere on this page.
-              </p>
-            </header>
-            {techBlocks.map((block) => (
-              <section>
-                <h3 class="tech-title">{block.title}</h3>
-                <dl class="kv">
-                  {block.facts.map((f) => (
-                    <>
-                      <dt>{f.label}</dt>
-                      <dd class:list={{ mono: f.mono }}>
-                        {f.href ? <a href={f.href} rel="noreferrer">{f.value}</a> : f.value}
-                      </dd>
-                    </>
-                  ))}
-                </dl>
-              </section>
-            ))}
-          </section>
-        )}
+        <section id="technical">
+          <header>
+            <h2>Technical metadata</h2>
+            <p class="section-sub">
+              The full spatial, temporal, and modeling detail behind the
+              summaries elsewhere on this page.
+            </p>
+          </header>
+          {techBlocks.map((block) => (
+            <section>
+              <h3 class="tech-title">{block.title}</h3>
+              <dl class="kv">
+                {block.facts.map((f) => (
+                  <>
+                    <dt>{f.label}</dt>
+                    <dd class:list={{ mono: f.mono }}>
+                      {f.href ? (
+                        <a href={f.href} rel="noreferrer">
+                          {f.value}
+                        </a>
+                      ) : (
+                        f.value
+                      )}
+                    </dd>
+                  </>
+                ))}
+              </dl>
+            </section>
+          ))}
+        </section>
+      )}
 
       {d.processing.length > 0 && (
-          <section id="provenance">
-            <header>
-              <h2>Provenance</h2>
-              <p class="section-sub">Ordered processing steps, from source to publication.</p>
-            </header>
-            <ol class="lineage">
-              {d.processing.map((step) => (
-                <li>
-                  <div class="card step">
-                    <div class="card-head">
-                      <span class="mono step-id">{step.id}</span>
-                      {step.date && <span class="label">{step.date.slice(0, 10)}</span>}
-                    </div>
-                    {step.description && <p>{step.description}</p>}
-                    {step.derived_from.length > 0 && (
-                      <p class="step-meta">
-                        Derived from:{" "}
-                        {step.derived_from.map((src, i) => {
-                          const hub = hubSource(src);
-                          return (
-                            <>
-                              {i > 0 && ", "}
-                              {hub ? (
-                                <a href={hub.href}>
-                                  {src.title ?? hub.title}
-                                  {src.version && ` (${src.version})`}
-                                </a>
-                              ) : (
-                                <a href={src.url} rel="noreferrer">
-                                  {src.title ?? src.url ?? src.id} ↗
-                                </a>
-                              )}
-                            </>
-                          );
-                        })}
-                      </p>
-                    )}
-                    {step.code && (
-                      <p class="step-meta">
-                        Code:{" "}
-                        <a class="mono" href={step.code.url} rel="noreferrer" title={step.code.url}>
-                          {lastSegment(step.code.url)} ↗
-                        </a>
-                        {step.code.version && (
-                          <>
-                            {" "}
-                            <span class="label">@ {step.code.version}</span>
-                          </>
-                        )}
-                      </p>
+        <section id="provenance">
+          <header>
+            <h2>Provenance</h2>
+            <p class="section-sub">
+              Ordered processing steps, from source to publication.
+            </p>
+          </header>
+          <ol class="lineage">
+            {d.processing.map((step) => (
+              <li>
+                <div class="card step">
+                  <div class="card-head">
+                    <span class="mono step-id">{step.id}</span>
+                    {step.date && (
+                      <span class="label">{step.date.slice(0, 10)}</span>
                     )}
                   </div>
-                </li>
-              ))}
-            </ol>
-          </section>
-        )}
-
-      {(cite || d.attribution || d.contact.length > 0) && (
-          <section id="citation">
-            {cite && (
-              <Citation
-                cite={cite}
-                note="Please cite the dataset and any associated peer-reviewed publications."
-                viaUrl={new URL(`/catalog/${versionedSlug(d)}/`, Astro.site).href}
-              >
-                {d.related_publications.length > 0 && (
-                  <section class="related-pubs">
-                    <h3 class="tech-title">Related publications</h3>
-                    <ul>
-                      {/* The title links to the DOI when both are given; a bare
-                          DOI is a valid shorthand and links as itself */}
-                      {d.related_publications.map((pub) => {
-                        const doiUrl = pub.doi && `https://doi.org/${pub.doi}`;
-                        const c = pub.citation;
+                  {step.description && <p>{step.description}</p>}
+                  {step.derived_from.length > 0 && (
+                    <p class="step-meta">
+                      Derived from:{" "}
+                      {step.derived_from.map((src, i) => {
+                        const hub = hubSource(src);
                         return (
-                          <li>
-                            {c && `${c.authors.map(authorName).join(", ")} (${c.date}). `}
-                            {c?.title
-                              && (doiUrl ? (
-                                <a href={doiUrl} rel="noreferrer">{c.title}</a>
-                              ) : (
-                                c.title
-                              ))}
-                            {c?.title && ". "}
-                            {c?.publisher && `${c.publisher}. `}
-                            {doiUrl && !c?.title && (
-                              <a href={doiUrl} rel="noreferrer">doi:{pub.doi}</a>
+                          <>
+                            {i > 0 && ", "}
+                            {hub ? (
+                              <a href={hub.href}>
+                                {src.title ?? hub.title}
+                                {src.version && ` (${src.version})`}
+                              </a>
+                            ) : (
+                              <a href={src.url} rel="noreferrer">
+                                {src.title ?? src.url ?? src.id} ↗
+                              </a>
                             )}
-                          </li>
+                          </>
                         );
                       })}
-                    </ul>
-                  </section>
-                )}
-              </Citation>
-            )}
-            {d.attribution && (
-              <section class="attribution">
-                <h3 class="tech-title">Attribution</h3>
-                <p class="section-sub">
-                  Reproduce this credit line wherever you reuse the data.
-                </p>
-                <blockquote>
-                  {d.attribution}{" "}
-                  <CopyButton copy={d.attribution} label="Copy attribution" />
-                </blockquote>
-              </section>
-            )}
-            {d.contact.length > 0 && (
-            <section>
-            <h2>Contacts</h2>
-            <p class="section-sub">
-              Who produced this dataset, and who to reach about it.
-            </p>
-            <div class="contact-cards">
-              {contacts.map((c) => (
-                <div class="card contact-card">
-                  <div class="card-head">
-                    <b>{c.name ?? c.organization}</b>
-                    <span class="chips">
-                      {c.roles.includes("maintainer") && (
-                        <span class="pill terra caps">Maintainer</span>
-                      )}
-                      {c.roles.includes("licensor") && (
-                        <span class="pill blue caps">Licensor</span>
-                      )}
-                    </span>
-                  </div>
-                  {c.name && c.organization && (
-                    <div class="contact-org">{c.organization}</div>
+                    </p>
                   )}
-                  {c.otherRoles.length > 0 && (
-                    <div class="chips">
-                      {c.otherRoles.map((r) => (
-                        <span class="pill blue">{humanize(r)}</span>
-                      ))}
-                    </div>
-                  )}
-                  {(c.email || c.url || c.orcid || c.ror) && (
-                    <div class="contact-links">
-                      {c.email && <a href={`mailto:${c.email}`}>{c.email}</a>}
-                      {c.url && (
-                        <a href={c.url} rel="noreferrer">
-                          {c.url.replace(/^https?:\/\//, "")} ↗
-                        </a>
+                  {step.code && (
+                    <p class="step-meta">
+                      Code:{" "}
+                      <a
+                        class="mono"
+                        href={step.code.url}
+                        rel="noreferrer"
+                        title={step.code.url}
+                      >
+                        {lastSegment(step.code.url)} ↗
+                      </a>
+                      {step.code.version && (
+                        <>
+                          {" "}
+                          <span class="label">@ {step.code.version}</span>
+                        </>
                       )}
-                      {c.orcid && (
-                        <a href={c.orcid} rel="noreferrer">
-                          ORCID ↗
-                        </a>
-                      )}
-                      {c.ror && (
-                        <a href={c.ror} rel="noreferrer">
-                          ROR ↗
-                        </a>
-                      )}
-                    </div>
+                    </p>
                   )}
                 </div>
-              ))}
-            </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      {(cite || d.attribution || d.contact.length > 0) && (
+        <section id="citation">
+          {cite && (
+            <Citation
+              cite={cite}
+              note="Please cite the dataset and any associated peer-reviewed publications."
+              viaUrl={new URL(`/catalog/${versionedSlug(d)}/`, Astro.site).href}
+            >
+              {d.related_publications.length > 0 && (
+                <section class="related-pubs">
+                  <h3 class="tech-title">Related publications</h3>
+                  <ul>
+                    {/* The title links to the DOI when both are given; a bare
+                          DOI is a valid shorthand and links as itself */}
+                    {d.related_publications.map((pub) => {
+                      const doiUrl = pub.doi && `https://doi.org/${pub.doi}`;
+                      const c = pub.citation;
+                      return (
+                        <li>
+                          {c
+                            && `${c.authors.map(authorName).join(", ")} (${c.date}). `}
+                          {c?.title
+                            && (doiUrl ? (
+                              <a href={doiUrl} rel="noreferrer">
+                                {c.title}
+                              </a>
+                            ) : (
+                              c.title
+                            ))}
+                          {c?.title && ". "}
+                          {c?.publisher && `${c.publisher}. `}
+                          {doiUrl && !c?.title && (
+                            <a href={doiUrl} rel="noreferrer">
+                              doi:{pub.doi}
+                            </a>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              )}
+            </Citation>
+          )}
+          {d.attribution && (
+            <section class="attribution">
+              <h3 class="tech-title">Attribution</h3>
+              <p class="section-sub">
+                Reproduce this credit line wherever you reuse the data.
+              </p>
+              <blockquote>
+                {d.attribution}{" "}
+                <CopyButton copy={d.attribution} label="Copy attribution" />
+              </blockquote>
             </section>
-            )}
-          </section>
-        )}
+          )}
+          {d.contact.length > 0 && (
+            <section>
+              <h2>Contacts</h2>
+              <p class="section-sub">
+                Who produced this dataset, and who to reach about it.
+              </p>
+              <div class="contact-cards">
+                {contacts.map((c) => (
+                  <div class="card contact-card">
+                    <div class="card-head">
+                      <b>{c.name ?? c.organization}</b>
+                      <span class="chips">
+                        {c.roles.includes("maintainer") && (
+                          <span class="pill terra caps">Maintainer</span>
+                        )}
+                        {c.roles.includes("licensor") && (
+                          <span class="pill blue caps">Licensor</span>
+                        )}
+                      </span>
+                    </div>
+                    {c.name && c.organization && (
+                      <div class="contact-org">{c.organization}</div>
+                    )}
+                    {c.otherRoles.length > 0 && (
+                      <div class="chips">
+                        {c.otherRoles.map((r) => (
+                          <span class="pill blue">{humanize(r)}</span>
+                        ))}
+                      </div>
+                    )}
+                    {(c.email || c.url || c.orcid || c.ror) && (
+                      <div class="contact-links">
+                        {c.email && <a href={`mailto:${c.email}`}>{c.email}</a>}
+                        {c.url && (
+                          <a href={c.url} rel="noreferrer">
+                            {c.url.replace(/^https?:\/\//, "")} ↗
+                          </a>
+                        )}
+                        {c.orcid && (
+                          <a href={c.orcid} rel="noreferrer">
+                            ORCID ↗
+                          </a>
+                        )}
+                        {c.ror && (
+                          <a href={c.ror} rel="noreferrer">
+                            ROR ↗
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </section>
+      )}
     </article>
 
     <aside>
@@ -841,7 +891,9 @@ const jsonLd = datasetJsonLd(
               <dt>CRS</dt>
               <dd>
                 {crsHref ? (
-                  <a href={crsHref} rel="noreferrer">{d.spatial.crs}</a>
+                  <a href={crsHref} rel="noreferrer">
+                    {d.spatial.crs}
+                  </a>
                 ) : (
                   d.spatial.crs
                 )}
@@ -853,7 +905,9 @@ const jsonLd = datasetJsonLd(
               <dt>Temporal</dt>
               <dd>
                 {temporal.main}
-                {temporal.sub && <div class="caption fact-sub">{temporal.sub}</div>}
+                {temporal.sub && (
+                  <div class="caption fact-sub">{temporal.sub}</div>
+                )}
               </dd>
             </>
           )}

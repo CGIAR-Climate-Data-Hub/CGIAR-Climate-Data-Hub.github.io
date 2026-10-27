@@ -38,22 +38,20 @@ const { picker, slug, download } = Astro.props;
   data-template={picker.template}
 >
   {picker.count > 0 && (
-          <p class="card-head">
-            <span class="tech-title">
-              List of files{" "}
-              <span class="tpl-count">
-                {picker.count.toLocaleString("en")} files
-              </span>
-            </span>
-            <a
-              class="btn btn-ghost dl"
-              download={picker.csv}
-              href={`/catalog/${slug}/${picker.csv}`}
-            >
-              Download CSV
-            </a>
-          </p>
-        )}
+    <p class="card-head">
+      <span class="tech-title">
+        List of files{" "}
+        <span class="tpl-count">{picker.count.toLocaleString("en")} files</span>
+      </span>
+      <a
+        class="btn btn-ghost dl"
+        download={picker.csv}
+        href={`/catalog/${slug}/${picker.csv}`}
+      >
+        Download CSV
+      </a>
+    </p>
+  )}
   <p class="card-head file-head">
     <span class="tech-title">Individual file</span>
   </p>
@@ -61,45 +59,40 @@ const { picker, slug, download } = Astro.props;
   <div class="tpl-row">
     <div class="tpl-fields">
       {picker.fields.map((f) =>
-            // One value is no choice: keep it for the URL, show no control
-            f.values.length === 1 ? (
-              <input data-tpl-dim={f.name} type="hidden" value={f.values[0]} />
+        // One value is no choice: keep it for the URL, show no control
+        f.values.length === 1 ? (
+          <input data-tpl-dim={f.name} type="hidden" value={f.values[0]} />
+        ) : (
+          // biome-ignore lint/a11y/noLabelWithoutControl: the control is inside, behind a ternary
+          <label class="tpl-field">
+            <span class="caption">{humanize(f.name)}</span>
+            {f.date ? (
+              <input
+                data-tpl-dim={f.name}
+                max={f.date.max}
+                min={f.date.min}
+                required
+                step={f.date.step}
+                type="date"
+                value={f.date.min}
+              />
             ) : (
-            // biome-ignore lint/a11y/noLabelWithoutControl: the control is inside, behind a ternary
-            <label class="tpl-field">
-              <span class="caption">{humanize(f.name)}</span>
-              {f.date ? (
-                <input
-                  data-tpl-dim={f.name}
-                  max={f.date.max}
-                  min={f.date.min}
-                  required
-                  step={f.date.step}
-                  type="date"
-                  value={f.date.min}
-                />
-              ) : (
-                <select data-tpl-dim={f.name}>
-                  {f.values.map((v) => (
-                    <option value={v}>{f.labels?.[v] ?? v}</option>
-                  ))}
-                </select>
-              )}
-            </label>
-            ),
-          )}
+              <select data-tpl-dim={f.name}>
+                {f.values.map((v) => (
+                  <option value={v}>{f.labels?.[v] ?? v}</option>
+                ))}
+              </select>
+            )}
+          </label>
+        ),
+      )}
     </div>
     <CopyButton copy={picker.url} label="Copy selected file URL" />
     {download && (
-            <a
-              class="btn btn-ghost dl"
-              data-tpl-download
-              download
-              href={picker.url}
-            >
-              Download
-            </a>
-          )}
+      <a class="btn btn-ghost dl" data-tpl-download download href={picker.url}>
+        Download
+      </a>
+    )}
   </div>
   <p class="mono url selected-url" data-tpl-url>{picker.url}</p>
   {/* How to open the picked file: the asset's examples or the index's snippet */}

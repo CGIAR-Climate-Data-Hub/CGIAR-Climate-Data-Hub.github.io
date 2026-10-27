@@ -20,7 +20,11 @@ const { title, items } = Astro.props;
     <h2 class="label">{title}</h2>
     {items.map((it) =>
       it.href ? (
-        <a class="rail-link" href={it.href} rel={it.external ? "noreferrer" : undefined}>
+        <a
+          class="rail-link"
+          href={it.href}
+          rel={it.external ? "noreferrer" : undefined}
+        >
           {it.title}
           {it.external && " ↗"}
           {it.meta && <span class="caption">{it.meta}</span>}

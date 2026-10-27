@@ -131,7 +131,7 @@ const siteGraph = {
       if (!btn) return;
       const text =
         btn.dataset.copy
-        ?? btn.closest(".code-block")?.querySelector("pre")?.innerText;
+        ?? btn.closest(".code-block")?.querySelector("pre")?.textContent;
       if (!text) return;
       await navigator.clipboard.writeText(text);
       btn.classList.add("copied");

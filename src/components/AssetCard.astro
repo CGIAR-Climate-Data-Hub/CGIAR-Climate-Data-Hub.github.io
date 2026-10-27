@@ -55,37 +55,40 @@ const script = lang && primary && (await fetchScript(primary.url));
   <div class="card-head">
     <span class="mono asset-name">{asset.name}</span>
     {asset.roles.map((r) => <span class="label">{r}</span>)}
-    {asset.file_size !== undefined && <span class="mono caption">{formatBytes(asset.file_size)}</span>}
+    {asset.file_size !== undefined && (
+      <span class="mono caption">{formatBytes(asset.file_size)}</span>
+    )}
   </div>
   {asset.description && <p class="asset-desc">{asset.description}</p>}
   {asset.media_type && (
     <p class="asset-fact">
       <b>Format:</b> {formatLabel(asset.media_type)}
-      {bestFor && (
-        <span class="best-for"> — best for {bestFor}</span>
-      )}
+      {bestFor && <span class="best-for"> — best for {bestFor}</span>}
     </p>
   )}
-  {d.data.includes(asset) && layouts.map((s) => (
-    <div class="layout">
-      {s.named && <p class="layout-name mono caption">{s.name}</p>}
-      {s.shown.length > 0 && (
+  {d.data.includes(asset)
+    && layouts.map((s) => (
+      <div class="layout">
+        {s.named && <p class="layout-name mono caption">{s.name}</p>}
+        {s.shown.length > 0 && (
+          <p class="asset-fact">
+            <b>Variables:</b> <span class="mono">{s.shown.join(", ")}</span>
+            {s.more > 0 && <span class="caption"> +{s.more} more</span>}
+          </p>
+        )}
+        {s.dimensions.length > 0 && (
+          <p class="asset-fact">
+            <b>Dimensions:</b>{" "}
+            <span class="mono">
+              {s.dimensions.map((x) => x.name).join(" × ")}
+            </span>
+          </p>
+        )}
         <p class="asset-fact">
-          <b>Variables:</b> <span class="mono">{s.shown.join(", ")}</span>
-          {s.more > 0 && <span class="caption"> +{s.more} more</span>}
+          <a href="#schema">Data dictionary →</a>
         </p>
-      )}
-      {s.dimensions.length > 0 && (
-        <p class="asset-fact">
-          <b>Dimensions:</b>{" "}
-          <span class="mono">{s.dimensions.map((x) => x.name).join(" × ")}</span>
-        </p>
-      )}
-      <p class="asset-fact">
-        <a href="#schema">Data dictionary →</a>
-      </p>
-    </div>
-  ))}
+      </div>
+    ))}
   {extent && (
     <p class="asset-fact">
       <b>Coverage:</b> <span class="mono">{extent}</span>
@@ -101,10 +104,10 @@ const script = lang && primary && (await fetchScript(primary.url));
     </p>
   )}
   {picker && (
-      <TemplatePicker download={!restricted} picker={picker} slug={recordSlug(d)}>
-        {example && <UsageExamples code={example} />}
-      </TemplatePicker>
-    )}
+    <TemplatePicker download={!restricted} picker={picker} slug={recordSlug(d)}>
+      {example && <UsageExamples code={example} />}
+    </TemplatePicker>
+  )}
   {index && (
     <div class="access-panel">
       <p class="card-head">
@@ -120,11 +123,18 @@ const script = lang && primary && (await fetchScript(primary.url));
               {/* The name links only where a click yields something usable
                   (a cdh-inventory); a sliced index names a pattern, not a file */}
               {ix.format === "cdh-inventory" ? (
-                <a class="mono caption index-file" href={ix.url} rel="noreferrer" title={ix.url}>
+                <a
+                  class="mono caption index-file"
+                  href={ix.url}
+                  rel="noreferrer"
+                  title={ix.url}
+                >
                   {ix.name}
                 </a>
               ) : (
-                <span class="mono caption index-file" title={ix.url}>{ix.name}</span>
+                <span class="mono caption index-file" title={ix.url}>
+                  {ix.name}
+                </span>
               )}
               {ix.picker ? (
                 <span class="tpl-count">
@@ -158,7 +168,9 @@ const script = lang && primary && (await fetchScript(primary.url));
                     <table class="data-table">
                       <thead>
                         <tr>
-                          {ix.preview.header.map((h) => <th>{h}</th>)}
+                          {ix.preview.header.map((h) => (
+                            <th>{h}</th>
+                          ))}
                         </tr>
                       </thead>
                       <tbody>
@@ -167,7 +179,12 @@ const script = lang && primary && (await fetchScript(primary.url));
                             {row.map((cell, i) =>
                               ix.preview?.header[i] === "href" ? (
                                 <td>
-                                  <a class="mono" href={cell} rel="noreferrer" title={cell}>
+                                  <a
+                                    class="mono"
+                                    href={cell}
+                                    rel="noreferrer"
+                                    title={cell}
+                                  >
                                     {cell.split("/").pop()}
                                   </a>
                                 </td>
@@ -185,7 +202,11 @@ const script = lang && primary && (await fetchScript(primary.url));
                   </div>
                 )}
                 {ix.picker ? (
-                  <TemplatePicker download={false} picker={ix.picker} slug={recordSlug(d)}>
+                  <TemplatePicker
+                    download={false}
+                    picker={ix.picker}
+                    slug={recordSlug(d)}
+                  >
                     {ix.snippet && <UsageExamples code={ix.snippet} />}
                   </TemplatePicker>
                 ) : (
@@ -218,7 +239,9 @@ const script = lang && primary && (await fetchScript(primary.url));
       <p class="asset-fact">
         {/* A single file links; a Zarr root or prefix is an address, not a page */}
         {download ? (
-          <a class="mono url" href={download} rel="noreferrer">{download}</a>
+          <a class="mono url" href={download} rel="noreferrer">
+            {download}
+          </a>
         ) : (
           <span class="mono url">{primary.url}</span>
         )}
@@ -237,8 +260,7 @@ const script = lang && primary && (await fetchScript(primary.url));
       <summary class="caption">Other access methods</summary>
       {asset.href_template && (
         <p class="asset-fact">
-          <b>File pattern:</b>{" "}
-          <span class="mono">{asset.href_template}</span>
+          <b>File pattern:</b> <span class="mono">{asset.href_template}</span>
         </p>
       )}
       {others.map((loc) => (

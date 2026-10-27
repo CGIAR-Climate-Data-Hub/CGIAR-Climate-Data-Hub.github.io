@@ -29,7 +29,6 @@ sustainable, open, and built on modern technologies and best practices.
 Everything is open source and designed to be easily copied, built on, and
 modified by others. The overall architecture can be split into multiple
 individual components:
-
 - [The metadata standard](https://github.com/CGIAR-Climate-Data-Hub/cdh-metadata-standard)
 - [The metadata catalog](https://github.com/CGIAR-Climate-Data-Hub/cdh-catalog)
 - [The website](https://github.com/CGIAR-Climate-Data-Hub/CGIAR-Climate-Data-Hub.github.io)
@@ -129,10 +128,9 @@ schema and validate their work as they go.
 The metadata standard publishes a core JSON Schema plus a Hub profile that
 requires three Hub-maintained extensions: `cdh`, `climate`, `agriculture`. It
 was designed this way to allow outside projects to easily reuse the core fields,
-and add custom extensions for
-additional fields as needed. This will allow them to use much of the tooling the
-Hub has built for its needs without needing to adopt fields which may not be
-relevant to them or cover their needs.
+and add custom extensions for additional fields as needed. This will allow them
+to use much of the tooling the Hub has built for its needs without needing to
+adopt fields which may not be relevant to them or cover their needs.
 
 The Hub has adopted the [RFC 2119](https://tools.ietf.org/html/rfc2119)
 requirement levels (Required/Recommended/Conditional/Optional) for each field in
@@ -695,7 +693,6 @@ of raw downloads.
 
 The `gcf-pipeline` orchestrator enforces six explicit gates, so no stage runs
 before the researcher has approved the plan:
-
 1. **Collect parameters** — country, variables, date range, output folder, admin
    level, aggregation method, temporal frequency
 2. **Confirm plan** — the agent shows exactly what will be downloaded and how it
@@ -737,7 +734,6 @@ common failure of reaching step 5 only to discover the simulation tool was never
 installed.
 
 The eight gates in `full_pipeline` mode:
-
 1. **Environment check** — silently verifies `ag-cube-cm`, `aggeodata`, and
    `mcp` are installed; stops with the install command if any are missing
 2. **Collect parameters** — bounding box, date range, crop name, cultivar code,

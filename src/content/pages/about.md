@@ -1,7 +1,7 @@
 ---
 title: One backbone for climate evidence across CGIAR.
 lede: >
-  The Climate Data Hub increases the visibility, accessibility and usability of climate-related
+  The Climate Action Data Hub increases the visibility, accessibility and usability of climate-related
   data, methods and tools — so researchers, program designers and partner countries can get to
   trustworthy evidence fast, and build on each other's work instead of starting over.
 missions:
@@ -29,11 +29,10 @@ principles:
 
 The Hub is a product of CGIAR Climate Action, maintained by a small engineering
 and data-stewardship team at the
-[Alliance of Bioversity
-International and CIAT](https://alliancebioversityciat.org), working across
-CGIAR Centers. Datasets are reviewed against the Hub's metadata and data
-standards before publication. For more information about this process and the
-governance of the Hub, see [our governance process](/wikis/governance/).
+[Alliance of Bioversity International and CIAT](https://alliancebioversityciat.org),
+working across CGIAR Centers. Datasets are reviewed against the Hub's metadata
+and data standards before publication. For more information about this process
+and the governance of the Hub, see [our governance process](/wikis/governance/).
 
 How the pieces fit together — the metadata layer, cloud-native distribution, the
 build pipeline and the machine interfaces — is documented in the Hub's
