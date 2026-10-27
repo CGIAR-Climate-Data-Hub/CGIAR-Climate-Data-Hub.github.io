@@ -26,7 +26,7 @@
     "@astrojs/sitemap": "^3.7.4",
     "astro": "7.4.2",
     "astro-pagefind": "^2.0.1",
-    "modern-tar": "0.8.4",
+    "modern-tar": "0.8.6",
     "typescript": "6.0.3"
   },
   "devDependencies": {
