@@ -25,7 +25,7 @@ const STANDARDS_LINKS = [
   },
   {
     title: "Licensing & attribution",
-    href: "/wikis/licensing-and-attribution/",
+    href: "/wikis/governance/#licensing",
   },
 ];
 
@@ -96,7 +96,6 @@ const description = `How to contribute a dataset, edit the docs, write a tutoria
             <div class="guide-meta">
               <span class="pill warn">Guide</span>
               <span class="label">{guide.audience}</span>
-              <span class="label">· {guide.time}</span>
             </div>
             <h2>{guide.title}</h2>
             <p class="intro">{guide.intro}</p>
@@ -111,6 +110,11 @@ const description = `How to contribute a dataset, edit the docs, write a tutoria
                   <div class="step-body">
                     <h3>{step.title}</h3>
                     <p>{step.body}</p>
+                    {step.link && (
+                      <p class="step-link">
+                        <a href={step.link.href}>{step.link.label}</a>
+                      </p>
+                    )}
                     {step.code && (
                       <Code
                         code={step.code.trim()}
@@ -349,6 +353,11 @@ aside :global(.rail-box) {
 
 .step-body :global(.code-block) {
   margin-top: var(--space-3);
+}
+
+.step-link {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-4);
 }
 
 .checklist {

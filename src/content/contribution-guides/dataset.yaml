@@ -1,42 +1,62 @@
 order: 1
 label: Contribute a dataset
 icon: DATA
-title: Add a dataset to the Climate Data Hub
+title: Add a dataset to the Hub
 intro: >
-  Datasets are added by opening a submission pull request against the Hub metadata registry.
-  CI runs structural and semantic validation; once approved, the dataset is indexed, a DOI is
-  minted, and a STAC item is published.
+  A dataset joins the Hub through its metadata record. You prepare the data and the record,
+  submit the record for review, and once two reviewers approve it, it is published in the
+  catalog. The data can be hosted by the Hub or stay with its provider.
 audience: Center · Project · Partner
-time: ~2 days of preparation
 steps:
-  - title: Confirm fit and licensing
+  - title: Confirm scope and licensing
     body: >
-      Check that the dataset aligns with Hub scope (climate-relevant for agri-food systems)
-      and that you can release it under CC-BY-4.0 or an approved equivalent. Need help?
-      Open a scoping issue first.
-  - title: Harmonise the format
+      Check that the dataset is climate-relevant for agri-food systems, comes from a credible
+      source, and does not duplicate something already in the catalog. It must carry a valid
+      license with clear attribution and reuse terms; externally hosted data keeps whatever
+      license its provider set. Unsure? Open an issue and ask before doing any work.
+    link:
+      label: "Governance: inclusion criteria and licensing"
+      href: /wikis/governance/#dataset-inclusion-criteria
+  - title: Prepare the data
     body: >
-      Convert spatial rasters to Cloud-Optimised GeoTIFF or Zarr; cubes to Zarr. The COG
-      authoring wiki has the validator.
+      If the Hub will host the data, convert it to a cloud-optimized format: COG for rasters,
+      Zarr for cubes, Parquet or GeoParquet for tables and vectors. Choose the chunking or
+      sorting for how people will actually read it, and follow the naming and versioning rules
+      in the data conventions. Externally hosted data that already supports partial reads can
+      be linked as it is.
+    link:
+      label: Cloud-optimizing data
+      href: /wikis/cloud-optimizing-data/
   - title: Author the metadata record
     body: >
-      Write the YAML record against the CDH schema — coverage, provenance, citation, and
-      appropriate-use guidance — and validate it locally.
-    code: |
-      uvx check-jsonschema \
-        --schemafile spec/schemas/profiles/cdh.schema.json my-record.yaml
-  - title: Open a submission PR
+      Describe the dataset in a record that follows the Hub metadata standard: what it is, who
+      made it, how to cite it, where the files are, and what the variables mean. Use the
+      metadata app, the AI agent skill, or write the YAML by hand from a validated example.
+    link:
+      label: "Tutorial: authoring a metadata record"
+      href: /tutorials/authoring-a-metadata-record/
+  - title: Check the record
     body: >
-      Fork the metadata registry and open a PR. The template asks for provenance, QA notes
-      and contact details. CI runs structural, schema and lineage checks.
-  - title: Review & publish
+      Validate the record with the metadata app or the standard's checklist, then read it
+      against the data itself. Validation confirms the structure and required fields; it cannot
+      confirm that links point at the right release or that units and coverage are right. Check
+      those by hand, including anything an AI tool drafted.
+    link:
+      label: Validation checklist in the authoring guide
+      href: https://github.com/CGIAR-Climate-Data-Hub/cdh-metadata-standard/blob/main/spec/authoring-guide.md#validation-checklist
+  - title: Submit and review
     body: >
-      A Hub maintainer and a domain reviewer assess the submission. Once approved, the dataset
-      is merged, indexed in the catalog, and a DOI is minted.
+      Submit through the metadata app, or open an issue or pull request on the catalog
+      repository. Include any open questions. Two reviewers assess scope, scientific
+      suitability, metadata, and licensing, and may ask for changes. Once approved, the record
+      is merged and the dataset appears in the catalog.
+    link:
+      label: "Governance: review process"
+      href: /wikis/governance/#review-process
 checklist:
-  - Dataset uses an approved format and is COG/Zarr-compliant where applicable.
-  - Record validates against the CDH schema.
-  - Coverage, resolution, temporal extent, units and variables are documented.
-  - Provenance and contributing institutions are listed; contacts are reachable.
-  - Licence is CC-BY-4.0 or pre-approved; attribution requirements are recorded.
-  - QA notes describe known caveats, gaps and recommended uses.
+  - The dataset is in scope and carries a valid license with attribution and citation details.
+  - Hosted data is in a cloud-optimized format, and the layout choice is documented in the record.
+  - The record validates and has at least one data link, a licensor contact, and a citation.
+  - Spatial and temporal coverage, variables, units, and missing values are described.
+  - Known limitations and caveats are in the record's note field.
+  - The record names someone who can answer questions about the data.

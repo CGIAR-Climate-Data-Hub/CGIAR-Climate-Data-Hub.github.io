@@ -91,11 +91,12 @@ const contributionGuides = defineCollection({
     title: z.string(),
     intro: z.string(),
     audience: z.string(),
-    time: z.string(),
     steps: z.array(
       z.object({
         title: z.string(),
         body: z.string(),
+        // One place to read more: a wiki, tutorial, or external page
+        link: z.object({ label: z.string(), href: z.string() }).optional(),
         code: z.string().optional(),
         // Shiki language for the code snippet; extend as guides need
         lang: z.enum(["sh", "json", "yaml"]).default("sh"),
