@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import { satteri } from "@astrojs/markdown-satteri";
+import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
 import AssetCard from "@/components/AssetCard.astro";
 import BboxMap from "@/components/BboxMap.astro";
 import Breadcrumbs from "@/components/Breadcrumbs.astro";
@@ -37,7 +38,7 @@ import { quickstart } from "@/lib/snippets";
 import { commodity } from "@/lib/vocab";
 import { CATALOG_REPO, SITE_NAME } from "@/site.config";
 
-export async function getStaticPaths() {
+export const getStaticPaths = (async () => {
   const entries = await getCollection("catalog");
   // Record descriptions may carry markdown; render like any other content
   const markdown = await satteri().createRenderer({ shikiConfig });
@@ -58,7 +59,9 @@ export async function getStaticPaths() {
     })),
   );
   return [...pages, ...redirects];
-}
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
 if ("redirect" in Astro.props) return Astro.redirect(Astro.props.redirect, 301);
 const { entry, descriptionHtml } = Astro.props;
