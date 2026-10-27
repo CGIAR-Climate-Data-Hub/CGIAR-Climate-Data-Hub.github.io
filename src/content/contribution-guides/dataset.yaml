@@ -1,12 +1,9 @@
 order: 1
-label: Contribute a dataset
-icon: DATA
-title: Add a dataset to the Hub
+title: Add a dataset
 intro: >
   A dataset joins the Hub through its metadata record. You prepare the data and the record,
   submit the record for review, and once two reviewers approve it, it is published in the
   catalog. The data can be hosted by the Hub or stay with its provider.
-audience: Center · Project · Partner
 steps:
   - title: Confirm scope and licensing
     body: >

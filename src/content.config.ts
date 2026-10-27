@@ -86,11 +86,8 @@ const contributionGuides = defineCollection({
   }),
   schema: z.object({
     order: z.number(),
-    label: z.string(),
-    icon: z.string(),
     title: z.string(),
     intro: z.string(),
-    audience: z.string(),
     steps: z.array(
       z.object({
         title: z.string(),

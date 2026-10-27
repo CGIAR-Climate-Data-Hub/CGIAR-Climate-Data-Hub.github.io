@@ -1,11 +1,8 @@
 order: 2
-label: Edit a wiki page
-icon: WIKI
 title: Edit a wiki page
 intro: >
   Wikis are Markdown files under src/content/wikis/ in the site repo. Edits go through
   normal pull requests, so every change is reviewed, versioned and attributable.
-audience: Anyone
 steps:
   - title: Find the page in the repo
     body: >

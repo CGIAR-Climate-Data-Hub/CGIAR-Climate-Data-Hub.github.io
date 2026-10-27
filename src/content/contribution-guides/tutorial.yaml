@@ -1,12 +1,9 @@
-order: 4
-label: Write a tutorial
-icon: TUTORIAL
+order: 3
 title: Write a tutorial
 intro: >
   Tutorials are runnable, step-by-step guides to working with Hub data. They can be
   written as Markdown or contributed as an executed Jupyter notebook — both render
   the same way on the site, with styled prose, highlighted code, and saved outputs.
-audience: Anyone comfortable with Python or R
 steps:
   - title: Pick a format
     body: >
