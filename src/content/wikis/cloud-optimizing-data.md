@@ -15,12 +15,11 @@ region, a few variables, or a particular period.
 
 ## Data as the API
 
-The Hub does not provide one API for every dataset. Instead, it follows the
-idea that the data itself should be the API: well-described files that people
-and tools can open directly. A
-[metadata record](/wikis/metadata-conventions/) describes the dataset and links
-to its files. A reader then requests the chunks it needs, or uses HTTP range
-requests to read selected parts of a file.
+The Hub does not provide one API for every dataset. Instead, it follows the idea
+that the data itself should be the API: well-described files that people and
+tools can open directly. A [metadata record](/wikis/metadata-conventions/)
+describes the dataset and links to its files. A reader then requests the chunks
+it needs, or uses HTTP range requests to read selected parts of a file.
 
 This means data can be served from standard web or object storage without a
 dedicated API server for each dataset. People can keep using the tools they
@@ -29,37 +28,37 @@ support the format. Storage and access still have to be maintained, but most of
 the work of selecting and reading data happens in users' own tools.
 
 Datasets hosted elsewhere may already provide suitable files or APIs. The Hub
-can link to those directly, or prepare an ARCO copy where that would
-improve access. The [data conventions](/wikis/data-conventions/) explain when
-the Hub hosts data and how its files are organized.
+can link to those directly, or prepare an ARCO copy where that would improve
+access. The [data conventions](/wikis/data-conventions/) explain when the Hub
+hosts data and how its files are organized.
 
 ## Why cloud optimization matters
 
 If you need rainfall for a few farms or survey results for one country,
 downloading the entire dataset can take much longer than the analysis itself.
-Cloud-optimized files let compatible tools read just the parts you need from
-the source. This makes queries faster, uses less memory and disk space, and
-avoids keeping large local copies when you only need a small part of the data.
+Cloud-optimized files let compatible tools read just the parts you need from the
+source. This makes queries faster, uses less memory and disk space, and avoids
+keeping large local copies when you only need a small part of the data.
 
 These formats build on established tools and conventions. They support partial
 reads in different ways: COG organizes a GeoTIFF into internal tiles and
 overviews, Zarr splits multidimensional arrays into separately stored chunks,
 and Parquet stores tables column by column in row groups that a query can skip.
-GeoParquet adds a standard way to store geometries in Parquet.
-Each tile, chunk, or column is compressed on its own, so files stay small and a
-reader can fetch and decompress only the parts it needs.
+GeoParquet adds a standard way to store geometries in Parquet. Each tile, chunk,
+or column is compressed on its own, so files stay small and a reader can fetch
+and decompress only the parts it needs.
 
 Partial reads are the first step. The same property, files any tool can open in
 place, means the analysis can run next to the data instead of on a laptop: a
 cloud notebook, a Dask cluster, or compute instance in the same region as the
-storage. The Hub keeps this open on purpose: the data is not tied to any one compute platform,
-so it works with whatever you have, from a laptop to a cluster beside the files.
+storage. The Hub keeps this open on purpose: the data is not tied to any one
+compute platform, so it works with whatever you have, from a laptop to a cluster
+beside the files.
 
 ## What makes a file cloud-optimized
 
 To read part of a dataset remotely, a tool needs to know where that data is
 stored and be able to download it separately. This requires:
-
 1. **Independently readable sections.** Tiles, chunks, or column chunks within
    row groups let a reader retrieve selected parts of a dataset.
 2. **Metadata that locates the data.** Headers, chunk metadata, and footers say
@@ -80,10 +79,10 @@ Hub.
 ### Rasters: COG
 
 A Cloud Optimized GeoTIFF (COG) arranges raster data in tiles, with metadata
-positioned so a reader can locate it efficiently. Overviews provide lower-resolution
-versions for displaying larger areas. Readers that support remote access fetch
-only the tiles or overview they need, and the file is still an ordinary GeoTIFF
-for everything else. See the
+positioned so a reader can locate it efficiently. Overviews provide
+lower-resolution versions for displaying larger areas. Readers that support
+remote access fetch only the tiles or overview they need, and the file is still
+an ordinary GeoTIFF for everything else. See the
 [GDAL COG documentation](https://gdal.org/en/stable/drivers/raster/cog.html).
 
 Include the missing-value indicator (`nodata`), coordinate reference system
@@ -100,7 +99,8 @@ directly with cloud object storage. It suits climate datasets with space, time,
 model, and scenario dimensions. Tools such as xarray and Dask can download and
 process chunks as needed, including several at once, without loading the whole
 dataset. This supports analysis of datasets larger than the available memory or
-local disk. See the [xarray Zarr documentation](https://docs.xarray.dev/en/stable/user-guide/io.html#zarr).
+local disk. See the
+[xarray Zarr documentation](https://docs.xarray.dev/en/stable/user-guide/io.html#zarr).
 
 Include Climate and Forecast (CF) metadata such as `units`, `long_name`, and a
 valid `standard_name` where one exists.
@@ -112,9 +112,9 @@ time series, or a mix of both.
 ### Tables: Parquet
 
 Parquet stores tables column by column in groups of rows. Compression and
-dictionary encoding reduce file size, particularly for repeated codes and
-names. Each column within a row group can be read separately, so tools can
-download the parts an analysis needs without loading the whole table.
+dictionary encoding reduce file size, particularly for repeated codes and names.
+Each column within a row group can be read separately, so tools can download the
+parts an analysis needs without loading the whole table.
 
 Readers can also use statistics to skip row groups that do not match a filter.
 Sorting by commonly filtered fields, such as country and year, makes this more
@@ -176,26 +176,27 @@ most tools do not read it that way by default. Either way, you can work with a
 dataset far bigger than your laptop can store.
 
 **You want the mean of one column from a survey, or everything for Kenya in
-2020.** From a CSV, both reads are the whole file. **Parquet** stores each
-column separately and keeps min and max values per row group, so one column
-costs one column, and a file sorted by country and year lets the reader skip
-every row group that cannot match. On 11 million taxi rows, zstd Parquet was
-6.8 times smaller than the CSV and a single-column query ran about 60 times
-faster ([MotherDuck](https://motherduck.com/learn/csv-vs-parquet-benchmark/)).
-Those timings were on a local disk. Over HTTP the gap is the download itself,
-which is larger. Survey data usually compresses better than taxi data, because
-most answers repeat.
+2020.**
+From a CSV, both reads are the whole file. **Parquet** stores each column
+separately and keeps min and max values per row group, so one column costs one
+column, and a file sorted by country and year lets the reader skip every row
+group that cannot match. On 11 million taxi rows, zstd Parquet was 6.8 times
+smaller than the CSV and a single-column query ran about 60 times faster
+([MotherDuck](https://motherduck.com/learn/csv-vs-parquet-benchmark/)). Those
+timings were on a local disk. Over HTTP the gap is the download itself, which is
+larger. Survey data usually compresses better than taxi data, because most
+answers repeat.
 
-**You want the names of every district, or the features around one site.**
-From a GeoPackage, listing names reads nearly the whole file, geometry and all.
+**You want the names of every district, or the features around one site.** From
+a GeoPackage, listing names reads nearly the whole file, geometry and all.
 **GeoParquet** keeps the name column apart from the geometry, so that read is a
 few hundred kilobytes. On 10 million AIS points, GeoPackage was 2.6 GB and
-GeoParquet 470 MB; a full read took 2 minutes 12 seconds versus 7 seconds, and
-4 seconds with only some columns selected
+GeoParquet 470 MB; a full read took 2 minutes 12 seconds versus 7 seconds, and 4
+seconds with only some columns selected
 ([Graser, 2024](https://anitagraser.com/2024/11/23/geoparquet-in-qgis-smaller-faster-files-for-the-win/)).
 For the area query, sort nearby features together and write the bounding-box
-column so readers skip row groups outside it. Shapefile is not in the running
-at this size: converting a 22 GB CSV to GeoParquet took under 5 minutes, to
+column so readers skip row groups outside it. Shapefile is not in the running at
+this size: converting a 22 GB CSV to GeoParquet took under 5 minutes, to
 GeoPackage over 2.5 hours, and the Shapefile write failed at its 2 GB limit
 ([Cloud-Native Geospatial, 2023](https://cloudnativegeo.org/blog/2023/08/performance-explorations-of-geoparquet-and-duckdb/)).
 
@@ -265,8 +266,8 @@ when the dataset or its readers need something different.
   integers and `shuffle` for floats. The shuffle lines up bytes or bits across
   values so zstd can find the repetition.
 - **Pack floats.** `dtype: int16` with `scale_factor` and `add_offset` when the
-  required range and precision fit, plus an explicit `_FillValue`. Smaller
-  types reduce storage and the amount of data readers need to decompress.
+  required range and precision fit, plus an explicit `_FillValue`. Smaller types
+  reduce storage and the amount of data readers need to decompress.
 - **One store, consolidated.** Put variables that share a grid in one store with
   one-dimensional coordinate arrays, and write consolidated metadata so a reader
   can open the dataset in one request. Dimension order `(time, y, x)` and CF
@@ -293,9 +294,9 @@ when the dataset or its readers need something different.
   files by country or year helps if every query starts there, and hurts if it
   leaves thousands of tiny files. Keep each file above a few tens of megabytes.
 - **GeoParquet specifics.** Geometry as WKB, the CRS in the file metadata, the
-  geometry column last to keep attribute-only reads efficient, and the bounding-box
-  column so spatial filters can skip row groups (`write_covering_bbox=True` in
-  GeoPandas, on by default in recent GDAL).
+  geometry column last to keep attribute-only reads efficient, and the
+  bounding-box column so spatial filters can skip row groups
+  (`write_covering_bbox=True` in GeoPandas, on by default in recent GDAL).
 
 ## Before you publish
 
