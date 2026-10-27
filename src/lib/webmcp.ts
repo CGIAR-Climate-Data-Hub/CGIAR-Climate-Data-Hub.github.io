@@ -49,7 +49,7 @@ const tools = [
   {
     name: "get_dataset_metadata",
     description:
-      "Fetch a dataset's full CDH metadata record as JSON — variables, dimensions, assets, licensing — by its catalog id (from search_datasets).",
+      "Fetch a dataset's full metadata record as JSON — variables, dimensions, assets, licensing — by its catalog id (from search_datasets).",
     inputSchema: {
       type: "object",
       properties: { id: { type: "string" } },

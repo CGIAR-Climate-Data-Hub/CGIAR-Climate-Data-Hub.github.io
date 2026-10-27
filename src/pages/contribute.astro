@@ -2,32 +2,14 @@
 import { Code } from "astro:components";
 import { getCollection } from "astro:content";
 import PageHead from "@/components/PageHead.astro";
-import RailBox from "@/components/RailBox.astro";
 import Layout from "@/layouts/Layout.astro";
 import { codeHeader, shikiConfig } from "@/lib/code-block";
-import { githubUrl, issueUrl } from "@/lib/github";
-import {
-  CATALOG_REPO,
-  SITE_NAME,
-  SITE_REPO,
-  STANDARD_REPO,
-} from "@/site.config";
+import { issueUrl } from "@/lib/github";
+import { CATALOG_REPO, SITE_NAME, SITE_REPO } from "@/site.config";
 
 const guides = (await getCollection("contributionGuides"))
   .sort((a, b) => a.data.order - b.data.order)
   .map(({ id, data }) => ({ id, ...data }));
-
-const STANDARDS_LINKS = [
-  {
-    title: "Metadata standard",
-    href: githubUrl(STANDARD_REPO),
-    external: true,
-  },
-  {
-    title: "Licensing & attribution",
-    href: "/wikis/licensing-and-attribution/",
-  },
-];
 
 // Each kind opens a prefilled issue on the repo that owns the problem:
 // dataset issues live with the records, everything else with the site.
@@ -56,7 +38,7 @@ const description = `How to contribute a dataset, edit the docs, write a tutoria
 <Layout description={description} title={`Contribute — ${SITE_NAME}`}>
   <PageHead
     kicker="Get involved"
-    sub="The Hub grows because Centers, programs and partners contribute — datasets, docs, tutorials, and the stories of how they get used. Pick a guide below."
+    sub="The Hub grows because Centers, programs and partners contribute — datasets, docs, and tutorials. Pick a guide below."
     title="Contribute to the Hub"
   >
     <div class="card help-box" slot="right">
@@ -76,28 +58,15 @@ const description = `How to contribute a dataset, edit the docs, write a tutoria
       <nav aria-label="Contribution paths" class="intent" data-intent>
         <div class="label">I want to…</div>
         {guides.map((g) => (
-            <a href={`#${g.id}`}>
-              <span class="pill mono">{g.icon}</span>
-              {g.label}
-            </a>
+            <a href={`#${g.id}`}>{g.title}</a>
           ))}
-        <a href="#report">
-          <span class="pill mono">BUG</span>
-          Report a bug or issue
-        </a>
+        <a href="#report">Report a bug or issue</a>
       </nav>
-
-      <RailBox items={STANDARDS_LINKS} title="Hub standards" />
     </aside>
 
     <div class="guides">
       {guides.map((guide) => (
           <article class="guide" id={guide.id}>
-            <div class="guide-meta">
-              <span class="pill warn">Guide</span>
-              <span class="label">{guide.audience}</span>
-              <span class="label">· {guide.time}</span>
-            </div>
             <h2>{guide.title}</h2>
             <p class="intro">{guide.intro}</p>
 
@@ -111,6 +80,11 @@ const description = `How to contribute a dataset, edit the docs, write a tutoria
                   <div class="step-body">
                     <h3>{step.title}</h3>
                     <p>{step.body}</p>
+                    {step.link && (
+                      <p class="step-link">
+                        <a href={step.link.href}>{step.link.label}</a>
+                      </p>
+                    )}
                     {step.code && (
                       <Code
                         code={step.code.trim()}
@@ -145,10 +119,6 @@ const description = `How to contribute a dataset, edit the docs, write a tutoria
         ))}
 
       <article class="guide" id="report">
-        <div class="guide-meta">
-          <span class="pill warn">Report</span>
-          <span class="label">Anyone</span>
-        </div>
         <h2>Report a bug or issue</h2>
         <p class="intro">
           Spotted something off in a dataset, a broken link, or a glitch on this
@@ -233,25 +203,11 @@ aside {
   border-color: var(--cdh-blue-950);
 }
 
-.intent .pill {
-  flex-shrink: 0;
-}
-
 .intent a[aria-current="true"] {
   font-weight: 600;
   color: var(--text-inverse);
   background: var(--cdh-blue-950);
   border-color: var(--cdh-blue-950);
-}
-
-.intent a[aria-current="true"] .pill {
-  color: var(--cdh-blue-150);
-  background: var(--cdh-blue-800);
-}
-
-/* The standards box follows the intent nav */
-aside :global(.rail-box) {
-  margin-top: var(--space-5);
 }
 
 .guides {
@@ -268,20 +224,8 @@ aside :global(.rail-box) {
   border: 1px solid var(--border);
 }
 
-.guide-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  align-items: center;
-}
-
-.guide-meta .label {
-  color: var(--text-mute);
-}
-
 .guide h2 {
   max-width: 720px;
-  margin-top: var(--space-3);
   font-size: var(--font-size-10);
 }
 
@@ -349,6 +293,11 @@ aside :global(.rail-box) {
 
 .step-body :global(.code-block) {
   margin-top: var(--space-3);
+}
+
+.step-link {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-4);
 }
 
 .checklist {

@@ -1,4 +1,4 @@
-# CGIAR Climate Data Hub
+# CGIAR Climate Action Data Hub
 
 ## Development
 

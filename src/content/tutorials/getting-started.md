@@ -1,5 +1,5 @@
 ---
-title: Getting started with the Climate Data Hub
+title: Getting started with the Climate Action Data Hub
 description: What the Hub is, how to find the right dataset, and how to get data into your tool — Python, R, a desktop GIS, or none of the above.
 audience: Anyone
 topic: Onboarding
