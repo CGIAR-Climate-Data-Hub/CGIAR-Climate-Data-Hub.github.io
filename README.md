@@ -23,21 +23,21 @@ Quarto 1.10+ must be on your PATH for this. It is only needed to generate PDFs
 from content; the site build does not use it.
 
 `_quarto.yml` lists which wikis render and holds the print settings. To export
-another wiki, give it its own folder (`wikis/<name>/index.md`, images beside
-it) and add the file to `project.render`. The PDF is generated on demand, not
-in the site build; nothing is committed.
+another wiki, give it its own folder (`wikis/<name>/index.md`, images beside it)
+and add the file to `project.render`. The PDF is generated on demand, not in the
+site build; nothing is committed.
 
-Two constraints on the content: wiki frontmatter must avoid keys Quarto
-reserves (`section` is why the sidebar key is `group`), and diagrams must be
-image references rather than inline `<svg>`, which Pandoc drops on the way to
-PDF. Use absolute URLs for links you want clickable in print.
+Two constraints on the content: wiki frontmatter must avoid keys Quarto reserves
+(`section` is why the sidebar key is `group`), and diagrams must be image
+references rather than inline `<svg>`, which Pandoc drops on the way to PDF. Use
+absolute URLs for links you want clickable in print.
 
 ### Lighthouse CI
 
-`bun run lh` builds the site with the bundled example records and skills,
-then audits the URLs configured in `lighthouserc.json`. Reports are written
-to the gitignored `.lighthouseci/` directory; each run replaces the previous
-results. Open the latest local report with:
+`bun run lh` builds the site with the bundled example records and skills, then
+audits the URLs configured in `lighthouserc.json`. Reports are written to the
+gitignored `.lighthouseci/` directory; each run replaces the previous results.
+Open the latest local report with:
 
 ```sh
 bun run lh:open
@@ -50,9 +50,8 @@ skipped because the pinned Lighthouse version does not yet recognize the valid
 
 ### Commit hooks
 
-Lint/format checks run as git hooks via
-[prek](https://github.com/j178/prek) — a drop-in
-[pre-commit](https://pre-commit.com) replacement; both read the same
+Lint/format checks run as git hooks via [prek](https://github.com/j178/prek) — a
+drop-in [pre-commit](https://pre-commit.com) replacement; both read the same
 `.pre-commit-config.yaml`, so use whichever you have:
 
 ```sh
@@ -64,12 +63,12 @@ notebooks), air (R snippets), and basic file hygiene checks.
 
 ## Catalog records
 
-Dataset records are **not** in this repo — the `catalog` collection is
-fetched at build time from
+Dataset records are **not** in this repo — the `catalog` collection is fetched
+at build time from
 [`cdh-catalog`](https://github.com/CGIAR-Climate-Data-Hub/cdh-catalog)'s
-`records/` directory (that repo triggers a site rebuild when records change).
-To point a local session elsewhere, use shell environment variables
-(`.env` files don't reach the loader):
+`records/` directory (that repo triggers a site rebuild when records change). To
+point a local session elsewhere, use shell environment variables (`.env` files
+don't reach the loader):
 
 ```sh
 # A local checkout — offline, previews uncommitted records
@@ -84,17 +83,16 @@ RECORDS_REPO=you/cdh-catalog bun run dev
 
 Unset, builds fetch `cdh-catalog@main`. If the records fetch fails, the
 previously loaded records are kept, so offline dev keeps working — unless
-`REQUIRE_RECORDS` is set (the deploy workflow's guard), in which case a
-build that would produce an empty catalog fails instead.
+`REQUIRE_RECORDS` is set (the deploy workflow's guard), in which case a build
+that would produce an empty catalog fails instead.
 
-No records checked out? `bun run dev:example` runs the site against the
-bundled fixtures in `examples/records/` — a populated catalog for frontend
-work without cloning `cdh-catalog`. The fixtures are dev-only: nothing uses
-them unless `RECORDS_DIR` points at them.
+No records checked out? `bun run dev:example` runs the site against the bundled
+fixtures in `examples/records/` — a populated catalog for frontend work without
+cloning `cdh-catalog`. The fixtures are dev-only: nothing uses them unless
+`RECORDS_DIR` points at them.
 
-Don't commit record YAML to this repo — `src/content/catalog/` is
-gitignored and anything in it is ignored by the build; records belong in
-`cdh-catalog`.
+Don't commit record YAML to this repo — `src/content/catalog/` is gitignored and
+anything in it is ignored by the build; records belong in `cdh-catalog`.
 
 ## Licensing
 

@@ -78,31 +78,35 @@ const description =
       </div>
       <ul class="grid">
         {tutorials.map((t) => (
-            <li data-audience={t.data.audience} data-topic={t.data.topic} data-tutorial>
-              <a class="card tutorial-card" href={`/tutorials/${t.id}/`}>
-                <span class="card-top">
-                  <span class="pill level">{t.data.audience}</span>
-                  <span class="mono caption">{t.data.time}</span>
+          <li
+            data-audience={t.data.audience}
+            data-topic={t.data.topic}
+            data-tutorial
+          >
+            <a class="card tutorial-card" href={`/tutorials/${t.id}/`}>
+              <span class="card-top">
+                <span class="pill level">{t.data.audience}</span>
+                <span class="mono caption">{t.data.time}</span>
+              </span>
+              <span class="card-title">{t.data.title}</span>
+              <span class="mono caption">Format · {t.data.format}</span>
+              {t.data.outcomes.length > 0 && (
+                <span class="outcomes">
+                  <span class="label">You’ll be able to</span>
+                  <ul>
+                    {t.data.outcomes.map((o) => (
+                      <li>{o}</li>
+                    ))}
+                  </ul>
                 </span>
-                <span class="card-title">{t.data.title}</span>
-                <span class="mono caption">Format · {t.data.format}</span>
-                {t.data.outcomes.length > 0 && (
-                  <span class="outcomes">
-                    <span class="label">You’ll be able to</span>
-                    <ul>
-                      {t.data.outcomes.map((o) => (
-                        <li>{o}</li>
-                      ))}
-                    </ul>
-                  </span>
-                )}
-                <span class="card-meta">
-                  <span>{t.data.topic}</span>
-                  <span>Open →</span>
-                </span>
-              </a>
-            </li>
-          ))}
+              )}
+              <span class="card-meta">
+                <span>{t.data.topic}</span>
+                <span>Open →</span>
+              </span>
+            </a>
+          </li>
+        ))}
       </ul>
       <div class="empty" hidden id="empty-state">
         <h2>No matches.</h2>
@@ -112,26 +116,28 @@ const description =
   </section>
 
   {learningPath.length > 1 && (
-      <section class="container path-section">
-        <div class="path-head">
-          <div class="label kicker">
-            <span class="rule" />
-            Learning path
-          </div>
-          <h2>From zero to an analysis-ready workflow</h2>
-          <p>A curated sequence for researchers new to the Hub.</p>
+    <section class="container path-section">
+      <div class="path-head">
+        <div class="label kicker">
+          <span class="rule" />
+          Learning path
         </div>
-        <div class="path-strip" style={`--cols: ${learningPath.length}`}>
-          {learningPath.map((t, i) => (
-            <a href={`/tutorials/${t.id}/`}>
-              <span class="mono step-n">0{i + 1} · {t.data.audience}</span>
-              <span class="step-title">{t.data.title}</span>
-              <span class="mono caption">{t.data.time}</span>
-            </a>
-          ))}
-        </div>
-      </section>
-    )}
+        <h2>From zero to an analysis-ready workflow</h2>
+        <p>A curated sequence for researchers new to the Hub.</p>
+      </div>
+      <div class="path-strip" style={`--cols: ${learningPath.length}`}>
+        {learningPath.map((t, i) => (
+          <a href={`/tutorials/${t.id}/`}>
+            <span class="mono step-n">
+              0{i + 1} · {t.data.audience}
+            </span>
+            <span class="step-title">{t.data.title}</span>
+            <span class="mono caption">{t.data.time}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
 
   <section class="container foot">
     <span class="caption"

@@ -21,7 +21,11 @@ const facts = [
     {d.type === "spatial" ? "Spatial" : "Tabular"}
   </span>
   <h2><a href={`/catalog/${d.id}/`} title={d.title}>{d.title}</a></h2>
-  {d.source && <p class="source" title={d.source}>By {d.source}</p>}
+  {d.source && (
+    <p class="source" title={d.source}>
+      By {d.source}
+    </p>
+  )}
   <p class="summary" title={d.description}>{d.description}</p>
   <div class="meta mono caption">
     {facts.map((f) => <span title={f || undefined}>{f}</span>)}

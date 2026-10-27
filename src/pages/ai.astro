@@ -107,18 +107,18 @@ const ENDPOINTS = [
     </details>
     <ul class="grid">
       {skills.map((s) => (
-          <li>
-            <a
-              class="card skill-card"
-              href={`${SKILLS_SITE}skills/${s.id}/`}
-              title={s.data.description}
-            >
-              <span class="mono skill-name">{s.data.name}</span>
-              <p>{s.data.description}</p>
-              <span class="skill-docs">Docs →</span>
-            </a>
-          </li>
-        ))}
+        <li>
+          <a
+            class="card skill-card"
+            href={`${SKILLS_SITE}skills/${s.id}/`}
+            title={s.data.description}
+          >
+            <span class="mono skill-name">{s.data.name}</span>
+            <p>{s.data.description}</p>
+            <span class="skill-docs">Docs →</span>
+          </a>
+        </li>
+      ))}
     </ul>
   </section>
 
@@ -130,14 +130,14 @@ const ENDPOINTS = [
     />
     <ul class="grid">
       {ENDPOINTS.map((e) => (
-          <li class="card skill-card">
-            <span class="mono skill-name">
-              {e.href ? <a href={e.href}>{e.path}</a> : e.path}
-            </span>
-            <b>{e.title}</b>
-            <p>{e.desc}</p>
-          </li>
-        ))}
+        <li class="card skill-card">
+          <span class="mono skill-name">
+            {e.href ? <a href={e.href}>{e.path}</a> : e.path}
+          </span>
+          <b>{e.title}</b>
+          <p>{e.desc}</p>
+        </li>
+      ))}
     </ul>
     <p class="caption">
       Also there: schema.org JSON-LD embedded in every dataset page, BibTeX

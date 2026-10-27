@@ -59,7 +59,11 @@ const byline = new Intl.ListFormat("en").format(entry.data.author);
 
     <article>
       <Breadcrumbs
-        items={[{ label: "Hub", href: "/" }, { label: "Wikis", href: "/wikis/" }, { label: entry.data.title }]}
+        items={[
+          { label: "Hub", href: "/" },
+          { label: "Wikis", href: "/wikis/" },
+          { label: entry.data.title },
+        ]}
       />
       <h1>{entry.data.title}</h1>
       <div class="meta">

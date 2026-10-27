@@ -215,8 +215,28 @@ const catalogSchema = {
               x="0"
               y="0"
             ></rect>
-            {[-120, -60, 0, 60, 120].map((lon) => <line stroke="var(--grey-5)" stroke-opacity="0.18" stroke-width="0.4" x1={projectLonLat(lon, 0, W, H)[0]} x2={projectLonLat(lon, 0, W, H)[0]} y1="0" y2={H}></line>)}
-            {[-60, -30, 30, 60].map((lat) => <line stroke="var(--grey-5)" stroke-opacity="0.18" stroke-width="0.4" x1="0" x2={W} y1={projectLonLat(0, lat, W, H)[1]} y2={projectLonLat(0, lat, W, H)[1]}></line>)}
+            {[-120, -60, 0, 60, 120].map((lon) => (
+              <line
+                stroke="var(--grey-5)"
+                stroke-opacity="0.18"
+                stroke-width="0.4"
+                x1={projectLonLat(lon, 0, W, H)[0]}
+                x2={projectLonLat(lon, 0, W, H)[0]}
+                y1="0"
+                y2={H}
+              ></line>
+            ))}
+            {[-60, -30, 30, 60].map((lat) => (
+              <line
+                stroke="var(--grey-5)"
+                stroke-opacity="0.18"
+                stroke-width="0.4"
+                x1="0"
+                x2={W}
+                y1={projectLonLat(0, lat, W, H)[1]}
+                y2={projectLonLat(0, lat, W, H)[1]}
+              ></line>
+            ))}
             <line
               stroke="var(--grey-5)"
               stroke-dasharray="1 1"
@@ -259,7 +279,10 @@ const catalogSchema = {
       </details>
 
       <FacetSidebar
-        facets={facets.map((f) => ({ ...f, open: OPEN_FILTERS.includes(f.key) }))}
+        facets={facets.map((f) => ({
+          ...f,
+          open: OPEN_FILTERS.includes(f.key),
+        }))}
         total={datasets.length}
       />
     </aside>
@@ -267,20 +290,32 @@ const catalogSchema = {
     <div>
       <ul class="grid" data-pagefind-ignore id="results">
         {datasets.map((d) => (
-            <li
-              data-access={d.access}
-              data-bbox={d.bboxes?.map((b) => b.join(" ")).join(";")}
-              data-commodity={d.commodities.join(" ")}
-              data-dataset
-              data-domain={d.domains.join(" ")}
-              data-format={d.formats.join(" ")}
-              data-geography={d.geographies.join(" ")}
-              data-license={d.license}
-              data-search={[d.title, d.source ?? "", d.description, d.license, d.series ?? "", ...d.formats.flatMap((f) => [f, formatIdLabel(f)]), ...d.keywords, ...d.geographies.map(geoLabel), ...d.commodities.map(commodityLabel)].join(" ").toLowerCase()}
-            >
-              <DatasetCard dataset={d} />
-            </li>
-          ))}
+          <li
+            data-access={d.access}
+            data-bbox={d.bboxes?.map((b) => b.join(" ")).join(";")}
+            data-commodity={d.commodities.join(" ")}
+            data-dataset
+            data-domain={d.domains.join(" ")}
+            data-format={d.formats.join(" ")}
+            data-geography={d.geographies.join(" ")}
+            data-license={d.license}
+            data-search={[
+              d.title,
+              d.source ?? "",
+              d.description,
+              d.license,
+              d.series ?? "",
+              ...d.formats.flatMap((f) => [f, formatIdLabel(f)]),
+              ...d.keywords,
+              ...d.geographies.map(geoLabel),
+              ...d.commodities.map(commodityLabel),
+            ]
+              .join(" ")
+              .toLowerCase()}
+          >
+            <DatasetCard dataset={d} />
+          </li>
+        ))}
       </ul>
       <div class="empty" hidden id="empty-state">
         <h2>No matches.</h2>

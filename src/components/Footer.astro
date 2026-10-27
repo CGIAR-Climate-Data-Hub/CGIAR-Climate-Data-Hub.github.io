@@ -50,13 +50,13 @@ const year = new Date().getFullYear();
       <LogoBlock variant="dark" />
     </div>
     {GROUPS.map(([title, links]) => (
-        <nav aria-label={title}>
-          <h2 class="label">{title}</h2>
-          {links.map(([label, href]) => (
-            <a href={href}>{label}</a>
-          ))}
-        </nav>
-      ))}
+      <nav aria-label={title}>
+        <h2 class="label">{title}</h2>
+        {links.map(([label, href]) => (
+          <a href={href}>{label}</a>
+        ))}
+      </nav>
+    ))}
   </div>
   <div class="container legal">
     <span>&copy; {year} CGIAR.</span>
