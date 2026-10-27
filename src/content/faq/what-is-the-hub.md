@@ -1,5 +1,5 @@
 ---
-question: What is the Climate Data Hub?
+question: What is the Climate Action Data Hub?
 order: 1
 ---
 
