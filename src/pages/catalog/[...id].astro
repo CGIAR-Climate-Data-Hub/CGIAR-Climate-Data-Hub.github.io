@@ -898,55 +898,6 @@ const jsonLd = datasetJsonLd(
     </article>
 
     <aside>
-      <div class="card rail-box">
-        <h2 class="label">Quick facts</h2>
-        <dl class="kv">
-          {coverage && (
-            <>
-              <dt>Coverage</dt>
-              <dd>{coverage}</dd>
-            </>
-          )}
-          {resolution && (
-            <>
-              <dt>Resolution</dt>
-              <dd>{resolution}</dd>
-            </>
-          )}
-          {d.spatial?.crs && (
-            <>
-              <dt>CRS</dt>
-              <dd>
-                {crsHref ? (
-                  <a href={crsHref} rel="noreferrer">
-                    {d.spatial.crs}
-                  </a>
-                ) : (
-                  d.spatial.crs
-                )}
-              </dd>
-            </>
-          )}
-          {temporal && (
-            <>
-              <dt>Temporal</dt>
-              <dd>
-                {temporal.main}
-                {temporal.sub && (
-                  <div class="caption fact-sub">{temporal.sub}</div>
-                )}
-              </dd>
-            </>
-          )}
-          {d.cdh && d.cdh.domain.length > 0 && (
-            <>
-              <dt>Domain</dt>
-              <dd>{d.cdh.domain.map(humanize).join(", ")}</dd>
-            </>
-          )}
-        </dl>
-      </div>
-
       <RailBox items={tutorialLinks} title="Tutorials" />
       <RailBox items={parent ? [parent] : []} title="Parent record" />
       <RailBox items={children} title="Child records" />
@@ -1413,10 +1364,6 @@ article ul {
 .step-meta {
   font-size: var(--font-size-4);
   overflow-wrap: break-word;
-}
-
-.fact-sub {
-  margin-top: var(--space-1);
 }
 
 .contact-cards {
