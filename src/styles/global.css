@@ -428,6 +428,8 @@ a.btn:not([href]),
   padding: 10px 18px;
   font-size: var(--font-size-5);
   font-weight: 600;
+  /* <button> defaults to line-height: normal, so it ran shorter than <a> */
+  line-height: inherit;
   white-space: nowrap;
   text-decoration: none;
   border: 1px solid transparent;
