@@ -117,13 +117,7 @@ const funding = d.funding.map((f) => ({
 
 const bboxes = normalizeBboxes(d.spatial?.bbox);
 const coverage = d.spatial?.geography.map(geoLabel).join(", ");
-const temporal = temporalText(
-  d.temporal,
-  d.structures
-    .flatMap((s) => s.dimensions)
-    .map((dim) => (dim.type === "temporal" ? dim.step : undefined))
-    .find((step) => typeof step === "string"),
-);
+const temporal = temporalText(d.temporal);
 const source = licensor(d);
 // Contact order: maintainers (accountable for the record), then licensors, then the rest
 const roleRank = (c: (typeof d.contact)[number]) =>

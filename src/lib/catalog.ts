@@ -444,17 +444,13 @@ export function datasetMd(
 // timestamps), so the year is always the first four characters
 export const year = (date: string) => date.slice(0, 4);
 
-// Snapshot (date) or span; `step` is the time dimension's, labels the cadence
-export function temporalText(t: CatalogRecord["temporal"], step?: string) {
+// Snapshot (date) or span, with the update cadence as a sub-line
+export function temporalText(t: CatalogRecord["temporal"]) {
   if (!t) return undefined;
   if ("date" in t) return { main: year(t.date) };
-  const sub = [
-    step && stepLabel(step),
-    t.update_frequency && updateLabel(t.update_frequency),
-  ].filter(Boolean);
   return {
     main: `${year(t.start_date)} – ${t.end_date ? year(t.end_date) : "present"}`,
-    sub: sub.join(" · ") || undefined,
+    sub: t.update_frequency && updateLabel(t.update_frequency),
   };
 }
 
