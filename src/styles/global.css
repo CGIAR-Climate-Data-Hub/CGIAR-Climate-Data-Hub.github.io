@@ -370,6 +370,11 @@ a.card:hover {
   border-radius: var(--radius-sm);
 }
 
+/* Keyword chips can be a whole phrase; let them wrap on narrow screens */
+.chips .pill {
+  white-space: normal;
+}
+
 .pill.spatial,
 .pill.blue {
   color: var(--cdh-blue-800);
