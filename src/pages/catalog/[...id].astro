@@ -17,7 +17,6 @@ import {
   currentReleases,
   datasetJsonLd,
   geoLabel,
-  gridSpacings,
   humanize,
   lastSegment,
   licenseUrl,
@@ -118,8 +117,6 @@ const funding = d.funding.map((f) => ({
 
 const bboxes = normalizeBboxes(d.spatial?.bbox);
 const coverage = d.spatial?.geography.map(geoLabel).join(", ");
-const spacings = gridSpacings(d);
-const resolution = spacings.join(" · ");
 const temporal = temporalText(
   d.temporal,
   d.structures
@@ -202,7 +199,6 @@ const techBlocks = [
         mono: true,
       },
       { label: "Coverage", value: coverage },
-      ...spacings.map((value) => ({ label: "Grid spacing", value })),
     ],
   },
   d.temporal && {

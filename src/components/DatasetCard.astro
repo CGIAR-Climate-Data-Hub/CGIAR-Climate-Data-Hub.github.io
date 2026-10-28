@@ -9,10 +9,7 @@ interface Props {
 }
 
 const { dataset: d } = Astro.props;
-const facts = [
-  [d.coverage, d.resolution].filter(Boolean).join(" · "),
-  [d.license, d.temporal].filter(Boolean).join(" · "),
-];
+const facts = [d.coverage, [d.license, d.temporal].filter(Boolean).join(" · ")];
 ---
 
 <article class="card ds-card">
@@ -127,7 +124,7 @@ h2 a::after {
 }
 
 /* Strict two-line fact grid at the very bottom, identical on every card:
-   coverage · resolution, then license · year */
+   coverage, then license · year */
 .meta {
   display: grid;
   gap: 3px;
