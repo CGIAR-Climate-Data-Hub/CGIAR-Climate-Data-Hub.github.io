@@ -29,7 +29,7 @@ import {
   versionedSlug,
   year,
 } from "@/lib/catalog";
-import { authorName } from "@/lib/citation";
+import { authorName, citationText } from "@/lib/citation";
 import { shikiConfig } from "@/lib/code-block";
 import { allTutorials } from "@/lib/collections";
 import { blobUrl, editUrl, githubUrl } from "@/lib/github";
@@ -156,6 +156,7 @@ const reportParams = new URLSearchParams({
 });
 const reportUrl = `${githubUrl(CATALOG_REPO)}/issues/new?${reportParams}`;
 const cite = citable(d);
+const viaUrl = new URL(`/catalog/${versionedSlug(d)}/`, Astro.site).href;
 const licenseHref = licenseUrl(d.license);
 
 // Build-time cross-links: tutorials citing this dataset id
@@ -778,7 +779,7 @@ const jsonLd = datasetJsonLd(
             <Citation
               cite={cite}
               note="Please cite the dataset and any associated peer-reviewed publications."
-              viaUrl={new URL(`/catalog/${versionedSlug(d)}/`, Astro.site).href}
+              viaUrl={viaUrl}
             >
               {d.related_publications.length > 0 && (
                 <section class="related-pubs">
@@ -888,6 +889,15 @@ const jsonLd = datasetJsonLd(
     </article>
 
     <aside>
+      {cite && (
+        <div class="card rail-box">
+          <h2 class="label">Cite as</h2>
+          <p class="rail-text cite-text">{citationText(cite, viaUrl)}</p>
+          <a class="rail-link" href="#citation">
+            BibTeX and related publications
+          </a>
+        </div>
+      )}
       <RailBox items={tutorialLinks} title="Tutorials" />
       <RailBox items={parent ? [parent] : []} title="Parent record" />
       <RailBox items={children} title="Child records" />
@@ -1192,6 +1202,11 @@ h1 {
   grid-template-columns: 1fr 320px;
   column-gap: 40px;
   padding-top: var(--space-6);
+}
+
+.cite-text {
+  margin: 0;
+  line-height: 1.55;
 }
 
 .body > .footer-row {
