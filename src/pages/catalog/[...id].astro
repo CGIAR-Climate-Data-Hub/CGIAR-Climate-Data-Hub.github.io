@@ -460,7 +460,34 @@ const jsonLd = datasetJsonLd(
         </div>
 
         <div>
-          <BboxMap bboxes={bboxes} label={coverage} />
+          <BboxMap bboxes={bboxes} label={coverage}>
+            <div class="mono meta-row map-facts">
+              {coverage && (
+                <span class="fact">
+                  <span class="fact-label">Coverage</span>
+                  {coverage}
+                </span>
+              )}
+              {d.spatial?.crs && (
+                <span class="fact">
+                  <span class="fact-label">CRS</span>
+                  {crsHref ? (
+                    <a href={crsHref} rel="noreferrer">
+                      {d.spatial.crs}
+                    </a>
+                  ) : (
+                    d.spatial.crs
+                  )}
+                </span>
+              )}
+              {temporal && (
+                <span class="fact">
+                  <span class="fact-label">Period</span>
+                  {temporal.main}
+                </span>
+              )}
+            </div>
+          </BboxMap>
         </div>
       </div>
     </div>
@@ -1023,10 +1050,11 @@ if (tabs.length > 0) {
 .header-grid {
   display: grid;
 
-  /* Map shrinks 350→260 before the layout collapses (see media queries) */
-  grid-template-columns: 1fr minmax(260px, 350px);
+  /* Map shrinks 300→260 before the layout collapses (see media queries);
+     bottom-aligned so its base sits level with the buttons */
+  grid-template-columns: 1fr minmax(260px, 300px);
   gap: 40px;
-  align-items: stretch;
+  align-items: end;
   margin-top: var(--space-4);
 }
 
@@ -1165,9 +1193,22 @@ h1 {
   color: var(--text);
 }
 
+/* Facts attached under the extent map */
+.map-facts {
+  padding: var(--space-2) var(--space-3);
+  margin-top: 0;
+  border-top: 1px solid var(--cdh-blue-150);
+}
+
 .fact + .fact {
   padding-left: var(--space-4);
   border-left: 1px solid var(--border);
+}
+
+/* The map strip wraps at its width; a wrapped fact would start with a bar */
+.map-facts .fact + .fact {
+  padding-left: 0;
+  border-left: 0;
 }
 
 .section-nav {
