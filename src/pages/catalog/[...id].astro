@@ -155,6 +155,17 @@ const reportParams = new URLSearchParams({
   body: reportBody,
 });
 const reportUrl = `${githubUrl(CATALOG_REPO)}/issues/new?${reportParams}`;
+// Rail links: the record's representations, then its maintenance actions
+const recordLinks = [
+  { href: `/catalog/${recordSlug(d)}.json`, title: "Raw record (JSON)" },
+  stacUrl && { href: stacUrl, title: "STAC Collection", external: true },
+  entry.filePath && {
+    href: editUrl(CATALOG_REPO, entry.filePath),
+    title: "Suggest an edit",
+    external: true,
+  },
+  { href: reportUrl, title: "Report a problem", external: true },
+].filter((l) => typeof l === "object");
 const cite = citable(d);
 const viaUrl = new URL(`/catalog/${versionedSlug(d)}/`, Astro.site).href;
 const licenseHref = licenseUrl(d.license);
@@ -406,47 +417,6 @@ const jsonLd = datasetJsonLd(
             <a class="btn btn-primary" href="#access">
               {restricted ? "Request access" : "Access the data"}
             </a>
-            <button
-              class="btn btn-ghost drop-menu meta-menu"
-              popovertarget="meta-menu"
-              type="button"
-            >
-              Metadata
-              <svg
-                aria-hidden="true"
-                fill="none"
-                height="10"
-                stroke="currentColor"
-                stroke-width="2.4"
-                viewBox="0 0 24 24"
-                width="10"
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
-            <div class="card menu-list" id="meta-menu" popover>
-              <a href={`/catalog/${recordSlug(d)}.json`}>Raw record (JSON)</a>
-              {stacUrl && (
-                <a href={stacUrl} rel="noreferrer">
-                  STAC Collection ↗
-                </a>
-              )}
-              {entry.filePath && (
-                <a
-                  class="menu-split"
-                  href={editUrl(CATALOG_REPO, entry.filePath)}
-                >
-                  Suggest an edit ↗
-                </a>
-              )}
-              <a
-                href={reportUrl}
-                rel="noreferrer"
-                class:list={[{ "menu-split": !entry.filePath }]}
-              >
-                Report a problem ↗
-              </a>
-            </div>
           </div>
         </div>
 
@@ -898,6 +868,7 @@ const jsonLd = datasetJsonLd(
           </a>
         </div>
       )}
+      <RailBox items={recordLinks} title="Record" />
       <RailBox items={tutorialLinks} title="Tutorials" />
       <RailBox items={parent ? [parent] : []} title="Parent record" />
       <RailBox items={children} title="Child records" />
@@ -1050,8 +1021,8 @@ h1 {
   color: var(--text);
 }
 
-/* Shared dropdown (version switcher, metadata menu): a native popover
-   anchored under its button, so outside-click and Escape dismiss it */
+/* Version switcher: a native popover anchored under its button, so
+   outside-click and Escape dismiss it */
 .drop-menu svg {
   color: var(--text-mute);
   transition: transform 0.15s;
@@ -1063,10 +1034,6 @@ h1 {
 
 #version-menu {
   position-anchor: --version-menu;
-}
-
-#meta-menu {
-  position-anchor: --meta-menu;
 }
 
 .menu-list {
@@ -1110,23 +1077,12 @@ h1 {
   anchor-name: --version-menu;
 }
 
-.meta-menu {
-  gap: var(--space-2);
-  anchor-name: --meta-menu;
-}
-
 /* No popover support (pre-2024 browser): hide the menu rather than render
    it permanently expanded in the page flow */
 @supports not selector(:popover-open) {
   .menu-list {
     display: none;
   }
-}
-
-/* Divider between the record's representations and its maintenance actions */
-.menu-list .menu-split {
-  margin-top: var(--space-1);
-  border-top: 1px solid var(--border);
 }
 
 .meta-row {
