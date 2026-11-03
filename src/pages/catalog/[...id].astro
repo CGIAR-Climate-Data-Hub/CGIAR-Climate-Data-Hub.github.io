@@ -411,6 +411,12 @@ const jsonLd = datasetJsonLd(
               <span class="fact-label">updated</span>
               {d.updated}
             </span>
+            {!d.spatial && temporal && (
+              <span class="fact">
+                <span class="fact-label">period</span>
+                {temporal.main}
+              </span>
+            )}
           </div>
 
           <div class="ctas">
@@ -420,36 +426,38 @@ const jsonLd = datasetJsonLd(
           </div>
         </div>
 
-        <div>
-          <BboxMap bboxes={bboxes} label={coverage}>
-            <div class="mono meta-row map-facts">
-              {coverage && (
-                <span class="fact">
-                  <span class="fact-label">Coverage</span>
-                  {coverage}
-                </span>
-              )}
-              {d.spatial?.crs && (
-                <span class="fact">
-                  <span class="fact-label">CRS</span>
-                  {crsHref ? (
-                    <a href={crsHref} rel="noreferrer">
-                      {d.spatial.crs}
-                    </a>
-                  ) : (
-                    d.spatial.crs
-                  )}
-                </span>
-              )}
-              {temporal && (
-                <span class="fact">
-                  <span class="fact-label">Period</span>
-                  {temporal.main}
-                </span>
-              )}
-            </div>
-          </BboxMap>
-        </div>
+        {d.spatial && (
+          <div>
+            <BboxMap bboxes={bboxes} label={coverage}>
+              <div class="mono meta-row map-facts">
+                {coverage && (
+                  <span class="fact">
+                    <span class="fact-label">Coverage</span>
+                    {coverage}
+                  </span>
+                )}
+                {d.spatial?.crs && (
+                  <span class="fact">
+                    <span class="fact-label">CRS</span>
+                    {crsHref ? (
+                      <a href={crsHref} rel="noreferrer">
+                        {d.spatial.crs}
+                      </a>
+                    ) : (
+                      d.spatial.crs
+                    )}
+                  </span>
+                )}
+                {temporal && (
+                  <span class="fact">
+                    <span class="fact-label">Period</span>
+                    {temporal.main}
+                  </span>
+                )}
+              </div>
+            </BboxMap>
+          </div>
+        )}
       </div>
     </div>
   </section>
@@ -980,6 +988,11 @@ if (tabs.length > 0) {
   margin-top: var(--space-4);
 }
 
+/* No map (tabular records): the text takes the whole row */
+.header-grid > :only-child {
+  grid-column: 1 / -1;
+}
+
 h1 {
   max-width: 760px;
   margin-top: var(--space-3);
@@ -1385,7 +1398,7 @@ article ul {
 
   /* Keep the map at its desktop size — full-bleed makes the generalised
      coastlines look coarse */
-  .header-grid > div:last-child {
+  .header-grid > div + div {
     max-width: 350px;
   }
 
