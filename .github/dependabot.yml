@@ -5,6 +5,11 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # One PR per week for minor/patch bumps; majors still get their own PR
+    groups:
+      deps:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
     ignore:
       # Currently TS 7.0 is not compatible with Astro, remove when it is
       - dependency-name: "typescript"
