@@ -16,6 +16,7 @@ import {
   citable,
   currentReleases,
   datasetJsonLd,
+  formatBytes,
   geoLabel,
   humanize,
   lastSegment,
@@ -118,6 +119,19 @@ const funding = d.funding.map((f) => ({
 const bboxes = normalizeBboxes(d.spatial?.bbox);
 const coverage = d.spatial?.geography.map(geoLabel).join(", ");
 const temporal = temporalText(d.temporal);
+// Tabular records have no map; a schema sketch of the first structure shows
+// the data's shape instead (the strip counts the rest). Dimensions lead, so
+// the row key comes first. Four columns fit the card; past that, three plus
+// a "+N" cell. The unit row renders only when some column has one.
+const first = d.structures[0];
+const columns = first ? [...first.dimensions, ...first.variables] : [];
+const shown = columns.slice(0, columns.length > 4 ? 3 : 4);
+const more = columns.length - shown.length;
+const rows = [
+  shown.map((c) => c.data_type),
+  shown.some((c) => c.unit) ? shown.map((c) => c.unit ?? "–") : [],
+].filter((r) => r.length > 0);
+const bytes = d.data[0]?.file_size;
 const source = licensor(d);
 // Contact order: maintainers (accountable for the record), then licensors, then the rest
 const roleRank = (c: (typeof d.contact)[number]) =>
@@ -411,12 +425,6 @@ const jsonLd = datasetJsonLd(
               <span class="fact-label">updated</span>
               {d.updated}
             </span>
-            {!d.spatial && temporal && (
-              <span class="fact">
-                <span class="fact-label">period</span>
-                {temporal.main}
-              </span>
-            )}
           </div>
 
           <div class="ctas">
@@ -426,7 +434,7 @@ const jsonLd = datasetJsonLd(
           </div>
         </div>
 
-        {d.spatial && (
+        {d.spatial ? (
           <div>
             <BboxMap bboxes={bboxes} label={coverage}>
               <div class="mono meta-row map-facts">
@@ -451,6 +459,60 @@ const jsonLd = datasetJsonLd(
               </div>
             </BboxMap>
           </div>
+        ) : (
+          <figure class="table-preview">
+            {columns.length > 0 && (
+              <table
+                aria-label={`Columns: ${columns.map((c) => c.name).join(", ")}`}
+                class="mono"
+              >
+                <thead>
+                  <tr>
+                    {shown.map((c) => (
+                      <th title={c.name}>{c.name}</th>
+                    ))}
+                    {more > 0 && <th class="more">+{more}</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr>
+                      {r.map((v) => (
+                        <td>{v}</td>
+                      ))}
+                      {more > 0 && <td />}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <div class="mono meta-row map-facts">
+              {columns.length > 0 && (
+                <span class="fact">
+                  <span class="fact-label">Columns</span>
+                  {columns.length}
+                </span>
+              )}
+              {d.structures.length > 1 && (
+                <span class="fact">
+                  <span class="fact-label">Tables</span>
+                  {d.structures.length}
+                </span>
+              )}
+              {bytes !== undefined && (
+                <span class="fact">
+                  <span class="fact-label">Size</span>
+                  {formatBytes(bytes)}
+                </span>
+              )}
+              {temporal && (
+                <span class="fact">
+                  <span class="fact-label">Period</span>
+                  {temporal.main}
+                </span>
+              )}
+            </div>
+          </figure>
         )}
       </div>
     </div>
@@ -982,11 +1044,6 @@ if (tabs.length > 0) {
   margin-top: var(--space-4);
 }
 
-/* No map (tabular records): the text takes the whole row */
-.header-grid > :only-child {
-  grid-column: 1 / -1;
-}
-
 h1 {
   max-width: 760px;
   margin-top: var(--space-3);
@@ -1123,6 +1180,48 @@ h1 {
 .map-facts .fact + .fact {
   padding-left: 0;
   border-left: 0;
+}
+
+/* Tabular records: a sketched table stands in for the map, same chrome.
+   The empty rows are the table's "land": shape, not data. */
+.table-preview {
+  margin: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--surface), var(--cdh-blue-50));
+  border: 1px solid var(--cdh-blue-150);
+  border-radius: var(--radius-sm);
+}
+
+/* border-style: hidden drops the outer edges, so cell borders never double
+   the figure's own */
+.table-preview table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  border-style: hidden;
+}
+
+.table-preview th,
+.table-preview td {
+  height: 28px;
+  padding: 0 var(--space-1) 0 var(--space-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--font-size-5);
+  font-weight: 500;
+  color: var(--text-soft);
+  text-align: left;
+  white-space: nowrap;
+  border: 1px solid var(--cdh-blue-150);
+}
+
+.table-preview th {
+  background: var(--cdh-blue-50);
+}
+
+/* The "+N" column only holds a count, so the named columns get its width */
+.table-preview .more {
+  width: 44px;
 }
 
 .section-nav {
