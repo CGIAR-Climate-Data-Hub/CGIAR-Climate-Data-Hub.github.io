@@ -430,12 +430,6 @@ const jsonLd = datasetJsonLd(
           <div>
             <BboxMap bboxes={bboxes} label={coverage}>
               <div class="mono meta-row map-facts">
-                {coverage && (
-                  <span class="fact">
-                    <span class="fact-label">Coverage</span>
-                    {coverage}
-                  </span>
-                )}
                 {d.spatial?.crs && (
                   <span class="fact">
                     <span class="fact-label">CRS</span>
