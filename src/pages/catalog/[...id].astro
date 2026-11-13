@@ -16,8 +16,8 @@ import {
   citable,
   currentReleases,
   datasetJsonLd,
+  formatBytes,
   geoLabel,
-  gridSpacings,
   humanize,
   lastSegment,
   licenseUrl,
@@ -30,7 +30,7 @@ import {
   versionedSlug,
   year,
 } from "@/lib/catalog";
-import { authorName } from "@/lib/citation";
+import { authorName, citationText } from "@/lib/citation";
 import { shikiConfig } from "@/lib/code-block";
 import { allTutorials } from "@/lib/collections";
 import { blobUrl, editUrl, githubUrl } from "@/lib/github";
@@ -118,15 +118,20 @@ const funding = d.funding.map((f) => ({
 
 const bboxes = normalizeBboxes(d.spatial?.bbox);
 const coverage = d.spatial?.geography.map(geoLabel).join(", ");
-const spacings = gridSpacings(d);
-const resolution = spacings.join(" · ");
-const temporal = temporalText(
-  d.temporal,
-  d.structures
-    .flatMap((s) => s.dimensions)
-    .map((dim) => (dim.type === "temporal" ? dim.step : undefined))
-    .find((step) => typeof step === "string"),
-);
+const temporal = temporalText(d.temporal);
+// Tabular records have no map; a schema sketch of the first structure shows
+// the data's shape instead (the strip counts the rest). Dimensions lead, so
+// the row key comes first. Four columns fit the card; past that, three plus
+// a "+N" cell. The unit row renders only when some column has one.
+const first = d.structures[0];
+const columns = first ? [...first.dimensions, ...first.variables] : [];
+const shown = columns.slice(0, columns.length > 4 ? 3 : 4);
+const more = columns.length - shown.length;
+const rows = [
+  shown.map((c) => c.data_type),
+  shown.some((c) => c.unit) ? shown.map((c) => c.unit ?? "–") : [],
+].filter((r) => r.length > 0);
+const bytes = d.data[0]?.file_size;
 const source = licensor(d);
 // Contact order: maintainers (accountable for the record), then licensors, then the rest
 const roleRank = (c: (typeof d.contact)[number]) =>
@@ -164,7 +169,19 @@ const reportParams = new URLSearchParams({
   body: reportBody,
 });
 const reportUrl = `${githubUrl(CATALOG_REPO)}/issues/new?${reportParams}`;
+// Rail links: the record's representations, then its maintenance actions
+const recordLinks = [
+  { href: `/catalog/${recordSlug(d)}.json`, title: "Raw record (JSON)" },
+  stacUrl && { href: stacUrl, title: "STAC Collection", external: true },
+  entry.filePath && {
+    href: editUrl(CATALOG_REPO, entry.filePath),
+    title: "Suggest an edit",
+    external: true,
+  },
+  { href: reportUrl, title: "Report a problem", external: true },
+].filter((l) => typeof l === "object");
 const cite = citable(d);
+const viaUrl = new URL(`/catalog/${versionedSlug(d)}/`, Astro.site).href;
 const licenseHref = licenseUrl(d.license);
 
 // Build-time cross-links: tutorials citing this dataset id
@@ -202,7 +219,6 @@ const techBlocks = [
         mono: true,
       },
       { label: "Coverage", value: coverage },
-      ...spacings.map((value) => ({ label: "Grid spacing", value })),
     ],
   },
   d.temporal && {
@@ -415,53 +431,89 @@ const jsonLd = datasetJsonLd(
             <a class="btn btn-primary" href="#access">
               {restricted ? "Request access" : "Access the data"}
             </a>
-            <button
-              class="btn btn-ghost drop-menu meta-menu"
-              popovertarget="meta-menu"
-              type="button"
-            >
-              Metadata
-              <svg
-                aria-hidden="true"
-                fill="none"
-                height="10"
-                stroke="currentColor"
-                stroke-width="2.4"
-                viewBox="0 0 24 24"
-                width="10"
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
-            <div class="card menu-list" id="meta-menu" popover>
-              <a href={`/catalog/${recordSlug(d)}.json`}>Raw record (JSON)</a>
-              {stacUrl && (
-                <a href={stacUrl} rel="noreferrer">
-                  STAC Collection ↗
-                </a>
-              )}
-              {entry.filePath && (
-                <a
-                  class="menu-split"
-                  href={editUrl(CATALOG_REPO, entry.filePath)}
-                >
-                  Suggest an edit ↗
-                </a>
-              )}
-              <a
-                href={reportUrl}
-                rel="noreferrer"
-                class:list={[{ "menu-split": !entry.filePath }]}
-              >
-                Report a problem ↗
-              </a>
-            </div>
           </div>
         </div>
 
-        <div>
-          <BboxMap bboxes={bboxes} label={coverage} />
-        </div>
+        {d.spatial ? (
+          <div>
+            <BboxMap bboxes={bboxes} label={coverage}>
+              <div class="mono meta-row map-facts">
+                {d.spatial?.crs && (
+                  <span class="fact">
+                    <span class="fact-label">CRS</span>
+                    {crsHref ? (
+                      <a href={crsHref} rel="noreferrer">
+                        {d.spatial.crs}
+                      </a>
+                    ) : (
+                      d.spatial.crs
+                    )}
+                  </span>
+                )}
+                {temporal && (
+                  <span class="fact">
+                    <span class="fact-label">Period</span>
+                    {temporal.main}
+                  </span>
+                )}
+              </div>
+            </BboxMap>
+          </div>
+        ) : (
+          <figure class="table-preview">
+            {columns.length > 0 && (
+              <table
+                aria-label={`Columns: ${columns.map((c) => c.name).join(", ")}`}
+                class="mono"
+              >
+                <thead>
+                  <tr>
+                    {shown.map((c) => (
+                      <th title={c.name}>{c.name}</th>
+                    ))}
+                    {more > 0 && <th class="more">+{more}</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr>
+                      {r.map((v) => (
+                        <td>{v}</td>
+                      ))}
+                      {more > 0 && <td />}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <div class="mono meta-row map-facts">
+              {columns.length > 0 && (
+                <span class="fact">
+                  <span class="fact-label">Columns</span>
+                  {columns.length}
+                </span>
+              )}
+              {d.structures.length > 1 && (
+                <span class="fact">
+                  <span class="fact-label">Tables</span>
+                  {d.structures.length}
+                </span>
+              )}
+              {bytes !== undefined && (
+                <span class="fact">
+                  <span class="fact-label">Size</span>
+                  {formatBytes(bytes)}
+                </span>
+              )}
+              {temporal && (
+                <span class="fact">
+                  <span class="fact-label">Period</span>
+                  {temporal.main}
+                </span>
+              )}
+            </div>
+          </figure>
+        )}
       </div>
     </div>
   </section>
@@ -761,7 +813,7 @@ const jsonLd = datasetJsonLd(
             <Citation
               cite={cite}
               note="Please cite the dataset and any associated peer-reviewed publications."
-              viaUrl={new URL(`/catalog/${versionedSlug(d)}/`, Astro.site).href}
+              viaUrl={viaUrl}
             >
               {d.related_publications.length > 0 && (
                 <section class="related-pubs">
@@ -871,55 +923,16 @@ const jsonLd = datasetJsonLd(
     </article>
 
     <aside>
-      <div class="card rail-box">
-        <h2 class="label">Quick facts</h2>
-        <dl class="kv">
-          {coverage && (
-            <>
-              <dt>Coverage</dt>
-              <dd>{coverage}</dd>
-            </>
-          )}
-          {resolution && (
-            <>
-              <dt>Resolution</dt>
-              <dd>{resolution}</dd>
-            </>
-          )}
-          {d.spatial?.crs && (
-            <>
-              <dt>CRS</dt>
-              <dd>
-                {crsHref ? (
-                  <a href={crsHref} rel="noreferrer">
-                    {d.spatial.crs}
-                  </a>
-                ) : (
-                  d.spatial.crs
-                )}
-              </dd>
-            </>
-          )}
-          {temporal && (
-            <>
-              <dt>Temporal</dt>
-              <dd>
-                {temporal.main}
-                {temporal.sub && (
-                  <div class="caption fact-sub">{temporal.sub}</div>
-                )}
-              </dd>
-            </>
-          )}
-          {d.cdh && d.cdh.domain.length > 0 && (
-            <>
-              <dt>Domain</dt>
-              <dd>{d.cdh.domain.map(humanize).join(", ")}</dd>
-            </>
-          )}
-        </dl>
-      </div>
-
+      {cite && (
+        <div class="card rail-box">
+          <h2 class="label">Cite as</h2>
+          <p class="rail-text cite-text">{citationText(cite, viaUrl)}</p>
+          <a class="rail-link" href="#citation">
+            BibTeX and related publications
+          </a>
+        </div>
+      )}
+      <RailBox items={recordLinks} title="Record" />
       <RailBox items={tutorialLinks} title="Tutorials" />
       <RailBox items={parent ? [parent] : []} title="Parent record" />
       <RailBox items={children} title="Child records" />
@@ -1023,10 +1036,11 @@ if (tabs.length > 0) {
 .header-grid {
   display: grid;
 
-  /* Map shrinks 350→260 before the layout collapses (see media queries) */
-  grid-template-columns: 1fr minmax(260px, 350px);
+  /* Map shrinks 300→260 before the layout collapses (see media queries);
+     bottom-aligned so its base sits level with the buttons */
+  grid-template-columns: 1fr minmax(260px, 300px);
   gap: 40px;
-  align-items: stretch;
+  align-items: end;
   margin-top: var(--space-4);
 }
 
@@ -1071,8 +1085,8 @@ h1 {
   color: var(--text);
 }
 
-/* Shared dropdown (version switcher, metadata menu): a native popover
-   anchored under its button, so outside-click and Escape dismiss it */
+/* Version switcher: a native popover anchored under its button, so
+   outside-click and Escape dismiss it */
 .drop-menu svg {
   color: var(--text-mute);
   transition: transform 0.15s;
@@ -1084,10 +1098,6 @@ h1 {
 
 #version-menu {
   position-anchor: --version-menu;
-}
-
-#meta-menu {
-  position-anchor: --meta-menu;
 }
 
 .menu-list {
@@ -1131,23 +1141,12 @@ h1 {
   anchor-name: --version-menu;
 }
 
-.meta-menu {
-  gap: var(--space-2);
-  anchor-name: --meta-menu;
-}
-
 /* No popover support (pre-2024 browser): hide the menu rather than render
    it permanently expanded in the page flow */
 @supports not selector(:popover-open) {
   .menu-list {
     display: none;
   }
-}
-
-/* Divider between the record's representations and its maintenance actions */
-.menu-list .menu-split {
-  margin-top: var(--space-1);
-  border-top: 1px solid var(--border);
 }
 
 .meta-row {
@@ -1165,9 +1164,64 @@ h1 {
   color: var(--text);
 }
 
+/* Facts attached under the extent map */
+.map-facts {
+  padding: var(--space-2) var(--space-3);
+  margin-top: 0;
+  border-top: 1px solid var(--cdh-blue-150);
+}
+
 .fact + .fact {
   padding-left: var(--space-4);
   border-left: 1px solid var(--border);
+}
+
+/* The map strip wraps at its width; a wrapped fact would start with a bar */
+.map-facts .fact + .fact {
+  padding-left: 0;
+  border-left: 0;
+}
+
+/* Tabular records: a sketched table stands in for the map, same chrome.
+   The empty rows are the table's "land": shape, not data. */
+.table-preview {
+  margin: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--surface), var(--cdh-blue-50));
+  border: 1px solid var(--cdh-blue-150);
+  border-radius: var(--radius-sm);
+}
+
+/* border-style: hidden drops the outer edges, so cell borders never double
+   the figure's own */
+.table-preview table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  border-style: hidden;
+}
+
+.table-preview th,
+.table-preview td {
+  height: 28px;
+  padding: 0 var(--space-1) 0 var(--space-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--font-size-5);
+  font-weight: 500;
+  color: var(--text-soft);
+  text-align: left;
+  white-space: nowrap;
+  border: 1px solid var(--cdh-blue-150);
+}
+
+.table-preview th {
+  background: var(--cdh-blue-50);
+}
+
+/* The "+N" column only holds a count, so the named columns get its width */
+.table-preview .more {
+  width: 44px;
 }
 
 .section-nav {
@@ -1210,6 +1264,11 @@ h1 {
   grid-template-columns: 1fr 320px;
   column-gap: 40px;
   padding-top: var(--space-6);
+}
+
+.cite-text {
+  margin: 0;
+  line-height: 1.55;
 }
 
 .body > .footer-row {
@@ -1374,10 +1433,6 @@ article ul {
   overflow-wrap: break-word;
 }
 
-.fact-sub {
-  margin-top: var(--space-1);
-}
-
 .contact-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -1436,7 +1491,7 @@ article ul {
 
   /* Keep the map at its desktop size — full-bleed makes the generalised
      coastlines look coarse */
-  .header-grid > div:last-child {
+  .header-grid > div + div {
     max-width: 350px;
   }
 

@@ -57,6 +57,7 @@ const rects = bboxes.map((b) => {
       ></rect>
     ))}
   </svg>
+  <slot />
 </figure>
 
 <style>
@@ -65,7 +66,7 @@ figure {
   overflow: hidden;
   background: linear-gradient(180deg, var(--surface), var(--cdh-blue-50));
   border: 1px solid var(--cdh-blue-150);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sm);
 }
 
 svg {
