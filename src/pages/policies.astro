@@ -1,0 +1,26 @@
+---
+import { Content } from "@/content/policies.md";
+import Layout from "@/layouts/Layout.astro";
+import { issueUrl } from "@/lib/github";
+import { SITE_REPO } from "@/site.config";
+---
+
+<Layout
+  description="Privacy, licensing, and disclaimers for the Climate Action Data Hub."
+  title="Policies"
+>
+  <div class="container wrap prose">
+    <h1>Policies</h1>
+    <Content />
+    <h2>Contact</h2>
+    <p>Questions? <a href={issueUrl(SITE_REPO)}>Open an issue</a>.</p>
+  </div>
+</Layout>
+
+<style>
+.wrap {
+  max-width: 720px;
+  padding-top: 96px;
+  padding-bottom: var(--space-7);
+}
+</style>
