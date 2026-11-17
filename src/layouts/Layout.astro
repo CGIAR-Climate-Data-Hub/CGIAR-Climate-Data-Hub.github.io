@@ -87,6 +87,12 @@ const siteGraph = {
     <Font cssVariable="--font-serif" preload />
 
     <JsonLd data={siteGraph} />
+    <script
+      async
+      data-goatcounter="https://cg-cdh.goatcounter.com/count"
+      src="https://gc.zgo.at/count.js"
+      is:inline
+    ></script>
     <slot name="head" />
     <!-- AI agents: don't parse this HTML. Doc, tutorial, and dataset pages serve plain markdown at <page URL> + index.md (dataset twins embed the full record as YAML, with links and citation first). Site map for LLMs: /llms.txt — full docs in one file: /llms-full.txt — catalog as JSON: /catalog.json — the same record as plain JSON: /catalog/<id>.json -->
   </head>
