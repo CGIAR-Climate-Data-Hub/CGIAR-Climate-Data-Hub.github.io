@@ -21,6 +21,8 @@ export const GET: APIRoute = async ({ site }) => {
 
 The Hub also provides practical tutorials and wiki documentation for finding, evaluating, accessing, and using its datasets.
 
+AI agents: to find, inspect, and load datasets, follow the [climate-data-hub skill](${abs("/.well-known/agent-skills/climate-data-hub/SKILL.md")}).
+
 For an expanded, single-file representation of the Hub's documentation and dataset metadata, see [llms-full.txt](${abs("/llms-full.txt")}).
 
 Each dataset record has stable machine-readable JSON metadata and embedded schema.org/Dataset markup. Cite datasets using the citation on each record page, which preserves credit to the original publisher.

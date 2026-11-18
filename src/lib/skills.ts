@@ -55,7 +55,12 @@ export function skills(source: RepoSource): Loader {
           id,
           data: {
             ...parse(raw),
-            skillBase64: Buffer.from(skill.bytes).toString("base64"),
+            files: Object.fromEntries(
+              folder.map((f) => [
+                f.path,
+                Buffer.from(f.bytes).toString("base64"),
+              ]),
+            ),
             artifact: await createSkillArtifact(folder),
           },
         });

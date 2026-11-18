@@ -421,7 +421,7 @@ const skills = defineCollection({
   schema: z.object({
     name: z.string(),
     description: z.string(),
-    skillBase64: z.string(),
+    files: z.record(z.string(), z.string()), // path -> base64, served loose
     artifact: z.object({
       type: z.enum(["skill-md", "archive"]),
       digest: z.string(),
